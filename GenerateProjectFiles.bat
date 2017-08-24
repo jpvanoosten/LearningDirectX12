@@ -12,3 +12,5 @@ cmake -G %CMAKE_GENERATOR% -Wno-dev "%~dp0"
 
 POPD
 POPD
+
+PAUSE

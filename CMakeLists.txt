@@ -2,3 +2,7 @@ cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file
 
 project( LearningDirectX12 )
 
+add_subdirectory( DirectX12Template )
+
+
+
