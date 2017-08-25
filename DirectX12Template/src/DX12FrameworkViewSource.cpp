@@ -2,6 +2,7 @@
 #include <DX12FrameworkViewSource.h>
 #include <DX12FrameworkView.h>
 
+using namespace DirectX12Template;
 using namespace Windows::ApplicationModel::Core;
 
 DX12FrameworkViewSource::DX12FrameworkViewSource( size_t pGame )

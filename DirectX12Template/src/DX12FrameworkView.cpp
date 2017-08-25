@@ -1,13 +1,12 @@
 #include <DirectX12TemplatePCH.h>
 #include <DX12FrameworkView.h>
 
+using namespace DirectX12Template;
+
 using namespace Windows::Foundation;                    // For TypedEventHandler
 using namespace Windows::ApplicationModel::Core;        // For CoreApplicationView
 using namespace Windows::ApplicationModel::Activation;  // For IActivatedEventArgs
 using namespace Windows::UI::Core;                      // For CoreWindow and events.
-
-
-using namespace Windows::UI::Core;
 
 DX12FrameworkView::DX12FrameworkView( DX12Game* pGame)
     : m_pGame(pGame)

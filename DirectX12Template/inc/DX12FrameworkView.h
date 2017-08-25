@@ -27,26 +27,34 @@
  *
  *  @brief The framework view is the primary 
  */
-#include <DX12Game.h>
 
-ref class DX12FrameworkView sealed : Windows::ApplicationModel::Core::IFrameworkView
+#pragma once
+
+#include "DirectX12TemplateDefines.h"
+#include "DX12Game.h"
+
+namespace DirectX12Template
 {
-public:
-    // Inherited via IFrameworkView
-    virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
-    virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
-    virtual void Load(Platform::String^ entryPoint);
-    virtual void Run();
-    virtual void Uninitialize();
+    [Windows::Foundation::Metadata::WebHostHidden]
+    public ref class DX12FrameworkView sealed : Windows::ApplicationModel::Core::IFrameworkView
+    {
+    public:
+        // Inherited via IFrameworkView
+        virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
+        virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
+        virtual void Load(Platform::String^ entryPoint);
+        virtual void Run();
+        virtual void Uninitialize();
 
-private:
-    friend ref class DX12FrameworkViewSource; // Only the view source needs to construct this object.
+    private:
+        friend ref class DX12FrameworkViewSource; // Only the view source needs to construct this object.
 
-    void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
-    void OnKeyDown(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::KeyEventArgs^ keyEventArgs);
-    void OnKeyUp(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::KeyEventArgs^ keyEventArgs);
-    void OnClosed(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::CoreWindowEventArgs^ keyEventArgs);
+        void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
+        void OnKeyDown(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::KeyEventArgs^ keyEventArgs);
+        void OnKeyUp(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::KeyEventArgs^ keyEventArgs);
+        void OnClosed(Windows::UI::Core::CoreWindow^ window, Windows::UI::Core::CoreWindowEventArgs^ keyEventArgs);
 
-    DX12FrameworkView(DX12Game* pGame);
-    DX12Game* m_pGame;
-};
+        DX12FrameworkView(DX12Game* pGame);
+        DX12Game* m_pGame;
+    };
+}

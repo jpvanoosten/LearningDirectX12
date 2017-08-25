@@ -21,34 +21,14 @@
  */
 
 /**
- *  @file DX12Game.h
+ *  @file DirectX12Template.h
  *  @date August 25, 2017
  *  @author Jeremiah van Oosten
  *
- *  @brief The base class for a DirectX 12 game class.
+ *  @brief Include this header file in any project that links against the 
+ *  DirectXTemplate library.
  */
 
-#pragma once
-
 #include "DirectX12TemplateDefines.h"
-
-namespace DirectX12Template
-{
-    class DX12TL_DLL DX12Game
-    {
-    public:
-        DX12Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle);
-        virtual ~DX12Game();
-
-        uint32_t GetWindowWidth() const { return m_WindowWidth; }
-        uint32_t GetWindowHeight() const { return m_WindowHeight; }
-
-        const std::wstring& GetWindowTitle() const { return m_WindowTitle; }
-
-    private:
-        uint32_t m_WindowWidth;
-        uint32_t m_WindowHeight;
-        std::wstring m_WindowTitle;
-
-    };
-}
+#include "DirectX12FrameworkViewSource.h"
+#include "DirectX12FrameworkView.h"

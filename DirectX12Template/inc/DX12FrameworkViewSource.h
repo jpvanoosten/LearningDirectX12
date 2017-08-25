@@ -30,16 +30,21 @@
 
 #pragma once
 
+#include "DirectX12TemplateDefines.h"
 #include "DX12Game.h"
 
-ref class DX12FrameworkViewSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+namespace DirectX12Template
 {
-public:
-    DX12FrameworkViewSource( size_t pGame );
+    [Windows::Foundation::Metadata::WebHostHidden]
+    public ref class DX12FrameworkViewSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+    {
+    public:
+        DX12FrameworkViewSource(size_t pGame);
 
-    // Inherited via IFrameworkViewSource
-    virtual Windows::ApplicationModel::Core::IFrameworkView ^ CreateView();
+        // Inherited via IFrameworkViewSource
+        virtual Windows::ApplicationModel::Core::IFrameworkView ^ CreateView();
 
-private:
-    DX12Game* m_pGame;
-};
+    private:
+        DX12Game* m_pGame;
+    };
+}
