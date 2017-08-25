@@ -21,29 +21,25 @@
  */
 
 /**
- *  @file DirectX12TemplatePCH.h
- *  @date August 24, 2017
+ *  @file DX12FrameworkViewSource.h
+ *  @date August 25, 2017
  *  @author Jeremiah van Oosten
  *
- *  @brief Precompiled header file for the DirectX12 library template.
+ *  @brief Main application class used for creating a DirectX 12 application.
  */
 
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "DX12Game.h"
 
-// Windows Runtime Library. Needed for Microsoft::WRL::ComPtr<> template class.
-#include <wrl.h>
+ref class DX12FrameworkViewSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
+{
+public:
+    DX12FrameworkViewSource( size_t pGame );
 
-// DirectX 12 specific headers.
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
+    // Inherited via IFrameworkViewSource
+    virtual Windows::ApplicationModel::Core::IFrameworkView ^ CreateView();
 
-#include "d3dx12.h"
-
-// STL libraries
-#include <string>
-#include <memory>
+private:
+    DX12Game* m_pGame;
+};

@@ -21,29 +21,18 @@
  */
 
 /**
- *  @file DirectX12TemplatePCH.h
- *  @date August 24, 2017
- *  @author Jeremiah van Oosten
+ *  @file DX12Game.h
+ *  @date August 25, 2017
+ *  @author jpvan
  *
- *  @brief Precompiled header file for the DirectX12 library template.
+ *  @brief The base class for a DirectX 12 game class.
  */
 
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+class DX12Game
+{
+public:
 
-// Windows Runtime Library. Needed for Microsoft::WRL::ComPtr<> template class.
-#include <wrl.h>
 
-// DirectX 12 specific headers.
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-#include "d3dx12.h"
-
-// STL libraries
-#include <string>
-#include <memory>
+};
