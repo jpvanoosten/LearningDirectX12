@@ -1,17 +1,19 @@
 cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES 
-    inc/DirectX12TemplateDefines.h
-    inc/DX12FrameworkViewSource.h
-    inc/DX12FrameworkView.h
-    inc/DX12Game.h
+    inc/Application.h
     inc/d3dx12.h
+    inc/DirectX12Template.h
+    inc/DirectX12TemplateDefines.h
+    inc/Game.h
+    inc/Helpers.h
+    inc/Window.h
 )
 
 set( SRC_FILES 
-    src/DX12FrameworkView.cpp
-    src/DX12FrameworkViewSource.cpp
-    src/DX12Game.cpp
+    src/Application.cpp
+    src/Game.cpp
+    src/Window.cpp
 )
 
 set( PCH_HEADER_FILE 
@@ -22,27 +24,23 @@ set( PCH_SRC_FILE
     src/DirectX12TemplatePCH.cpp
 )
 
-add_library( DirectX12Template SHARED 
+add_library( DirectX12Template 
     ${HEADER_FILES} 
     ${PCH_HEADER_FILE} 
     ${SRC_FILES}
     ${PCH_SRC_FILE}
 )
 
-set_target_properties( DirectX12Template
-    PROPERTIES
-        DEFINE_SYMBOL DX12TL_EXPORTS
-)
+if( BUILD_SHARED_LIBS )
+    set_target_properties( DirectX12Template
+        PROPERTIES
+            DEFINE_SYMBOL DX12TL_EXPORTS
+    )
 
-target_compile_definitions( DirectX12Template
-    INTERFACE DX12TL_IMPORTS
-)
-
-set_target_properties( DirectX12Template
-    PROPERTIES 
-        VS_WINRT_COMPONENT TRUE  # Setting this property to true enables the UWP runtime extensions.
-        VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION 10.0.10240.0
-)
+    target_compile_definitions( DirectX12Template
+        INTERFACE DX12TL_IMPORTS
+    )
+endif()
 
 target_include_directories( DirectX12Template
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc

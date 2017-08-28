@@ -32,23 +32,24 @@
 
 #include "DirectX12TemplateDefines.h"
 
-namespace DirectX12Template
+class Window;
+
+class DX12TL_DLL Game
 {
-    class DX12TL_DLL DX12Game
-    {
-    public:
-        DX12Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle);
-        virtual ~DX12Game();
+public:
+    Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle);
+    virtual ~Game();
 
-        uint32_t GetWindowWidth() const { return m_WindowWidth; }
-        uint32_t GetWindowHeight() const { return m_WindowHeight; }
+    uint32_t GetWindowWidth() const { return m_WindowWidth; }
+    uint32_t GetWindowHeight() const { return m_WindowHeight; }
 
-        const std::wstring& GetWindowTitle() const { return m_WindowTitle; }
+    const std::wstring& GetWindowTitle() const { return m_WindowTitle; }
 
-    private:
-        uint32_t m_WindowWidth;
-        uint32_t m_WindowHeight;
-        std::wstring m_WindowTitle;
+private:
+    uint32_t m_WindowWidth;
+    uint32_t m_WindowHeight;
+    std::wstring m_WindowTitle;
 
-    };
-}
+    // The window used to render the demo.
+    std::shared_ptr<Window> m_pWindow;
+};

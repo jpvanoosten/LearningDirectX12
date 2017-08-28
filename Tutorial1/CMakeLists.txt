@@ -23,13 +23,6 @@ add_executable( Tutorial1 WIN32
     ${PCH_SRC_FILE}
 )
 
-set_target_properties( Tutorial1
-    PROPERTIES 
-        VS_WINRT_COMPONENT TRUE  # Setting this property to true enables the UWP runtime extensions.
-        VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION 10.0.10240.0
-)
-
-
 target_include_directories( Tutorial1
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )

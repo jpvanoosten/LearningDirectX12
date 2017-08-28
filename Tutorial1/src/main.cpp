@@ -1,16 +1,18 @@
 #include <Tutorial1PCH.h>
-#include <DX12Game.h>
+#include <DirectX12Template.h>
 
-using namespace DirectX12Template;
-
-[Platform::MTAThread]
-int main(Platform::Array<Platform::String^>^ args)
+int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
-    DX12Game game(800, 600, L"Hello World!");
+    int argc;
+    wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc );
+    Application app(hInstance, argc, const_cast<const wchar_t**>( argv ));
 
-    auto viewSource = ref new DX12FrameworkViewSource(reinterpret_cast<size_t>(&game));
+    Game game(1920, 1080, L"Tutorial1");
 
-    Windows::ApplicationModel::Core::CoreApplication::Run(viewSource);
+    int ret = app.Run(game);
 
-    return 0;
+    // Free memory allocated by CommandLineToArgvW
+    LocalFree(argv);
+
+    return ret;
 }

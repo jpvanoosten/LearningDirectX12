@@ -45,5 +45,9 @@
 #include "d3dx12.h"
 
 // STL libraries
-#include <string>
+
+#include <algorithm>
+#include <exception>
+#include <map>
 #include <memory>
+#include <string>

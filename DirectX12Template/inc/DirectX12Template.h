@@ -30,5 +30,7 @@
  */
 
 #include "DirectX12TemplateDefines.h"
-#include "DirectX12FrameworkViewSource.h"
-#include "DirectX12FrameworkView.h"
+
+#include "Application.h"
+#include "Game.h"
+#include "Window.h"
