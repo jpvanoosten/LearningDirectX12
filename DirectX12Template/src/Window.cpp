@@ -28,12 +28,12 @@ void Window::CreateWindow()
     // Store the result in a local static to ensure this function is called only once.
     static HRESULT hr = RegisterClassExW(&windowClass);
 
-    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
     RECT windowRect = { 0, 0, static_cast<LONG>(m_Width), static_cast<LONG>(m_Height) };
 
-    AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
+    ::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
     int windowWidth = windowRect.right - windowRect.left;
     int windowHeight = windowRect.bottom - windowRect.top;
@@ -41,7 +41,7 @@ void Window::CreateWindow()
     int windowX = std::max<int>(0, (screenWidth - windowWidth) / 2);
     int windowY = std::max<int>(0, (screenHeight - windowHeight) / 2);
 
-    m_hWindow = CreateWindowExW(
+    m_hWindow = ::CreateWindowExW(
         NULL,
         WINDOW_CLASS_NAME,
         m_Name.c_str(),
@@ -58,7 +58,7 @@ void Window::CreateWindow()
 
     assert(m_hWindow && "Failed to create window");
 
-    SetWindowTextW(m_hWindow, m_Name.c_str());
+    ::SetWindowTextW(m_hWindow, m_Name.c_str());
 }
 
 Window::~Window()

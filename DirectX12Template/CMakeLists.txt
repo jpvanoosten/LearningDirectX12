@@ -46,6 +46,12 @@ target_include_directories( DirectX12Template
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
+target_link_libraries( DirectX12Template 
+    d3d12.lib
+    dxgi.lib
+    dxguid.lib
+)
+
 # Enable precompiled headers for faster compiliation.
 set_source_files_properties( ${SRC_FILES}
     PROPERTIES

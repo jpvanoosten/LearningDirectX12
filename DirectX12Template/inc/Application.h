@@ -23,7 +23,7 @@
 /**
  *  @file Application.h
  *  @date August 28, 2017
- *  @author jeremiah
+ *  @author Jeremiah van Oosten
  *
  *  @brief Application class for DirectX 12 template.
  */
@@ -40,6 +40,8 @@
 // Forward declarations.
 class Window;
 class Game;
+
+using AdapterList = std::vector<Microsoft::WRL::ComPtr<IDXGIAdapter4>>;
 
 class DX12TL_DLL Application
 {
@@ -61,9 +63,19 @@ public:
     // The application needs to keep track of windows to know how
     // to forward events to the appropriate window.
     virtual std::shared_ptr<Window> CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, 
-                                         bool fullscreen = true );
+                                                 bool fullscreen = true );
+
+    // Retrieve the DirectX 12 device.
+    Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const { return m_Device;  }
 
 protected:
+
+    // Retrieve a list of DirectX12 adapters.
+    virtual AdapterList GetAdapters(bool useWarp = false) const;
+
+    // Creates a DirectX device from the specified adapter.
+    virtual Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter);
+
 
 private:
     // Non copyable.
@@ -74,5 +86,11 @@ private:
     // Passed in from the main entry point.
     HINSTANCE m_hInstance;
 
+    // Direct3D device.
+    Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
+
     bool m_Quit;
+
+    // Set to true to use a WARP adapter.
+    bool m_bUseWarp;
 };

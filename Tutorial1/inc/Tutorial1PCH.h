@@ -1,7 +1,4 @@
+// Include the PCH for the DirectX 12 library.
+#include <DirectX12TemplatePCH.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 #include <shellapi.h> // For CommandLineToArgvW
-
-#include <memory>
-#include <string>

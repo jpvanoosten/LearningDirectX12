@@ -52,4 +52,5 @@ private:
 
     // The window used to render the demo.
     std::shared_ptr<Window> m_pWindow;
+    std::shared_ptr<Window> testWindow;
 };
