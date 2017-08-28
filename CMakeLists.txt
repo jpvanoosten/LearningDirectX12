@@ -5,6 +5,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option( BUILD_SHARED_LIBS "Enable shared libraries - Dynamic libraries (.DLL) instead of static libraries (.LIB)" ON )
 
+# Make sure DLL and EXE targets go to the same directory.
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 project( LearningDirectX12 LANGUAGES CXX )
 
 add_subdirectory( DirectX12Template )

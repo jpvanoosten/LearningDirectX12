@@ -40,6 +40,14 @@ if( BUILD_SHARED_LIBS )
     target_compile_definitions( DirectX12Template
         INTERFACE DX12TL_IMPORTS
     )
+
+    # Disable specific warnings when generating a DLL.
+    # Disable warnings:
+    #   4251: This warning occurs when DLL exporting a class that contains (private) members deriving from a type in the C++ STL (like std::vector or std::string).
+    #         Since these (private) class members are never exported directly, it is safe to ignore this warning.
+    target_compile_options( DirectX12Template
+        PRIVATE /wd"4251"
+    )
 endif()
 
 target_include_directories( DirectX12Template
