@@ -13,11 +13,21 @@ using namespace Microsoft::WRL;
 
 Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
     : m_hInstance( hInstance )
+    , m_FenceValue( 1 )
     , m_Quit( false )
     , m_bUseWarp( false )
 {
     assert(g_pApplication == nullptr && "Application instance already created.");
     g_pApplication = this;
+
+#if defined(_DEBUG)
+    // Always enable the debug layer before doing anything DX12 related
+    // so all possible errors generated while creating DX12 objects
+    // are caught by the debug layer.
+    ComPtr<ID3D12Debug> debugInterface;
+    ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
+    debugInterface->EnableDebugLayer();
+#endif
 
     // Parse command line arguments.
     for (size_t i = 0; i < argc; ++i)
@@ -40,11 +50,19 @@ Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
     // Create a device using the first adapter in the list.
     m_Device = CreateDevice( adapters[0] );
 
+    // Create fence and event objects for GPU/CPU synchronization.
+    ThrowIfFailed(m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+    m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+    assert(m_FenceEvent && "Failed to create fence event.");
+
     CreateCommandQueues(m_Device);
 }
 
 Application::~Application()
 {
+    WaitForGPU();
+    ::CloseHandle(m_FenceEvent);
+
     g_pApplication = nullptr;
 }
 
@@ -64,12 +82,12 @@ std::shared_ptr<Window> Application::CreateWindow(uint32_t width, uint32_t heigh
     HWND hWnd = pWindow->GetWindowHandle();
     gs_WindowHandles.insert( WindowHandleMap::value_type(hWnd, pWindow));
 
-    UpdateWindow(hWnd);
+    ::UpdateWindow(hWnd);
 
     return pWindow;
 }
 
-ComPtr<ID3D12CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type)
+ComPtr<ID3D12CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const
 {
     ComPtr<ID3D12CommandQueue> commandQueue;
     switch (type)
@@ -77,14 +95,14 @@ ComPtr<ID3D12CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE 
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
         commandQueue = m_GraphicsCommandQueue;
         break;
-    case D3D12_COMMAND_LIST_TYPE_BUNDLE:
-        commandQueue = m_BundleCommandQueue;
-        break;
     case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        commandQueue = m_ComputCommandQueue;
+        commandQueue = m_ComputeCommandQueue;
         break;
     case D3D12_COMMAND_LIST_TYPE_COPY:
         commandQueue = m_CopyCommandQueue;
+        break;
+    default:
+        assert(false && "Invalid command queue type.");
         break;
     }
 
@@ -198,8 +216,7 @@ ComPtr<ID3D12CommandQueue> Application::CreateCommandQueue(ComPtr<ID3D12Device2>
 void Application::CreateCommandQueues(Microsoft::WRL::ComPtr<ID3D12Device2> device)
 {
     m_GraphicsCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-    m_BundleCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_BUNDLE);
-    m_ComputCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    m_ComputeCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
     m_CopyCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
@@ -232,6 +249,41 @@ void Application::Stop()
     m_Quit = true;
 }
 
+UINT64 Application::Signal(D3D12_COMMAND_LIST_TYPE type)
+{
+    ComPtr<ID3D12CommandQueue> commandQueue = GetCommandQueue(type);
+
+    uint64_t fenceValue = m_FenceValue++;
+    ThrowIfFailed(commandQueue->Signal(m_Fence.Get(), fenceValue));
+    return fenceValue;
+}
+
+UINT64 Application::GetCompletedFenceValue() const
+{
+    return m_Fence->GetCompletedValue();
+}
+
+bool Application::IsFenceComplete(UINT64 fenceValue) const
+{
+    return GetCompletedFenceValue() >= fenceValue;
+}
+
+void Application::WaitForFenceValue(UINT64 fenceValue, std::chrono::milliseconds duration )
+{
+    if (!IsFenceComplete(fenceValue))
+    {
+        ThrowIfFailed(m_Fence->SetEventOnCompletion(fenceValue, m_FenceEvent));
+        ::WaitForSingleObject(m_FenceEvent, static_cast<DWORD>(duration.count()));
+    }
+}
+
+void Application::WaitForGPU()
+{
+    WaitForFenceValue(Signal(D3D12_COMMAND_LIST_TYPE_DIRECT));
+    WaitForFenceValue(Signal(D3D12_COMMAND_LIST_TYPE_COMPUTE));
+    WaitForFenceValue(Signal(D3D12_COMMAND_LIST_TYPE_COPY));
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     std::shared_ptr<Window> pWindow;
@@ -240,6 +292,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (iter != gs_WindowHandles.end())
         {
             pWindow = iter->second.lock();
+            // If the weak pointer is null, just remove the window from the list
+            // of known windows. This happens if the last shared_ptr to the window
+            // has been released and the OS window is being destroyed.
+            if (!pWindow) gs_WindowHandles.erase(iter);
         }
     }
 

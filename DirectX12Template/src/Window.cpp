@@ -19,7 +19,19 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
     , m_Height( height )
     , m_Fullscreen( fullscreen )
     , m_Name( name )
+    , m_FenceValues{}
+    , m_CurrentFrameIndex( 0 )
 {
+    // Create a windows event object that will be used for GPU -> CPU syncronization.
+    m_FenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+    // Create the GPU fence object to signal the GPU command queue.
+    ComPtr<ID3D12Device2> device = Application::Get().GetDevice();
+    ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+    // Increment the fence value for the current thread. This is the next value
+    // to use to signal the command queue.
+    m_FenceValues[m_CurrentFrameIndex]++;
+
     CreateWindow();
     CreateSwapChain();
 }
@@ -101,7 +113,14 @@ void Window::CreateSwapChain()
 
     ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4)));
 
+    // Get the direct command queue from the application instance.
+    // This is required to create the swap chain.
+    ComPtr<ID3D12CommandQueue> commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+    // Make sure all GPU commands are finished before (re) creating the swap chain for this window.
+    Application::Get().WaitForGPU();
 
+    // TODO: Create swap chain and render targets for swap chain.
+    
 }
 
 void Window::Show()
@@ -112,4 +131,9 @@ void Window::Show()
 void Window::Hide()
 {
     ::ShowWindow(m_hWindow, SW_HIDE);
+}
+
+void Window::SetWindowTitle(const std::wstring& windowTitle)
+{
+    ::SetWindowTextW(m_hWindow, windowTitle.c_str());
 }

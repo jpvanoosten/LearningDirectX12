@@ -65,10 +65,26 @@ public:
     virtual std::shared_ptr<Window> CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, 
                                                  bool fullscreen = false );
 
-    // Retrieve the DirectX 12 device.
+    // Retrieve the DirectX 12 device owned by the application.
     Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const { return m_Device;  }
 
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
+
+    // Signal the command queue and return the fence value to wait for.
+    UINT64 Signal(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+    // Get the currently completed fence value.
+    UINT64 GetCompletedFenceValue() const;
+    // Check to see if the fence has reached a specific fence value.
+    bool IsFenceComplete(UINT64 fenceValue) const;
+
+    // Wait for the GPU to reach a particular fence value.
+    void WaitForFenceValue(UINT64 fenceValue, std::chrono::milliseconds duration = std::chrono::milliseconds::max() );
+
+    // Wait for all command queues to finish.
+    // Before any resources can be released, all GPU commands referencing
+    // those resources must be finished.
+    void WaitForGPU();
 
 protected:
 
@@ -83,6 +99,7 @@ protected:
     virtual Microsoft::WRL::ComPtr<ID3D12CommandQueue> CreateCommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type, INT priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE, UINT nodeMask = 0);
 
 private:
+
     // Non copyable.
     Application(const Application& copy) = delete;
     Application& operator=(const Application& copy) = delete;
@@ -93,10 +110,18 @@ private:
 
     // Direct3D device.
     Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
+    // Direct, Compute, and Copy command queues.
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_GraphicsCommandQueue;
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_ComputCommandQueue;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_ComputeCommandQueue;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CopyCommandQueue;
-    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_BundleCommandQueue;
+
+    // Synchronization objects
+    Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
+    HANDLE m_FenceEvent;
+
+    // Use a single fence value for all command queues.
+    // This should be fine as long as the fence value only increases.
+    std::atomic_uint64_t m_FenceValue;
 
     bool m_Quit;
 

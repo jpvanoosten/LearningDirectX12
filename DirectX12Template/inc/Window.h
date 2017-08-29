@@ -47,6 +47,8 @@ public:
     // Hide the window.
     void Hide();
 
+    void SetWindowTitle(const std::wstring& windowTitle);
+
 protected:
     
     /**
@@ -66,12 +68,26 @@ protected:
     virtual void CreateSwapChain();
 
 private:
+    // Double-buffer swap chain buffers.
+    static const uint8_t FrameCount = 2;
+
     // OS window handle.
     HWND m_hWindow;
 
     uint32_t m_Width;
     uint32_t m_Height;
     bool m_Fullscreen;
-
+    
     std::wstring m_Name;
+
+    Microsoft::WRL::ComPtr<IDXGISwapChain4> m_SwapChain;
+    Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
+    UINT64 m_FenceValues[FrameCount];
+    // Windows event used for GPU -> CPU syncronization.
+    // Necessary for Present to make sure the previous back buffer
+    // operations have completed before rendering the next frame.
+    HANDLE m_FenceEvent;
+
+    UINT m_CurrentFrameIndex;
+
 };
