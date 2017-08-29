@@ -63,10 +63,12 @@ public:
     // The application needs to keep track of windows to know how
     // to forward events to the appropriate window.
     virtual std::shared_ptr<Window> CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, 
-                                                 bool fullscreen = true );
+                                                 bool fullscreen = false );
 
     // Retrieve the DirectX 12 device.
     Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const { return m_Device;  }
+
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
 
 protected:
 
@@ -76,6 +78,9 @@ protected:
     // Creates a DirectX device from the specified adapter.
     virtual Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter);
 
+    // Creates command queues.
+    virtual void CreateCommandQueues(Microsoft::WRL::ComPtr<ID3D12Device2> device);
+    virtual Microsoft::WRL::ComPtr<ID3D12CommandQueue> CreateCommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type, INT priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE, UINT nodeMask = 0);
 
 private:
     // Non copyable.
@@ -88,6 +93,10 @@ private:
 
     // Direct3D device.
     Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_GraphicsCommandQueue;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_ComputCommandQueue;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CopyCommandQueue;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_BundleCommandQueue;
 
     bool m_Quit;
 

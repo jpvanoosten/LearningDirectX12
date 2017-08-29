@@ -39,6 +39,8 @@ Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
 
     // Create a device using the first adapter in the list.
     m_Device = CreateDevice( adapters[0] );
+
+    CreateCommandQueues(m_Device);
 }
 
 Application::~Application()
@@ -54,7 +56,7 @@ Application& Application::Get()
 
 std::shared_ptr<Window> Application::CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen)
 {
-    std::shared_ptr<Window> pWindow = std::make_shared<Window>(width, height, name);
+    std::shared_ptr<Window> pWindow = std::make_shared<Window>(width, height, name, fullscreen);
     assert(pWindow && "Failed to create window.");
 
     // Todo: Attach application events to the window.
@@ -66,6 +68,29 @@ std::shared_ptr<Window> Application::CreateWindow(uint32_t width, uint32_t heigh
 
     return pWindow;
 }
+
+ComPtr<ID3D12CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type)
+{
+    ComPtr<ID3D12CommandQueue> commandQueue;
+    switch (type)
+    {
+    case D3D12_COMMAND_LIST_TYPE_DIRECT:
+        commandQueue = m_GraphicsCommandQueue;
+        break;
+    case D3D12_COMMAND_LIST_TYPE_BUNDLE:
+        commandQueue = m_BundleCommandQueue;
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+        commandQueue = m_ComputCommandQueue;
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COPY:
+        commandQueue = m_CopyCommandQueue;
+        break;
+    }
+
+    return commandQueue;
+}
+
 
 AdapterList Application::GetAdapters( bool useWarp ) const
 {
@@ -151,6 +176,31 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::CreateDevice(Microsoft::WRL::
 #endif
 
     return d3d12Device2;
+}
+
+ComPtr<ID3D12CommandQueue> Application::CreateCommandQueue(ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type, INT priority, D3D12_COMMAND_QUEUE_FLAGS flags, UINT nodeMask)
+{
+    assert(device && "Device is NULL");
+
+    D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+    commandQueueDesc.Type = type;
+    commandQueueDesc.Priority = priority;
+    commandQueueDesc.Flags = flags;
+    commandQueueDesc.NodeMask = nodeMask;
+
+    ComPtr<ID3D12CommandQueue> commandQueue;
+
+    ThrowIfFailed(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue)));
+
+    return commandQueue;
+}
+
+void Application::CreateCommandQueues(Microsoft::WRL::ComPtr<ID3D12Device2> device)
+{
+    m_GraphicsCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    m_BundleCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_BUNDLE);
+    m_ComputCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    m_CopyCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
 int Application::Run( Game& game)

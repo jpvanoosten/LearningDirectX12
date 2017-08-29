@@ -37,7 +37,7 @@ class Window;
 class DX12TL_DLL Game
 {
 public:
-    Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle);
+    Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle, bool fullscreen = false );
     virtual ~Game();
 
     uint32_t GetWindowWidth() const { return m_WindowWidth; }
@@ -48,6 +48,7 @@ public:
 private:
     uint32_t m_WindowWidth;
     uint32_t m_WindowHeight;
+    bool m_Fullscreen;
     std::wstring m_WindowTitle;
 
     // The window used to render the demo.

@@ -5,6 +5,8 @@
 
 #include <Window.h>
 
+// Import namespaces.
+using namespace Microsoft::WRL;
 
 // Constants
 constexpr auto WINDOW_CLASS_NAME = L"DX12WindowClass";
@@ -12,12 +14,40 @@ constexpr auto WINDOW_CLASS_NAME = L"DX12WindowClass";
 // Forward declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); // Defined in the Application class.
 
-Window::Window(uint32_t width, uint32_t height, const std::wstring& name)
+Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen )
     : m_Width( width )
     , m_Height( height )
+    , m_Fullscreen( fullscreen )
     , m_Name( name )
 {
     CreateWindow();
+    CreateSwapChain();
+}
+
+Window::~Window()
+{
+    ::DestroyWindow(m_hWindow);
+}
+
+WNDCLASSEXW Window::GetWindowClassInfo(HINSTANCE hInst) const
+{
+    // Register a window class for creating our render windows with.
+    WNDCLASSEXW windowClass = {};
+
+    windowClass.cbSize = sizeof(WNDCLASSEX);
+    windowClass.style = CS_HREDRAW | CS_VREDRAW;
+    windowClass.lpfnWndProc = &WndProc;
+    windowClass.cbClsExtra = 0;
+    windowClass.cbWndExtra = 0;
+    windowClass.hInstance = hInst;
+    windowClass.hIcon = ::LoadIcon(hInst, NULL); //  MAKEINTRESOURCE(APPLICATION_ICON));
+    windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+    windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    windowClass.lpszMenuName = NULL;
+    windowClass.lpszClassName = WINDOW_CLASS_NAME;
+    windowClass.hIconSm = ::LoadIcon(hInst, NULL); //  MAKEINTRESOURCE(APPLICATION_ICON));
+
+    return windowClass;
 }
 
 void Window::CreateWindow()
@@ -26,7 +56,7 @@ void Window::CreateWindow()
     WNDCLASSEXW windowClass = GetWindowClassInfo(hInstance);
 
     // Store the result in a local static to ensure this function is called only once.
-    static HRESULT hr = RegisterClassExW(&windowClass);
+    static HRESULT hr = ::RegisterClassExW(&windowClass);
 
     int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);
@@ -61,32 +91,18 @@ void Window::CreateWindow()
     ::SetWindowTextW(m_hWindow, m_Name.c_str());
 }
 
-Window::~Window()
+void Window::CreateSwapChain()
 {
-    ::DestroyWindow(m_hWindow);
+    ComPtr<IDXGIFactory4> dxgiFactory4;
+    UINT createFactoryFlags = 0;
+#if defined(_DEBUG)
+    createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
+#endif
+
+    ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4)));
+
+
 }
-
-WNDCLASSEXW Window::GetWindowClassInfo(HINSTANCE hInst) const
-{
-    // Register a window class for creating our render windows with.
-    WNDCLASSEXW windowClass = {};
-
-    windowClass.cbSize = sizeof(WNDCLASSEX);
-    windowClass.style = CS_HREDRAW | CS_VREDRAW;
-    windowClass.lpfnWndProc = &WndProc;
-    windowClass.cbClsExtra = 0;
-    windowClass.cbWndExtra = 0;
-    windowClass.hInstance = hInst;
-    windowClass.hIcon = ::LoadIcon(hInst, NULL); //  MAKEINTRESOURCE(APPLICATION_ICON));
-    windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
-    windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    windowClass.lpszMenuName = NULL;
-    windowClass.lpszClassName = WINDOW_CLASS_NAME;
-    windowClass.hIconSm = ::LoadIcon(hInst, NULL); //  MAKEINTRESOURCE(APPLICATION_ICON));
-
-    return windowClass;
-}
-
 
 void Window::Show()
 {

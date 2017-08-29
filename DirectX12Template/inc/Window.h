@@ -35,7 +35,7 @@
 class DX12TL_DLL Window
 {
 public:
-    Window(uint32_t width, uint32_t height, const std::wstring& name);
+    Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen = false );
     virtual ~Window();
 
     // Return the OS window handle.
@@ -60,12 +60,18 @@ protected:
      */
     virtual void CreateWindow();
 
+    /**
+     * Create the swap chain for the window.
+     */
+    virtual void CreateSwapChain();
+
 private:
     // OS window handle.
     HWND m_hWindow;
 
     uint32_t m_Width;
     uint32_t m_Height;
+    bool m_Fullscreen;
 
     std::wstring m_Name;
 };
