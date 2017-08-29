@@ -22,7 +22,7 @@ Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
     // Parse command line arguments.
     for (size_t i = 0; i < argc; ++i)
     {
-        if (wcscmp(argv[i], L"-warp") == 0)
+        if (wcscmp(argv[i], L"--warp") == 0 || wcscmp(argv[i], L"-warp") == 0)
         {
             m_bUseWarp = true;
         }
