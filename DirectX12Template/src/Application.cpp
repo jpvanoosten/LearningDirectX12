@@ -16,6 +16,7 @@ Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
     , m_FenceValue( 1 )
     , m_Quit( false )
     , m_bUseWarp( false )
+    , m_bAllowTearing( false )
 {
     assert(g_pApplication == nullptr && "Application instance already created.");
     g_pApplication = this;
@@ -37,6 +38,8 @@ Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
             m_bUseWarp = true;
         }
     }
+    
+    m_bAllowTearing = CheckTearingSupport();
 
     // Try to get a list of the adapters that support DX12.
     AdapterList adapters = GetAdapters(m_bUseWarp);
@@ -218,6 +221,30 @@ void Application::CreateCommandQueues(Microsoft::WRL::ComPtr<ID3D12Device2> devi
     m_GraphicsCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
     m_ComputeCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
     m_CopyCommandQueue = CreateCommandQueue(device, D3D12_COMMAND_LIST_TYPE_COPY);
+}
+
+bool Application::CheckTearingSupport()
+{
+    BOOL allowTearing = FALSE;
+
+    // Rather than create the DXGI 1.5 factory interface directly, we create the
+    // DXGI 1.4 interface and query for the 1.5 interface. This is to enable the 
+    // graphics debugging tools which will not support the 1.5 factory interface 
+    // until a future update.
+    ComPtr<IDXGIFactory4> factory4;
+    if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+    {
+        ComPtr<IDXGIFactory5> factory5;
+        if (SUCCEEDED(factory4.As(&factory5)))
+        {
+            if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+            {
+                allowTearing = FALSE;
+            }
+        }
+    }
+
+    return allowTearing == TRUE;
 }
 
 int Application::Run( Game& game)

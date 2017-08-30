@@ -67,6 +67,13 @@ protected:
      */
     virtual void CreateSwapChain();
 
+    /**
+     * Update the render target views for the back buffers of the swap chain.
+     * This is done when the swap chain is created or if the swap chain is
+     * resized.
+     */
+    virtual void UpdateSwapChainRenderTargetViews();
+
 private:
     // Double-buffer swap chain buffers.
     static const uint8_t FrameCount = 2;
@@ -77,17 +84,24 @@ private:
     uint32_t m_Width;
     uint32_t m_Height;
     bool m_Fullscreen;
+
+    // True if using a variable refresh display.
+    // (Nvidia G-Sync or AMD FreeSync technology).
+    bool m_AllowTearing;
     
     std::wstring m_Name;
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_SwapChain;
-    Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
+    // Swap chain back buffers.
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_BackBuffers[FrameCount];
+
+    // Descriptor heap which holds the Render Target Views for the 
+    // back buffers of the swap chain.
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
+    UINT m_RTVDescriptorSize;
+
+    // Fence values used to synchronize buffer flipping.
     UINT64 m_FenceValues[FrameCount];
-    // Windows event used for GPU -> CPU syncronization.
-    // Necessary for Present to make sure the previous back buffer
-    // operations have completed before rendering the next frame.
-    HANDLE m_FenceEvent;
 
-    UINT m_CurrentFrameIndex;
-
+    UINT m_CurrentBackBufferIndex;
 };

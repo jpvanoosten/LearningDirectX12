@@ -20,17 +20,23 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
     , m_Fullscreen( fullscreen )
     , m_Name( name )
     , m_FenceValues{}
-    , m_CurrentFrameIndex( 0 )
+    , m_CurrentBackBufferIndex( 0 )
 {
-    // Create a windows event object that will be used for GPU -> CPU syncronization.
-    m_FenceEvent = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    // Check to see if the monitor supports variable refresh rates.
+    m_AllowTearing = Application::Get().AllowTearing();
 
-    // Create the GPU fence object to signal the GPU command queue.
-    ComPtr<ID3D12Device2> device = Application::Get().GetDevice();
-    ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
-    // Increment the fence value for the current thread. This is the next value
-    // to use to signal the command queue.
-    m_FenceValues[m_CurrentFrameIndex]++;
+    // Create the descriptor heap for the render target views for the back buffers
+    // of the swap chain.
+    auto device = Application::Get().GetDevice();
+
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+    rtvHeapDesc.NumDescriptors = FrameCount;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVDescriptorHeap)));
+
+    // Sizes of descriptors is vendor specific and must be queried at runtime.
+    m_RTVDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
     CreateWindow();
     CreateSwapChain();
@@ -115,12 +121,57 @@ void Window::CreateSwapChain()
 
     // Get the direct command queue from the application instance.
     // This is required to create the swap chain.
-    ComPtr<ID3D12CommandQueue> commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+    auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
     // Make sure all GPU commands are finished before (re) creating the swap chain for this window.
     Application::Get().WaitForGPU();
 
-    // TODO: Create swap chain and render targets for swap chain.
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+    swapChainDesc.Width = m_Width;
+    swapChainDesc.Height = m_Height;
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapChainDesc.Stereo = FALSE;
+    swapChainDesc.SampleDesc = { 1, 0 };
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.BufferCount = FrameCount;
+    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+    // It is recommended to always allow tearing if tearing support is available.
+    swapChainDesc.Flags = m_AllowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+    ComPtr<IDXGISwapChain1> swapChain1;
+    ThrowIfFailed(dxgiFactory4->CreateSwapChainForHwnd(
+        commandQueue.Get(),
+        m_hWindow,
+        &swapChainDesc,
+        nullptr,
+        nullptr,
+        &swapChain1));
+
+    // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen
+    // will be handled manually.
+    dxgiFactory4->MakeWindowAssociation(m_hWindow, DXGI_MWA_NO_ALT_ENTER);
+
+    ThrowIfFailed(swapChain1.As(&m_SwapChain));
     
+    m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+
+    UpdateSwapChainRenderTargetViews();
+}
+
+void Window::UpdateSwapChainRenderTargetViews()
+{
+    auto device = Application::Get().GetDevice();
+
+    // Get a handle to the first descriptor in the heap.
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+    for (int i = 0; i < FrameCount; ++i)
+    {
+        ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_BackBuffers[i])));
+        device->CreateRenderTargetView(m_BackBuffers[i].Get(), nullptr, rtvHandle);
+        rtvHandle.Offset(m_RTVDescriptorSize);
+    }
 }
 
 void Window::Show()

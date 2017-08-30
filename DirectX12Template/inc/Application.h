@@ -86,6 +86,11 @@ public:
     // those resources must be finished.
     void WaitForGPU();
 
+    // Check to see if the display supports tearing.
+    // This is required for variable refresh rate displays
+    // (Nvidia G-Sync or AMD FreeSync).
+    bool AllowTearing() const { return m_bAllowTearing; }
+
 protected:
 
     // Retrieve a list of DirectX12 adapters.
@@ -98,6 +103,8 @@ protected:
     virtual void CreateCommandQueues(Microsoft::WRL::ComPtr<ID3D12Device2> device);
     virtual Microsoft::WRL::ComPtr<ID3D12CommandQueue> CreateCommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type, INT priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAGS flags = D3D12_COMMAND_QUEUE_FLAG_NONE, UINT nodeMask = 0);
 
+    // Check to see the if the display supports variable refresh rate.
+    bool CheckTearingSupport();
 private:
 
     // Non copyable.
@@ -127,4 +134,8 @@ private:
 
     // Set to true to use a WARP adapter.
     bool m_bUseWarp;
+
+    // Allow screen tearing on displays that support variable refresh rates.
+    // (Nvidia G-Sync, or AMD FreeSync).
+    bool m_bAllowTearing;
 };
