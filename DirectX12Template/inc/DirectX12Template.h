@@ -32,5 +32,8 @@
 #include "DirectX12TemplateDefines.h"
 
 #include "Application.h"
+#include "Events.h"
 #include "Game.h"
+#include "KeyCodes.h"
+#include "Object.h"
 #include "Window.h"

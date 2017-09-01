@@ -21,53 +21,24 @@
  */
 
 /**
- *  @file DirectX12TemplatePCH.h
- *  @date August 24, 2017
+ *  @file Object.h
+ *  @date September 1, 2017
  *  @author Jeremiah van Oosten
  *
- *  @brief Precompiled header file for the DirectX12 library template.
+ *  @brief Base class for all library objects. This class provides an interface
+ *  that can be used with the event library.
  */
 
 #pragma once
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "DirectX12TemplateDefines.h"
+#include <boost/noncopyable.hpp>
 
-// The min/max macros conflict with like-named member functions.
-// Only use std::min and std::max defined in <algorithm>.
-#if defined(min)
-#undef min
-#endif
+// the noncopyable class prevents compilers from automatically
+// generating copy constructors and assignment operates
+// unless the derived class explicitly states that it should be created.
+class DX12TL_DLL Object : public boost::noncopyable
+{
+public:
 
-#if defined(max)
-#undef max
-#endif
-
-
-// Windows Runtime Library. Needed for Microsoft::WRL::ComPtr<> template class.
-#include <wrl.h>
-
-// DirectX 12 specific headers.
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-
-#include "d3dx12.h"
-
-// Boost
-// Surpress messages about the boost configuration being older than the 
-// compiler.
-#define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-
-// STL libraries
-
-#include <algorithm>
-#include <atomic>
-#include <chrono>
-#include <cstdint>
-#include <exception>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
+};

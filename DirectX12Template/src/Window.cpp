@@ -251,3 +251,8 @@ void Window::ToggleFullscreen()
 {
     SetFullscreen(!GetFullscreen());
 }
+
+void Window::OnClose(WindowCloseEventArgs& e)
+{
+    Close(e);
+}

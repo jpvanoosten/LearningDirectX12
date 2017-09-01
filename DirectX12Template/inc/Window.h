@@ -30,9 +30,13 @@
 
 #pragma once
 
-#include "DirectX12TemplateDefines.h"
+#include "Object.h"
+#include "Events.h"
 
-class DX12TL_DLL Window
+ // Forward declarations
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); // Defined in the Application class.
+
+class DX12TL_DLL Window : public Object
 {
 public:
     Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen = false );
@@ -53,8 +57,16 @@ public:
     bool GetFullscreen() const { return m_Fullscreen;  }
     void ToggleFullscreen();
 
+    // Events on the window:
+
+    // Event is invoked when the window is closed.
+    WindowCloseEvent Close;
+
 protected:
-    
+    // This is required to allow the WndProc function (defined in Application.cpp)
+    // to invoke events on the window.
+    friend LRESULT CALLBACK ::WndProc(HWND, UINT, WPARAM, LPARAM);
+
     /**
      * Get the window class info. Override this for your own classes to change the
      * way windows created with this class appear.
@@ -77,6 +89,12 @@ protected:
      * resized.
      */
     virtual void UpdateSwapChainRenderTargetViews();
+
+    /**
+     * Invoked when the window should be closed.
+     * Note: The application can cancel the closing event.
+     */
+    virtual void OnClose(WindowCloseEventArgs& e);
 
 private:
     // Double-buffer swap chain buffers.

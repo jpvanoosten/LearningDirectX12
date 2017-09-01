@@ -5,8 +5,11 @@ set( HEADER_FILES
     inc/d3dx12.h
     inc/DirectX12Template.h
     inc/DirectX12TemplateDefines.h
+    inc/Events.h
     inc/Game.h
     inc/Helpers.h
+    inc/KeyCodes.h
+    inc/Object.h
     inc/Window.h
 )
 
@@ -52,6 +55,11 @@ endif()
 
 target_include_directories( DirectX12Template
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    PUBLIC ${CMAKE_SOURCE_DIR}/externals/boost-1.65.0
+)
+
+target_compile_definitions( DirectX12Template 
+    PUBLIC $<$<CONFIG:Debug>:_SCL_SECURE_NO_WARNINGS>
 )
 
 target_link_libraries( DirectX12Template 

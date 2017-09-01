@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "DirectX12TemplateDefines.h"
+#include "Object.h"
 
 // Undefine the CreateWindow macro so I can use a function with the same name in this class.
 #if defined(CreateWindow)
@@ -43,7 +43,7 @@ class Game;
 
 using AdapterList = std::vector<Microsoft::WRL::ComPtr<IDXGIAdapter4>>;
 
-class DX12TL_DLL Application
+class DX12TL_DLL Application : public Object
 {
 public:
     Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] );

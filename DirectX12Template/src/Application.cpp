@@ -1,6 +1,7 @@
 #include <DirectX12TemplatePCH.h>
 
 #include <Application.h>
+#include <Events.h>
 #include <Helpers.h>
 #include <Window.h>
 
@@ -341,8 +342,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
         case WM_CLOSE:
         {
-            // TODO: Dispatch an event to the window itself
-            Application::Get().Stop();
+            WindowCloseEventArgs windowCloseEventArgs(*pWindow);
+            pWindow->OnClose(windowCloseEventArgs);
+
+            if (windowCloseEventArgs.ConfirmClose)
+            {
+                // Just hide the window.
+                // Destroying the window would require the window to be 
+                // recreated if we wanted to show it again.
+                pWindow->Hide();
+            }
         }
         break;
         case WM_DESTROY:
