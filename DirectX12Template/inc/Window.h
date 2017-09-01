@@ -49,6 +49,10 @@ public:
 
     void SetWindowTitle(const std::wstring& windowTitle);
 
+    void SetFullscreen(bool fullscreen);
+    bool GetFullscreen() const { return m_Fullscreen;  }
+    void ToggleFullscreen();
+
 protected:
     
     /**
@@ -80,6 +84,7 @@ private:
 
     // OS window handle.
     HWND m_hWindow;
+    RECT m_WindowRect;
 
     uint32_t m_Width;
     uint32_t m_Height;

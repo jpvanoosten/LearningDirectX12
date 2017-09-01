@@ -17,7 +17,7 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); // Defined in the Applicat
 Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen )
     : m_Width( width )
     , m_Height( height )
-    , m_Fullscreen( fullscreen )
+    , m_Fullscreen( false )
     , m_Name( name )
     , m_FenceValues{}
     , m_CurrentBackBufferIndex( 0 )
@@ -40,6 +40,8 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
 
     CreateWindow();
     CreateSwapChain();
+
+    SetFullscreen(fullscreen);
 }
 
 Window::~Window()
@@ -86,6 +88,7 @@ void Window::CreateWindow()
     int windowWidth = windowRect.right - windowRect.left;
     int windowHeight = windowRect.bottom - windowRect.top;
 
+    // Center the window within the screen. Clamp to 0, 0 for the top-left corner.
     int windowX = std::max<int>(0, (screenWidth - windowWidth) / 2);
     int windowY = std::max<int>(0, (screenHeight - windowHeight) / 2);
 
@@ -105,6 +108,8 @@ void Window::CreateWindow()
     );
 
     assert(m_hWindow && "Failed to create window");
+
+    ::GetWindowRect(m_hWindow, &m_WindowRect);
 
     ::SetWindowTextW(m_hWindow, m_Name.c_str());
 }
@@ -187,4 +192,62 @@ void Window::Hide()
 void Window::SetWindowTitle(const std::wstring& windowTitle)
 {
     ::SetWindowTextW(m_hWindow, windowTitle.c_str());
+}
+
+void Window::SetFullscreen(bool fullscreen)
+{
+    if (m_Fullscreen != fullscreen)
+    {
+        m_Fullscreen = fullscreen;
+
+        if (m_Fullscreen) // Switching to fullscreen.
+        {
+            // Store the current window dimensions so they can be restored 
+            // when switching out of fullscreen state.
+            ::GetWindowRect(m_hWindow, &m_WindowRect);
+            
+            // Set the window style to a borderless window so the client area fills
+            // the entire screen.
+            UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
+            // Is this the same thing?
+            UINT sytleDiff = windowStyle & ~WS_POPUP;
+
+            ::SetWindowLongW(m_hWindow, GWL_STYLE, windowStyle);
+
+            // Get the settings for the primary display. These settings are used
+            // to determine the correct position and size to position the window
+            DEVMODE devMode = {};
+            devMode.dmSize = sizeof(DEVMODE);
+            ::EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode);
+
+            ::SetWindowPos(m_hWindow, HWND_TOPMOST,
+                devMode.dmPosition.x,
+                devMode.dmPosition.y,
+                devMode.dmPosition.x + devMode.dmPelsWidth,
+                devMode.dmPosition.y + devMode.dmPelsHeight,
+                SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+            ::ShowWindow(m_hWindow, SW_MAXIMIZE);
+        }
+        else
+        {
+            // Restore all the window decorators.
+            ::SetWindowLong(m_hWindow, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+            SetWindowPos(m_hWindow, HWND_NOTOPMOST,
+                m_WindowRect.left,
+                m_WindowRect.top,
+                m_WindowRect.right - m_WindowRect.left,
+                m_WindowRect.bottom - m_WindowRect.top,
+                SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+            ::ShowWindow(m_hWindow, SW_NORMAL);
+        }
+    }
+
+}
+
+void Window::ToggleFullscreen()
+{
+    SetFullscreen(!GetFullscreen());
 }
