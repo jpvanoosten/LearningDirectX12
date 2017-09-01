@@ -285,11 +285,19 @@ void Window::SetFullscreen(bool fullscreen)
 
             ::SetWindowLongW(m_hWindow, GWL_STYLE, windowStyle);
 
+            // Query the name of the nearest display device for the window.
+            // This is required to set the fullscreen dimensions of the window
+            // when using a multi-monitor setup.
+            HMONITOR hMonitor = ::MonitorFromWindow(m_hWindow, MONITOR_DEFAULTTONEAREST);
+            MONITORINFOEX monitorInfo = {};
+            monitorInfo.cbSize = sizeof(MONITORINFOEX);
+            ::GetMonitorInfo(hMonitor, &monitorInfo);
+
             // Get the settings for the primary display. These settings are used
             // to determine the correct position and size to position the window
             DEVMODE devMode = {};
             devMode.dmSize = sizeof(DEVMODE);
-            ::EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &devMode);
+            ::EnumDisplaySettings(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode);
 
             ::SetWindowPos(m_hWindow, HWND_TOPMOST,
                 devMode.dmPosition.x,
@@ -305,7 +313,7 @@ void Window::SetFullscreen(bool fullscreen)
             // Restore all the window decorators.
             ::SetWindowLong(m_hWindow, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 
-            SetWindowPos(m_hWindow, HWND_NOTOPMOST,
+            ::SetWindowPos(m_hWindow, HWND_NOTOPMOST,
                 m_WindowRect.left,
                 m_WindowRect.top,
                 m_WindowRect.right - m_WindowRect.left,
