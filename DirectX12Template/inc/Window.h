@@ -39,11 +39,14 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); // Defined in the Applicat
 class DX12TL_DLL Window : public Object
 {
 public:
-    Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen = false );
+    Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen = false, bool vsync = true );
     virtual ~Window();
 
     // Return the OS window handle.
     HWND GetWindowHandle() const { return m_hWindow; }
+
+    uint32_t GetWidth() const { return m_Width; }
+    uint32_t GetHeight() const { return m_Height; }
 
     // Show the window.
     void Show();
@@ -51,11 +54,19 @@ public:
     // Hide the window.
     void Hide();
 
+    const std::wstring& GetWindowTitle() const { return m_Name; }
     void SetWindowTitle(const std::wstring& windowTitle);
 
     void SetFullscreen(bool fullscreen);
     bool GetFullscreen() const { return m_Fullscreen;  }
     void ToggleFullscreen();
+
+    bool IsVsync() const { return m_VSync; }
+    void SetVSync(bool vsync);
+    void ToggleVSync();
+
+    // Present the contents of the swapchain backbuffers to the screen.
+    void Present();
 
     // Events on the window:
 
@@ -211,5 +222,7 @@ private:
 
     UINT m_CurrentBackBufferIndex;
 
+    bool m_IsMinimized;
     bool m_IsMouseInClientArea;
+    bool m_VSync;
 };

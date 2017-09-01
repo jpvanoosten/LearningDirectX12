@@ -34,6 +34,7 @@
 #include "Application.h"
 #include "Events.h"
 #include "Game.h"
+#include "HighResolutionTimer.h"
 #include "KeyCodes.h"
 #include "Object.h"
 #include "Window.h"

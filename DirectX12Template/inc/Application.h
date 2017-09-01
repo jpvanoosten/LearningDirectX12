@@ -31,6 +31,7 @@
 #pragma once
 
 #include "Object.h"
+#include "Events.h"
 
 // Undefine the CreateWindow macro so I can use a function with the same name in this class.
 #if defined(CreateWindow)
@@ -54,7 +55,7 @@ public:
     HINSTANCE GetInstanceHandle() const { return m_hInstance;  }
 
     // Run until the application quits.
-    virtual int Run( Game& game );
+    virtual int Run();
 
     // Close all windows and stop the application.
     virtual void Stop();
@@ -62,8 +63,11 @@ public:
     // Creates a window.
     // The application needs to keep track of windows to know how
     // to forward events to the appropriate window.
-    virtual std::shared_ptr<Window> CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, 
-                                                 bool fullscreen = false );
+    virtual std::shared_ptr<Window> CreateWindow(uint32_t width, uint32_t height, 
+        const std::wstring& name, 
+        bool fullscreen = false,
+        bool vsync = true
+    );
 
     // Retrieve the DirectX 12 device owned by the application.
     Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const { return m_Device;  }
@@ -91,8 +95,21 @@ public:
     // (Nvidia G-Sync or AMD FreeSync).
     bool AllowTearing() const { return m_bAllowTearing; }
 
-protected:
+    // Application events
+    
+    // Invoked when the application is initialized.
+    // This event is only invoked after the DX12 device has been created.
+    Event Init;
 
+    // Invoked when the game assets should be loaded.
+    Event LoadResources;
+
+    // Invoked to update the game logic.
+    UpdateEvent Update;
+    // Invoked to render the scene.
+    RenderEvent Render;
+
+protected:
     // Retrieve a list of DirectX12 adapters.
     virtual AdapterList GetAdapters(bool useWarp = false) const;
 
@@ -105,6 +122,12 @@ protected:
 
     // Check to see the if the display supports variable refresh rate.
     bool CheckTearingSupport();
+
+    virtual void OnInit(EventArgs& e);
+    virtual void OnLoadResources(EventArgs& e);
+    virtual void OnUpdate(UpdateEventArgs& e);
+    virtual void OnRender(RenderEventArgs& e);
+
 private:
 
     // Non copyable.

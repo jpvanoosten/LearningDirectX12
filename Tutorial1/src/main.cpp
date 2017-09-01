@@ -25,7 +25,7 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmd
 
     Game game(g_ClientWidth, g_ClientHeight, L"Tutorial1");
 
-    int ret = app.Run(game);
+    int ret = app.Run();
 
     // Free memory allocated by CommandLineToArgvW
     LocalFree(argv);

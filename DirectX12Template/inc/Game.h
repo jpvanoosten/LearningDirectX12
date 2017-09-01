@@ -37,26 +37,36 @@ class Window;
 class DX12TL_DLL Game
 {
 public:
-    Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle, bool fullscreen = false );
+    Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle, bool fullscreen = false, bool vsync = true );
     virtual ~Game();
 
-    uint32_t GetWindowWidth() const { return m_WindowWidth; }
-    uint32_t GetWindowHeight() const { return m_WindowHeight; }
+    uint32_t GetWindowWidth() const;
+    uint32_t GetWindowHeight() const;
 
-    const std::wstring& GetWindowTitle() const { return m_WindowTitle; }
+    const std::wstring& GetWindowTitle() const;
 
 protected:
+     // Called when starting the application the first time (just before the main
+     // update loop.
+    virtual void OnInit(EventArgs& e);
+    
+    // Called when assets should be loaded.
+    virtual void OnLoadResources(EventArgs& e);
+
+    // Called just before the main update loop.
+    virtual void OnStart(EventArgs& e);
+
+    // Invoked in the update loop.
+    virtual void OnUpdate(UpdateEventArgs& e);
+    // Invoked when the window should be redrawn.
+    virtual void OnRender(RenderEventArgs& e);
+
     virtual void OnKeyPressed(KeyEventArgs& e);
     virtual void OnKeyReleased(KeyEventArgs& e);
 
     virtual void OnWindowClose(WindowCloseEventArgs& e);
 private:
-    uint32_t m_WindowWidth;
-    uint32_t m_WindowHeight;
-    bool m_Fullscreen;
-    std::wstring m_WindowTitle;
 
     // The window used to render the demo.
     std::shared_ptr<Window> m_pWindow;
-    std::shared_ptr<Window> testWindow;
 };

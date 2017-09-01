@@ -7,6 +7,7 @@ set( HEADER_FILES
     inc/DirectX12TemplateDefines.h
     inc/Events.h
     inc/Game.h
+    inc/HighResolutionTimer.h
     inc/Helpers.h
     inc/KeyCodes.h
     inc/Object.h
@@ -16,6 +17,7 @@ set( HEADER_FILES
 set( SRC_FILES 
     src/Application.cpp
     src/Game.cpp
+    src/HighResolutionTimer.cpp
     src/Window.cpp
 )
 

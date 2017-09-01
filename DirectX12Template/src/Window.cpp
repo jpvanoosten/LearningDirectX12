@@ -14,14 +14,16 @@ constexpr auto WINDOW_CLASS_NAME = L"DX12WindowClass";
 // Forward declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); // Defined in the Application class.
 
-Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen )
-    : m_Width( width )
-    , m_Height( height )
-    , m_Fullscreen( false )
-    , m_Name( name )
+Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen, bool vsync )
+    : m_Width(width)
+    , m_Height(height)
+    , m_Fullscreen(false)
+    , m_Name(name)
     , m_FenceValues{}
-    , m_CurrentBackBufferIndex( 0 )
+    , m_CurrentBackBufferIndex(0)
+    , m_IsMinimized(false)
     , m_IsMouseInClientArea(false)
+    , m_VSync( vsync )
 {
     // Check to see if the monitor supports variable refresh rates.
     m_AllowTearing = Application::Get().AllowTearing();
@@ -218,6 +220,36 @@ void Window::UpdateSwapChainRenderTargetViews()
     }
 }
 
+void Window::SetVSync(bool vsync)
+{
+    m_VSync = vsync;
+}
+
+void Window::ToggleVSync()
+{
+    SetVSync(!IsVsync());
+}
+
+void Window::Present()
+{
+    if (!m_IsMinimized)
+    {
+        UINT syncInterval = m_VSync ? 1 : 0;
+        UINT presentFlags = m_AllowTearing && !m_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+        m_SwapChain->Present(syncInterval, presentFlags);
+
+        Application& app = Application::Get();
+
+        m_FenceValues[m_CurrentBackBufferIndex] = app.Signal(D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+        // Update the current back buffer index.
+        m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+
+        // Wait until the next frame is available for rendering.
+        app.WaitForFenceValue(m_FenceValues[m_CurrentBackBufferIndex]);
+    }
+}
+
 void Window::Show()
 {
     ::ShowWindow(m_hWindow, SW_SHOWDEFAULT);
@@ -346,7 +378,8 @@ void Window::OnMouseEnter(EventArgs& e)
 
 void Window::OnResize(ResizeEventArgs& e)
 {
-    if (e.Action != ResizeAction::Minimized)
+    m_IsMinimized = e.Action == ResizeAction::Minimized;
+    if ( !m_IsMinimized )
     {
         ResizeSwapChainBuffers(e.Width, e.Height);
     }

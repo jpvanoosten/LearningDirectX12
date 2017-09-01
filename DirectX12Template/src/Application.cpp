@@ -2,7 +2,9 @@
 
 #include <Application.h>
 #include <Events.h>
+#include <Game.h>
 #include <Helpers.h>
+#include <HighResolutionTimer.h>
 #include <Window.h>
 
 static Application* g_pApplication = nullptr;
@@ -76,9 +78,9 @@ Application& Application::Get()
     return *g_pApplication;
 }
 
-std::shared_ptr<Window> Application::CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen)
+std::shared_ptr<Window> Application::CreateWindow(uint32_t width, uint32_t height, const std::wstring& name, bool fullscreen, bool vsync )
 {
-    std::shared_ptr<Window> pWindow = std::make_shared<Window>(width, height, name, fullscreen);
+    std::shared_ptr<Window> pWindow = std::make_shared<Window>(width, height, name, fullscreen, vsync);
     assert(pWindow && "Failed to create window.");
 
     // Todo: Attach application events to the window.
@@ -248,14 +250,45 @@ bool Application::CheckTearingSupport()
     return allowTearing == TRUE;
 }
 
-int Application::Run( Game& game)
+void Application::OnInit(EventArgs& e)
 {
-    // TODO: Init game.
-    // TODO: Load game resources.
+    Init(e);
+}
+
+void Application::OnLoadResources(EventArgs& e)
+{
+    LoadResources(e);
+}
+
+void Application::OnUpdate(UpdateEventArgs& e)
+{
+    Update(e);
+}
+
+void Application::OnRender(RenderEventArgs& e)
+{
+    Render(e);
+}
+
+int Application::Run()
+{
+    HighResolutionTimer timer;
+    double totalElapsedTime = 0.0;
+    uint64_t frameCount = 0;
+
+    EventArgs initEventArgs(*this);
+    OnInit(initEventArgs);
+
+    EventArgs loadResourcesEventArgs(*this);
+    OnLoadResources(loadResourcesEventArgs);
 
     MSG msg = {};
     while ( msg.message != WM_QUIT)
     {
+        timer.Tick();
+        double elapsedTime = timer.ElapsedSeconds();
+        totalElapsedTime += elapsedTime;
+
         if (m_Quit)
         {
             ::PostQuitMessage(0);
@@ -267,6 +300,11 @@ int Application::Run( Game& game)
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
+
+        UpdateEventArgs updateEventArgs(*this, elapsedTime, totalElapsedTime, frameCount);
+        OnUpdate(updateEventArgs);
+        RenderEventArgs renderEventArgs(*this, elapsedTime, totalElapsedTime, frameCount);
+        OnRender(renderEventArgs);
     }
 
     return 0;
