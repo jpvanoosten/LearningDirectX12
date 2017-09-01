@@ -46,8 +46,10 @@ public:
     const std::wstring& GetWindowTitle() const { return m_WindowTitle; }
 
 protected:
-    virtual void OnWindowClose(WindowCloseEventArgs& e);
+    virtual void OnKeyPressed(KeyEventArgs& e);
+    virtual void OnKeyReleased(KeyEventArgs& e);
 
+    virtual void OnWindowClose(WindowCloseEventArgs& e);
 private:
     uint32_t m_WindowWidth;
     uint32_t m_WindowHeight;

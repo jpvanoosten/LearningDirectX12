@@ -59,8 +59,33 @@ public:
 
     // Events on the window:
 
+    // Window is being resized.
+    ResizeEvent         Resize;
+
+    // Keyboard events
+
+    // Key was pressed while window has focus.
+    KeyboardEvent       KeyPressed;
+    // Key was released while window has focus.
+    KeyboardEvent       KeyReleased;
+
+    // Mouse events
+
+    // Mouse moved over the window.
+    MouseMotionEvent    MouseMoved;
+    // Mouse button was pressed over the window.
+    MouseButtonEvent    MouseButtonPressed;
+    // Mouse button was released over the window.
+    MouseButtonEvent    MouseButtonReleased;
+    // Mouse wheel was scrolled.
+    MouseWheelEvent     MouseWheel;
+    // Mouse left the client area.
+    Event               MouseLeave;
+    // Mouse entered the client area.
+    Event               MouseEnter;
+
     // Event is invoked when the window is closed.
-    WindowCloseEvent Close;
+    WindowCloseEvent    Close;
 
 protected:
     // This is required to allow the WndProc function (defined in Application.cpp)
@@ -84,11 +109,64 @@ protected:
     virtual void CreateSwapChain();
 
     /**
+     * Resize the swap chain buffers. This is called when the window size 
+     * is changed and the swap chain buffers need to be resized to match the 
+     * window size.
+     */
+    virtual void ResizeSwapChainBuffers( uint32_t width, uint32_t height );
+
+    /**
      * Update the render target views for the back buffers of the swap chain.
      * This is done when the swap chain is created or if the swap chain is
      * resized.
      */
     virtual void UpdateSwapChainRenderTargetViews();
+
+    /**
+     * Invoked when a keyboard key is pressed while the window has focus.
+     */
+    virtual void OnKeyPressed(KeyEventArgs& e);
+    /**
+     * Invoked when a keyboard key is released while the window has focus.
+     */
+    virtual void OnKeyReleased(KeyEventArgs& e);
+
+    /**
+     * Invoked when the mouse moves over the window.
+     */
+    virtual void OnMouseMoved(MouseMotionEventArgs& e);
+
+    /**
+     * Invoked when a mouse button is pressed over the window.
+     */
+    virtual void OnMouseButtonPressed(MouseButtonEventArgs& e);
+
+    /**
+     * Invoked when a mouse button is released.
+     */
+    virtual void OnMouseButtonReleased(MouseButtonEventArgs& e);
+
+    /**
+     * Invoked when the mouse wheel is scrolled over the window.
+     */
+    virtual void OnMouseWheel(MouseWheelEventArgs& e);
+
+    /**
+     * Invoked when the mouse cursor leaves the client area.
+     */
+    virtual void OnMouseLeave(EventArgs& e);
+
+    /**
+     * Invoked when the mouse enters the client area.
+     * This event does not contain the position of the mouse when it entered.
+     * Use the OnMouseMoved event to retrieve the position of the mouse.
+     */
+    virtual void OnMouseEnter(EventArgs& e);
+
+    /**
+     * Invoked when the size of the window is changed.
+     */
+    virtual void OnResize(ResizeEventArgs& e);
 
     /**
      * Invoked when the window should be closed.
@@ -97,6 +175,11 @@ protected:
     virtual void OnClose(WindowCloseEventArgs& e);
 
 private:
+    // In order to receive an event when the mouse leaves the client area,
+    // we need to request to receive the WM_MOUSELEAVE event.
+    // This function setups up the request to track the mouse leave events.
+    void TrackMouseEvents();
+
     // Double-buffer swap chain buffers.
     static const uint8_t FrameCount = 2;
 
@@ -127,4 +210,6 @@ private:
     UINT64 m_FenceValues[FrameCount];
 
     UINT m_CurrentBackBufferIndex;
+
+    bool m_IsMouseInClientArea;
 };

@@ -32,13 +32,21 @@
 #pragma once
 
 #include "DirectX12TemplateDefines.h"
-#include <boost/noncopyable.hpp>
 
-// the noncopyable class prevents compilers from automatically
-// generating copy constructors and assignment operates
-// unless the derived class explicitly states that it should be created.
-class DX12TL_DLL Object : public boost::noncopyable
+/**
+ * Objects should not be copied or assigned unless explicitly allowed by defining
+ * the appropriate functions in the derived class.
+ */
+class DX12TL_DLL Object
 {
 public:
+    Object(const Object&) = delete;
+    Object(Object&&) = delete;
 
+protected:
+    Object() = default;
+    virtual ~Object() = default;
+
+    Object& operator=(const Object&) = default;
+    Object& operator=(Object&&) = default;
 };

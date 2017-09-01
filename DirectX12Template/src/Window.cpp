@@ -21,6 +21,7 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
     , m_Name( name )
     , m_FenceValues{}
     , m_CurrentBackBufferIndex( 0 )
+    , m_IsMouseInClientArea(false)
 {
     // Check to see if the monitor supports variable refresh rates.
     m_AllowTearing = Application::Get().AllowTearing();
@@ -164,6 +165,44 @@ void Window::CreateSwapChain()
     UpdateSwapChainRenderTargetViews();
 }
 
+
+void Window::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
+{
+    if (m_Width != width || m_Height != height)
+    {
+        m_Width = width;
+        m_Height = height;
+
+        // Stall the CPU until the GPU is finished with any queued render
+        // commands. This is required before we can resize the swap chain buffers.
+        Application::Get().WaitForGPU();
+
+        // Before the buffers can be resized, all references to those buffers
+        // need to be released.
+        for (int i = 0; i < FrameCount; ++i)
+        {
+            m_BackBuffers[i].Reset();
+            m_FenceValues[i] = m_FenceValues[m_CurrentBackBufferIndex];
+        }
+
+        DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+        ThrowIfFailed(m_SwapChain->GetDesc(&swapChainDesc));
+        ThrowIfFailed(m_SwapChain->ResizeBuffers(FrameCount,
+            m_Width, m_Height,
+            swapChainDesc.BufferDesc.Format,
+            swapChainDesc.Flags));
+
+        //BOOL fullscreenState;
+        //m_SwapChain->GetFullscreenState(&fullscreenState, nullptr);
+        //m_Fullscreen = fullscreenState == TRUE;
+
+        m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+
+        UpdateSwapChainRenderTargetViews();
+    }
+}
+
+
 void Window::UpdateSwapChainRenderTargetViews()
 {
     auto device = Application::Get().GetDevice();
@@ -252,7 +291,79 @@ void Window::ToggleFullscreen()
     SetFullscreen(!GetFullscreen());
 }
 
+void Window::OnKeyPressed(KeyEventArgs& e)
+{
+    KeyPressed(e);
+}
+
+void Window::OnKeyReleased(KeyEventArgs& e)
+{
+    KeyReleased(e);
+}
+
+void Window::OnMouseMoved(MouseMotionEventArgs& e)
+{
+    if (!m_IsMouseInClientArea)
+    {
+        m_IsMouseInClientArea = true;
+        EventArgs eventArgs(*this);
+        OnMouseEnter(eventArgs);
+    }
+
+    // TODO: Compute relative movement since previous position.
+    
+    MouseMoved(e);
+}
+
+void Window::OnMouseButtonPressed(MouseButtonEventArgs& e)
+{
+    MouseButtonPressed(e);
+}
+
+void Window::OnMouseButtonReleased(MouseButtonEventArgs& e)
+{
+    MouseButtonReleased(e);
+}
+
+void Window::OnMouseWheel(MouseWheelEventArgs& e)
+{
+    MouseWheel(e);
+}
+
+void Window::OnMouseLeave(EventArgs& e)
+{
+    m_IsMouseInClientArea = false;
+
+    TrackMouseEvents();
+
+    MouseLeave(e);
+}
+
+void Window::OnMouseEnter(EventArgs& e)
+{
+    MouseEnter(e);
+}
+
+void Window::OnResize(ResizeEventArgs& e)
+{
+    if (e.Action != ResizeAction::Minimized)
+    {
+        ResizeSwapChainBuffers(e.Width, e.Height);
+    }
+
+    Resize(e);
+}
+
 void Window::OnClose(WindowCloseEventArgs& e)
 {
     Close(e);
+}
+
+void Window::TrackMouseEvents()
+{
+    TRACKMOUSEEVENT trackMouseEvent = {};
+    trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+    trackMouseEvent.hwndTrack = m_hWindow;
+    trackMouseEvent.dwFlags = TME_LEAVE;
+    ::TrackMouseEvent(&trackMouseEvent);
 }

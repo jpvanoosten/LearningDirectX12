@@ -174,8 +174,8 @@ public:
 
     int X;              // The X-position of the cursor relative to the upper-left corner of the client area.
     int Y;              // The Y-position of the cursor relative to the upper-left corner of the client area.
-    int RelX;			// How far the mouse moved since the last event.
-    int RelY;			// How far the mouse moved since the last event.
+    int RelX;           // How far the mouse moved since the last event.
+    int RelY;           // How far the mouse moved since the last event.
 
 };
 DX12TL_EXTERN template class DX12TL_DLL Delegate<MouseMotionEventArgs&>;
@@ -375,21 +375,32 @@ public:
 DX12TL_EXTERN template class DX12TL_DLL Delegate<JoystickAxisEventArgs&>;
 using JoystickAxisEvent = Delegate<JoystickAxisEventArgs&>;
 
+// The type of action that cause the resize event
+enum class ResizeAction
+{
+    Resized,    // The window size is changed by dragging the window frame.
+    Minimized,  // The window is being minimized.
+    Maximized,  // The window is being maximized.
+};
+
 class ResizeEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
 
-    ResizeEventArgs(const Object& caller, int width, int height)
+    ResizeEventArgs(const Object& caller, int width, int height, ResizeAction action )
         : base(caller)
         , Width(width)
         , Height(height)
+        , Action(action)
     {}
 
     // The new width of the window
     int Width;
     // The new height of the window.
     int Height;
+    // The action that triggered the resize event.
+    ResizeAction Action;
 
 };
 DX12TL_EXTERN template class DX12TL_DLL Delegate<ResizeEventArgs&>;

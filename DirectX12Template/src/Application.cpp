@@ -340,6 +340,82 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hwnd, &paintStruct);
         }
         break;
+        case WM_SIZE:
+        {
+            RECT clientRect = {};
+            ::GetClientRect(hwnd, &clientRect);
+
+            ResizeAction resizeAction = ResizeAction::Resized;
+            switch (wParam)
+            {
+            case SIZE_MAXIMIZED:
+                resizeAction = ResizeAction::Maximized;
+                break;
+            case SIZE_MINIMIZED:
+                resizeAction = ResizeAction::Minimized;
+                break;
+            }
+
+            ResizeEventArgs resizeEventArgs(*pWindow,
+                clientRect.right - clientRect.left,
+                clientRect.bottom - clientRect.top,
+                resizeAction);
+
+            pWindow->OnResize(resizeEventArgs);
+        }
+        break;
+        case WM_SYSKEYDOWN:
+        case WM_KEYDOWN:
+        {
+            MSG charMsg;
+
+            // Get the Unicode character (UTF-16)
+            unsigned int c = 0;
+            // For printable characters, the next message will be WM_CHAR.
+            // This message contains the character code we need to send the KeyPressed event.
+            // Inspired by the SDL 1.2 implementation.
+            if (::PeekMessage(&charMsg, hwnd, 0, 0, PM_NOREMOVE) && charMsg.message == WM_CHAR)
+            {
+                ::GetMessage(&charMsg, hwnd, 0, 0);
+                c = static_cast<unsigned int>(charMsg.wParam);
+            }
+
+            bool shift = (::GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+            bool control = (::GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+            bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+            KeyCode key = (KeyCode)wParam;
+            unsigned int scanCode = (lParam & 0x00FF0000) >> 16;
+            KeyEventArgs keyEventArgs(*pWindow, key, c, KeyState::Pressed, control, shift, alt);
+            pWindow->OnKeyPressed(keyEventArgs);
+        }
+        break;
+        case WM_SYSKEYUP:
+        case WM_KEYUP:
+        {
+            bool shift = (::GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+            bool control = (::GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+            bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+            KeyCode key = (KeyCode)wParam;
+            unsigned int c = 0;
+            unsigned int scanCode = (lParam & 0x00FF0000) >> 16;
+
+            // Determine which key was released by converting the key code and the scan code
+            // to a printable character (if possible).
+            // Inspired by the SDL 1.2 implementation.
+            unsigned char keyboardState[256];
+            ::GetKeyboardState(keyboardState);
+            wchar_t translatedCharacters[4];
+            if (int result = ::ToUnicodeEx((UINT)wParam, scanCode, keyboardState, translatedCharacters, 4, 0, NULL) > 0)
+            {
+                c = translatedCharacters[0];
+            }
+
+            KeyEventArgs keyEventArgs(*pWindow, key, c, KeyState::Released, control, shift, alt);
+            pWindow->OnKeyReleased(keyEventArgs);
+        }
+        break;
         case WM_CLOSE:
         {
             WindowCloseEventArgs windowCloseEventArgs(*pWindow);
