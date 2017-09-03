@@ -43,6 +43,7 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
 
     CreateWindow();
     CreateSwapChain();
+    CreateCommandLists();
 
     SetFullscreen(fullscreen);
 }
@@ -115,6 +116,19 @@ void Window::CreateWindow()
     ::GetWindowRect(m_hWindow, &m_WindowRect);
 
     ::SetWindowTextW(m_hWindow, m_Name.c_str());
+}
+
+void Window::CreateCommandLists()
+{
+    auto device = Application::Get().GetDevice();
+
+    for (int i = 0; i < FrameCount; ++i)
+    {
+        ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocators[i])));
+    }
+
+    ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocators[m_CurrentBackBufferIndex].Get(), nullptr, IID_PPV_ARGS(&m_CommandList)));
+    ThrowIfFailed(m_CommandList->Close());
 }
 
 void Window::CreateSwapChain()
@@ -230,15 +244,40 @@ void Window::ToggleVSync()
     SetVSync(!IsVsync());
 }
 
+void Window::Clear(float red, float green, float blue, float alpha)
+{
+    FLOAT ColorRGBA[] = { red, green, blue, alpha };
+
+    m_CommandAllocators[m_CurrentBackBufferIndex]->Reset();
+    m_CommandList->Reset(m_CommandAllocators[m_CurrentBackBufferIndex].Get(), nullptr);
+
+    // Transition back buffer to Render target. This is required to clear the back buffer.
+    m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_BackBuffers[m_CurrentBackBufferIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_CurrentBackBufferIndex, m_RTVDescriptorSize);
+    m_CommandList->ClearRenderTargetView(rtvHandle, ColorRGBA, 0, nullptr);
+}
+
 void Window::Present()
 {
     if (!m_IsMinimized)
     {
+        Application& app = Application::Get();
+
+        // Transition back buffer to the present state. This is required before the back buffer can be presented.
+        m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_BackBuffers[m_CurrentBackBufferIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT ));
+
+        m_CommandList->Close();
+
+        ID3D12CommandList* const ppCommandLists[] =
+        {
+            m_CommandList.Get()
+        };
+        app.GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->ExecuteCommandLists(1, ppCommandLists);
+
         UINT syncInterval = m_VSync ? 1 : 0;
         UINT presentFlags = m_AllowTearing && !m_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
         m_SwapChain->Present(syncInterval, presentFlags);
-
-        Application& app = Application::Get();
 
         m_FenceValues[m_CurrentBackBufferIndex] = app.Signal(D3D12_COMMAND_LIST_TYPE_DIRECT);
 

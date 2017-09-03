@@ -71,10 +71,14 @@ target_link_libraries( DirectX12Template
 )
 
 # Enable precompiled headers for faster compiliation.
-set_source_files_properties( ${SRC_FILES}
-    PROPERTIES
-        COMPILE_FLAGS /Yu"DirectX12TemplatePCH.h"
+target_compile_options( DirectX12Template
+    PRIVATE "/YuDirectX12TemplatePCH.h"
 )
+
+# set_source_files_properties( ${SRC_FILES}
+#    PROPERTIES
+#        COMPILE_FLAGS /Yu"DirectX12TemplatePCH.h"
+#)
 
 set_source_files_properties( ${PCH_SRC_FILE}
     PROPERTIES

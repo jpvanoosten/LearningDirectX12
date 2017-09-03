@@ -359,8 +359,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             pWindow = iter->second.lock();
             // If the weak pointer is null, just remove the window from the list
-            // of known windows. This happens if the last shared_ptr to the window
-            // has been released and the OS window is being destroyed.
+            // of known windows. This happens if the the OS window is being destroyed.
             if (!pWindow) gs_WindowHandles.erase(iter);
         }
     }
@@ -465,16 +464,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // Destroying the window would require the window to be 
                 // recreated if we wanted to show it again.
                 pWindow->Hide();
-            }
-        }
-        break;
-        case WM_DESTROY:
-        {
-            WindowHandleMap::iterator iter = gs_WindowHandles.find(hwnd);
-            if (iter != gs_WindowHandles.end())
-            {
-                // Window is being destroyed. Stop tracking it.
-                gs_WindowHandles.erase(iter);
             }
         }
         break;

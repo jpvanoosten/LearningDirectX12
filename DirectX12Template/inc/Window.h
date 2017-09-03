@@ -65,6 +65,9 @@ public:
     void SetVSync(bool vsync);
     void ToggleVSync();
 
+    // Clear the contents of the window's back buffer
+    void Clear(float red = 0.0f, float green = 0.0f, float blue = 0.0f, float alpha = 0.0f);
+
     // Present the contents of the swapchain backbuffers to the screen.
     void Present();
 
@@ -118,6 +121,11 @@ protected:
      * Create the swap chain for the window.
      */
     virtual void CreateSwapChain();
+
+    /**
+     * Create command list and command allocators.
+     */
+    virtual void CreateCommandLists();
 
     /**
      * Resize the swap chain buffers. This is called when the window size 
@@ -216,6 +224,11 @@ private:
     // back buffers of the swap chain.
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
     UINT m_RTVDescriptorSize;
+
+    // Command list for clearing / presenting.
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+    // One command allocator per frame.
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocators[FrameCount];
 
     // Fence values used to synchronize buffer flipping.
     UINT64 m_FenceValues[FrameCount];

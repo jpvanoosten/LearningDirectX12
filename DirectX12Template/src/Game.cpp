@@ -28,7 +28,11 @@ Game::Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle
 }
 
 Game::~Game()
-{}
+{
+    // Wait for all commands on the GPU to finish before we release
+    // any GPU resources.
+    Application::Get().WaitForGPU();
+}
 
 
 uint32_t Game::GetWindowWidth() const
@@ -70,6 +74,9 @@ void Game::OnUpdate(UpdateEventArgs& e)
 
 void Game::OnRender(RenderEventArgs& e)
 {
+    // Clear the screen to approximately "Cornflower blue".
+    m_pWindow->Clear(0.4f, 0.58f, 0.93f);
+
     // TODO: Render stuff.
     m_pWindow->Present();
 }
