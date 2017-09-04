@@ -1,11 +1,12 @@
 cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES
-
+    inc/Tutorial1.h
 )
 
 set( SRC_FILES
     src/main.cpp
+    src/Tutorial1.cpp
 )
 
 set( PCH_HEADER_FILE

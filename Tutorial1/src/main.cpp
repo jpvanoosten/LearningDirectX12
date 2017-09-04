@@ -1,6 +1,8 @@
 #include <Tutorial1PCH.h>
 #include <DirectX12Tutorial.h>
 
+#include <Tutorial1.h>
+
 static uint32_t g_ClientWidth = 1280;
 static uint32_t g_ClientHeight = 720;
 
@@ -23,7 +25,7 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmd
         }
     }
 
-    Game game(g_ClientWidth, g_ClientHeight, L"Tutorial1");
+    Tutorial1 game(g_ClientWidth, g_ClientHeight, L"Tutorial1");
 
     int ret = app.Run();
 

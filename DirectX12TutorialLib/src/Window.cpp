@@ -50,6 +50,10 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
 
 Window::~Window()
 {
+    // Wait for all commands on the GPU to finish before we release
+    // any GPU resources.
+    Application::Get().WaitForGPU();
+
     ::DestroyWindow(m_hWindow);
 }
 

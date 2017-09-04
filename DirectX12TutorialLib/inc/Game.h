@@ -37,36 +37,30 @@ class Window;
 class DX12TL_DLL Game
 {
 public:
-    Game(uint32_t windowWidth, uint32_t windowHeight, std::wstring windowTitle, bool fullscreen = false, bool vsync = true );
-    virtual ~Game();
-
-    uint32_t GetWindowWidth() const;
-    uint32_t GetWindowHeight() const;
-
-    const std::wstring& GetWindowTitle() const;
+    // This is a pure virtual class. It is not intended to be instantiated directly.
 
 protected:
-     // Called when starting the application the first time (just before the main
+    Game() = default;
+    virtual ~Game() {}
+    
+    // Called when starting the application the first time (just before the main
      // update loop.
-    virtual void OnInit(EventArgs& e);
+    virtual void OnInit(EventArgs& e) = 0;
     
     // Called when assets should be loaded.
-    virtual void OnLoadResources(EventArgs& e);
+    virtual void OnLoadResources(EventArgs& e) = 0;
 
     // Called just before the main update loop.
-    virtual void OnStart(EventArgs& e);
+    virtual void OnStart(EventArgs& e) = 0;
 
     // Invoked in the update loop.
-    virtual void OnUpdate(UpdateEventArgs& e);
+    virtual void OnUpdate(UpdateEventArgs& e) = 0;
     // Invoked when the window should be redrawn.
-    virtual void OnRender(RenderEventArgs& e);
+    virtual void OnRender(RenderEventArgs& e) = 0;
 
-    virtual void OnKeyPressed(KeyEventArgs& e);
-    virtual void OnKeyReleased(KeyEventArgs& e);
+    virtual void OnKeyPressed(KeyEventArgs& e) = 0;
+    virtual void OnKeyReleased(KeyEventArgs& e) = 0;
 
-    virtual void OnWindowClose(WindowCloseEventArgs& e);
-private:
+    virtual void OnWindowClose(WindowCloseEventArgs& e) = 0;
 
-    // The window used to render the demo.
-    std::shared_ptr<Window> m_pWindow;
 };
