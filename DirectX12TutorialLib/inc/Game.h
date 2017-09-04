@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "DirectX12TemplateDefines.h"
+#include "DirectX12TutorialDefines.h"
 
 class Window;
 

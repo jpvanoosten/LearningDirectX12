@@ -30,7 +30,7 @@
   *  @brief Simple event library that wraps the boost::signals2 library.
   */
 
-#include "DirectX12TemplateDefines.h"
+#include "DirectX12TutorialDefines.h"
 #include "KeyCodes.h"
 
 #include <boost/signals2.hpp>

@@ -21,32 +21,20 @@
  */
 
 /**
- *  @file Object.h
- *  @date September 1, 2017
+ *  @file DirectX12Template.h
+ *  @date August 25, 2017
  *  @author Jeremiah van Oosten
  *
- *  @brief Base class for all library objects. This class provides an interface
- *  that can be used with the event library.
+ *  @brief Include this header file in any project that links against the 
+ *  DirectXTemplate library.
  */
 
-#pragma once
+#include "DirectX12TutorialDefines.h"
 
-#include "DirectX12TemplateDefines.h"
-
-/**
- * Objects should not be copied or assigned unless explicitly allowed by defining
- * the appropriate functions in the derived class.
- */
-class DX12TL_DLL Object
-{
-public:
-    Object(const Object&) = delete;
-    Object(Object&&) = delete;
-
-protected:
-    Object() = default;
-    virtual ~Object() = default;
-
-    Object& operator=(const Object&) = default;
-    Object& operator=(Object&&) = default;
-};
+#include "Application.h"
+#include "Events.h"
+#include "Game.h"
+#include "HighResolutionTimer.h"
+#include "KeyCodes.h"
+#include "Object.h"
+#include "Window.h"

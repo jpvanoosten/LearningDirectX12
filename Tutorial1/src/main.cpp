@@ -1,5 +1,5 @@
 #include <Tutorial1PCH.h>
-#include <DirectX12Template.h>
+#include <DirectX12Tutorial.h>
 
 static uint32_t g_ClientWidth = 1280;
 static uint32_t g_ClientHeight = 720;

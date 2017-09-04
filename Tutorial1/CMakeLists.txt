@@ -28,16 +28,21 @@ target_include_directories( Tutorial1
 )
 
 target_link_libraries( Tutorial1
-    PRIVATE DirectX12Template
+    PRIVATE DirectX12TutorialLib
 )
 
 # Enable precompiled headers for faster compiliation.
-set_source_files_properties( ${SRC_FILES}
-    PROPERTIES
-        COMPILE_FLAGS /Yu"Tutorial1PCH.h"
+target_compile_options( Tutorial1
+    PRIVATE "/YuTutorial1PCH.h"
 )
+
+# Enable precompiled headers for faster compiliation.
+#set_source_files_properties( ${SRC_FILES}
+#    PROPERTIES
+#        COMPILE_FLAGS "/YuTutorial1PCH.h"
+#)
 
 set_source_files_properties( ${PCH_SRC_FILE}
     PROPERTIES
-        COMPILE_FLAGS /Yc"Tutorial1PCH.h"
+        COMPILE_FLAGS "/YcTutorial1PCH.h"
 )
