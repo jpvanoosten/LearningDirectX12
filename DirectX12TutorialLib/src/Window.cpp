@@ -2,7 +2,6 @@
 
 #include <Application.h>
 #include <Helpers.h>
-
 #include <Window.h>
 
 // Import namespaces.
@@ -21,6 +20,8 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
     , m_Name(name)
     , m_FenceValues{}
     , m_CurrentBackBufferIndex(0)
+    , m_TotalTime(0.0)
+    , m_FrameCounter(0)
     , m_IsMinimized(false)
     , m_IsMouseInClientArea(false)
     , m_VSync( vsync )
@@ -33,7 +34,7 @@ Window::Window(uint32_t width, uint32_t height, const std::wstring& name, bool f
     auto device = Application::Get().GetDevice();
 
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-    rtvHeapDesc.NumDescriptors = FrameCount;
+    rtvHeapDesc.NumDescriptors = BufferCount;
     rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVDescriptorHeap)));
@@ -113,7 +114,7 @@ void Window::CreateWindow()
         NULL,
         NULL,
         hInstance,
-        NULL
+        this        // Pass a pointer to this window to the Create function.
     );
 
     assert(m_hWindow && "Failed to create window");
@@ -127,7 +128,7 @@ void Window::CreateCommandLists()
 {
     auto device = Application::Get().GetDevice();
 
-    for (int i = 0; i < FrameCount; ++i)
+    for (int i = 0; i < BufferCount; ++i)
     {
         ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocators[i])));
     }
@@ -159,7 +160,7 @@ void Window::CreateSwapChain()
     swapChainDesc.Stereo = FALSE;
     swapChainDesc.SampleDesc = { 1, 0 };
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = FrameCount;
+    swapChainDesc.BufferCount = BufferCount;
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -200,7 +201,7 @@ void Window::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
 
         // Before the buffers can be resized, all references to those buffers
         // need to be released.
-        for (int i = 0; i < FrameCount; ++i)
+        for (int i = 0; i < BufferCount; ++i)
         {
             m_BackBuffers[i].Reset();
             m_FenceValues[i] = m_FenceValues[m_CurrentBackBufferIndex];
@@ -208,7 +209,7 @@ void Window::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
         ThrowIfFailed(m_SwapChain->GetDesc(&swapChainDesc));
-        ThrowIfFailed(m_SwapChain->ResizeBuffers(FrameCount,
+        ThrowIfFailed(m_SwapChain->ResizeBuffers(BufferCount,
             m_Width, m_Height,
             swapChainDesc.BufferDesc.Format,
             swapChainDesc.Flags));
@@ -231,7 +232,7 @@ void Window::UpdateSwapChainRenderTargetViews()
     // Get a handle to the first descriptor in the heap.
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-    for (int i = 0; i < FrameCount; ++i)
+    for (int i = 0; i < BufferCount; ++i)
     {
         ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_BackBuffers[i])));
         device->CreateRenderTargetView(m_BackBuffers[i].Get(), nullptr, rtvHandle);
@@ -373,6 +374,29 @@ void Window::SetFullscreen(bool fullscreen)
 void Window::ToggleFullscreen()
 {
     SetFullscreen(!GetFullscreen());
+}
+
+void Window::OnUpdate(UpdateEventArgs& e)
+{
+    // Should only be ticked once per frame.
+    m_Timer.Tick();
+
+    e.ElapsedTime = m_Timer.ElapsedSeconds();
+    m_TotalTime += m_Timer.ElapsedSeconds();
+    e.TotalTime = m_TotalTime;
+    // First frame is frame 1.
+    e.FrameCounter = ++m_FrameCounter;
+
+    Update(e);
+}
+
+void Window::OnRender(RenderEventArgs& e)
+{
+    e.ElapsedTime = m_Timer.ElapsedSeconds();
+    e.TotalTime = m_TotalTime;
+    e.FrameCounter = m_FrameCounter;
+
+    Render(e);
 }
 
 void Window::OnKeyPressed(KeyEventArgs& e)

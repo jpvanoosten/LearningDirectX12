@@ -56,7 +56,7 @@ endif()
 
 target_include_directories( DirectX12TutorialLib
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    PUBLIC ${CMAKE_SOURCE_DIR}/externals/boost-1.65.0
+    PUBLIC ${CMAKE_SOURCE_DIR}/externals/boost-1.65.1
 )
 
 target_compile_definitions( DirectX12TutorialLib 

@@ -6,14 +6,11 @@ Tutorial1::Tutorial1(uint32_t windowWidth, uint32_t windowHeight, std::wstring w
     // Connect application events:
     Application& app = Application::Get();
 
-    app.Init += boost::bind(&Tutorial1::OnInit, this, _1);
-    app.LoadResources += boost::bind(&Tutorial1::OnLoadResources, this, _1);
-    app.Update += boost::bind(&Tutorial1::OnUpdate, this, _1);
-    app.Render += boost::bind(&Tutorial1::OnRender, this, _1);
-
     m_pWindow = app.CreateWindow(windowWidth, windowHeight, windowTitle, fullscreen, vsync);
 
     // Connect window events:
+    m_pWindow->Update += boost::bind(&Tutorial1::OnUpdate, this, _1);
+    m_pWindow->Render += boost::bind(&Tutorial1::OnRender, this, _1);
     m_pWindow->KeyPressed += boost::bind(&Tutorial1::OnKeyPressed, this, _1);
     m_pWindow->KeyReleased += boost::bind(&Tutorial1::OnKeyReleased, this, _1);
 
@@ -46,13 +43,15 @@ void Tutorial1::OnUpdate(UpdateEventArgs& e)
 
 void Tutorial1::OnRender(RenderEventArgs& e)
 {
-    // Clear the screen to approximately "Cornflower blue".
-    m_pWindow->Clear(0.4f, 0.58f, 0.93f);
+    Window& window = dynamic_cast<Window&>(e.Caller);
+
+    // Clear the window contents to "Cornflower blue".
+    window.Clear(0.4f, 0.58f, 0.93f);
 
     // TODO: Render stuff.
 
     // Present the window to display the contents.
-    m_pWindow->Present();
+    window.Present();
 }
 
 void Tutorial1::OnKeyPressed(KeyEventArgs& e)

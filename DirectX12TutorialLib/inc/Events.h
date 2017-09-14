@@ -91,12 +91,12 @@ private:
 class EventArgs
 {
 public:
-    EventArgs(const Object& caller)
+    EventArgs(Object& caller)
         : Caller(caller)
     {}
 
     // The object that invoked the event
-    const Object& Caller;
+    Object& Caller;
 };
 DX12TL_EXTERN template class DX12TL_DLL Delegate<EventArgs&>;
 using Event = Delegate<EventArgs&>;
@@ -105,7 +105,7 @@ class WindowCloseEventArgs : EventArgs
 {
 public:
     using base = EventArgs;
-    WindowCloseEventArgs(const Object& caller)
+    WindowCloseEventArgs(Object& caller)
         : base(caller)
         , ConfirmClose(true)
     {}
@@ -131,7 +131,7 @@ class KeyEventArgs : public EventArgs
 public:
 
     using base = EventArgs;
-    KeyEventArgs(const Object& caller, KeyCode key, unsigned int c, KeyState state, bool control, bool shift, bool alt)
+    KeyEventArgs(Object& caller, KeyCode key, unsigned int c, KeyState state, bool control, bool shift, bool alt)
         : base(caller)
         , Key(key)
         , Char(c)
@@ -155,7 +155,7 @@ class MouseMotionEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
-    MouseMotionEventArgs(const Object& caller, bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y)
+    MouseMotionEventArgs(Object& caller, bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y)
         : base(caller)
         , LeftButton(leftButton)
         , MiddleButton(middleButton)
@@ -200,7 +200,7 @@ class MouseButtonEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    MouseButtonEventArgs(const Object& caller, MouseButton buttonID, ButtonState state, bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y)
+    MouseButtonEventArgs(Object& caller, MouseButton buttonID, ButtonState state, bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y)
         : base(caller)
         , Button(buttonID)
         , State(state)
@@ -232,7 +232,7 @@ class MouseWheelEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    MouseWheelEventArgs(const Object& caller, float wheelDelta, bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y)
+    MouseWheelEventArgs(Object& caller, float wheelDelta, bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y)
         : base(caller)
         , WheelDelta(wheelDelta)
         , LeftButton(leftButton)
@@ -263,7 +263,7 @@ class JoystickButtonEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    JoystickButtonEventArgs(const Object& caller, unsigned int joystickID, ButtonState state, unsigned int buttonID, bool buttonStates[32])
+    JoystickButtonEventArgs(Object& caller, unsigned int joystickID, ButtonState state, unsigned int buttonID, bool buttonStates[32])
         : base(caller)
         , JoystickID(joystickID)
         , State(state)
@@ -305,7 +305,7 @@ class JoystickPOVEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    JoystickPOVEventArgs(const Object& caller, unsigned int joystickID, float povAngle, POVDirection povDirection, bool buttonStates[32])
+    JoystickPOVEventArgs(Object& caller, unsigned int joystickID, float povAngle, POVDirection povDirection, bool buttonStates[32])
         : base(caller)
         , JoystickID(joystickID)
         , Angle(povAngle)
@@ -388,7 +388,7 @@ class ResizeEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    ResizeEventArgs(const Object& caller, int width, int height, ResizeAction action )
+    ResizeEventArgs(Object& caller, int width, int height, ResizeAction action )
         : base(caller)
         , Width(width)
         , Height(height)
@@ -410,7 +410,7 @@ class UpdateEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
-    UpdateEventArgs(const Object& caller, double fDeltaTime, double fTotalTime, uint64_t frameCounter)
+    UpdateEventArgs(Object& caller, double fDeltaTime, double fTotalTime, uint64_t frameCounter)
         : base(caller)
         , ElapsedTime(fDeltaTime)
         , TotalTime(fTotalTime)
@@ -429,7 +429,7 @@ class RenderEventArgs : public EventArgs
 public:
     using base = EventArgs;
     RenderEventArgs(
-        const Object& caller, 
+        Object& caller, 
         double fDeltaTime, 
         double fTotalTime,
         uint64_t frameCounter)
@@ -457,7 +457,7 @@ class UserEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
-    UserEventArgs(const Object& caller, int code, void* data1, void* data2)
+    UserEventArgs(Object& caller, int code, void* data1, void* data2)
         : base(caller)
         , Code(code)
         , Data1(data1)
@@ -476,7 +476,7 @@ class RuntimeErrorEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    RuntimeErrorEventArgs(const Object& caller, const std::string& errorString, const std::string& compilerError)
+    RuntimeErrorEventArgs(Object& caller, const std::string& errorString, const std::string& compilerError)
         : base(caller)
         , ErrorString(errorString)
         , CompilerError(compilerError)
@@ -493,7 +493,7 @@ class ProgressEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    ProgressEventArgs(const Object& caller, const std::wstring& fileName, float progress, bool cancel = false)
+    ProgressEventArgs(Object& caller, const std::wstring& fileName, float progress, bool cancel = false)
         : base(caller)
         , FileName(fileName)
         , Progress(progress)
@@ -525,7 +525,7 @@ class FileChangeEventArgs : EventArgs
 public:
     using base = EventArgs;
 
-    FileChangeEventArgs(const Object& caller, FileAction action, const std::wstring& path)
+    FileChangeEventArgs(Object& caller, FileAction action, const std::wstring& path)
         : base(caller)
         , Action(action)
         , Path(path)

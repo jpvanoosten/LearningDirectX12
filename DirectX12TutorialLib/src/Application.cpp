@@ -251,69 +251,28 @@ bool Application::CheckTearingSupport()
     return allowTearing == TRUE;
 }
 
-void Application::OnInit(EventArgs& e)
-{
-    Init(e);
-}
-
-void Application::OnLoadResources(EventArgs& e)
-{
-    LoadResources(e);
-}
-
-void Application::OnUpdate(UpdateEventArgs& e)
-{
-    Update(e);
-}
-
-void Application::OnRender(RenderEventArgs& e)
-{
-    Render(e);
-}
-
 int Application::Run()
 {
     HighResolutionTimer timer;
     double totalElapsedTime = 0.0;
     uint64_t frameCount = 0;
 
-    EventArgs initEventArgs(*this);
-    OnInit(initEventArgs);
-
-    EventArgs loadResourcesEventArgs(*this);
-    OnLoadResources(loadResourcesEventArgs);
-
     MSG msg = {};
     while ( msg.message != WM_QUIT)
     {
-        timer.Tick();
-        double elapsedTime = timer.ElapsedSeconds();
-        totalElapsedTime += elapsedTime;
-
-        if (m_Quit)
-        {
-            ::PostQuitMessage(0);
-            m_Quit = false;
-        }
-
-        while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-
-        UpdateEventArgs updateEventArgs(*this, elapsedTime, totalElapsedTime, frameCount);
-        OnUpdate(updateEventArgs);
-        RenderEventArgs renderEventArgs(*this, elapsedTime, totalElapsedTime, frameCount);
-        OnRender(renderEventArgs);
     }
 
-    return 0;
+    return static_cast<int>(msg.wParam);
 }
 
 void Application::Stop()
 {
-    m_Quit = true;
+    ::PostQuitMessage(0);
 }
 
 UINT64 Application::Signal(D3D12_COMMAND_LIST_TYPE type)
@@ -371,11 +330,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
         case WM_PAINT:
         {
-            PAINTSTRUCT paintStruct;
-            HDC hDC;
-
-            hDC = BeginPaint(hwnd, &paintStruct);
-            EndPaint(hwnd, &paintStruct);
+            // The elapsed time, total time, and frame count parameters
+            // are set by the window before invoking the actual events.
+            UpdateEventArgs updateEventArgs(*pWindow, 0, 0, 0);
+            pWindow->OnUpdate(updateEventArgs);
+            RenderEventArgs renderEventArgs(*pWindow, 0, 0, 0);
+            pWindow->OnRender(renderEventArgs);
         }
         break;
         case WM_SIZE:
@@ -480,7 +440,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
         case WM_CREATE:
         {
-            // 
+            //Window* pWindow = reinterpret_cast<Window*>(lParam);
         }
         break;
         default:

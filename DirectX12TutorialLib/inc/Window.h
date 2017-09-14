@@ -32,6 +32,7 @@
 
 #include "Object.h"
 #include "Events.h"
+#include "HighResolutionTimer.h"
 
  // Forward declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM); // Defined in the Application class.
@@ -75,6 +76,11 @@ public:
 
     // Window is being resized.
     ResizeEvent         Resize;
+
+    // Update 
+    UpdateEvent         Update;
+    // Render window contents
+    RenderEvent         Render;
 
     // Keyboard events
 
@@ -142,6 +148,16 @@ protected:
     virtual void UpdateSwapChainRenderTargetViews();
 
     /**
+     * Invoked when the game logic should be updated.
+     */
+    virtual void OnUpdate(UpdateEventArgs& e);
+
+    /**
+     * Invoked when the window contents should be rendered.
+     */
+    virtual void OnRender(RenderEventArgs& e);
+
+    /**
      * Invoked when a keyboard key is pressed while the window has focus.
      */
     virtual void OnKeyPressed(KeyEventArgs& e);
@@ -199,8 +215,8 @@ private:
     // This function setups up the request to track the mouse leave events.
     void TrackMouseEvents();
 
-    // Double-buffer swap chain buffers.
-    static const uint8_t FrameCount = 2;
+    // Number of swap-chain buffers.
+    static const uint8_t BufferCount = 2;
 
     // OS window handle.
     HWND m_hWindow;
@@ -211,14 +227,14 @@ private:
     bool m_Fullscreen;
 
     // True if using a variable refresh display.
-    // (Nvidia G-Sync or AMD FreeSync technology).
+    // (NVidia G-Sync or AMD FreeSync technology).
     bool m_AllowTearing;
     
     std::wstring m_Name;
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_SwapChain;
     // Swap chain back buffers.
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_BackBuffers[FrameCount];
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_BackBuffers[BufferCount];
 
     // Descriptor heap which holds the Render Target Views for the 
     // back buffers of the swap chain.
@@ -228,12 +244,21 @@ private:
     // Command list for clearing / presenting.
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_CommandList;
     // One command allocator per frame.
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocators[FrameCount];
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocators[BufferCount];
 
     // Fence values used to synchronize buffer flipping.
-    UINT64 m_FenceValues[FrameCount];
+    UINT64 m_FenceValues[BufferCount];
 
     UINT m_CurrentBackBufferIndex;
+
+    // Timer used to keep track of time since last update.
+    HighResolutionTimer m_Timer;
+    // Time since the window was created.
+    // Used by the Update & Render event args
+    double m_TotalTime;
+    // Total number of frames since the window was created.
+    // Used by the Update & Render event args
+    uint64_t m_FrameCounter;
 
     bool m_IsMinimized;
     bool m_IsMouseInClientArea;
