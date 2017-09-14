@@ -33,7 +33,7 @@
 #include "DirectX12TutorialDefines.h"
 #include "KeyCodes.h"
 
-#include <boost/signals2.hpp>
+// #include <boost/signals2.hpp>
 
 class Object;
 

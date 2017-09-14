@@ -31,7 +31,6 @@
 #pragma once
 
 #include "Object.h"
-#include "Events.h"
 
 // Undefine the CreateWindow macro so I can use a function with the same name in this class.
 #if defined(CreateWindow)
@@ -40,7 +39,6 @@
 
 // Forward declarations.
 class Window;
-class Game;
 
 using AdapterList = std::vector<Microsoft::WRL::ComPtr<IDXGIAdapter4>>;
 

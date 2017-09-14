@@ -56,9 +56,10 @@
 #include "d3dx12.h"
 
 // Boost
-// Surpress messages about the boost configuration being older than the 
-// compiler. This still happens in boost-1.65 but should be fixed in boost-1.65.1
+// Suppress messages about the boost configuration being older than the 
+// compiler.
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
+#include <boost/signals2.hpp>
 
 // STL libraries
 
