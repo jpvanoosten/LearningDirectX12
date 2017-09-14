@@ -129,7 +129,6 @@ protected:
     virtual void OnRender(RenderEventArgs& e);
 
 private:
-
     // Non copyable.
     Application(const Application& copy) = delete;
     Application& operator=(const Application& copy) = delete;

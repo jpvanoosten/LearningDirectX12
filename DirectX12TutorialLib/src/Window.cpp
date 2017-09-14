@@ -81,10 +81,11 @@ WNDCLASSEXW Window::GetWindowClassInfo(HINSTANCE hInst) const
 void Window::CreateWindow()
 {
     HINSTANCE hInstance = Application::Get().GetInstanceHandle();
-    WNDCLASSEXW windowClass = GetWindowClassInfo(hInstance);
 
-    // Store the result in a local static to ensure this function is called only once.
-    static HRESULT hr = ::RegisterClassExW(&windowClass);
+    // Store the result in a local static to ensure this function is called only
+    // once when the first window is created.
+    static HRESULT hr = ::RegisterClassExW(&GetWindowClassInfo(hInstance));
+    assert(SUCCEEDED(hr));
 
     int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);

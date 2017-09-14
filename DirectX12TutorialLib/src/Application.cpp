@@ -49,7 +49,8 @@ Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
     if (adapters.size() < 1)
     {
         // Force using warp if no supported adapters were found.
-        adapters = GetAdapters(true);
+        m_bUseWarp = true;
+        adapters = GetAdapters(m_bUseWarp);
     }
     assert(adapters.size() > 0);
 
