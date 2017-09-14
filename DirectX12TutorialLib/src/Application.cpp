@@ -84,8 +84,6 @@ std::shared_ptr<Window> Application::CreateWindow(uint32_t width, uint32_t heigh
     std::shared_ptr<Window> pWindow = std::make_shared<Window>(width, height, name, fullscreen, vsync);
     assert(pWindow && "Failed to create window.");
 
-    // Todo: Attach application events to the window.
-
     HWND hWnd = pWindow->GetWindowHandle();
     gs_WindowHandles.insert( WindowHandleMap::value_type(hWnd, pWindow));
 
@@ -203,7 +201,7 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::CreateDevice(Microsoft::WRL::
     return d3d12Device2;
 }
 
-ComPtr<ID3D12CommandQueue> Application::CreateCommandQueue(ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type, INT priority, D3D12_COMMAND_QUEUE_FLAGS flags, UINT nodeMask)
+ComPtr<ID3D12CommandQueue> Application::CreateCommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type, INT priority, D3D12_COMMAND_QUEUE_FLAGS flags, UINT nodeMask)
 {
     assert(device && "Device is NULL");
 
