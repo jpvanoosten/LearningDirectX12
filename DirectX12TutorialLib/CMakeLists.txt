@@ -16,7 +16,9 @@ set( HEADER_FILES
 
 set( SRC_FILES 
     src/Application.cpp
+    src/Game.cpp
     src/HighResolutionTimer.cpp
+    src/Object.cpp
     src/Window.cpp
 )
 

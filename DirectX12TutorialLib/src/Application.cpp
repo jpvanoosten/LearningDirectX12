@@ -1,10 +1,7 @@
 #include <DirectX12TutorialPCH.h>
 
 #include <Application.h>
-#include <Events.h>
-#include <Game.h>
 #include <Helpers.h>
-#include <HighResolutionTimer.h>
 #include <Window.h>
 
 static Application* g_pApplication = nullptr;
