@@ -90,7 +90,7 @@ public:
 
     // Check to see if the display supports tearing.
     // This is required for variable refresh rate displays
-    // (Nvidia G-Sync or AMD FreeSync).
+    // (NVidia G-Sync or AMD FreeSync).
     bool AllowTearing() const { return m_bAllowTearing; }
 
 protected:
@@ -130,8 +130,6 @@ private:
     // Use a single fence value for all command queues.
     // This should be fine as long as the fence value only increases.
     std::atomic_uint64_t m_FenceValue;
-
-    bool m_Quit;
 
     // Set to true to use a WARP adapter.
     bool m_bUseWarp;

@@ -56,6 +56,8 @@ void Tutorial1::OnRender(RenderEventArgs& e)
 
 void Tutorial1::OnKeyPressed(KeyEventArgs& e)
 {
+    Window& window = dynamic_cast<Window&>(e.Caller);
+
     switch (e.Key)
     {
     case KeyCode::Escape:
@@ -65,11 +67,11 @@ void Tutorial1::OnKeyPressed(KeyEventArgs& e)
         if (e.Alt)
         {
     case KeyCode::F11:
-        m_pWindow->ToggleFullscreen();
+        window.ToggleFullscreen();
         }
         break;
     case KeyCode::V:
-        m_pWindow->ToggleVSync();
+        window.ToggleVSync();
         break;
     }
 }

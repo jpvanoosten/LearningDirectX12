@@ -14,7 +14,6 @@ using namespace Microsoft::WRL;
 Application::Application( HINSTANCE hInstance, int argc, const wchar_t* argv[] )
     : m_hInstance( hInstance )
     , m_FenceValue( 1 )
-    , m_Quit( false )
     , m_bUseWarp( false )
     , m_bAllowTearing( false )
 {
