@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.8.0 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES 
     inc/Application.h
@@ -52,7 +52,7 @@ if( BUILD_SHARED_LIBS )
     #   4251: This warning occurs when DLL exporting a class that contains (private) members deriving from a type in the C++ STL (like std::vector or std::string).
     #         Since these (private) class members are never exported directly, it is safe to ignore this warning.
     target_compile_options( DirectX12TutorialLib
-        PUBLIC /wd"4251"
+        PUBLIC "/wd4251"
     )
 endif()
 
@@ -71,17 +71,17 @@ target_link_libraries( DirectX12TutorialLib
     dxguid.lib
 )
 
-# Enable precompiled headers for faster compiliation.
-target_compile_options( DirectX12TutorialLib
-    PRIVATE "/YuDirectX12TutorialPCH.h"
-)
-
-# set_source_files_properties( ${SRC_FILES}
-#    PROPERTIES
-#        COMPILE_FLAGS "/YuDirectX12TutorialPCH.h"
-#)
-
-set_source_files_properties( ${PCH_SRC_FILE}
-    PROPERTIES
-        COMPILE_FLAGS "/YcDirectX12TutorialPCH.h"
-)
+# # Enable precompiled headers for faster compiliation.
+# target_compile_options( DirectX12TutorialLib
+#     PRIVATE "/YuDirectX12TutorialPCH.h"
+# )
+# 
+# # set_source_files_properties( ${SRC_FILES}
+# #    PROPERTIES
+# #        COMPILE_FLAGS "/YuDirectX12TutorialPCH.h"
+# #)
+# 
+# set_source_files_properties( ${PCH_SRC_FILE}
+#     PROPERTIES
+#         COMPILE_FLAGS "/YcDirectX12TutorialPCH.h"
+# )
