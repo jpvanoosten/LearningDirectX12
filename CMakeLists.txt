@@ -1,9 +1,7 @@
-cmake_minimum_required( VERSION 3.8.0 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file was created.
 
 # Use solution folders to organize projects
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-option( BUILD_SHARED_LIBS "Enable shared libraries - Dynamic libraries (.DLL) instead of static libraries (.LIB)" ON )
 
 # Make sure DLL and EXE targets go to the same directory.
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # Output directory for static lib (.LIB)

@@ -32,25 +32,38 @@ using namespace Microsoft::WRL;
 #include <d3dx12.h>
 
 // STL Headers
-#include <cassert>
 #include <algorithm>
+#include <cassert>
+#include <chrono>
 
 // Helper functions
 #include <Helpers.h>
 
 // The number of swap chain back buffers.
 const uint8_t g_NumFrames = 2;
+// The current back buffer index to render to.
+uint8_t g_CurrentBackBufferIndex;
+
 // Use WARP adapter
 bool g_UseWarp = false;
 
 // DirectX12 Objects.
 ComPtr<ID3D12Device2> g_D3D12Device;
+ComPtr<ID3D12Fence> g_D3D12Fence;
 ComPtr<ID3D12CommandQueue> g_D3D12CommandQueue;
 ComPtr<ID3D12GraphicsCommandList> g_D3D12CommandList;
 ComPtr<ID3D12CommandAllocator> g_D3D12CommandAllocator[g_NumFrames];
 
 // DXGI Objects
-ComPtr<IDXGISwapChain4> g_dxgiSwapChain;
+ComPtr<IDXGISwapChain4> g_DXGISwapChain;
+
+// The next value to use to signal the command queue.
+uint64_t g_FenceValue = 1;
+// The per-frame fence values. Used to synchronize the swap chain back buffers.
+uint64_t g_FrameFenceValues[g_NumFrames] = {};
+
+// Windows event handle. Used for waiting for the fence value to be reached.
+HANDLE g_FenceEvent;
 
 // Application instance handle
 HINSTANCE g_hInstance;
@@ -73,17 +86,50 @@ HWND CreateWindow( const wchar_t* windowTitle, uint32_t width, uint32_t height);
 // Window callback function.
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
+// Utility functions.
 void ParseCommandLineArguments();
 
 // DirectX 12 Initialization functions
+
 void EnableDebugLayer();
 ComPtr<IDXGIAdapter4> GetAdapter( bool useWarp );
+
 ComPtr<ID3D12Device2> CreateDevice( ComPtr<IDXGIAdapter4> adapter );
-ComPtr<ID3D12CommandQueue> CreateCommandQueue( ComPtr<ID3D12Device2> device );
-ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, ComPtr<ID3D12CommandQueue> commandQueue );
+
+ComPtr<ID3D12CommandQueue> CreateCommandQueue( ComPtr<ID3D12Device2> device, 
+    D3D12_COMMAND_LIST_TYPE type );
+
+// Check for tearing support.
+bool CheckTearingSupport();
+
+ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, 
+    ComPtr<ID3D12CommandQueue> commandQueue, 
+    uint32_t width, uint32_t height, uint32_t bufferCount );
+
 ComPtr<ID3D12Fence> CreateFence(ComPtr<ID3D12Device2> device);
-ComPtr<ID3D12GraphicsCommandList> CreateCommandList(ComPtr<ID3D12Device2> device);
+
+HANDLE CreateEventHandle();
+
+ComPtr<ID3D12GraphicsCommandList> CreateCommandList(ComPtr<ID3D12Device2> device,
+    D3D12_COMMAND_LIST_TYPE type);
+
 ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(ComPtr<ID3D12Device2> device);
+
+// Synchronization functions
+
+// Signal the command queue.
+// Returns the fence value to wait for.
+uint64_t Signal(ComPtr<ID3D12CommandQueue> commandQueue, ComPtr<ID3D12Fence> fence,
+    uint64_t& fenceValue );
+
+// Waits for a fence value to be reached before continuing.
+void WaitForFenceValue(ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent, 
+    std::chrono::milliseconds duration = std::chrono::milliseconds::max());
+
+// Make sure the command queue has completed all commands before continuing.
+void Flush(ComPtr<ID3D12CommandQueue> commandQueue, ComPtr<ID3D12Fence> fence,
+    uint64_t& fenceValue, HANDLE fenceEvent );
+
 
 // Event callback functions.
 void Update();
@@ -102,8 +148,17 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     ComPtr<IDXGIAdapter4> dxgiAdapter4 = GetAdapter(g_UseWarp);
     g_D3D12Device = CreateDevice(dxgiAdapter4);
+    g_D3D12CommandQueue = CreateCommandQueue(g_D3D12Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    g_DXGISwapChain = CreateSwapChain(g_hWindow, g_D3D12CommandQueue,
+        g_ClientWidth, g_ClientHeight, g_NumFrames);
+
+    g_D3D12Fence = CreateFence(g_D3D12Device);
+    g_FenceEvent = CreateEventHandle();
 
     ::ShowWindow(g_hWindow, SW_SHOW);
+
+
+    ::CloseHandle(g_FenceEvent);
     
     int ret = 0;
     return ret;
@@ -294,6 +349,141 @@ ComPtr<ID3D12Device2> CreateDevice(ComPtr<IDXGIAdapter4> adapter)
     return d3d12Device2;
 }
 
+ComPtr<ID3D12CommandQueue> CreateCommandQueue(ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type )
+{
+    ComPtr<ID3D12CommandQueue> d3d12CommandQueue;
+
+    D3D12_COMMAND_QUEUE_DESC desc = {};
+    desc.Type =     type;
+    desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    desc.Flags =    D3D12_COMMAND_QUEUE_FLAG_NONE;
+    desc.NodeMask = 0;
+
+    ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&d3d12CommandQueue)));
+
+    return d3d12CommandQueue;
+}
+
+bool CheckTearingSupport()
+{
+    BOOL allowTearing = FALSE;
+
+    // Rather than create the DXGI 1.5 factory interface directly, we create the
+    // DXGI 1.4 interface and query for the 1.5 interface. This is to enable the 
+    // graphics debugging tools which will not support the 1.5 factory interface 
+    // until a future update.
+    ComPtr<IDXGIFactory4> factory4;
+    if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+    {
+        ComPtr<IDXGIFactory5> factory5;
+        if (SUCCEEDED(factory4.As(&factory5)))
+        {
+            if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+            {
+                allowTearing = FALSE;
+            }
+        }
+    }
+
+    return allowTearing == TRUE;
+}
+
+ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, 
+    ComPtr<ID3D12CommandQueue> commandQueue, 
+    uint32_t width, uint32_t height, uint32_t bufferCount )
+{
+    ComPtr<IDXGISwapChain4> dxgiSwapChain4;
+    ComPtr<IDXGIFactory4> dxgiFactory4;
+    UINT createFactoryFlags = 0;
+#if defined(_DEBUG)
+    createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
+#endif
+
+    ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4)));
+
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+    swapChainDesc.Width = width;
+    swapChainDesc.Height = height;
+    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    swapChainDesc.Stereo = FALSE;
+    swapChainDesc.SampleDesc = { 1, 0 };
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.BufferCount = bufferCount;
+    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+    // It is recommended to always allow tearing if tearing support is available.
+    swapChainDesc.Flags = CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+    ComPtr<IDXGISwapChain1> swapChain1;
+    ThrowIfFailed(dxgiFactory4->CreateSwapChainForHwnd(
+        commandQueue.Get(),
+        hWnd,
+        &swapChainDesc,
+        nullptr,
+        nullptr,
+        &swapChain1));
+
+    // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen
+    // will be handled manually.
+    dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER);
+
+    ThrowIfFailed(swapChain1.As(&dxgiSwapChain4));
+
+    //m_CurrentBackBufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
+
+    //UpdateSwapChainRenderTargetViews();
+
+    return dxgiSwapChain4;
+}
+
+ComPtr<ID3D12Fence> CreateFence(ComPtr<ID3D12Device2> device)
+{
+    ComPtr<ID3D12Fence> fence;
+
+    // Create fence and event objects for GPU/CPU synchronization.
+    ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+
+    return fence;
+}
+
+HANDLE CreateEventHandle()
+{
+    HANDLE fenceEvent;
+    
+    fenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+    assert(fenceEvent && "Failed to create fence event.");
+
+    return fenceEvent;
+}
+
+uint64_t Signal(ComPtr<ID3D12CommandQueue> commandQueue, ComPtr<ID3D12Fence> fence,
+    uint64_t& fenceValue)
+{
+    uint64_t fenceValueForSignal = fenceValue++;
+    ThrowIfFailed(commandQueue->Signal(fence.Get(), fenceValueForSignal));
+
+    return fenceValueForSignal;
+}
+
+void WaitForFenceValue(ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent,
+    std::chrono::milliseconds duration)
+{
+    if (fence->GetCompletedValue() < fenceValue)
+    {
+        ThrowIfFailed(fence->SetEventOnCompletion(fenceValue, fenceEvent));
+        ::WaitForSingleObject(fenceEvent, static_cast<DWORD>(duration.count()));
+    }
+}
+
+void Flush(ComPtr<ID3D12CommandQueue> commandQueue, ComPtr<ID3D12Fence> fence,
+    uint64_t& fenceValue, HANDLE fenceEvent )
+{
+    uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
+    WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
+}
+
+
 void Update()
 {
 
@@ -329,7 +519,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         int height = clientRect.bottom - clientRect.top;
 
         Resize(width, height);
-
     }
     break;
     case WM_SYSKEYDOWN:
