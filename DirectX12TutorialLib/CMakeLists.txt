@@ -1,4 +1,6 @@
-cmake_minimum_required( VERSION 3.8.0 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file was created.
+
+project( DirectX12TutorialLib LANGUAGES CXX )
 
 set( HEADER_FILES 
     inc/Application.h
@@ -58,7 +60,7 @@ endif()
 
 target_include_directories( DirectX12TutorialLib
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    PUBLIC ${CMAKE_SOURCE_DIR}/externals/boost-1.65.1
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../externals/boost-1.65.1
 )
 
 target_compile_definitions( DirectX12TutorialLib 
