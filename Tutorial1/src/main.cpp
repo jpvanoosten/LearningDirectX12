@@ -53,6 +53,8 @@ uint32_t g_ClientHeight = 720;
 
 // Window handle.
 HWND g_hWnd;
+// Window rectangle (used to toggle fullscreen state).
+RECT g_WindowRect;
 
 // DirectX 12 Objects
 ComPtr<ID3D12Device2> g_Device;
@@ -69,6 +71,9 @@ UINT g_CurrentBackBufferIndex;
 // Can be toggled with the V key.
 bool g_VSync = true;
 bool g_TearingSupported = false;
+// By default, use windowed mode.
+// Can be toggled with the Alt+Enter or F11
+bool g_Fullscreen = false;
 
 // Synchronization objects
 ComPtr<ID3D12Fence> g_Fence;
@@ -150,6 +155,9 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     RegisterWindowClass( hInstance, windowClassName );
     g_hWnd = CreateWindow( windowClassName, hInstance, L"Learning DirectX 12", 
         g_ClientWidth, g_ClientHeight);
+
+    // Initialize the 
+    ::GetWindowRect(g_hWnd, &g_WindowRect);
 
     ComPtr<IDXGIAdapter4> dxgiAdapter4 = GetAdapter(g_UseWarp);
     g_Device = CreateDevice(dxgiAdapter4);
@@ -521,12 +529,10 @@ ComPtr<ID3D12GraphicsCommandList> CreateCommandList(ComPtr<ID3D12Device2> device
     return commandList;
 }
 
-
 ComPtr<ID3D12Fence> CreateFence(ComPtr<ID3D12Device2> device)
 {
     ComPtr<ID3D12Fence> fence;
 
-    // Create fence and event objects for GPU/CPU synchronization.
     ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
 
     return fence;
@@ -672,6 +678,66 @@ void Resize(uint32_t width, uint32_t height)
     }
 }
 
+void SetFullscreen(bool fullscreen)
+{
+    if (g_Fullscreen != fullscreen)
+    {
+        g_Fullscreen = fullscreen;
+
+        if (g_Fullscreen) // Switching to fullscreen.
+        {
+            // Store the current window dimensions so they can be restored 
+            // when switching out of fullscreen state.
+            ::GetWindowRect(g_hWnd, &g_WindowRect);
+
+            // Set the window style to a borderless window so the client area fills
+            // the entire screen.
+            UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
+            // Is this the same thing?
+            UINT sytleDiff = windowStyle & ~WS_POPUP;
+
+            ::SetWindowLongW(g_hWnd, GWL_STYLE, windowStyle);
+
+            // Query the name of the nearest display device for the window.
+            // This is required to set the fullscreen dimensions of the window
+            // when using a multi-monitor setup.
+            HMONITOR hMonitor = ::MonitorFromWindow(g_hWnd, MONITOR_DEFAULTTONEAREST);
+            MONITORINFOEX monitorInfo = {};
+            monitorInfo.cbSize = sizeof(MONITORINFOEX);
+            ::GetMonitorInfo(hMonitor, &monitorInfo);
+
+            // Get the settings for the primary display. These settings are used
+            // to determine the correct position and size to position the window
+            DEVMODE devMode = {};
+            devMode.dmSize = sizeof(DEVMODE);
+            ::EnumDisplaySettings(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode);
+
+            ::SetWindowPos(g_hWnd, HWND_TOPMOST,
+                devMode.dmPosition.x,
+                devMode.dmPosition.y,
+                devMode.dmPosition.x + devMode.dmPelsWidth,
+                devMode.dmPosition.y + devMode.dmPelsHeight,
+                SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+            ::ShowWindow(g_hWnd, SW_MAXIMIZE);
+        }
+        else
+        {
+            // Restore all the window decorators.
+            ::SetWindowLong(g_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+            ::SetWindowPos(g_hWnd, HWND_NOTOPMOST,
+                g_WindowRect.left,
+                g_WindowRect.top,
+                g_WindowRect.right - g_WindowRect.left,
+                g_WindowRect.bottom - g_WindowRect.top,
+                SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+            ::ShowWindow(g_hWnd, SW_NORMAL);
+        }
+    }
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     if ( g_IsInitialized )
@@ -686,17 +752,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
+        {
+            bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
             switch (wParam)
             {
             case 'V':
                 g_VSync = !g_VSync;
                 break;
+
             case VK_ESCAPE:
                 ::PostQuitMessage(0);
                 break;
+            case VK_F11:
+                SetFullscreen(!g_Fullscreen);
+                break;
             }
 
-            break;
+        }
+        break;
         case WM_SIZE:
         {
             RECT clientRect = {};
