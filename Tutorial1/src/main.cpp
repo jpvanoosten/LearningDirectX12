@@ -764,9 +764,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             case VK_ESCAPE:
                 ::PostQuitMessage(0);
                 break;
+            case VK_RETURN:
+                if ( alt )
+                {
             case VK_F11:
                 SetFullscreen(!g_Fullscreen);
                 break;
+                }
             }
 
         }
