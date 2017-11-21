@@ -45,11 +45,11 @@ const uint8_t g_NumFrames = 3;
 // Use WARP adapter
 bool g_UseWarp = false;
 
-// Set to true once the DX12 objects have been initialized.
-bool g_IsInitialized = false;
-
 uint32_t g_ClientWidth = 1280;
 uint32_t g_ClientHeight = 720;
+
+// Set to true once the DX12 objects have been initialized.
+bool g_IsInitialized = false;
 
 // Window handle.
 HWND g_hWnd;
@@ -625,11 +625,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (message)
         {
         case WM_PAINT:
-        {
             Update();
             Render();
-        }
-        break;
+            break;
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
         {
