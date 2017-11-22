@@ -35,7 +35,6 @@ using namespace Microsoft::WRL;
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <sstream>
 
 // Helper functions
 #include <Helpers.h>
@@ -61,11 +60,17 @@ ComPtr<ID3D12Device2> g_Device;
 ComPtr<ID3D12CommandQueue> g_CommandQueue;
 ComPtr<IDXGISwapChain4> g_SwapChain;
 ComPtr<ID3D12Resource> g_BackBuffers[g_NumFrames];
-ComPtr<ID3D12CommandAllocator> g_CommandAllocators[g_NumFrames];
 ComPtr<ID3D12GraphicsCommandList> g_CommandList;
+ComPtr<ID3D12CommandAllocator> g_CommandAllocators[g_NumFrames];
 ComPtr<ID3D12DescriptorHeap> g_RTVDescriptorHeap;
 UINT g_RTVDescriptorSize;
 UINT g_CurrentBackBufferIndex;
+
+// Synchronization objects
+ComPtr<ID3D12Fence> g_Fence;
+uint64_t g_FenceValue = 0;
+uint64_t g_FrameFenceValues[g_NumFrames] = {};
+HANDLE g_FenceEvent;
 
 // By default, enable V-Sync.
 // Can be toggled with the V key.
@@ -74,12 +79,6 @@ bool g_TearingSupported = false;
 // By default, use windowed mode.
 // Can be toggled with the Alt+Enter or F11
 bool g_Fullscreen = false;
-
-// Synchronization objects
-ComPtr<ID3D12Fence> g_Fence;
-HANDLE g_FenceEvent;
-uint64_t g_FenceValue = 0;
-uint64_t g_FrameFenceValues[g_NumFrames] = {};
 
 // Window callback function.
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -106,7 +105,7 @@ void ParseCommandLineArguments()
     }
 
     // Free memory allocated by CommandLineToArgvW
-    LocalFree(argv);
+    ::LocalFree(argv);
 }
 
 void EnableDebugLayer()
@@ -119,7 +118,6 @@ void EnableDebugLayer()
     ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
 #endif
-
 }
 
 void RegisterWindowClass( HINSTANCE hInst, const wchar_t* windowClassName )
@@ -127,7 +125,7 @@ void RegisterWindowClass( HINSTANCE hInst, const wchar_t* windowClassName )
     // Register a window class for creating our render window with.
     WNDCLASSEXW windowClass = {};
 
-    windowClass.cbSize = sizeof(WNDCLASSEX);
+    windowClass.cbSize = sizeof(WNDCLASSEXW);
     windowClass.style = CS_HREDRAW | CS_VREDRAW;
     windowClass.lpfnWndProc = &WndProc;
     windowClass.cbClsExtra = 0;
@@ -573,8 +571,6 @@ void SetFullscreen(bool fullscreen)
             // Set the window style to a borderless window so the client area fills
             // the entire screen.
             UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
-            // Is this the same thing?
-            UINT sytleDiff = windowStyle & ~WS_POPUP;
 
             ::SetWindowLongW(g_hWnd, GWL_STYLE, windowStyle);
 
