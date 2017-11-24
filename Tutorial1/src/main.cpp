@@ -190,7 +190,6 @@ ComPtr<IDXGIAdapter4> GetAdapter(bool useWarp)
 
     ComPtr<IDXGIAdapter1> dxgiAdapter1;
     ComPtr<IDXGIAdapter4> dxgiAdapter4;
-    SIZE_T maxDedicatedVideoMemory = 0;
 
     if (useWarp)
     {
@@ -199,23 +198,22 @@ ComPtr<IDXGIAdapter4> GetAdapter(bool useWarp)
     }
     else
     {
+        SIZE_T maxDedicatedVideoMemory = 0;
         for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &dxgiAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
         {
-            ComPtr<IDXGIAdapter4> tmpAdapter;
-            ThrowIfFailed(dxgiAdapter1.As(&tmpAdapter));
             DXGI_ADAPTER_DESC1 dxgiAdapterDesc1;
-            tmpAdapter->GetDesc1(&dxgiAdapterDesc1);
+            dxgiAdapter1->GetDesc1(&dxgiAdapterDesc1);
 
             // Check to see if the adapter can create a D3D12 device without actually 
             // creating it. The adapter with the largest dedicated video memory
             // is favored.
             if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0 &&
-                SUCCEEDED(D3D12CreateDevice(dxgiAdapter4.Get(), 
+                SUCCEEDED(D3D12CreateDevice(dxgiAdapter1.Get(),
                     D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)) && 
                 dxgiAdapterDesc1.DedicatedVideoMemory > maxDedicatedVideoMemory )
             {
                 maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
-                dxgiAdapter4 = tmpAdapter;
+                ThrowIfFailed(dxgiAdapter1.As(&dxgiAdapter4));
             }
         }
     }
@@ -261,7 +259,7 @@ ComPtr<ID3D12Device2> CreateDevice(ComPtr<IDXGIAdapter4> adapter)
         NewFilter.DenyList.NumIDs = _countof(DenyIds);
         NewFilter.DenyList.pIDList = DenyIds;
 
-        pInfoQueue->PushStorageFilter(&NewFilter);
+        ThrowIfFailed(pInfoQueue->PushStorageFilter(&NewFilter));
     }
 #endif
 
@@ -297,7 +295,8 @@ bool CheckTearingSupport()
         ComPtr<IDXGIFactory5> factory5;
         if (SUCCEEDED(factory4.As(&factory5)))
         {
-            if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, 
+            if (FAILED(factory5->CheckFeatureSupport(
+                DXGI_FEATURE_PRESENT_ALLOW_TEARING, 
                 &allowTearing, sizeof(allowTearing))))
             {
                 allowTearing = FALSE;
