@@ -345,7 +345,7 @@ ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd,
 
     // Disable the Alt+Enter fullscreen toggle feature. Switching to fullscreen
     // will be handled manually.
-    dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER);
+    ThrowIfFailed(dxgiFactory4->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER));
 
     ThrowIfFailed(swapChain1.As(&dxgiSwapChain4));
 
