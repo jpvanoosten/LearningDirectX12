@@ -468,7 +468,7 @@ void Update()
     {
         char buffer[500];
         auto fps = frameCounter / elapsedSeconds;
-        sprintf_s(buffer, 500, "Framerate: %f\n", fps);
+        sprintf_s(buffer, 500, "FPS: %f\n", fps);
         OutputDebugString(buffer);
 
         frameCounter = 0;
