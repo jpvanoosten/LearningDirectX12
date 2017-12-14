@@ -484,17 +484,18 @@ void Render()
     commandAllocator->Reset();
     g_CommandList->Reset(commandAllocator.Get(), nullptr);
 
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        backBuffer.Get(),
-        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-    g_CommandList->ResourceBarrier(1, &barrier);
-
     // Clear the render target.
     {
+        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            backBuffer.Get(),
+            D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+        g_CommandList->ResourceBarrier(1, &barrier);
+
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(g_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
             g_CurrentBackBufferIndex, g_RTVDescriptorSize);
+
         g_CommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
     }
 
@@ -505,7 +506,7 @@ void Render()
             D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
         g_CommandList->ResourceBarrier(1, &barrier);
 
-        g_CommandList->Close();
+        ThrowIfFailed(g_CommandList->Close());
 
         ID3D12CommandList* const commandLists[] = {
             g_CommandList.Get()
@@ -516,7 +517,7 @@ void Render()
 
         UINT syncInterval = g_VSync ? 1 : 0;
         UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-        g_SwapChain->Present(syncInterval, presentFlags);
+        ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
 
         g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
 
@@ -569,7 +570,7 @@ void SetFullscreen(bool fullscreen)
 
             // Set the window style to a borderless window so the client area fills
             // the entire screen.
-            UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
+            UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
 
             ::SetWindowLongW(g_hWnd, GWL_STYLE, windowStyle);
 
@@ -581,17 +582,11 @@ void SetFullscreen(bool fullscreen)
             monitorInfo.cbSize = sizeof(MONITORINFOEX);
             ::GetMonitorInfo(hMonitor, &monitorInfo);
 
-            // Get the settings for the primary display. These settings are used
-            // to determine the correct position and size to position the window
-            DEVMODE devMode = {};
-            devMode.dmSize = sizeof(DEVMODE);
-            ::EnumDisplaySettings(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode);
-
             ::SetWindowPos(g_hWnd, HWND_TOPMOST,
-                devMode.dmPosition.x,
-                devMode.dmPosition.y,
-                devMode.dmPosition.x + devMode.dmPelsWidth,
-                devMode.dmPosition.y + devMode.dmPelsHeight,
+                monitorInfo.rcMonitor.left,
+                monitorInfo.rcMonitor.top,
+                monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
                 SWP_FRAMECHANGED | SWP_NOACTIVATE);
 
             ::ShowWindow(g_hWnd, SW_MAXIMIZE);
@@ -633,7 +628,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             case 'V':
                 g_VSync = !g_VSync;
                 break;
-
             case VK_ESCAPE:
                 ::PostQuitMessage(0);
                 break;
@@ -642,11 +636,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
             case VK_F11:
                 SetFullscreen(!g_Fullscreen);
-                break;
                 }
+                break;
             }
-
         }
+        break;
+        // The default window procedure will play a system notification sound 
+        // when pressing the Alt+Enter keyboard combination if this message is 
+        // not handled.
+        case WM_SYSCHAR:
         break;
         case WM_SIZE:
         {
@@ -676,6 +674,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
+    // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
+    // Using this awareness context allows the client area of the window 
+    // to achieve 100% scaling while still allowing non-client window content to 
+    // be rendered in a DPI sensitive fashion.
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
     // Window class name. Used for registering / creating the window.
     const wchar_t* windowClassName = L"DX12WindowClass";
     ParseCommandLineArguments();
@@ -687,12 +691,15 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     g_hWnd = CreateWindow(windowClassName, hInstance, L"Learning DirectX 12",
         g_ClientWidth, g_ClientHeight);
 
-    // Initialize the 
+    // Initialize the global window rect variable.
     ::GetWindowRect(g_hWnd, &g_WindowRect);
 
     ComPtr<IDXGIAdapter4> dxgiAdapter4 = GetAdapter(g_UseWarp);
+
     g_Device = CreateDevice(dxgiAdapter4);
+    
     g_CommandQueue = CreateCommandQueue(g_Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    
     g_SwapChain = CreateSwapChain(g_hWnd, g_CommandQueue,
         g_ClientWidth, g_ClientHeight, g_NumFrames);
 
