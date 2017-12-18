@@ -1,12 +1,12 @@
-cmake_minimum_required( VERSION 3.9.1 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES
-    inc/d3dx12.h
-    inc/Helpers.h
+    inc/Tutorial2.h
 )
 
 set( SRC_FILES
     src/main.cpp
+    src/Tutorial2.cpp
 )
 
 add_executable( Tutorial2 WIN32
@@ -19,7 +19,5 @@ target_include_directories( Tutorial2
 )
 
 target_link_libraries( Tutorial2
-    d3d12.lib
-    dxgi.lib
-    dxguid.lib
+    DX12Lib
 )
