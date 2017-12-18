@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <shellapi.h> // For CommandLineToArgvW
+#include "../resource.h"
 
 // The min/max macros conflict with like-named member functions.
 // Only use std::min and std::max defined in <algorithm>.
@@ -131,12 +132,12 @@ void RegisterWindowClass( HINSTANCE hInst, const wchar_t* windowClassName )
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
     windowClass.hInstance = hInst;
-    windowClass.hIcon = ::LoadIcon(hInst, NULL); //  MAKEINTRESOURCE(APPLICATION_ICON));
+    windowClass.hIcon = ::LoadIcon(hInst, MAKEINTRESOURCE(APP_ICON)); //  MAKEINTRESOURCE(APPLICATION_ICON));
     windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
     windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     windowClass.lpszMenuName = NULL;
     windowClass.lpszClassName = windowClassName;
-    windowClass.hIconSm = ::LoadIcon(hInst, NULL); //  MAKEINTRESOURCE(APPLICATION_ICON));
+    windowClass.hIconSm = ::LoadIcon(hInst, MAKEINTRESOURCE(APP_ICON)); //  MAKEINTRESOURCE(APPLICATION_ICON));
 
     static HRESULT hr = ::RegisterClassExW(&windowClass);
     assert(SUCCEEDED(hr));
