@@ -14,6 +14,7 @@ Game::Game( const std::wstring& name, int width, int height, bool vSync )
 
 Game::~Game()
 {
+    Application::Get().DestroyWindow(m_pWindow);
 }
 
 bool Game::Initialize()

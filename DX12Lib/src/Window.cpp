@@ -15,7 +15,9 @@ Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int c
 
 Window::~Window()
 {
-    Destroy();
+    // Window should be destroyed with Application::DestroyWindow before
+    // the window goes out of scope.
+    assert(!m_hWnd && "Use Application::DestroyWindow before destruction.");
 }
 
 HWND Window::get_WindowHandle() const

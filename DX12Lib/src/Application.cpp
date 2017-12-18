@@ -78,12 +78,6 @@ void Application::Destroy()
 
 Application::~Application()
 {
-    WindowMap windows = gs_Windows;
-    for (WindowMap::value_type window : windows)
-    {
-        window.second->Destroy();
-    }
-
     gs_Windows.clear();
     gs_WindowByName.clear();
 }
@@ -100,7 +94,7 @@ std::shared_ptr<Window> Application::CreateRenderWindow(const std::wstring& wind
     RECT windowRect = { 0, 0, clientWidth, clientHeight };
     AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
-    HWND hWnd = CreateWindowExW(WINDOW_CLASS_NAME, windowName.c_str(),
+    HWND hWnd = CreateWindowW(WINDOW_CLASS_NAME, windowName.c_str(),
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
         windowRect.right - windowRect.left,
         windowRect.bottom - windowRect.top,
@@ -149,7 +143,8 @@ std::shared_ptr<Window> Application::GetWindowByName(const std::wstring& windowN
 
 int Application::Run(std::shared_ptr<Game> pGame)
 {
-    if (!pGame->Initialize()) return false;
+    if (!pGame->Initialize()) return 1;
+    if (!pGame->LoadContent()) return 2;
 
     MSG msg = { 0 };
     while (msg.message != WM_QUIT)
@@ -385,12 +380,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         }
         break;
         default:
-            return DefWindowProc(hwnd, message, wParam, lParam);
+            return DefWindowProcW(hwnd, message, wParam, lParam);
         }
     }
     else
     {
-        return DefWindowProc(hwnd, message, wParam, lParam);
+        return DefWindowProcW(hwnd, message, wParam, lParam);
     }
 
     return 0;

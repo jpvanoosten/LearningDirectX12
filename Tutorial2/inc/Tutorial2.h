@@ -32,6 +32,13 @@ protected:
      */
     virtual void OnRender(RenderEventArgs& e) override;
 
+    /**
+     * Invoked by the registered window when a key is pressed
+     * while the window has focus.
+     */
+    virtual void OnKeyPressed(KeyEventArgs& e);
+
+
 private:
     using super = Game;
 };

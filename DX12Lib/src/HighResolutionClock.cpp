@@ -2,6 +2,8 @@
 #include <HighResolutionClock.h>
 
 HighResolutionClock::HighResolutionClock()
+    : m_DeltaTime(0)
+    , m_TotalTime(0)
 {
     m_T0 = std::chrono::high_resolution_clock::now();
 }

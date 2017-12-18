@@ -25,10 +25,10 @@ set( RESOURCE_FILES
     Resources/Icon/app_icon.ico
 )
 
-source_group( "Resource" FILES DX12Lib.rc )
-source_group( "Resource\\Icon" FILES Resources/Icon/app_icon.ico )
+source_group( "Resources" FILES DX12Lib.rc )
+source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 
-add_library( DX12Lib 
+add_library( DX12Lib STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
@@ -42,4 +42,5 @@ target_link_libraries( DX12Lib
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/DX12Lib.dir/${CMAKE_CFG_INTDIR}/DX12Lib.res # This is the only way I could figure out how to link the compiled resource file.
 )
