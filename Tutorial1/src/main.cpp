@@ -689,7 +689,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     g_TearingSupported = CheckTearingSupport();
 
     RegisterWindowClass(hInstance, windowClassName);
-    g_hWnd = CreateWindow(windowClassName, hInstance, L"Learning DirectX 12",
+    g_hWnd = CreateWindow(windowClassName, hInstance, L"Learning DirectX 12 - Lesson 1",
         g_ClientWidth, g_ClientHeight);
 
     // Initialize the global window rect variable.
