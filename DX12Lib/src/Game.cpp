@@ -14,7 +14,7 @@ Game::Game( const std::wstring& name, int width, int height, bool vSync )
 
 Game::~Game()
 {
-    Application::Get().DestroyWindow(m_pWindow);
+    assert(!m_pWindow && "Use Game::Destroy() before destruction.");
 }
 
 bool Game::Initialize()
@@ -31,6 +31,12 @@ bool Game::Initialize()
     m_pWindow->Show();
 
     return true;
+}
+
+void Game::Destroy()
+{
+    Application::Get().DestroyWindow(m_pWindow);
+    m_pWindow.reset();
 }
 
 void Game::OnUpdate(UpdateEventArgs& e)

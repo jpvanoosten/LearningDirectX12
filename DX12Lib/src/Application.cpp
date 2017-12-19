@@ -71,15 +71,18 @@ void Application::Destroy()
 {
     if (gs_pSingelton)
     {
-        delete gs_pSingelton;
+        gs_Windows.clear();
+        gs_WindowByName.clear();
+
+        Application* pThis = gs_pSingelton;
         gs_pSingelton = nullptr;
+        delete pThis;
     }
 }
 
 Application::~Application()
 {
-    gs_Windows.clear();
-    gs_WindowByName.clear();
+    Destroy();
 }
 
 std::shared_ptr<Window> Application::CreateRenderWindow(const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
@@ -157,6 +160,7 @@ int Application::Run(std::shared_ptr<Game> pGame)
     }
 
     pGame->UnloadContent();
+    pGame->Destroy();
 
     return static_cast<int>(msg.wParam);
 }

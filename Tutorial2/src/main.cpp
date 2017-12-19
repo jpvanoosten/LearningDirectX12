@@ -13,7 +13,5 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
     int retCode = Application::Get().Run(demo);
 
-    Application::Destroy();
-
     return retCode;
 }

@@ -34,6 +34,11 @@ public:
      */
     virtual void UnloadContent() = 0;
 
+    /**
+     * Destroy any resource that are used by the game.
+     */
+    virtual void Destroy();
+
 protected:
     friend class Window;
 

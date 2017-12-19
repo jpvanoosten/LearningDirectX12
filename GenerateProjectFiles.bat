@@ -11,7 +11,11 @@ PUSHD %CMAKE_BINARY_DIR%
 
 cmake -G %CMAKE_GENERATOR% -Wno-dev "%~dp0"
 
-POPD
-POPD
+IF ERRORLEVEL 1 (
+    PAUSE
+) ELSE (
+    CALL LearningDirectX12.sln
+)
 
-PAUSE
+POPD
+POPD
