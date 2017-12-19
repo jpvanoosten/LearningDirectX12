@@ -3,6 +3,10 @@
 */
 #pragma once
 
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <wrl.h>
+
 #include <memory>
 #include <string>
 
@@ -66,6 +70,8 @@ public:
     */
     void Quit(int exitCode = 0);
 
+    Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
+
 protected:
 
     // Create an application instance.
@@ -73,7 +79,14 @@ protected:
     // Destroy the application instance and all windows associated with this application.
     virtual ~Application();
 
+    Microsoft::WRL::ComPtr<IDXGIAdapter4> GetAdapter(bool bUseWarp);
+    Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter);
+
 private:
     // The application instance handle that this application was created with.
     HINSTANCE m_hInstance;
+
+    Microsoft::WRL::ComPtr<IDXGIAdapter4> m_dxgiAdapter;
+    Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;
+
 };

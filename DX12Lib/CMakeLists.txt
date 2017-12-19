@@ -3,6 +3,8 @@ cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this fil
 set( HEADER_FILES 
     inc/DX12LibPCH.h
     inc/Application.h
+    inc/CommandList.h
+    inc/CommandQueue.h
     inc/Game.h
     inc/Helpers.h
     inc/HighResolutionClock.h
@@ -15,6 +17,8 @@ set( HEADER_FILES
 set( SOURCE_FILES
     src/DX12LibPCH.cpp
     src/Application.cpp
+    src/CommandList.cpp
+    src/CommandQueue.cpp
     src/Game.cpp
     src/HighResolutionClock.cpp
     src/Window.cpp
