@@ -3,6 +3,7 @@
 #include "..\resource.h"
 
 #include <Game.h>
+#include <CommandQueue.h>
 #include <Window.h>
 
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
@@ -27,6 +28,7 @@ struct MakeWindow : public Window
 
 Application::Application(HINSTANCE hInst)
     : m_hInstance(hInst)
+    , m_TearingSupported(false)
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -68,7 +70,11 @@ Application::Application(HINSTANCE hInst)
     }
     if (m_d3d12Device)
     {
+        m_DirectCommandQueue = std::make_shared<CommandQueue>(m_d3d12Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        m_ComputeCommandQueue = std::make_shared<CommandQueue>(m_d3d12Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+        m_CopyCommandQueue = std::make_shared<CommandQueue>(m_d3d12Device, D3D12_COMMAND_LIST_TYPE_COPY);
 
+        m_TearingSupported = CheckTearingSupport();
     }
 }
 
@@ -90,18 +96,17 @@ void Application::Destroy()
 {
     if (gs_pSingelton)
     {
-        gs_Windows.clear();
-        gs_WindowByName.clear();
+        assert( gs_Windows.empty() && gs_WindowByName.empty() && 
+            "All windows should be destroyed before destroying the application instance.");
 
-        Application* pThis = gs_pSingelton;
+        delete gs_pSingelton;
         gs_pSingelton = nullptr;
-        delete pThis;
     }
 }
 
 Application::~Application()
 {
-    Destroy();
+    Flush();
 }
 
 Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::GetAdapter(bool bUseWarp)
@@ -150,6 +155,7 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::CreateDevice(Microsoft::WRL::
 {
     ComPtr<ID3D12Device2> d3d12Device2;
     ThrowIfFailed(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12Device2)));
+//    NAME_D3D12_OBJECT(d3d12Device2);
 
     // Enable debug messages in debug mode.
 #if defined(_DEBUG)
@@ -189,6 +195,33 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::CreateDevice(Microsoft::WRL::
 #endif
 
     return d3d12Device2;
+}
+
+bool Application::CheckTearingSupport()
+{
+    BOOL allowTearing = FALSE;
+
+    // Rather than create the DXGI 1.5 factory interface directly, we create the
+    // DXGI 1.4 interface and query for the 1.5 interface. This is to enable the 
+    // graphics debugging tools which will not support the 1.5 factory interface 
+    // until a future update.
+    ComPtr<IDXGIFactory4> factory4;
+    if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+    {
+        ComPtr<IDXGIFactory5> factory5;
+        if (SUCCEEDED(factory4.As(&factory5)))
+        {
+            factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING,
+                &allowTearing, sizeof(allowTearing));
+        }
+    }
+
+    return allowTearing == TRUE;
+}
+
+bool Application::IsTearingSupported() const
+{
+    return m_TearingSupported;
 }
 
 std::shared_ptr<Window> Application::CreateRenderWindow(const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
@@ -265,6 +298,9 @@ int Application::Run(std::shared_ptr<Game> pGame)
         }
     }
 
+    // Flush any commands in the commands queues before quiting.
+    Flush();
+
     pGame->UnloadContent();
     pGame->Destroy();
 
@@ -281,6 +317,54 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::GetDevice() const
     return m_d3d12Device;
 }
 
+std::shared_ptr<CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const
+{
+    std::shared_ptr<CommandQueue> commandQueue;
+    switch (type)
+    {
+    case D3D12_COMMAND_LIST_TYPE_DIRECT:
+        commandQueue = m_DirectCommandQueue;
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+        commandQueue = m_ComputeCommandQueue;
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COPY:
+        commandQueue = m_CopyCommandQueue;
+        break;
+    default:
+        assert(false && "Invalid command queue type.");
+    }
+
+    return commandQueue;
+}
+
+void Application::Flush()
+{
+    m_DirectCommandQueue->Flush();
+    m_ComputeCommandQueue->Flush();
+    m_CopyCommandQueue->Flush();
+}
+
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Application::CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type)
+{
+    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+    desc.Type = type;
+    desc.NumDescriptors = numDescriptors;
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    desc.NodeMask = 0;
+
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
+    ThrowIfFailed(m_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptorHeap)));
+
+    return descriptorHeap;
+}
+
+UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const
+{
+    return m_d3d12Device->GetDescriptorHandleIncrementSize(type);
+}
+
+
 // Remove a window from our window lists.
 static void RemoveWindow(HWND hWnd)
 {
@@ -288,7 +372,7 @@ static void RemoveWindow(HWND hWnd)
     if (windowIter != gs_Windows.end())
     {
         WindowPtr pWindow = windowIter->second;
-        gs_WindowByName.erase(pWindow->get_WindowName());
+        gs_WindowByName.erase(pWindow->GetWindowName());
         gs_Windows.erase(windowIter);
     }
 }
@@ -361,7 +445,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             if (PeekMessage(&charMsg, hwnd, 0, 0, PM_NOREMOVE) && charMsg.message == WM_CHAR)
             {
                 GetMessage(&charMsg, hwnd, 0, 0);
-                c = charMsg.wParam;
+                c = static_cast<unsigned int>( charMsg.wParam );
             }
             bool shift = GetAsyncKeyState(VK_SHIFT) > 0;
             bool control = GetAsyncKeyState(VK_CONTROL) > 0;
@@ -387,7 +471,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             unsigned char keyboardState[256];
             GetKeyboardState(keyboardState);
             wchar_t translatedCharacters[4];
-            if (int result = ToUnicodeEx(wParam, scanCode, keyboardState, translatedCharacters, 4, 0, NULL) > 0)
+            if (int result = ToUnicodeEx(static_cast<UINT>( wParam ), scanCode, keyboardState, translatedCharacters, 4, 0, NULL) > 0)
             {
                 c = translatedCharacters[0];
             }

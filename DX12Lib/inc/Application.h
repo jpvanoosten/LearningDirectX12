@@ -12,6 +12,7 @@
 
 class Window;
 class Game;
+class CommandQueue;
 
 class Application
 {
@@ -30,6 +31,11 @@ public:
     * Get the application singleton.
     */
     static Application& Get();
+
+    /**
+     * Check to see if VSync-off is supported.
+     */
+    bool IsTearingSupported() const;
 
     /**
     * Create a new DirectX11 render window instance.
@@ -70,7 +76,23 @@ public:
     */
     void Quit(int exitCode = 0);
 
+    /**
+     * Get the Direct3D 12 device
+     */
     Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
+    /**
+     * Get a command queue. Valid types are:
+     * - D3D12_COMMAND_LIST_TYPE_DIRECT : Can be used for draw, dispatch, or copy commands.
+     * - D3D12_COMMAND_LIST_TYPE_COMPUTE: Can be used for dispatch or copy commands.
+     * - D3D12_COMMAND_LIST_TYPE_COPY   : Can be used for copy commands.
+     */
+    std::shared_ptr<CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
+
+    // Flush all command queues.
+    void Flush();
+
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type);
+    UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
 
 protected:
 
@@ -81,12 +103,22 @@ protected:
 
     Microsoft::WRL::ComPtr<IDXGIAdapter4> GetAdapter(bool bUseWarp);
     Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter);
+    bool CheckTearingSupport();
 
 private:
+    Application(const Application& copy) = delete;
+    Application& operator=(const Application& other) = delete;
+
     // The application instance handle that this application was created with.
     HINSTANCE m_hInstance;
 
     Microsoft::WRL::ComPtr<IDXGIAdapter4> m_dxgiAdapter;
     Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;
+
+    std::shared_ptr<CommandQueue> m_DirectCommandQueue;
+    std::shared_ptr<CommandQueue> m_ComputeCommandQueue;
+    std::shared_ptr<CommandQueue> m_CopyCommandQueue;
+
+    bool m_TearingSupported;
 
 };

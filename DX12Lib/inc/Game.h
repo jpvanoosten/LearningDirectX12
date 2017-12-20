@@ -96,11 +96,12 @@ protected:
     */
     virtual void OnWindowDestroy();
 
+    std::shared_ptr<Window> m_pWindow;
+
 private:
     std::wstring m_Name;
     int m_Width;
     int m_Height;
     bool m_vSync;
 
-    std::shared_ptr<Window> m_pWindow;
 };

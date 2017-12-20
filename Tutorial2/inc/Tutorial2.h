@@ -11,7 +11,6 @@ class Tutorial2 : public Game
 {
 public:
     Tutorial2(const std::wstring& name, int width, int height, bool vSync = false);
-
     /**
      *  Load content required for the demo.
      */
@@ -36,9 +35,13 @@ protected:
      * Invoked by the registered window when a key is pressed
      * while the window has focus.
      */
-    virtual void OnKeyPressed(KeyEventArgs& e);
+    virtual void OnKeyPressed(KeyEventArgs& e) override;
 
+
+    virtual void OnResize(ResizeEventArgs& e) override; 
 
 private:
     using super = Game;
+
+    uint64_t m_FenceValues[Window::BufferCount] = {};
 };
