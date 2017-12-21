@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <Shlwapi.h>
 
 #include <Application.h>
 #include <Tutorial2.h>
@@ -18,7 +19,15 @@ void ReportLiveObjects()
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
     int retCode = 0;
-    atexit(&ReportLiveObjects);
+
+    // Set the working directory to the path of the executable.
+    WCHAR path[MAX_PATH];
+    HMODULE hModule = GetModuleHandleW(NULL);
+    if ( GetModuleFileNameW(hModule, path, MAX_PATH) > 0 )
+    {
+        PathRemoveFileSpecW(path);
+        SetCurrentDirectoryW(path);
+    }
 
     Application::Create(hInstance);
     {
@@ -26,6 +35,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
         retCode = Application::Get().Run(demo);
     }
     Application::Destroy();
+
+    atexit(&ReportLiveObjects);
 
     return retCode;
 }

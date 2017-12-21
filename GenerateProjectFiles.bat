@@ -14,7 +14,7 @@ cmake -G %CMAKE_GENERATOR% -Wno-dev "%~dp0"
 IF ERRORLEVEL 1 (
     PAUSE
 ) ELSE (
-    CALL LearningDirectX12.sln
+    START LearningDirectX12.sln
 )
 
 POPD

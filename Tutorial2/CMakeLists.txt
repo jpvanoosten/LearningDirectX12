@@ -38,4 +38,6 @@ target_include_directories( Tutorial2
 
 target_link_libraries( Tutorial2
     DX12Lib
+    D3DCompiler.lib
+    Shlwapi.lib
 )

@@ -72,6 +72,9 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_IndexBufferView;
 
+    // Root signature
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
+
     // Pipeline state object.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
 
