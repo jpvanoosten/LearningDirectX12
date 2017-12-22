@@ -1,18 +1,27 @@
 #include <Tutorial2.h>
 
-#include <wrl.h>
+#include <Application.h>
+#include <CommandQueue.h>
+#include <Helpers.h>
+#include <Window.h>
 
+#include <wrl.h>
 using namespace Microsoft::WRL;
 
 #include <d3dx12.h>
 #include <d3dcompiler.h>
 
+#include <algorithm> // For std::min and sdt::max.
+#if defined(min)
+    #undef min
+#endif
+
+#if defined(max)
+#undef max
+#endif
+
 using namespace DirectX;
 
-#include <Application.h>
-#include <CommandQueue.h>
-#include <Helpers.h>
-#include <Window.h>
 
 // Clamp a value between a min and max range.
 template<typename T>
@@ -234,7 +243,7 @@ void Tutorial2::OnUpdate(UpdateEventArgs& e)
     }
 
     // Update the model matrix.
-    float angle = e.TotalTime * 90.0f;
+    float angle = static_cast<float>(e.TotalTime * 90.0);
     const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
     m_ModelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle) );
 
@@ -366,6 +375,9 @@ void Tutorial2::ResizeDepthBuffer(int width, int height)
     // Flush any GPU commands that might be referencing the depth buffer.
     Application::Get().Flush();
 
+    width = std::max(1, width);
+    height = std::max(1, height);
+
     auto device = Application::Get().GetDevice();
 
     // Resize screen dependent resources.
@@ -401,7 +413,8 @@ void Tutorial2::OnResize(ResizeEventArgs& e)
     {
         super::OnResize(e);
 
-        m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, e.Width, e.Height);
+        m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, 
+            static_cast<float>(e.Width), static_cast<float>(e.Height));
 
         ResizeDepthBuffer(e.Width, e.Height);
     }
