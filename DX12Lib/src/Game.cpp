@@ -81,6 +81,8 @@ void Game::OnMouseWheel(MouseWheelEventArgs& e)
 
 void Game::OnResize(ResizeEventArgs& e)
 {
+    m_Width = e.Width;
+    m_Height = e.Height;
 }
 
 void Game::OnWindowDestroy()

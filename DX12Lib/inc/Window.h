@@ -42,6 +42,8 @@ public:
     * Should this window be rendered with vertical refresh synchronization.
     */
     bool IsVSync() const;
+    void SetVSync(bool vSync);
+    void ToggleVSync();
 
     /**
     * Is this a windowed window or full-screen?

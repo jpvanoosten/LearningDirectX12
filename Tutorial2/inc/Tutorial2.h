@@ -3,6 +3,8 @@
 #include <Game.h>
 #include <Window.h>
 
+#include <DirectXMath.h>
+
 #include <memory>
 #include <string>
 
@@ -39,6 +41,11 @@ protected:
      */
     virtual void OnKeyPressed(KeyEventArgs& e) override;
 
+    /**
+     * Invoked when the mouse wheel is scrolled while the registered window has focus.
+     */
+    virtual void OnMouseWheel(MouseWheelEventArgs& e) override;
+
 
     virtual void OnResize(ResizeEventArgs& e) override; 
 
@@ -62,6 +69,9 @@ private:
         ID3D12Resource** pDestinationResource, ID3D12Resource** pIntermediateResource,
         size_t numElements, size_t elementSize, const void* bufferData, 
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
+
+    // Resize the depth buffer to match the size of the client area.
+    void ResizeDepthBuffer(int width, int height);
     
     uint64_t m_FenceValues[Window::BufferCount] = {};
 
@@ -70,7 +80,12 @@ private:
     D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
     // Index buffer for the cube.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
-    D3D12_VERTEX_BUFFER_VIEW m_IndexBufferView;
+    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+
+    // Depth buffer.
+    Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthBuffer;
+    // Descriptor heap for depth buffer.
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap;
 
     // Root signature
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
@@ -78,4 +93,12 @@ private:
     // Pipeline state object.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
 
+    D3D12_VIEWPORT m_Viewport;
+    D3D12_RECT m_ScissorRect;
+
+    float m_FoV;
+
+    DirectX::XMMATRIX m_ModelMatrix;
+    DirectX::XMMATRIX m_ViewMatrix;
+    DirectX::XMMATRIX m_ProjectionMatrix;
 };
