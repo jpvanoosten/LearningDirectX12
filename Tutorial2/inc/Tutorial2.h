@@ -101,4 +101,6 @@ private:
     DirectX::XMMATRIX m_ModelMatrix;
     DirectX::XMMATRIX m_ViewMatrix;
     DirectX::XMMATRIX m_ProjectionMatrix;
+
+    bool m_ContentLoaded;
 };
