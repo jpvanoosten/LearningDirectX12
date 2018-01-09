@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindQt4 &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindQt" href="FindQt.html" />
+    <link rel="prev" title="FindQt3" href="FindQt3.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindQt.html" title="FindQt"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindQt3.html" title="FindQt3"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findqt4">
+<span id="module:FindQt4"></span><h1>FindQt4<a class="headerlink" href="#findqt4" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="finding-and-using-qt4">
+<h2>Finding and Using Qt4<a class="headerlink" href="#finding-and-using-qt4" title="Permalink to this headline">¶</a></h2>
+<p>This module can be used to find Qt4.  The most important issue is that
+the Qt4 qmake is available via the system path.  This qmake is then
+used to detect basically everything else.  This module defines a
+number of <span class="target" id="index-0-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> targets, macros and variables.</p>
+<p>Typical usage could be something like:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_AUTOMOC</span> <span class="s">ON</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_INCLUDE_CURRENT_DIR</span> <span class="s">ON</span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">Qt4</span> <span class="s">4.4.3</span> <span class="s">REQUIRED</span> <span class="s">QtGui</span> <span class="s">QtXml</span><span class="p">)</span>
+<span class="nb">add_executable</span><span class="p">(</span><span class="s">myexe</span> <span class="s">main.cpp</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">myexe</span> <span class="s">Qt4::QtGui</span> <span class="s">Qt4::QtXml</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When using <span class="target" id="index-1-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> targets, the qtmain.lib static library is
+automatically linked on Windows for <span class="target" id="index-0-prop_tgt:WIN32_EXECUTABLE"></span><a class="reference internal" href="../prop_tgt/WIN32_EXECUTABLE.html#prop_tgt:WIN32_EXECUTABLE" title="WIN32_EXECUTABLE"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">WIN32</span></code></a>
+executables. To disable that globally, set the
+<code class="docutils literal"><span class="pre">QT4_NO_LINK_QTMAIN</span></code> variable before finding Qt4. To disable that
+for a particular executable, set the <code class="docutils literal"><span class="pre">QT4_NO_LINK_QTMAIN</span></code> target
+property to <code class="docutils literal"><span class="pre">TRUE</span></code> on the executable.</p>
+</div>
+</div>
+<div class="section" id="qt-build-tools">
+<h2>Qt Build Tools<a class="headerlink" href="#qt-build-tools" title="Permalink to this headline">¶</a></h2>
+<p>Qt relies on some bundled tools for code generation, such as <code class="docutils literal"><span class="pre">moc</span></code> for
+meta-object code generation,``uic`` for widget layout and population,
+and <code class="docutils literal"><span class="pre">rcc</span></code> for virtual filesystem content generation.  These tools may be
+automatically invoked by <span class="target" id="index-0-manual:cmake(1)"></span><a class="reference internal" href="../manual/cmake.1.html#manual:cmake(1)" title="cmake(1)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake(1)</span></code></a> if the appropriate conditions
+are met.  See <span class="target" id="index-0-manual:cmake-qt(7)"></span><a class="reference internal" href="../manual/cmake-qt.7.html#manual:cmake-qt(7)" title="cmake-qt(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-qt(7)</span></code></a> for more.</p>
+</div>
+<div class="section" id="qt-macros">
+<h2>Qt Macros<a class="headerlink" href="#qt-macros" title="Permalink to this headline">¶</a></h2>
+<p>In some cases it can be necessary or useful to invoke the Qt build tools in a
+more-manual way. Several macros are available to add targets for such uses.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_WRAP_CPP</span><span class="p">(</span><span class="n">outfiles</span> <span class="n">inputfile</span> <span class="o">...</span> <span class="p">[</span><span class="n">TARGET</span> <span class="n">tgt</span><span class="p">]</span> <span class="n">OPTIONS</span> <span class="o">...</span><span class="p">)</span>
+      <span class="n">create</span> <span class="n">moc</span> <span class="n">code</span> <span class="kn">from</span> <span class="nn">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">files</span> <span class="n">containing</span> <span class="n">Qt</span> <span class="k">class</span> <span class="nc">with</span>
+      <span class="n">the</span> <span class="n">Q_OBJECT</span> <span class="n">declaration</span><span class="o">.</span>  <span class="n">Per</span><span class="o">-</span><span class="n">directory</span> <span class="n">preprocessor</span> <span class="n">definitions</span>
+      <span class="n">are</span> <span class="n">also</span> <span class="n">added</span><span class="o">.</span>  <span class="n">If</span> <span class="n">the</span> <span class="o">&lt;</span><span class="n">tgt</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">the</span>
+      <span class="n">INTERFACE_INCLUDE_DIRECTORIES</span> <span class="ow">and</span> <span class="n">INTERFACE_COMPILE_DEFINITIONS</span> <span class="kn">from</span>
+      <span class="nn">the</span> <span class="o">&lt;</span><span class="n">tgt</span><span class="o">&gt;</span> <span class="n">are</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">moc</span><span class="o">.</span>  <span class="n">Options</span> <span class="n">may</span> <span class="n">be</span> <span class="n">given</span> <span class="n">to</span> <span class="n">moc</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span>
+      <span class="n">those</span> <span class="n">found</span> <span class="n">when</span> <span class="n">executing</span> <span class="s2">&quot;moc -help&quot;</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_WRAP_UI</span><span class="p">(</span><span class="n">outfiles</span> <span class="n">inputfile</span> <span class="o">...</span> <span class="n">OPTIONS</span> <span class="o">...</span><span class="p">)</span>
+      <span class="n">create</span> <span class="n">code</span> <span class="kn">from</span> <span class="nn">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">Qt</span> <span class="n">designer</span> <span class="n">ui</span> <span class="n">files</span><span class="o">.</span>
+      <span class="n">Options</span> <span class="n">may</span> <span class="n">be</span> <span class="n">given</span> <span class="n">to</span> <span class="n">uic</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span> <span class="n">those</span> <span class="n">found</span>
+      <span class="n">when</span> <span class="n">executing</span> <span class="s2">&quot;uic -help&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_ADD_RESOURCES</span><span class="p">(</span><span class="n">outfiles</span> <span class="n">inputfile</span> <span class="o">...</span> <span class="n">OPTIONS</span> <span class="o">...</span><span class="p">)</span>
+      <span class="n">create</span> <span class="n">code</span> <span class="kn">from</span> <span class="nn">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">Qt</span> <span class="n">resource</span> <span class="n">files</span><span class="o">.</span>
+      <span class="n">Options</span> <span class="n">may</span> <span class="n">be</span> <span class="n">given</span> <span class="n">to</span> <span class="n">rcc</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span> <span class="n">those</span> <span class="n">found</span>
+      <span class="n">when</span> <span class="n">executing</span> <span class="s2">&quot;rcc -help&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_GENERATE_MOC</span><span class="p">(</span><span class="n">inputfile</span> <span class="n">outputfile</span> <span class="p">[</span><span class="n">TARGET</span> <span class="n">tgt</span><span class="p">])</span>
+      <span class="n">creates</span> <span class="n">a</span> <span class="n">rule</span> <span class="n">to</span> <span class="n">run</span> <span class="n">moc</span> <span class="n">on</span> <span class="n">infile</span> <span class="ow">and</span> <span class="n">create</span> <span class="n">outfile</span><span class="o">.</span>
+      <span class="n">Use</span> <span class="n">this</span> <span class="k">if</span> <span class="k">for</span> <span class="n">some</span> <span class="n">reason</span> <span class="n">QT4_WRAP_CPP</span><span class="p">()</span> <span class="n">isn</span><span class="s1">&#39;t appropriate, e.g.</span>
+      <span class="n">because</span> <span class="n">you</span> <span class="n">need</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">filename</span> <span class="k">for</span> <span class="n">the</span> <span class="n">moc</span> <span class="n">file</span> <span class="ow">or</span> <span class="n">something</span>
+      <span class="n">similar</span><span class="o">.</span>  <span class="n">If</span> <span class="n">the</span> <span class="o">&lt;</span><span class="n">tgt</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">the</span>
+      <span class="n">INTERFACE_INCLUDE_DIRECTORIES</span> <span class="ow">and</span> <span class="n">INTERFACE_COMPILE_DEFINITIONS</span> <span class="kn">from</span>
+      <span class="nn">the</span> <span class="o">&lt;</span><span class="n">tgt</span><span class="o">&gt;</span> <span class="n">are</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">moc</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_ADD_DBUS_INTERFACE</span><span class="p">(</span><span class="n">outfiles</span> <span class="n">interface</span> <span class="n">basename</span><span class="p">)</span>
+      <span class="n">Create</span> <span class="n">the</span> <span class="n">interface</span> <span class="n">header</span> <span class="ow">and</span> <span class="n">implementation</span> <span class="n">files</span> <span class="k">with</span> <span class="n">the</span>
+      <span class="n">given</span> <span class="n">basename</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">given</span> <span class="n">interface</span> <span class="n">xml</span> <span class="n">file</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">it</span> <span class="n">to</span>
+      <span class="n">the</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sources</span><span class="o">.</span>
+
+      <span class="n">You</span> <span class="n">can</span> <span class="k">pass</span> <span class="n">additional</span> <span class="n">parameters</span> <span class="n">to</span> <span class="n">the</span> <span class="n">qdbusxml2cpp</span> <span class="n">call</span> <span class="n">by</span> <span class="n">setting</span>
+      <span class="n">properties</span> <span class="n">on</span> <span class="n">the</span> <span class="nb">input</span> <span class="n">file</span><span class="p">:</span>
+
+      <span class="n">INCLUDE</span> <span class="n">the</span> <span class="n">given</span> <span class="n">file</span> <span class="n">will</span> <span class="n">be</span> <span class="n">included</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">generate</span> <span class="n">interface</span> <span class="n">header</span>
+
+      <span class="n">CLASSNAME</span> <span class="n">the</span> <span class="n">generated</span> <span class="k">class</span> <span class="nc">is</span> <span class="n">named</span> <span class="n">accordingly</span>
+
+      <span class="n">NO_NAMESPACE</span> <span class="n">the</span> <span class="n">generated</span> <span class="k">class</span> <span class="nc">is</span> <span class="ow">not</span> <span class="n">wrapped</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">namespace</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_ADD_DBUS_INTERFACES</span><span class="p">(</span><span class="n">outfiles</span> <span class="n">inputfile</span> <span class="o">...</span> <span class="p">)</span>
+      <span class="n">Create</span> <span class="n">the</span> <span class="n">interface</span> <span class="n">header</span> <span class="ow">and</span> <span class="n">implementation</span> <span class="n">files</span>
+      <span class="k">for</span> <span class="nb">all</span> <span class="n">listed</span> <span class="n">interface</span> <span class="n">xml</span> <span class="n">files</span><span class="o">.</span>
+      <span class="n">The</span> <span class="n">basename</span> <span class="n">will</span> <span class="n">be</span> <span class="n">automatically</span> <span class="n">determined</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">name</span>
+      <span class="n">of</span> <span class="n">the</span> <span class="n">xml</span> <span class="n">file</span><span class="o">.</span>
+
+      <span class="n">The</span> <span class="n">source</span> <span class="n">file</span> <span class="n">properties</span> <span class="n">described</span> <span class="k">for</span>
+      <span class="n">QT4_ADD_DBUS_INTERFACE</span> <span class="n">also</span> <span class="n">apply</span> <span class="n">here</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_ADD_DBUS_ADAPTOR</span><span class="p">(</span><span class="n">outfiles</span> <span class="n">xmlfile</span> <span class="n">parentheader</span> <span class="n">parentclassname</span>
+                           <span class="p">[</span><span class="n">basename</span><span class="p">]</span> <span class="p">[</span><span class="n">classname</span><span class="p">])</span>
+      <span class="n">create</span> <span class="n">a</span> <span class="n">dbus</span> <span class="n">adaptor</span> <span class="p">(</span><span class="n">header</span> <span class="ow">and</span> <span class="n">implementation</span> <span class="n">file</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">xml</span> <span class="n">file</span>
+      <span class="n">describing</span> <span class="n">the</span> <span class="n">interface</span><span class="p">,</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">it</span> <span class="n">to</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">sources</span><span class="o">.</span> <span class="n">The</span> <span class="n">adaptor</span>
+      <span class="n">forwards</span> <span class="n">the</span> <span class="n">calls</span> <span class="n">to</span> <span class="n">a</span> <span class="n">parent</span> <span class="n">class</span><span class="p">,</span> <span class="n">defined</span> <span class="ow">in</span> <span class="n">parentheader</span> <span class="ow">and</span> <span class="n">named</span>
+      <span class="n">parentclassname</span><span class="o">.</span> <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">generated</span> <span class="n">files</span> <span class="n">will</span> <span class="n">be</span>
+      <span class="o">&lt;</span><span class="n">basename</span><span class="o">&gt;</span><span class="n">adaptor</span><span class="o">.</span><span class="p">{</span><span class="n">cpp</span><span class="p">,</span><span class="n">h</span><span class="p">}</span> <span class="n">where</span> <span class="n">basename</span> <span class="n">defaults</span> <span class="n">to</span> <span class="n">the</span> <span class="n">basename</span> <span class="n">of</span> <span class="n">the</span>
+      <span class="n">xml</span> <span class="n">file</span><span class="o">.</span>
+      <span class="n">If</span> <span class="o">&lt;</span><span class="n">classname</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">provided</span><span class="p">,</span> <span class="n">then</span> <span class="n">it</span> <span class="n">will</span> <span class="n">be</span> <span class="n">used</span> <span class="k">as</span> <span class="n">the</span> <span class="n">classname</span> <span class="n">of</span> <span class="n">the</span>
+      <span class="n">adaptor</span> <span class="n">itself</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_GENERATE_DBUS_INTERFACE</span><span class="p">(</span> <span class="n">header</span> <span class="p">[</span><span class="n">interfacename</span><span class="p">]</span> <span class="n">OPTIONS</span> <span class="o">...</span><span class="p">)</span>
+      <span class="n">generate</span> <span class="n">the</span> <span class="n">xml</span> <span class="n">interface</span> <span class="n">file</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">given</span> <span class="n">header</span><span class="o">.</span>
+      <span class="n">If</span> <span class="n">the</span> <span class="n">optional</span> <span class="n">argument</span> <span class="n">interfacename</span> <span class="ow">is</span> <span class="n">omitted</span><span class="p">,</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span>
+      <span class="n">interface</span> <span class="n">file</span> <span class="ow">is</span> <span class="n">constructed</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">basename</span> <span class="n">of</span> <span class="n">the</span> <span class="n">header</span> <span class="k">with</span>
+      <span class="n">the</span> <span class="n">suffix</span> <span class="o">.</span><span class="n">xml</span> <span class="n">appended</span><span class="o">.</span>
+      <span class="n">Options</span> <span class="n">may</span> <span class="n">be</span> <span class="n">given</span> <span class="n">to</span> <span class="n">qdbuscpp2xml</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span> <span class="n">those</span> <span class="n">found</span> <span class="n">when</span>
+      <span class="n">executing</span> <span class="s2">&quot;qdbuscpp2xml --help&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_CREATE_TRANSLATION</span><span class="p">(</span> <span class="n">qm_files</span> <span class="n">directories</span> <span class="o">...</span> <span class="n">sources</span> <span class="o">...</span>
+                              <span class="n">ts_files</span> <span class="o">...</span> <span class="n">OPTIONS</span> <span class="o">...</span><span class="p">)</span>
+      <span class="n">out</span><span class="p">:</span> <span class="n">qm_files</span>
+      <span class="ow">in</span><span class="p">:</span>  <span class="n">directories</span> <span class="n">sources</span> <span class="n">ts_files</span>
+      <span class="n">options</span><span class="p">:</span> <span class="n">flags</span> <span class="n">to</span> <span class="k">pass</span> <span class="n">to</span> <span class="n">lupdate</span><span class="p">,</span> <span class="n">such</span> <span class="k">as</span> <span class="o">-</span><span class="n">extensions</span> <span class="n">to</span> <span class="n">specify</span>
+      <span class="n">extensions</span> <span class="k">for</span> <span class="n">a</span> <span class="n">directory</span> <span class="n">scan</span><span class="o">.</span>
+      <span class="n">generates</span> <span class="n">commands</span> <span class="n">to</span> <span class="n">create</span> <span class="o">.</span><span class="n">ts</span> <span class="p">(</span><span class="n">vie</span> <span class="n">lupdate</span><span class="p">)</span> <span class="ow">and</span> <span class="o">.</span><span class="n">qm</span>
+      <span class="p">(</span><span class="n">via</span> <span class="n">lrelease</span><span class="p">)</span> <span class="o">-</span> <span class="n">files</span> <span class="kn">from</span> <span class="nn">directories</span> <span class="ow">and</span><span class="o">/</span><span class="ow">or</span> <span class="n">sources</span><span class="o">.</span> <span class="n">The</span> <span class="n">ts</span> <span class="n">files</span> <span class="n">are</span>
+      <span class="n">created</span> <span class="ow">and</span><span class="o">/</span><span class="ow">or</span> <span class="n">updated</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">source</span> <span class="n">tree</span> <span class="p">(</span><span class="n">unless</span> <span class="n">given</span> <span class="k">with</span> <span class="n">full</span> <span class="n">paths</span><span class="p">)</span><span class="o">.</span>
+      <span class="n">The</span> <span class="n">qm</span> <span class="n">files</span> <span class="n">are</span> <span class="n">generated</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">build</span> <span class="n">tree</span><span class="o">.</span>
+      <span class="n">Updating</span> <span class="n">the</span> <span class="n">translations</span> <span class="n">can</span> <span class="n">be</span> <span class="n">done</span> <span class="n">by</span> <span class="n">adding</span> <span class="n">the</span> <span class="n">qm_files</span>
+      <span class="n">to</span> <span class="n">the</span> <span class="n">source</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">your</span> <span class="n">library</span><span class="o">/</span><span class="n">executable</span><span class="p">,</span> <span class="n">so</span> <span class="n">they</span> <span class="n">are</span>
+      <span class="n">always</span> <span class="n">updated</span><span class="p">,</span> <span class="ow">or</span> <span class="n">by</span> <span class="n">adding</span> <span class="n">a</span> <span class="n">custom</span> <span class="n">target</span> <span class="n">to</span> <span class="n">control</span> <span class="n">when</span>
+      <span class="n">they</span> <span class="n">get</span> <span class="n">updated</span><span class="o">/</span><span class="n">generated</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_ADD_TRANSLATION</span><span class="p">(</span> <span class="n">qm_files</span> <span class="n">ts_files</span> <span class="o">...</span> <span class="p">)</span>
+      <span class="n">out</span><span class="p">:</span> <span class="n">qm_files</span>
+      <span class="ow">in</span><span class="p">:</span>  <span class="n">ts_files</span>
+      <span class="n">generates</span> <span class="n">commands</span> <span class="n">to</span> <span class="n">create</span> <span class="o">.</span><span class="n">qm</span> <span class="kn">from</span> <span class="nn">.ts</span> <span class="o">-</span> <span class="n">files</span><span class="o">.</span> <span class="n">The</span> <span class="n">generated</span>
+      <span class="n">filenames</span> <span class="n">can</span> <span class="n">be</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">qm_files</span><span class="o">.</span> <span class="n">The</span> <span class="n">ts_files</span>
+      <span class="n">must</span> <span class="n">exist</span> <span class="ow">and</span> <span class="n">are</span> <span class="ow">not</span> <span class="n">updated</span> <span class="ow">in</span> <span class="nb">any</span> <span class="n">way</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">macro</span> <span class="n">QT4_AUTOMOC</span><span class="p">(</span><span class="n">sourcefile1</span> <span class="n">sourcefile2</span> <span class="o">...</span> <span class="p">[</span><span class="n">TARGET</span> <span class="n">tgt</span><span class="p">])</span>
+      <span class="n">The</span> <span class="n">qt4_automoc</span> <span class="n">macro</span> <span class="ow">is</span> <span class="n">obsolete</span><span class="o">.</span>  <span class="n">Use</span> <span class="n">the</span> <span class="n">CMAKE_AUTOMOC</span> <span class="n">feature</span> <span class="n">instead</span><span class="o">.</span>
+      <span class="n">This</span> <span class="n">macro</span> <span class="ow">is</span> <span class="n">still</span> <span class="n">experimental</span><span class="o">.</span>
+      <span class="n">It</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span> <span class="n">to</span> <span class="n">have</span> <span class="n">moc</span> <span class="n">automatically</span> <span class="n">handled</span><span class="o">.</span>
+      <span class="n">So</span> <span class="k">if</span> <span class="n">you</span> <span class="n">have</span> <span class="n">the</span> <span class="n">files</span> <span class="n">foo</span><span class="o">.</span><span class="n">h</span> <span class="ow">and</span> <span class="n">foo</span><span class="o">.</span><span class="n">cpp</span><span class="p">,</span> <span class="ow">and</span> <span class="ow">in</span> <span class="n">foo</span><span class="o">.</span><span class="n">h</span> <span class="n">a</span>
+      <span class="n">a</span> <span class="k">class</span> <span class="nc">uses</span> <span class="n">the</span> <span class="n">Q_OBJECT</span> <span class="n">macro</span><span class="p">,</span> <span class="n">moc</span> <span class="n">has</span> <span class="n">to</span> <span class="n">run</span> <span class="n">on</span> <span class="n">it</span><span class="o">.</span> <span class="n">If</span> <span class="n">you</span> <span class="n">don</span><span class="s1">&#39;t</span>
+      <span class="n">want</span> <span class="n">to</span> <span class="n">use</span> <span class="n">QT4_WRAP_CPP</span><span class="p">()</span> <span class="p">(</span><span class="n">which</span> <span class="ow">is</span> <span class="n">reliable</span> <span class="ow">and</span> <span class="n">mature</span><span class="p">),</span> <span class="n">you</span> <span class="n">can</span> <span class="n">insert</span>
+      <span class="c1">#include &quot;foo.moc&quot;</span>
+      <span class="ow">in</span> <span class="n">foo</span><span class="o">.</span><span class="n">cpp</span> <span class="ow">and</span> <span class="n">then</span> <span class="n">give</span> <span class="n">foo</span><span class="o">.</span><span class="n">cpp</span> <span class="k">as</span> <span class="n">argument</span> <span class="n">to</span> <span class="n">QT4_AUTOMOC</span><span class="p">()</span><span class="o">.</span> <span class="n">This</span> <span class="n">will</span>
+      <span class="n">scan</span> <span class="nb">all</span> <span class="n">listed</span> <span class="n">files</span> <span class="n">at</span> <span class="n">cmake</span><span class="o">-</span><span class="n">time</span> <span class="k">for</span> <span class="n">such</span> <span class="n">included</span> <span class="n">moc</span> <span class="n">files</span> <span class="ow">and</span> <span class="k">if</span> <span class="n">it</span>
+      <span class="n">finds</span> <span class="n">them</span> <span class="n">cause</span> <span class="n">a</span> <span class="n">rule</span> <span class="n">to</span> <span class="n">be</span> <span class="n">generated</span> <span class="n">to</span> <span class="n">run</span> <span class="n">moc</span> <span class="n">at</span> <span class="n">build</span> <span class="n">time</span> <span class="n">on</span> <span class="n">the</span>
+      <span class="n">accompanying</span> <span class="n">header</span> <span class="n">file</span> <span class="n">foo</span><span class="o">.</span><span class="n">h</span><span class="o">.</span>
+      <span class="n">If</span> <span class="n">a</span> <span class="n">source</span> <span class="n">file</span> <span class="n">has</span> <span class="n">the</span> <span class="n">SKIP_AUTOMOC</span> <span class="nb">property</span> <span class="nb">set</span> <span class="n">it</span> <span class="n">will</span> <span class="n">be</span> <span class="n">ignored</span> <span class="n">by</span>
+      <span class="n">this</span> <span class="n">macro</span><span class="o">.</span>
+      <span class="n">If</span> <span class="n">the</span> <span class="o">&lt;</span><span class="n">tgt</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">specified</span><span class="p">,</span> <span class="n">the</span> <span class="n">INTERFACE_INCLUDE_DIRECTORIES</span> <span class="ow">and</span>
+      <span class="n">INTERFACE_COMPILE_DEFINITIONS</span> <span class="kn">from</span> <span class="nn">the</span> <span class="o">&lt;</span><span class="n">tgt</span><span class="o">&gt;</span> <span class="n">are</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">moc</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">function</span> <span class="n">QT4_USE_MODULES</span><span class="p">(</span> <span class="n">target</span> <span class="p">[</span><span class="n">link_type</span><span class="p">]</span> <span class="n">modules</span><span class="o">...</span><span class="p">)</span>
+       <span class="n">This</span> <span class="n">function</span> <span class="ow">is</span> <span class="n">obsolete</span><span class="o">.</span> <span class="n">Use</span> <span class="n">target_link_libraries</span> <span class="k">with</span> <span class="n">IMPORTED</span> <span class="n">targets</span>
+       <span class="n">instead</span><span class="o">.</span>
+       <span class="n">Make</span> <span class="o">&lt;</span><span class="n">target</span><span class="o">&gt;</span> <span class="n">use</span> <span class="n">the</span> <span class="o">&lt;</span><span class="n">modules</span><span class="o">&gt;</span> <span class="kn">from</span> <span class="nn">Qt.</span> <span class="n">Using</span> <span class="n">a</span> <span class="n">Qt</span> <span class="n">module</span> <span class="n">means</span>
+       <span class="n">to</span> <span class="n">link</span> <span class="n">to</span> <span class="n">the</span> <span class="n">library</span><span class="p">,</span> <span class="n">add</span> <span class="n">the</span> <span class="n">relevant</span> <span class="n">include</span> <span class="n">directories</span> <span class="k">for</span> <span class="n">the</span>
+       <span class="n">module</span><span class="p">,</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">the</span> <span class="n">relevant</span> <span class="n">compiler</span> <span class="n">defines</span> <span class="k">for</span> <span class="n">using</span> <span class="n">the</span> <span class="n">module</span><span class="o">.</span>
+       <span class="n">Modules</span> <span class="n">are</span> <span class="n">roughly</span> <span class="n">equivalent</span> <span class="n">to</span> <span class="n">components</span> <span class="n">of</span> <span class="n">Qt4</span><span class="p">,</span> <span class="n">so</span> <span class="n">usage</span> <span class="n">would</span> <span class="n">be</span>
+       <span class="n">something</span> <span class="n">like</span><span class="p">:</span>
+        <span class="n">qt4_use_modules</span><span class="p">(</span><span class="n">myexe</span> <span class="n">Core</span> <span class="n">Gui</span> <span class="n">Declarative</span><span class="p">)</span>
+       <span class="n">to</span> <span class="n">use</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span> <span class="ow">and</span> <span class="n">QtDeclarative</span><span class="o">.</span> <span class="n">The</span> <span class="n">optional</span> <span class="o">&lt;</span><span class="n">link_type</span><span class="o">&gt;</span> <span class="n">argument</span>
+       <span class="n">can</span> <span class="n">be</span> <span class="n">specified</span> <span class="k">as</span> <span class="n">either</span> <span class="n">LINK_PUBLIC</span> <span class="ow">or</span> <span class="n">LINK_PRIVATE</span> <span class="n">to</span> <span class="n">specify</span> <span class="n">the</span>
+       <span class="n">same</span> <span class="n">argument</span> <span class="n">to</span> <span class="n">the</span> <span class="n">target_link_libraries</span> <span class="n">call</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="imported-targets">
+<h2>IMPORTED Targets<a class="headerlink" href="#imported-targets" title="Permalink to this headline">¶</a></h2>
+<p>A particular Qt library may be used by using the corresponding
+<span class="target" id="index-2-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> target with the <span class="target" id="index-0-command:target_link_libraries"></span><a class="reference internal" href="../command/target_link_libraries.html#command:target_link_libraries" title="target_link_libraries"><code class="xref cmake cmake-command docutils literal"><span class="pre">target_link_libraries()</span></code></a>
+command:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">myexe</span> <span class="s">Qt4::QtGui</span> <span class="s">Qt4::QtXml</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using a target in this way causes :cmake(1)` to use the appropriate include
+directories and compile definitions for the target when compiling <code class="docutils literal"><span class="pre">myexe</span></code>.</p>
+<p>Targets are aware of their dependencies, so for example it is not necessary
+to list <code class="docutils literal"><span class="pre">Qt4::QtCore</span></code> if another Qt library is listed, and it is not
+necessary to list <code class="docutils literal"><span class="pre">Qt4::QtGui</span></code> if <code class="docutils literal"><span class="pre">Qt4::QtDeclarative</span></code> is listed.
+Targets may be tested for existence in the usual way with the
+<span class="target" id="index-0-command:if"></span><a class="reference internal" href="../command/if.html#command:if" title="if"><code class="xref cmake cmake-command docutils literal"><span class="pre">if(TARGET)</span></code></a> command.</p>
+<p>The Qt toolkit may contain both debug and release libraries.
+<span class="target" id="index-1-manual:cmake(1)"></span><a class="reference internal" href="../manual/cmake.1.html#manual:cmake(1)" title="cmake(1)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake(1)</span></code></a> will choose the appropriate version based on the build
+configuration.</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">Qt4::QtCore</span></code></dt>
+<dd>The QtCore target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtGui</span></code></dt>
+<dd>The QtGui target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::Qt3Support</span></code></dt>
+<dd>The Qt3Support target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtAssistant</span></code></dt>
+<dd>The QtAssistant target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtAssistantClient</span></code></dt>
+<dd>The QtAssistantClient target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QAxContainer</span></code></dt>
+<dd>The QAxContainer target (Windows only)</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QAxServer</span></code></dt>
+<dd>The QAxServer target (Windows only)</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtDBus</span></code></dt>
+<dd>The QtDBus target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtDeclarative</span></code></dt>
+<dd>The QtDeclarative target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtDesigner</span></code></dt>
+<dd>The QtDesigner target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtDesignerComponents</span></code></dt>
+<dd>The QtDesignerComponents target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtHelp</span></code></dt>
+<dd>The QtHelp target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtMotif</span></code></dt>
+<dd>The QtMotif target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtMultimedia</span></code></dt>
+<dd>The QtMultimedia target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtNetwork</span></code></dt>
+<dd>The QtNetwork target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtNsPLugin</span></code></dt>
+<dd>The QtNsPLugin target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtOpenGL</span></code></dt>
+<dd>The QtOpenGL target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtScript</span></code></dt>
+<dd>The QtScript target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtScriptTools</span></code></dt>
+<dd>The QtScriptTools target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtSql</span></code></dt>
+<dd>The QtSql target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtSvg</span></code></dt>
+<dd>The QtSvg target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtTest</span></code></dt>
+<dd>The QtTest target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtUiTools</span></code></dt>
+<dd>The QtUiTools target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtWebKit</span></code></dt>
+<dd>The QtWebKit target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtXml</span></code></dt>
+<dd>The QtXml target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::QtXmlPatterns</span></code></dt>
+<dd>The QtXmlPatterns target</dd>
+<dt><code class="docutils literal"><span class="pre">Qt4::phonon</span></code></dt>
+<dd>The phonon target</dd>
+</dl>
+</div>
+<div class="section" id="result-variables">
+<h2>Result Variables<a class="headerlink" href="#result-variables" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>Below is a detailed list of variables that FindQt4.cmake sets.</div></blockquote>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">Qt4_FOUND</span></code></dt>
+<dd>If false, don&#8217;t try to use Qt 4.</dd>
+<dt><code class="docutils literal"><span class="pre">QT_FOUND</span></code></dt>
+<dd>If false, don&#8217;t try to use Qt. This variable is for compatibility only.</dd>
+<dt><code class="docutils literal"><span class="pre">QT4_FOUND</span></code></dt>
+<dd>If false, don&#8217;t try to use Qt 4. This variable is for compatibility only.</dd>
+<dt><code class="docutils literal"><span class="pre">QT_VERSION_MAJOR</span></code></dt>
+<dd>The major version of Qt found.</dd>
+<dt><code class="docutils literal"><span class="pre">QT_VERSION_MINOR</span></code></dt>
+<dd>The minor version of Qt found.</dd>
+<dt><code class="docutils literal"><span class="pre">QT_VERSION_PATCH</span></code></dt>
+<dd>The patch version of Qt found.</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FindQt4</a><ul>
+<li><a class="reference internal" href="#finding-and-using-qt4">Finding and Using Qt4</a></li>
+<li><a class="reference internal" href="#qt-build-tools">Qt Build Tools</a></li>
+<li><a class="reference internal" href="#qt-macros">Qt Macros</a></li>
+<li><a class="reference internal" href="#imported-targets">IMPORTED Targets</a></li>
+<li><a class="reference internal" href="#result-variables">Result Variables</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindQt3.html"
+                        title="previous chapter">FindQt3</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindQt.html"
+                        title="next chapter">FindQt</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindQt4.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindQt.html" title="FindQt"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindQt3.html" title="FindQt3"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

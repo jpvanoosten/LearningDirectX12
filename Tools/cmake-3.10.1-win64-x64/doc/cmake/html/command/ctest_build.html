@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>ctest_build &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ctest_configure" href="ctest_configure.html" />
+    <link rel="prev" title="try_run" href="try_run.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ctest_configure.html" title="ctest_configure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="try_run.html" title="try_run"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ctest-build">
+<span id="command:ctest_build"></span><h1>ctest_build<a class="headerlink" href="#ctest-build" title="Permalink to this headline">¶</a></h1>
+<p>Perform the <a class="reference internal" href="../manual/ctest.1.html#ctest-build-step"><span class="std std-ref">CTest Build Step</span></a> as a <a class="reference internal" href="../manual/ctest.1.html#dashboard-client"><span class="std std-ref">Dashboard Client</span></a>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ctest_build</span><span class="p">([</span><span class="n">BUILD</span> <span class="o">&lt;</span><span class="n">build</span><span class="o">-</span><span class="nb">dir</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">APPEND</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">CONFIGURATION</span> <span class="o">&lt;</span><span class="n">config</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">FLAGS</span> <span class="o">&lt;</span><span class="n">flags</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">PROJECT_NAME</span> <span class="o">&lt;</span><span class="n">project</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">TARGET</span> <span class="o">&lt;</span><span class="n">target</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">NUMBER_ERRORS</span> <span class="o">&lt;</span><span class="n">num</span><span class="o">-</span><span class="n">err</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">NUMBER_WARNINGS</span> <span class="o">&lt;</span><span class="n">num</span><span class="o">-</span><span class="n">warn</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">RETURN_VALUE</span> <span class="o">&lt;</span><span class="n">result</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">CAPTURE_CMAKE_ERROR</span> <span class="o">&lt;</span><span class="n">result</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+<p>Build the project and store results in <code class="docutils literal"><span class="pre">Build.xml</span></code>
+for submission with the <span class="target" id="index-0-command:ctest_submit"></span><a class="reference internal" href="ctest_submit.html#command:ctest_submit" title="ctest_submit"><code class="xref cmake cmake-command docutils literal"><span class="pre">ctest_submit()</span></code></a> command.</p>
+<p>The <span class="target" id="index-0-variable:CTEST_BUILD_COMMAND"></span><a class="reference internal" href="../variable/CTEST_BUILD_COMMAND.html#variable:CTEST_BUILD_COMMAND" title="CTEST_BUILD_COMMAND"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CTEST_BUILD_COMMAND</span></code></a> variable may be set to explicitly
+specify the build command line.  Otherwise the build command line is
+computed automatically based on the options given.</p>
+<p>The options are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">BUILD</span> <span class="pre">&lt;build-dir&gt;</span></code></dt>
+<dd>Specify the top-level build directory.  If not given, the
+<span class="target" id="index-0-variable:CTEST_BINARY_DIRECTORY"></span><a class="reference internal" href="../variable/CTEST_BINARY_DIRECTORY.html#variable:CTEST_BINARY_DIRECTORY" title="CTEST_BINARY_DIRECTORY"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CTEST_BINARY_DIRECTORY</span></code></a> variable is used.</dd>
+<dt><code class="docutils literal"><span class="pre">APPEND</span></code></dt>
+<dd>Mark <code class="docutils literal"><span class="pre">Build.xml</span></code> for append to results previously submitted to a
+dashboard server since the last <span class="target" id="index-0-command:ctest_start"></span><a class="reference internal" href="ctest_start.html#command:ctest_start" title="ctest_start"><code class="xref cmake cmake-command docutils literal"><span class="pre">ctest_start()</span></code></a> call.
+Append semantics are defined by the dashboard server in use.
+This does <em>not</em> cause results to be appended to a <code class="docutils literal"><span class="pre">.xml</span></code> file
+produced by a previous call to this command.</dd>
+<dt><code class="docutils literal"><span class="pre">CONFIGURATION</span> <span class="pre">&lt;config&gt;</span></code></dt>
+<dd>Specify the build configuration (e.g. <code class="docutils literal"><span class="pre">Debug</span></code>).  If not
+specified the <code class="docutils literal"><span class="pre">CTEST_BUILD_CONFIGURATION</span></code> variable will be checked.
+Otherwise the <code class="docutils literal"><span class="pre">-C</span> <span class="pre">&lt;cfg&gt;</span></code> option given to the <span class="target" id="index-0-manual:ctest(1)"></span><a class="reference internal" href="../manual/ctest.1.html#manual:ctest(1)" title="ctest(1)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">ctest(1)</span></code></a>
+command will be used, if any.</dd>
+<dt><code class="docutils literal"><span class="pre">FLAGS</span> <span class="pre">&lt;flags&gt;</span></code></dt>
+<dd>Pass additional arguments to the underlying build command.
+If not specified the <code class="docutils literal"><span class="pre">CTEST_BUILD_FLAGS</span></code> variable will be checked.
+This can, e.g., be used to trigger a parallel build using the
+<code class="docutils literal"><span class="pre">-j</span></code> option of make. See the <span class="target" id="index-0-module:ProcessorCount"></span><a class="reference internal" href="../module/ProcessorCount.html#module:ProcessorCount" title="ProcessorCount"><code class="xref cmake cmake-module docutils literal"><span class="pre">ProcessorCount</span></code></a> module
+for an example.</dd>
+<dt><code class="docutils literal"><span class="pre">PROJECT_NAME</span> <span class="pre">&lt;project-name&gt;</span></code></dt>
+<dd>Set the name of the project to build.  This should correspond
+to the top-level call to the <span class="target" id="index-0-command:project"></span><a class="reference internal" href="project.html#command:project" title="project"><code class="xref cmake cmake-command docutils literal"><span class="pre">project()</span></code></a> command.
+If not specified the <code class="docutils literal"><span class="pre">CTEST_PROJECT_NAME</span></code> variable will be checked.</dd>
+<dt><code class="docutils literal"><span class="pre">TARGET</span> <span class="pre">&lt;target-name&gt;</span></code></dt>
+<dd>Specify the name of a target to build.  If not specified the
+<code class="docutils literal"><span class="pre">CTEST_BUILD_TARGET</span></code> variable will be checked.  Otherwise the
+default target will be built.  This is the &#8220;all&#8221; target
+(called <code class="docutils literal"><span class="pre">ALL_BUILD</span></code> in <a class="reference internal" href="../manual/cmake-generators.7.html#visual-studio-generators"><span class="std std-ref">Visual Studio Generators</span></a>).</dd>
+<dt><code class="docutils literal"><span class="pre">NUMBER_ERRORS</span> <span class="pre">&lt;num-err-var&gt;</span></code></dt>
+<dd>Store the number of build errors detected in the given variable.</dd>
+<dt><code class="docutils literal"><span class="pre">NUMBER_WARNINGS</span> <span class="pre">&lt;num-warn-var&gt;</span></code></dt>
+<dd>Store the number of build warnings detected in the given variable.</dd>
+<dt><code class="docutils literal"><span class="pre">RETURN_VALUE</span> <span class="pre">&lt;result-var&gt;</span></code></dt>
+<dd>Store the return value of the native build tool in the given variable.</dd>
+<dt><code class="docutils literal"><span class="pre">CAPTURE_CMAKE_ERROR</span> <span class="pre">&lt;result-var&gt;</span></code></dt>
+<dd>Store in the <code class="docutils literal"><span class="pre">&lt;result-var&gt;</span></code> variable -1 if there are any errors running
+the command and prevent ctest from returning non-zero if an error occurs.</dd>
+<dt><code class="docutils literal"><span class="pre">QUIET</span></code></dt>
+<dd>Suppress any CTest-specific non-error output that would have been
+printed to the console otherwise.  The summary of warnings / errors,
+as well as the output from the native build tool is unaffected by
+this option.</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="try_run.html"
+                        title="previous chapter">try_run</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ctest_configure.html"
+                        title="next chapter">ctest_configure</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/ctest_build.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ctest_configure.html" title="ctest_configure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="try_run.html" title="try_run"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

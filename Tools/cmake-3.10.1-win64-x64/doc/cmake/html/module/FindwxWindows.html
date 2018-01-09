@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindwxWindows &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindXCTest" href="FindXCTest.html" />
+    <link rel="prev" title="FindwxWidgets" href="FindwxWidgets.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindXCTest.html" title="FindXCTest"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindwxWidgets.html" title="FindwxWidgets"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findwxwindows">
+<span id="module:FindwxWindows"></span><h1>FindwxWindows<a class="headerlink" href="#findwxwindows" title="Permalink to this headline">¶</a></h1>
+<p>Find wxWindows (wxWidgets) installation</p>
+<p>This module finds if wxWindows/wxWidgets is installed and determines
+where the include files and libraries are.  It also determines what
+the name of the library is.  Please note this file is DEPRECATED and
+replaced by FindwxWidgets.cmake.  This code sets the following
+variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">WXWINDOWS_FOUND</span>     <span class="o">=</span> <span class="n">system</span> <span class="n">has</span> <span class="n">WxWindows</span>
+<span class="n">WXWINDOWS_LIBRARIES</span> <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">wxWindows</span> <span class="n">libraries</span>
+                      <span class="n">on</span> <span class="n">Unix</span><span class="o">/</span><span class="n">Linux</span> <span class="k">with</span> <span class="n">additional</span>
+                      <span class="n">linker</span> <span class="n">flags</span> <span class="kn">from</span>
+                      <span class="s2">&quot;wx-config --libs&quot;</span>
+<span class="n">CMAKE_WXWINDOWS_CXX_FLAGS</span>  <span class="o">=</span> <span class="n">Compiler</span> <span class="n">flags</span> <span class="k">for</span> <span class="n">wxWindows</span><span class="p">,</span>
+                             <span class="n">essentially</span> <span class="s2">&quot;`wx-config --cxxflags`&quot;</span>
+                             <span class="n">on</span> <span class="n">Linux</span>
+<span class="n">WXWINDOWS_INCLUDE_DIR</span>      <span class="o">=</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="s2">&quot;wx/wx.h&quot;</span> <span class="ow">and</span> <span class="s2">&quot;wx/setup.h&quot;</span>
+<span class="n">WXWINDOWS_LINK_DIRECTORIES</span> <span class="o">=</span> <span class="n">link</span> <span class="n">directories</span><span class="p">,</span> <span class="n">useful</span> <span class="k">for</span> <span class="n">rpath</span> <span class="n">on</span>
+                              <span class="n">Unix</span>
+<span class="n">WXWINDOWS_DEFINITIONS</span>      <span class="o">=</span> <span class="n">extra</span> <span class="n">defines</span>
+</pre></div>
+</div>
+<p>OPTIONS If you need OpenGL support please</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="n">WXWINDOWS_USE_GL</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in your CMakeLists.txt <em>before</em> you include this file.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">HAVE_ISYSTEM</span>      <span class="o">-</span> <span class="n">true</span> <span class="n">required</span> <span class="n">to</span> <span class="n">replace</span> <span class="o">-</span><span class="n">I</span> <span class="n">by</span> <span class="o">-</span><span class="n">isystem</span> <span class="n">on</span> <span class="n">g</span><span class="o">++</span>
+</pre></div>
+</div>
+<p>For convenience include Use_wxWindows.cmake in your project&#8217;s
+CMakeLists.txt using
+include(${CMAKE_CURRENT_LIST_DIR}/Use_wxWindows.cmake).</p>
+<p>USAGE</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="n">WXWINDOWS_USE_GL</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">wxWindows</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>NOTES wxWidgets 2.6.x is supported for monolithic builds e.g.
+compiled in wx/build/msw dir as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">nmake</span> <span class="o">-</span><span class="n">f</span> <span class="n">makefile</span><span class="o">.</span><span class="n">vc</span> <span class="n">BUILD</span><span class="o">=</span><span class="n">debug</span> <span class="n">SHARED</span><span class="o">=</span><span class="mi">0</span> <span class="n">USE_OPENGL</span><span class="o">=</span><span class="mi">1</span> <span class="n">MONOLITHIC</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>DEPRECATED</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_WX_CAN_COMPILE</span>
+<span class="n">WXWINDOWS_LIBRARY</span>
+<span class="n">CMAKE_WX_CXX_FLAGS</span>
+<span class="n">WXWINDOWS_INCLUDE_PATH</span>
+</pre></div>
+</div>
+<p>AUTHOR Jan Woetzel &lt;<a class="reference external" href="http://www.mip.informatik.uni-kiel.de/~jw">http://www.mip.informatik.uni-kiel.de/~jw</a>&gt;
+(07/2003-01/2006)</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindwxWidgets.html"
+                        title="previous chapter">FindwxWidgets</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindXCTest.html"
+                        title="next chapter">FindXCTest</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindwxWindows.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindXCTest.html" title="FindXCTest"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindwxWidgets.html" title="FindwxWidgets"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

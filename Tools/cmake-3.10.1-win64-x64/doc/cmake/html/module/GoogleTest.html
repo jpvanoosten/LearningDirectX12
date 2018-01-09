@@ -1,0 +1,339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>GoogleTest &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="InstallRequiredSystemLibraries" href="InstallRequiredSystemLibraries.html" />
+    <link rel="prev" title="GNUInstallDirs" href="GNUInstallDirs.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="InstallRequiredSystemLibraries.html" title="InstallRequiredSystemLibraries"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="GNUInstallDirs.html" title="GNUInstallDirs"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="googletest">
+<span id="module:GoogleTest"></span><h1>GoogleTest<a class="headerlink" href="#googletest" title="Permalink to this headline">¶</a></h1>
+<p>This module defines functions to help use the Google Test infrastructure.  Two
+mechanisms for adding tests are provided. <span class="target" id="index-0-command:gtest_add_tests"></span><a class="reference internal" href="#command:gtest_add_tests" title="gtest_add_tests"><code class="xref cmake cmake-command docutils literal"><span class="pre">gtest_add_tests()</span></code></a> has been
+around for some time, originally via <code class="docutils literal"><span class="pre">find_package(GTest)</span></code>.
+<span class="target" id="index-0-command:gtest_discover_tests"></span><a class="reference internal" href="#command:gtest_discover_tests" title="gtest_discover_tests"><code class="xref cmake cmake-command docutils literal"><span class="pre">gtest_discover_tests()</span></code></a> was introduced in CMake 3.10.</p>
+<p>The (older) <span class="target" id="index-1-command:gtest_add_tests"></span><a class="reference internal" href="#command:gtest_add_tests" title="gtest_add_tests"><code class="xref cmake cmake-command docutils literal"><span class="pre">gtest_add_tests()</span></code></a> scans source files to identify tests.
+This is usually effective, with some caveats, including in cross-compiling
+environments, and makes setting additional properties on tests more convenient.
+However, its handling of parameterized tests is less comprehensive, and it
+requires re-running CMake to detect changes to the list of tests.</p>
+<p>The (newer) <span class="target" id="index-1-command:gtest_discover_tests"></span><a class="reference internal" href="#command:gtest_discover_tests" title="gtest_discover_tests"><code class="xref cmake cmake-command docutils literal"><span class="pre">gtest_discover_tests()</span></code></a> discovers tests by asking the
+compiled test executable to enumerate its tests.  This is more robust and
+provides better handling of parameterized tests, and does not require CMake
+to be re-run when tests change.  However, it may not work in a cross-compiling
+environment, and setting test properties is less convenient.</p>
+<p>More details can be found in the documentation of the respective functions.</p>
+<p>Both commands are intended to replace use of <span class="target" id="index-0-command:add_test"></span><a class="reference internal" href="../command/add_test.html#command:add_test" title="add_test"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_test()</span></code></a> to register
+tests, and will create a separate CTest test for each Google Test test case.
+Note that this is in some cases less efficient, as common set-up and tear-down
+logic cannot be shared by multiple test cases executing in the same instance.
+However, it provides more fine-grained pass/fail information to CTest, which is
+usually considered as more beneficial.  By default, the CTest test name is the
+same as the Google Test name (i.e. <code class="docutils literal"><span class="pre">suite.testcase</span></code>); see also
+<code class="docutils literal"><span class="pre">TEST_PREFIX</span></code> and <code class="docutils literal"><span class="pre">TEST_SUFFIX</span></code>.</p>
+<dl class="command">
+<dt id="command:gtest_add_tests">
+<code class="descname">gtest_add_tests</code><a class="headerlink" href="#command:gtest_add_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically add tests with CTest by scanning source code for Google Test
+macros:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gtest_add_tests</span><span class="p">(</span><span class="n">TARGET</span> <span class="n">target</span>
+                <span class="p">[</span><span class="n">SOURCES</span> <span class="n">src1</span><span class="o">...</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">EXTRA_ARGS</span> <span class="n">arg1</span><span class="o">...</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">WORKING_DIRECTORY</span> <span class="nb">dir</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">TEST_PREFIX</span> <span class="n">prefix</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">TEST_SUFFIX</span> <span class="n">suffix</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">SKIP_DEPENDENCY</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">TEST_LIST</span> <span class="n">outVar</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">gtest_add_tests</span></code> attempts to identify tests by scanning source files.
+Although this is generally effective, it uses only a basic regular expression
+match, which can be defeated by atypical test declarations, and is unable to
+fully &#8220;split&#8221; parameterized tests.  Additionally, it requires that CMake be
+re-run to discover any newly added, removed or renamed tests (by default,
+this means that CMake is re-run when any test source file is changed, but see
+<code class="docutils literal"><span class="pre">SKIP_DEPENDENCY</span></code>).  However, it has the advantage of declaring tests at
+CMake time, which somewhat simplifies setting additional properties on tests,
+and always works in a cross-compiling environment.</p>
+<p>The options are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">TARGET</span> <span class="pre">target</span></code></dt>
+<dd>Specifies the Google Test executable, which must be a known CMake
+executable target.  CMake will substitute the location of the built
+executable when running the test.</dd>
+<dt><code class="docutils literal"><span class="pre">SOURCES</span> <span class="pre">src1...</span></code></dt>
+<dd>When provided, only the listed files will be scanned for test cases.  If
+this option is not given, the <span class="target" id="index-0-prop_tgt:SOURCES"></span><a class="reference internal" href="../prop_tgt/SOURCES.html#prop_tgt:SOURCES" title="SOURCES"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">SOURCES</span></code></a> property of the
+specified <code class="docutils literal"><span class="pre">target</span></code> will be used to obtain the list of sources.</dd>
+<dt><code class="docutils literal"><span class="pre">EXTRA_ARGS</span> <span class="pre">arg1...</span></code></dt>
+<dd>Any extra arguments to pass on the command line to each test case.</dd>
+<dt><code class="docutils literal"><span class="pre">WORKING_DIRECTORY</span> <span class="pre">dir</span></code></dt>
+<dd>Specifies the directory in which to run the discovered test cases.  If this
+option is not provided, the current binary directory is used.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST_PREFIX</span> <span class="pre">prefix</span></code></dt>
+<dd>Specifies a <code class="docutils literal"><span class="pre">prefix</span></code> to be prepended to the name of each discovered test
+case.  This can be useful when the same source files are being used in
+multiple calls to <code class="docutils literal"><span class="pre">gtest_add_test()</span></code> but with different <code class="docutils literal"><span class="pre">EXTRA_ARGS</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST_SUFFIX</span> <span class="pre">suffix</span></code></dt>
+<dd>Similar to <code class="docutils literal"><span class="pre">TEST_PREFIX</span></code> except the <code class="docutils literal"><span class="pre">suffix</span></code> is appended to the name of
+every discovered test case.  Both <code class="docutils literal"><span class="pre">TEST_PREFIX</span></code> and <code class="docutils literal"><span class="pre">TEST_SUFFIX</span></code> may
+be specified.</dd>
+<dt><code class="docutils literal"><span class="pre">SKIP_DEPENDENCY</span></code></dt>
+<dd>Normally, the function creates a dependency which will cause CMake to be
+re-run if any of the sources being scanned are changed.  This is to ensure
+that the list of discovered tests is updated.  If this behavior is not
+desired (as may be the case while actually writing the test cases), this
+option can be used to prevent the dependency from being added.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST_LIST</span> <span class="pre">outVar</span></code></dt>
+<dd>The variable named by <code class="docutils literal"><span class="pre">outVar</span></code> will be populated in the calling scope
+with the list of discovered test cases.  This allows the caller to do
+things like manipulate test properties of the discovered tests.</dd>
+</dl>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">include</span><span class="p">(</span><span class="s">GoogleTest</span><span class="p">)</span>
+<span class="nb">add_executable</span><span class="p">(</span><span class="s">FooTest</span> <span class="s">FooUnitTest.cxx</span><span class="p">)</span>
+<span class="nb">gtest_add_tests</span><span class="p">(</span><span class="s">TARGET</span>      <span class="s">FooTest</span>
+                <span class="s">TEST_SUFFIX</span> <span class="s">.noArgs</span>
+                <span class="s">TEST_LIST</span>   <span class="s">noArgsTests</span>
+<span class="p">)</span>
+<span class="nb">gtest_add_tests</span><span class="p">(</span><span class="s">TARGET</span>      <span class="s">FooTest</span>
+                <span class="s">EXTRA_ARGS</span>  <span class="s">--someArg</span> <span class="s">someValue</span>
+                <span class="s">TEST_SUFFIX</span> <span class="s">.withArgs</span>
+                <span class="s">TEST_LIST</span>   <span class="s">withArgsTests</span>
+<span class="p">)</span>
+<span class="nb">set_tests_properties</span><span class="p">(</span><span class="o">${</span><span class="nv">noArgsTests</span><span class="o">}</span>   <span class="s">PROPERTIES</span> <span class="s">TIMEOUT</span> <span class="s">10</span><span class="p">)</span>
+<span class="nb">set_tests_properties</span><span class="p">(</span><span class="o">${</span><span class="nv">withArgsTests</span><span class="o">}</span> <span class="s">PROPERTIES</span> <span class="s">TIMEOUT</span> <span class="s">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For backward compatibility, the following form is also supported:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gtest_add_tests</span><span class="p">(</span><span class="n">exe</span> <span class="n">args</span> <span class="n">files</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">exe</span></code></dt>
+<dd>The path to the test executable or the name of a CMake target.</dd>
+<dt><code class="docutils literal"><span class="pre">args</span></code></dt>
+<dd>A ;-list of extra arguments to be passed to executable.  The entire
+list must be passed as a single argument.  Enclose it in quotes,
+or pass <code class="docutils literal"><span class="pre">&quot;&quot;</span></code> for no arguments.</dd>
+<dt><code class="docutils literal"><span class="pre">files...</span></code></dt>
+<dd>A list of source files to search for tests and test fixtures.
+Alternatively, use <code class="docutils literal"><span class="pre">AUTO</span></code> to specify that <code class="docutils literal"><span class="pre">exe</span></code> is the name
+of a CMake executable target whose sources should be scanned.</dd>
+</dl>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">include</span><span class="p">(</span><span class="s">GoogleTest</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">FooTestArgs</span> <span class="s">--foo</span> <span class="s">1</span> <span class="s">--bar</span> <span class="s">2</span><span class="p">)</span>
+<span class="nb">add_executable</span><span class="p">(</span><span class="s">FooTest</span> <span class="s">FooUnitTest.cxx</span><span class="p">)</span>
+<span class="nb">gtest_add_tests</span><span class="p">(</span><span class="s">FooTest</span> <span class="s2">&quot;${FooTestArgs}&quot;</span> <span class="s">AUTO</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="command">
+<dt id="command:gtest_discover_tests">
+<code class="descname">gtest_discover_tests</code><a class="headerlink" href="#command:gtest_discover_tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically add tests with CTest by querying the compiled test executable
+for available tests:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gtest_discover_tests</span><span class="p">(</span><span class="n">target</span>
+                     <span class="p">[</span><span class="n">EXTRA_ARGS</span> <span class="n">arg1</span><span class="o">...</span><span class="p">]</span>
+                     <span class="p">[</span><span class="n">WORKING_DIRECTORY</span> <span class="nb">dir</span><span class="p">]</span>
+                     <span class="p">[</span><span class="n">TEST_PREFIX</span> <span class="n">prefix</span><span class="p">]</span>
+                     <span class="p">[</span><span class="n">TEST_SUFFIX</span> <span class="n">suffix</span><span class="p">]</span>
+                     <span class="p">[</span><span class="n">NO_PRETTY_TYPES</span><span class="p">]</span> <span class="p">[</span><span class="n">NO_PRETTY_VALUES</span><span class="p">]</span>
+                     <span class="p">[</span><span class="n">PROPERTIES</span> <span class="n">name1</span> <span class="n">value1</span><span class="o">...</span><span class="p">]</span>
+                     <span class="p">[</span><span class="n">TEST_LIST</span> <span class="n">var</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">gtest_discover_tests</span></code> sets up a post-build command on the test executable
+that generates the list of tests by parsing the output from running the test
+with the <code class="docutils literal"><span class="pre">--gtest_list_tests</span></code> argument.  Compared to the source parsing
+approach of <span class="target" id="index-2-command:gtest_add_tests"></span><a class="reference internal" href="#command:gtest_add_tests" title="gtest_add_tests"><code class="xref cmake cmake-command docutils literal"><span class="pre">gtest_add_tests()</span></code></a>, this ensures that the full list of
+tests, including instantiations of parameterized tests, is obtained.  Since
+test discovery occurs at build time, it is not necessary to re-run CMake when
+the list of tests changes.
+However, it requires that <span class="target" id="index-0-prop_tgt:CROSSCOMPILING_EMULATOR"></span><a class="reference internal" href="../prop_tgt/CROSSCOMPILING_EMULATOR.html#prop_tgt:CROSSCOMPILING_EMULATOR" title="CROSSCOMPILING_EMULATOR"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CROSSCOMPILING_EMULATOR</span></code></a> is properly set
+in order to function in a cross-compiling environment.</p>
+<p>Additionally, setting properties on tests is somewhat less convenient, since
+the tests are not available at CMake time.  Additional test properties may be
+assigned to the set of tests as a whole using the <code class="docutils literal"><span class="pre">PROPERTIES</span></code> option.  If
+more fine-grained test control is needed, custom content may be provided
+through an external CTest script using the <span class="target" id="index-0-prop_dir:TEST_INCLUDE_FILES"></span><a class="reference internal" href="../prop_dir/TEST_INCLUDE_FILES.html#prop_dir:TEST_INCLUDE_FILES" title="TEST_INCLUDE_FILES"><code class="xref cmake cmake-prop_dir docutils literal"><span class="pre">TEST_INCLUDE_FILES</span></code></a>
+directory property.  The set of discovered tests is made accessible to such a
+script via the <code class="docutils literal"><span class="pre">&lt;target&gt;_TESTS</span></code> variable.</p>
+<p>The options are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">target</span></code></dt>
+<dd>Specifies the Google Test executable, which must be a known CMake
+executable target.  CMake will substitute the location of the built
+executable when running the test.</dd>
+<dt><code class="docutils literal"><span class="pre">EXTRA_ARGS</span> <span class="pre">arg1...</span></code></dt>
+<dd>Any extra arguments to pass on the command line to each test case.</dd>
+<dt><code class="docutils literal"><span class="pre">WORKING_DIRECTORY</span> <span class="pre">dir</span></code></dt>
+<dd>Specifies the directory in which to run the discovered test cases.  If this
+option is not provided, the current binary directory is used.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST_PREFIX</span> <span class="pre">prefix</span></code></dt>
+<dd>Specifies a <code class="docutils literal"><span class="pre">prefix</span></code> to be prepended to the name of each discovered test
+case.  This can be useful when the same test executable is being used in
+multiple calls to <code class="docutils literal"><span class="pre">gtest_discover_tests()</span></code> but with different
+<code class="docutils literal"><span class="pre">EXTRA_ARGS</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST_SUFFIX</span> <span class="pre">suffix</span></code></dt>
+<dd>Similar to <code class="docutils literal"><span class="pre">TEST_PREFIX</span></code> except the <code class="docutils literal"><span class="pre">suffix</span></code> is appended to the name of
+every discovered test case.  Both <code class="docutils literal"><span class="pre">TEST_PREFIX</span></code> and <code class="docutils literal"><span class="pre">TEST_SUFFIX</span></code> may
+be specified.</dd>
+<dt><code class="docutils literal"><span class="pre">NO_PRETTY_TYPES</span></code></dt>
+<dd>By default, the type index of type-parameterized tests is replaced by the
+actual type name in the CTest test name.  If this behavior is undesirable
+(e.g. because the type names are unwieldy), this option will suppress this
+behavior.</dd>
+<dt><code class="docutils literal"><span class="pre">NO_PRETTY_VALUES</span></code></dt>
+<dd>By default, the value index of value-parameterized tests is replaced by the
+actual value in the CTest test name.  If this behavior is undesirable
+(e.g. because the value strings are unwieldy), this option will suppress
+this behavior.</dd>
+<dt><code class="docutils literal"><span class="pre">PROPERTIES</span> <span class="pre">name1</span> <span class="pre">value1...</span></code></dt>
+<dd>Specifies additional properties to be set on all tests discovered by this
+invocation of <code class="docutils literal"><span class="pre">gtest_discover_tests</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST_LIST</span> <span class="pre">var</span></code></dt>
+<dd>Make the list of tests available in the variable <code class="docutils literal"><span class="pre">var</span></code>, rather than the
+default <code class="docutils literal"><span class="pre">&lt;target&gt;_TESTS</span></code>.  This can be useful when the same test
+executable is being used in multiple calls to <code class="docutils literal"><span class="pre">gtest_discover_tests()</span></code>.
+Note that this variable is only available in CTest.</dd>
+<dt><code class="docutils literal"><span class="pre">TIMEOUT</span> <span class="pre">num</span></code></dt>
+<dd>Specifies how long (in seconds) CMake will wait for the test to enumerate
+available tests.  If the test takes longer than this, discovery (and your
+build) will fail.  Most test executables will enumerate their tests very
+quickly, but under some exceptional circumstances, a test may require a
+longer timeout.  The default is 5.  See also the <code class="docutils literal"><span class="pre">TIMEOUT</span></code> option of
+<span class="target" id="index-0-command:execute_process"></span><a class="reference internal" href="../command/execute_process.html#command:execute_process" title="execute_process"><code class="xref cmake cmake-command docutils literal"><span class="pre">execute_process()</span></code></a>.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="GNUInstallDirs.html"
+                        title="previous chapter">GNUInstallDirs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="InstallRequiredSystemLibraries.html"
+                        title="next chapter">InstallRequiredSystemLibraries</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/GoogleTest.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="InstallRequiredSystemLibraries.html" title="InstallRequiredSystemLibraries"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="GNUInstallDirs.html" title="GNUInstallDirs"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

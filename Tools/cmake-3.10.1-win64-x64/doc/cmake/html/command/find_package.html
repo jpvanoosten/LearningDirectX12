@@ -1,0 +1,510 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>find_package &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="find_path" href="find_path.html" />
+    <link rel="prev" title="find_library" href="find_library.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="find_path.html" title="find_path"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="find_library.html" title="find_library"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="find-package">
+<span id="command:find_package"></span><h1>find_package<a class="headerlink" href="#find-package" title="Permalink to this headline">¶</a></h1>
+<p>Load settings for an external project.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="o">&lt;</span><span class="n">package</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="p">[</span><span class="n">EXACT</span><span class="p">]</span> <span class="p">[</span><span class="n">QUIET</span><span class="p">]</span> <span class="p">[</span><span class="n">MODULE</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">REQUIRED</span><span class="p">]</span> <span class="p">[[</span><span class="n">COMPONENTS</span><span class="p">]</span> <span class="p">[</span><span class="n">components</span><span class="o">...</span><span class="p">]]</span>
+             <span class="p">[</span><span class="n">OPTIONAL_COMPONENTS</span> <span class="n">components</span><span class="o">...</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_POLICY_SCOPE</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Finds and loads settings from an external project.  <code class="docutils literal"><span class="pre">&lt;package&gt;_FOUND</span></code>
+will be set to indicate whether the package was found.  When the
+package is found package-specific information is provided through
+variables and <a class="reference internal" href="../manual/cmake-buildsystem.7.html#imported-targets"><span class="std std-ref">Imported Targets</span></a> documented by the package itself.  The
+<code class="docutils literal"><span class="pre">QUIET</span></code> option disables messages if the package cannot be found.  The
+<code class="docutils literal"><span class="pre">MODULE</span></code> option disables the second signature documented below.  The
+<code class="docutils literal"><span class="pre">REQUIRED</span></code> option stops processing with an error message if the package
+cannot be found.</p>
+<p>A package-specific list of required components may be listed after the
+<code class="docutils literal"><span class="pre">COMPONENTS</span></code> option (or after the <code class="docutils literal"><span class="pre">REQUIRED</span></code> option if present).
+Additional optional components may be listed after
+<code class="docutils literal"><span class="pre">OPTIONAL_COMPONENTS</span></code>.  Available components and their influence on
+whether a package is considered to be found are defined by the target
+package.</p>
+<p>The <code class="docutils literal"><span class="pre">[version]</span></code> argument requests a version with which the package found
+should be compatible (format is <code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).  The
+<code class="docutils literal"><span class="pre">EXACT</span></code> option requests that the version be matched exactly.  If no
+<code class="docutils literal"><span class="pre">[version]</span></code> and/or component list is given to a recursive invocation
+inside a find-module, the corresponding arguments are forwarded
+automatically from the outer call (including the <code class="docutils literal"><span class="pre">EXACT</span></code> flag for
+<code class="docutils literal"><span class="pre">[version]</span></code>).  Version support is currently provided only on a
+package-by-package basis (details below).</p>
+<p>User code should generally look for packages using the above simple
+signature.  The remainder of this command documentation specifies the
+full command signature and details of the search process.  Project
+maintainers wishing to provide a package to be found by this command
+are encouraged to read on.</p>
+<p>The command has two modes by which it searches for packages: &#8220;Module&#8221;
+mode and &#8220;Config&#8221; mode.  Module mode is available when the command is
+invoked with the above reduced signature.  CMake searches for a file
+called <code class="docutils literal"><span class="pre">Find&lt;package&gt;.cmake</span></code> in the <span class="target" id="index-0-variable:CMAKE_MODULE_PATH"></span><a class="reference internal" href="../variable/CMAKE_MODULE_PATH.html#variable:CMAKE_MODULE_PATH" title="CMAKE_MODULE_PATH"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_MODULE_PATH</span></code></a>
+followed by the CMake installation.  If the file is found, it is read
+and processed by CMake.  It is responsible for finding the package,
+checking the version, and producing any needed messages.  Many
+find-modules provide limited or no support for versioning; check
+the module documentation.  If no module is found and the <code class="docutils literal"><span class="pre">MODULE</span></code>
+option is not given the command proceeds to Config mode.</p>
+<p>The complete Config mode command signature is:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="o">&lt;</span><span class="n">package</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="p">[</span><span class="n">EXACT</span><span class="p">]</span> <span class="p">[</span><span class="n">QUIET</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">REQUIRED</span><span class="p">]</span> <span class="p">[[</span><span class="n">COMPONENTS</span><span class="p">]</span> <span class="p">[</span><span class="n">components</span><span class="o">...</span><span class="p">]]</span>
+             <span class="p">[</span><span class="n">CONFIG</span><span class="o">|</span><span class="n">NO_MODULE</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_POLICY_SCOPE</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NAMES</span> <span class="n">name1</span> <span class="p">[</span><span class="n">name2</span> <span class="o">...</span><span class="p">]]</span>
+             <span class="p">[</span><span class="n">CONFIGS</span> <span class="n">config1</span> <span class="p">[</span><span class="n">config2</span> <span class="o">...</span><span class="p">]]</span>
+             <span class="p">[</span><span class="n">HINTS</span> <span class="n">path1</span> <span class="p">[</span><span class="n">path2</span> <span class="o">...</span> <span class="p">]]</span>
+             <span class="p">[</span><span class="n">PATHS</span> <span class="n">path1</span> <span class="p">[</span><span class="n">path2</span> <span class="o">...</span> <span class="p">]]</span>
+             <span class="p">[</span><span class="n">PATH_SUFFIXES</span> <span class="n">suffix1</span> <span class="p">[</span><span class="n">suffix2</span> <span class="o">...</span><span class="p">]]</span>
+             <span class="p">[</span><span class="n">NO_DEFAULT_PATH</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_CMAKE_PATH</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_CMAKE_ENVIRONMENT_PATH</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_SYSTEM_ENVIRONMENT_PATH</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_CMAKE_PACKAGE_REGISTRY</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_CMAKE_BUILDS_PATH</span><span class="p">]</span> <span class="c1"># Deprecated; does nothing.</span>
+             <span class="p">[</span><span class="n">NO_CMAKE_SYSTEM_PATH</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_CMAKE_SYSTEM_PACKAGE_REGISTRY</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">CMAKE_FIND_ROOT_PATH_BOTH</span> <span class="o">|</span>
+              <span class="n">ONLY_CMAKE_FIND_ROOT_PATH</span> <span class="o">|</span>
+              <span class="n">NO_CMAKE_FIND_ROOT_PATH</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">CONFIG</span></code> option may be used to skip Module mode explicitly and
+switch to Config mode.  It is synonymous to using <code class="docutils literal"><span class="pre">NO_MODULE</span></code>.  Config
+mode is also implied by use of options not specified in the reduced
+signature.</p>
+<p>Config mode attempts to locate a configuration file provided by the
+package to be found.  A cache entry called <code class="docutils literal"><span class="pre">&lt;package&gt;_DIR</span></code> is created to
+hold the directory containing the file.  By default the command
+searches for a package with the name <code class="docutils literal"><span class="pre">&lt;package&gt;</span></code>.  If the <code class="docutils literal"><span class="pre">NAMES</span></code> option
+is given the names following it are used instead of <code class="docutils literal"><span class="pre">&lt;package&gt;</span></code>.  The
+command searches for a file called <code class="docutils literal"><span class="pre">&lt;name&gt;Config.cmake</span></code> or
+<code class="docutils literal"><span class="pre">&lt;lower-case-name&gt;-config.cmake</span></code> for each name specified.  A
+replacement set of possible configuration file names may be given
+using the <code class="docutils literal"><span class="pre">CONFIGS</span></code> option.  The search procedure is specified below.
+Once found, the configuration file is read and processed by CMake.
+Since the file is provided by the package it already knows the
+location of package contents.  The full path to the configuration file
+is stored in the cmake variable <code class="docutils literal"><span class="pre">&lt;package&gt;_CONFIG</span></code>.</p>
+<p>All configuration files which have been considered by CMake while
+searching for an installation of the package with an appropriate
+version are stored in the cmake variable <code class="docutils literal"><span class="pre">&lt;package&gt;_CONSIDERED_CONFIGS</span></code>,
+the associated versions in <code class="docutils literal"><span class="pre">&lt;package&gt;_CONSIDERED_VERSIONS</span></code>.</p>
+<p>If the package configuration file cannot be found CMake will generate
+an error describing the problem unless the <code class="docutils literal"><span class="pre">QUIET</span></code> argument is
+specified.  If <code class="docutils literal"><span class="pre">REQUIRED</span></code> is specified and the package is not found a
+fatal error is generated and the configure step stops executing.  If
+<code class="docutils literal"><span class="pre">&lt;package&gt;_DIR</span></code> has been set to a directory not containing a
+configuration file CMake will ignore it and search from scratch.</p>
+<p>When the <code class="docutils literal"><span class="pre">[version]</span></code> argument is given Config mode will only find a
+version of the package that claims compatibility with the requested
+version (format is <code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).  If the <code class="docutils literal"><span class="pre">EXACT</span></code>
+option is given only a version of the package claiming an exact match
+of the requested version may be found.  CMake does not establish any
+convention for the meaning of version numbers.  Package version
+numbers are checked by &#8220;version&#8221; files provided by the packages
+themselves.  For a candidate package configuration file
+<code class="docutils literal"><span class="pre">&lt;config-file&gt;.cmake</span></code> the corresponding version file is located next
+to it and named either <code class="docutils literal"><span class="pre">&lt;config-file&gt;-version.cmake</span></code> or
+<code class="docutils literal"><span class="pre">&lt;config-file&gt;Version.cmake</span></code>.  If no such version file is available
+then the configuration file is assumed to not be compatible with any
+requested version.  A basic version file containing generic version
+matching code can be created using the
+<span class="target" id="index-0-module:CMakePackageConfigHelpers"></span><a class="reference internal" href="../module/CMakePackageConfigHelpers.html#module:CMakePackageConfigHelpers" title="CMakePackageConfigHelpers"><code class="xref cmake cmake-module docutils literal"><span class="pre">CMakePackageConfigHelpers</span></code></a> module.  When a version file
+is found it is loaded to check the requested version number.  The
+version file is loaded in a nested scope in which the following
+variables have been defined:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_NAME</span></code></dt>
+<dd>the <code class="docutils literal"><span class="pre">&lt;package&gt;</span></code> name</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_VERSION</span></code></dt>
+<dd>full requested version string</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_VERSION_MAJOR</span></code></dt>
+<dd>major version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_VERSION_MINOR</span></code></dt>
+<dd>minor version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_VERSION_PATCH</span></code></dt>
+<dd>patch version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_VERSION_TWEAK</span></code></dt>
+<dd>tweak version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_FIND_VERSION_COUNT</span></code></dt>
+<dd>number of version components, 0 to 4</dd>
+</dl>
+<p>The version file checks whether it satisfies the requested version and
+sets these variables:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">PACKAGE_VERSION</span></code></dt>
+<dd>full provided version string</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_VERSION_EXACT</span></code></dt>
+<dd>true if version is exact match</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_VERSION_COMPATIBLE</span></code></dt>
+<dd>true if version is compatible</dd>
+<dt><code class="docutils literal"><span class="pre">PACKAGE_VERSION_UNSUITABLE</span></code></dt>
+<dd>true if unsuitable as any version</dd>
+</dl>
+<p>These variables are checked by the <code class="docutils literal"><span class="pre">find_package</span></code> command to determine
+whether the configuration file provides an acceptable version.  They
+are not available after the find_package call returns.  If the version
+is acceptable the following variables are set:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_VERSION</span></code></dt>
+<dd>full provided version string</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_VERSION_MAJOR</span></code></dt>
+<dd>major version if provided, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_VERSION_MINOR</span></code></dt>
+<dd>minor version if provided, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_VERSION_PATCH</span></code></dt>
+<dd>patch version if provided, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_VERSION_TWEAK</span></code></dt>
+<dd>tweak version if provided, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_VERSION_COUNT</span></code></dt>
+<dd>number of version components, 0 to 4</dd>
+</dl>
+<p>and the corresponding package configuration file is loaded.
+When multiple package configuration files are available whose version files
+claim compatibility with the version requested it is unspecified which
+one is chosen: unless the variable <span class="target" id="index-0-variable:CMAKE_FIND_PACKAGE_SORT_ORDER"></span><a class="reference internal" href="../variable/CMAKE_FIND_PACKAGE_SORT_ORDER.html#variable:CMAKE_FIND_PACKAGE_SORT_ORDER" title="CMAKE_FIND_PACKAGE_SORT_ORDER"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_PACKAGE_SORT_ORDER</span></code></a>
+is set no attempt is made to choose a highest or closest version number.</p>
+<p>To control the order in which <code class="docutils literal"><span class="pre">find_package</span></code> checks for compatibiliy use
+the two variables <span class="target" id="index-1-variable:CMAKE_FIND_PACKAGE_SORT_ORDER"></span><a class="reference internal" href="../variable/CMAKE_FIND_PACKAGE_SORT_ORDER.html#variable:CMAKE_FIND_PACKAGE_SORT_ORDER" title="CMAKE_FIND_PACKAGE_SORT_ORDER"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_PACKAGE_SORT_ORDER</span></code></a> and
+<span class="target" id="index-0-variable:CMAKE_FIND_PACKAGE_SORT_DIRECTION"></span><a class="reference internal" href="../variable/CMAKE_FIND_PACKAGE_SORT_DIRECTION.html#variable:CMAKE_FIND_PACKAGE_SORT_DIRECTION" title="CMAKE_FIND_PACKAGE_SORT_DIRECTION"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_PACKAGE_SORT_DIRECTION</span></code></a>.
+For instance in order to select the highest version one can set:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SET</span><span class="p">(</span><span class="n">CMAKE_FIND_PACKAGE_SORT_ORDER</span> <span class="n">NATURAL</span><span class="p">)</span>
+<span class="n">SET</span><span class="p">(</span><span class="n">CMAKE_FIND_PACKAGE_SORT_DIRECTION</span> <span class="n">DEC</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>before calling <code class="docutils literal"><span class="pre">find_package</span></code>.</p>
+<p>Config mode provides an elaborate interface and search procedure.
+Much of the interface is provided for completeness and for use
+internally by find-modules loaded by Module mode.  Most user code
+should simply call:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="o">&lt;</span><span class="n">package</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">major</span><span class="p">[</span><span class="o">.</span><span class="n">minor</span><span class="p">]]</span> <span class="p">[</span><span class="n">EXACT</span><span class="p">]</span> <span class="p">[</span><span class="n">REQUIRED</span><span class="o">|</span><span class="n">QUIET</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>in order to find a package.  Package maintainers providing CMake
+package configuration files are encouraged to name and install them
+such that the procedure outlined below will find them without
+requiring use of additional options.</p>
+<p>CMake constructs a set of possible installation prefixes for the
+package.  Under each prefix several directories are searched for a
+configuration file.  The tables below show the directories searched.
+Each entry is meant for installation trees following Windows (W), UNIX
+(U), or Apple (A) conventions:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span>                                                       <span class="p">(</span><span class="n">W</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span><span class="p">(</span><span class="n">cmake</span><span class="o">|</span><span class="n">CMake</span><span class="p">)</span><span class="o">/</span>                                         <span class="p">(</span><span class="n">W</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span>                                               <span class="p">(</span><span class="n">W</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span><span class="p">(</span><span class="n">cmake</span><span class="o">|</span><span class="n">CMake</span><span class="p">)</span><span class="o">/</span>                                 <span class="p">(</span><span class="n">W</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span><span class="p">(</span><span class="n">lib</span><span class="o">/&lt;</span><span class="n">arch</span><span class="o">&gt;|</span><span class="n">lib</span><span class="o">|</span><span class="n">share</span><span class="p">)</span><span class="o">/</span><span class="n">cmake</span><span class="o">/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span>                  <span class="p">(</span><span class="n">U</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span><span class="p">(</span><span class="n">lib</span><span class="o">/&lt;</span><span class="n">arch</span><span class="o">&gt;|</span><span class="n">lib</span><span class="o">|</span><span class="n">share</span><span class="p">)</span><span class="o">/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span>                        <span class="p">(</span><span class="n">U</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span><span class="p">(</span><span class="n">lib</span><span class="o">/&lt;</span><span class="n">arch</span><span class="o">&gt;|</span><span class="n">lib</span><span class="o">|</span><span class="n">share</span><span class="p">)</span><span class="o">/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span><span class="p">(</span><span class="n">cmake</span><span class="o">|</span><span class="n">CMake</span><span class="p">)</span><span class="o">/</span>          <span class="p">(</span><span class="n">U</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span><span class="p">(</span><span class="n">lib</span><span class="o">/&lt;</span><span class="n">arch</span><span class="o">&gt;|</span><span class="n">lib</span><span class="o">|</span><span class="n">share</span><span class="p">)</span><span class="o">/</span><span class="n">cmake</span><span class="o">/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span>          <span class="p">(</span><span class="n">W</span><span class="o">/</span><span class="n">U</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span><span class="p">(</span><span class="n">lib</span><span class="o">/&lt;</span><span class="n">arch</span><span class="o">&gt;|</span><span class="n">lib</span><span class="o">|</span><span class="n">share</span><span class="p">)</span><span class="o">/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span>                <span class="p">(</span><span class="n">W</span><span class="o">/</span><span class="n">U</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span><span class="p">(</span><span class="n">lib</span><span class="o">/&lt;</span><span class="n">arch</span><span class="o">&gt;|</span><span class="n">lib</span><span class="o">|</span><span class="n">share</span><span class="p">)</span><span class="o">/&lt;</span><span class="n">name</span><span class="o">&gt;*/</span><span class="p">(</span><span class="n">cmake</span><span class="o">|</span><span class="n">CMake</span><span class="p">)</span><span class="o">/</span>  <span class="p">(</span><span class="n">W</span><span class="o">/</span><span class="n">U</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>On systems supporting OS X Frameworks and Application Bundles the
+following directories are searched for frameworks or bundles
+containing a configuration file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">framework</span><span class="o">/</span><span class="n">Resources</span><span class="o">/</span>                    <span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">framework</span><span class="o">/</span><span class="n">Resources</span><span class="o">/</span><span class="n">CMake</span><span class="o">/</span>              <span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">framework</span><span class="o">/</span><span class="n">Versions</span><span class="o">/*/</span><span class="n">Resources</span><span class="o">/</span>         <span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">framework</span><span class="o">/</span><span class="n">Versions</span><span class="o">/*/</span><span class="n">Resources</span><span class="o">/</span><span class="n">CMake</span><span class="o">/</span>   <span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">app</span><span class="o">/</span><span class="n">Contents</span><span class="o">/</span><span class="n">Resources</span><span class="o">/</span>                 <span class="p">(</span><span class="n">A</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">app</span><span class="o">/</span><span class="n">Contents</span><span class="o">/</span><span class="n">Resources</span><span class="o">/</span><span class="n">CMake</span><span class="o">/</span>           <span class="p">(</span><span class="n">A</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In all cases the <code class="docutils literal"><span class="pre">&lt;name&gt;</span></code> is treated as case-insensitive and corresponds
+to any of the names specified (<code class="docutils literal"><span class="pre">&lt;package&gt;</span></code> or names given by <code class="docutils literal"><span class="pre">NAMES</span></code>).
+Paths with <code class="docutils literal"><span class="pre">lib/&lt;arch&gt;</span></code> are enabled if the
+<span class="target" id="index-0-variable:CMAKE_LIBRARY_ARCHITECTURE"></span><a class="reference internal" href="../variable/CMAKE_LIBRARY_ARCHITECTURE.html#variable:CMAKE_LIBRARY_ARCHITECTURE" title="CMAKE_LIBRARY_ARCHITECTURE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_LIBRARY_ARCHITECTURE</span></code></a> variable is set.  If <code class="docutils literal"><span class="pre">PATH_SUFFIXES</span></code>
+is specified the suffixes are appended to each (W) or (U) directory entry
+one-by-one.</p>
+<p>This set of directories is intended to work in cooperation with
+projects that provide configuration files in their installation trees.
+Directories above marked with (W) are intended for installations on
+Windows where the prefix may point at the top of an application&#8217;s
+installation directory.  Those marked with (U) are intended for
+installations on UNIX platforms where the prefix is shared by multiple
+packages.  This is merely a convention, so all (W) and (U) directories
+are still searched on all platforms.  Directories marked with (A) are
+intended for installations on Apple platforms.  The
+<span class="target" id="index-0-variable:CMAKE_FIND_FRAMEWORK"></span><a class="reference internal" href="../variable/CMAKE_FIND_FRAMEWORK.html#variable:CMAKE_FIND_FRAMEWORK" title="CMAKE_FIND_FRAMEWORK"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_FRAMEWORK</span></code></a> and <span class="target" id="index-0-variable:CMAKE_FIND_APPBUNDLE"></span><a class="reference internal" href="../variable/CMAKE_FIND_APPBUNDLE.html#variable:CMAKE_FIND_APPBUNDLE" title="CMAKE_FIND_APPBUNDLE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_APPBUNDLE</span></code></a>
+variables determine the order of preference.</p>
+<p>The set of installation prefixes is constructed using the following
+steps.  If <code class="docutils literal"><span class="pre">NO_DEFAULT_PATH</span></code> is specified all <code class="docutils literal"><span class="pre">NO_*</span></code> options are
+enabled.</p>
+<ol class="arabic">
+<li><p class="first">Search paths specified in cmake-specific cache variables.  These
+are intended to be used on the command line with a <code class="docutils literal"><span class="pre">-DVAR=value</span></code>.
+The values are interpreted as <a class="reference internal" href="../manual/cmake-language.7.html#cmake-language-lists"><span class="std std-ref">;-lists</span></a>.
+This can be skipped if <code class="docutils literal"><span class="pre">NO_CMAKE_PATH</span></code> is passed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_PREFIX_PATH</span>
+<span class="n">CMAKE_FRAMEWORK_PATH</span>
+<span class="n">CMAKE_APPBUNDLE_PATH</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Search paths specified in cmake-specific environment variables.
+These are intended to be set in the user&#8217;s shell configuration,
+and therefore use the host&#8217;s native path separator
+(<code class="docutils literal"><span class="pre">;</span></code> on Windows and <code class="docutils literal"><span class="pre">:</span></code> on UNIX).
+This can be skipped if <code class="docutils literal"><span class="pre">NO_CMAKE_ENVIRONMENT_PATH</span></code> is passed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">package</span><span class="o">&gt;</span><span class="n">_DIR</span>
+<span class="n">CMAKE_PREFIX_PATH</span>
+<span class="n">CMAKE_FRAMEWORK_PATH</span>
+<span class="n">CMAKE_APPBUNDLE_PATH</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Search paths specified by the <code class="docutils literal"><span class="pre">HINTS</span></code> option.  These should be paths
+computed by system introspection, such as a hint provided by the
+location of another item already found.  Hard-coded guesses should
+be specified with the <code class="docutils literal"><span class="pre">PATHS</span></code> option.</p>
+</li>
+<li><p class="first">Search the standard system environment variables.  This can be
+skipped if <code class="docutils literal"><span class="pre">NO_SYSTEM_ENVIRONMENT_PATH</span></code> is passed.  Path entries
+ending in <code class="docutils literal"><span class="pre">/bin</span></code> or <code class="docutils literal"><span class="pre">/sbin</span></code> are automatically converted to their
+parent directories:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">PATH</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Search paths stored in the CMake <a class="reference internal" href="../manual/cmake-packages.7.html#user-package-registry"><span class="std std-ref">User Package Registry</span></a>.
+This can be skipped if <code class="docutils literal"><span class="pre">NO_CMAKE_PACKAGE_REGISTRY</span></code> is passed or by
+setting the <span class="target" id="index-0-variable:CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY"></span><a class="reference internal" href="../variable/CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY.html#variable:CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY" title="CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY</span></code></a>
+to <code class="docutils literal"><span class="pre">TRUE</span></code>.
+See the <span class="target" id="index-0-manual:cmake-packages(7)"></span><a class="reference internal" href="../manual/cmake-packages.7.html#manual:cmake-packages(7)" title="cmake-packages(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-packages(7)</span></code></a> manual for details on the user
+package registry.</p>
+</li>
+<li><p class="first">Search cmake variables defined in the Platform files for the
+current system.  This can be skipped if <code class="docutils literal"><span class="pre">NO_CMAKE_SYSTEM_PATH</span></code> is
+passed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_SYSTEM_PREFIX_PATH</span>
+<span class="n">CMAKE_SYSTEM_FRAMEWORK_PATH</span>
+<span class="n">CMAKE_SYSTEM_APPBUNDLE_PATH</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Search paths stored in the CMake <a class="reference internal" href="../manual/cmake-packages.7.html#system-package-registry"><span class="std std-ref">System Package Registry</span></a>.
+This can be skipped if <code class="docutils literal"><span class="pre">NO_CMAKE_SYSTEM_PACKAGE_REGISTRY</span></code> is passed
+or by setting the
+<span class="target" id="index-0-variable:CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY"></span><a class="reference internal" href="../variable/CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY.html#variable:CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY" title="CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY</span></code></a> to <code class="docutils literal"><span class="pre">TRUE</span></code>.
+See the <span class="target" id="index-1-manual:cmake-packages(7)"></span><a class="reference internal" href="../manual/cmake-packages.7.html#manual:cmake-packages(7)" title="cmake-packages(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-packages(7)</span></code></a> manual for details on the system
+package registry.</p>
+</li>
+<li><p class="first">Search paths specified by the <code class="docutils literal"><span class="pre">PATHS</span></code> option.  These are typically
+hard-coded guesses.</p>
+</li>
+</ol>
+<p>The CMake variable <span class="target" id="index-0-variable:CMAKE_FIND_ROOT_PATH"></span><a class="reference internal" href="../variable/CMAKE_FIND_ROOT_PATH.html#variable:CMAKE_FIND_ROOT_PATH" title="CMAKE_FIND_ROOT_PATH"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_ROOT_PATH</span></code></a> specifies one or more
+directories to be prepended to all other search directories.  This
+effectively &#8220;re-roots&#8221; the entire search under given locations.
+Paths which are descendants of the <span class="target" id="index-0-variable:CMAKE_STAGING_PREFIX"></span><a class="reference internal" href="../variable/CMAKE_STAGING_PREFIX.html#variable:CMAKE_STAGING_PREFIX" title="CMAKE_STAGING_PREFIX"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_STAGING_PREFIX</span></code></a> are excluded
+from this re-rooting, because that variable is always a path on the host system.
+By default the <span class="target" id="index-1-variable:CMAKE_FIND_ROOT_PATH"></span><a class="reference internal" href="../variable/CMAKE_FIND_ROOT_PATH.html#variable:CMAKE_FIND_ROOT_PATH" title="CMAKE_FIND_ROOT_PATH"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_ROOT_PATH</span></code></a> is empty.</p>
+<p>The <span class="target" id="index-0-variable:CMAKE_SYSROOT"></span><a class="reference internal" href="../variable/CMAKE_SYSROOT.html#variable:CMAKE_SYSROOT" title="CMAKE_SYSROOT"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_SYSROOT</span></code></a> variable can also be used to specify exactly one
+directory to use as a prefix.  Setting <span class="target" id="index-1-variable:CMAKE_SYSROOT"></span><a class="reference internal" href="../variable/CMAKE_SYSROOT.html#variable:CMAKE_SYSROOT" title="CMAKE_SYSROOT"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_SYSROOT</span></code></a> also has other
+effects.  See the documentation for that variable for more.</p>
+<p>These variables are especially useful when cross-compiling to
+point to the root directory of the target environment and CMake will
+search there too.  By default at first the directories listed in
+<span class="target" id="index-2-variable:CMAKE_FIND_ROOT_PATH"></span><a class="reference internal" href="../variable/CMAKE_FIND_ROOT_PATH.html#variable:CMAKE_FIND_ROOT_PATH" title="CMAKE_FIND_ROOT_PATH"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_ROOT_PATH</span></code></a> are searched, then the <span class="target" id="index-2-variable:CMAKE_SYSROOT"></span><a class="reference internal" href="../variable/CMAKE_SYSROOT.html#variable:CMAKE_SYSROOT" title="CMAKE_SYSROOT"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_SYSROOT</span></code></a>
+directory is searched, and then the non-rooted directories will be
+searched.  The default behavior can be adjusted by setting
+<span class="target" id="index-1-variable:CMAKE_FIND_ROOT_PATH_MODE_PACKAGE"></span><a class="reference internal" href="../variable/CMAKE_FIND_ROOT_PATH_MODE_PACKAGE.html#variable:CMAKE_FIND_ROOT_PATH_MODE_PACKAGE" title="CMAKE_FIND_ROOT_PATH_MODE_PACKAGE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_ROOT_PATH_MODE_PACKAGE</span></code></a>.  This behavior can be manually
+overridden on a per-call basis using options:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">CMAKE_FIND_ROOT_PATH_BOTH</span></code></dt>
+<dd>Search in the order described above.</dd>
+<dt><code class="docutils literal"><span class="pre">NO_CMAKE_FIND_ROOT_PATH</span></code></dt>
+<dd>Do not use the <span class="target" id="index-3-variable:CMAKE_FIND_ROOT_PATH"></span><a class="reference internal" href="../variable/CMAKE_FIND_ROOT_PATH.html#variable:CMAKE_FIND_ROOT_PATH" title="CMAKE_FIND_ROOT_PATH"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_FIND_ROOT_PATH</span></code></a> variable.</dd>
+<dt><code class="docutils literal"><span class="pre">ONLY_CMAKE_FIND_ROOT_PATH</span></code></dt>
+<dd>Search only the re-rooted directories and directories below
+<span class="target" id="index-1-variable:CMAKE_STAGING_PREFIX"></span><a class="reference internal" href="../variable/CMAKE_STAGING_PREFIX.html#variable:CMAKE_STAGING_PREFIX" title="CMAKE_STAGING_PREFIX"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_STAGING_PREFIX</span></code></a>.</dd>
+</dl>
+<p>The default search order is designed to be most-specific to
+least-specific for common use cases.
+Projects may override the order by simply calling the command
+multiple times and using the <code class="docutils literal"><span class="pre">NO_*</span></code> options:</p>
+<pre class="literal-block">
+find_package (&lt;package&gt; PATHS paths... NO_DEFAULT_PATH)
+find_package (&lt;package&gt;)
+</pre>
+<p>Once one of the calls succeeds the result variable will be set
+and stored in the cache so that no call will search again.</p>
+<p>Every non-REQUIRED <code class="docutils literal"><span class="pre">find_package</span></code> call can be disabled by setting the
+<span class="target" id="index-0-variable:CMAKE_DISABLE_FIND_PACKAGE_&lt;PackageName&gt;"></span><a class="reference internal" href="../variable/CMAKE_DISABLE_FIND_PACKAGE_PackageName.html#variable:CMAKE_DISABLE_FIND_PACKAGE_&lt;PackageName&gt;" title="CMAKE_DISABLE_FIND_PACKAGE_&lt;PackageName&gt;"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_DISABLE_FIND_PACKAGE_&lt;PackageName&gt;</span></code></a> variable to <code class="docutils literal"><span class="pre">TRUE</span></code>.</p>
+<p>When loading a find module or package configuration file <code class="docutils literal"><span class="pre">find_package</span></code>
+defines variables to provide information about the call arguments (and
+restores their original state before returning):</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">CMAKE_FIND_PACKAGE_NAME</span></code></dt>
+<dd>the <code class="docutils literal"><span class="pre">&lt;package&gt;</span></code> name which is searched for</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_REQUIRED</span></code></dt>
+<dd>true if <code class="docutils literal"><span class="pre">REQUIRED</span></code> option was given</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_QUIETLY</span></code></dt>
+<dd>true if <code class="docutils literal"><span class="pre">QUIET</span></code> option was given</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION</span></code></dt>
+<dd>full requested version string</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION_MAJOR</span></code></dt>
+<dd>major version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION_MINOR</span></code></dt>
+<dd>minor version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION_PATCH</span></code></dt>
+<dd>patch version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION_TWEAK</span></code></dt>
+<dd>tweak version if requested, else 0</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION_COUNT</span></code></dt>
+<dd>number of version components, 0 to 4</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_VERSION_EXACT</span></code></dt>
+<dd>true if <code class="docutils literal"><span class="pre">EXACT</span></code> option was given</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_COMPONENTS</span></code></dt>
+<dd>list of requested components</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;package&gt;_FIND_REQUIRED_&lt;c&gt;</span></code></dt>
+<dd>true if component <code class="docutils literal"><span class="pre">&lt;c&gt;</span></code> is required,
+false if component <code class="docutils literal"><span class="pre">&lt;c&gt;</span></code> is optional</dd>
+</dl>
+<p>In Module mode the loaded find module is responsible to honor the
+request detailed by these variables; see the find module for details.
+In Config mode <code class="docutils literal"><span class="pre">find_package</span></code> handles <code class="docutils literal"><span class="pre">REQUIRED</span></code>, <code class="docutils literal"><span class="pre">QUIET</span></code>, and
+<code class="docutils literal"><span class="pre">[version]</span></code> options automatically but leaves it to the package
+configuration file to handle components in a way that makes sense
+for the package.  The package configuration file may set
+<code class="docutils literal"><span class="pre">&lt;package&gt;_FOUND</span></code> to false to tell <code class="docutils literal"><span class="pre">find_package</span></code> that component
+requirements are not satisfied.</p>
+<p>See the <span class="target" id="index-0-command:cmake_policy"></span><a class="reference internal" href="cmake_policy.html#command:cmake_policy" title="cmake_policy"><code class="xref cmake cmake-command docutils literal"><span class="pre">cmake_policy()</span></code></a> command documentation for discussion
+of the <code class="docutils literal"><span class="pre">NO_POLICY_SCOPE</span></code> option.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="find_library.html"
+                        title="previous chapter">find_library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="find_path.html"
+                        title="next chapter">find_path</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/find_package.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="find_path.html" title="find_path"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="find_library.html" title="find_library"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindwxWidgets &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindwxWindows" href="FindwxWindows.html" />
+    <link rel="prev" title="FindWish" href="FindWish.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindwxWindows.html" title="FindwxWindows"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindWish.html" title="FindWish"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findwxwidgets">
+<span id="module:FindwxWidgets"></span><h1>FindwxWidgets<a class="headerlink" href="#findwxwidgets" title="Permalink to this headline">¶</a></h1>
+<p>Find a wxWidgets (a.k.a., wxWindows) installation.</p>
+<p>This module finds if wxWidgets is installed and selects a default
+configuration to use.  wxWidgets is a modular library.  To specify the
+modules that you will use, you need to name them as components to the
+package:</p>
+<p>find_package(wxWidgets COMPONENTS core base ...)</p>
+<p>There are two search branches: a windows style and a unix style.  For
+windows, the following variables are searched for and set to defaults
+in case of multiple choices.  Change them if the defaults are not
+desired (i.e., these are the only variables you should change to
+select a configuration):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wxWidgets_ROOT_DIR</span>      <span class="o">-</span> <span class="n">Base</span> <span class="n">wxWidgets</span> <span class="n">directory</span>
+                          <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span><span class="o">/</span><span class="n">wxWidgets</span><span class="o">-</span><span class="mf">2.6</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span>
+<span class="n">wxWidgets_LIB_DIR</span>       <span class="o">-</span> <span class="n">Path</span> <span class="n">to</span> <span class="n">wxWidgets</span> <span class="n">libraries</span>
+                          <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">C</span><span class="p">:</span><span class="o">/</span><span class="n">wxWidgets</span><span class="o">-</span><span class="mf">2.6</span><span class="o">.</span><span class="mi">3</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">vc_lib</span><span class="p">)</span><span class="o">.</span>
+<span class="n">wxWidgets_CONFIGURATION</span> <span class="o">-</span> <span class="n">Configuration</span> <span class="n">to</span> <span class="n">use</span>
+                          <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">msw</span><span class="p">,</span> <span class="n">mswd</span><span class="p">,</span> <span class="n">mswu</span><span class="p">,</span> <span class="n">mswunivud</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span>
+<span class="n">wxWidgets_EXCLUDE_COMMON_LIBRARIES</span>
+                        <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="n">to</span> <span class="n">exclude</span> <span class="n">linking</span> <span class="n">of</span>
+                          <span class="n">commonly</span> <span class="n">required</span> <span class="n">libs</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">png</span> <span class="n">tiff</span>
+                          <span class="n">jpeg</span> <span class="n">zlib</span> <span class="n">regex</span> <span class="n">expat</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>For unix style it uses the wx-config utility.  You can select between
+debug/release, unicode/ansi, universal/non-universal, and
+static/shared in the QtDialog or ccmake interfaces by turning ON/OFF
+the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wxWidgets_USE_DEBUG</span>
+<span class="n">wxWidgets_USE_UNICODE</span>
+<span class="n">wxWidgets_USE_UNIVERSAL</span>
+<span class="n">wxWidgets_USE_STATIC</span>
+</pre></div>
+</div>
+<p>There is also a wxWidgets_CONFIG_OPTIONS variable for all other
+options that need to be passed to the wx-config utility.  For example,
+to use the base toolkit found in the /usr/local path, set the variable
+(before calling the FIND_PACKAGE command) as such:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="n">wxWidgets_CONFIG_OPTIONS</span> <span class="o">--</span><span class="n">toolkit</span><span class="o">=</span><span class="n">base</span> <span class="o">--</span><span class="n">prefix</span><span class="o">=/</span><span class="n">usr</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The following are set after the configuration is done for both windows
+and unix style:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">wxWidgets_FOUND</span>            <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">TRUE</span> <span class="k">if</span> <span class="n">wxWidgets</span> <span class="n">was</span> <span class="n">found</span><span class="o">.</span>
+<span class="n">wxWidgets_INCLUDE_DIRS</span>     <span class="o">-</span> <span class="n">Include</span> <span class="n">directories</span> <span class="k">for</span> <span class="n">WIN32</span>
+                             <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="p">,</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="s2">&quot;wx/wx.h&quot;</span> <span class="ow">and</span>
+                             <span class="s2">&quot;wx/setup.h&quot;</span><span class="p">;</span> <span class="n">possibly</span> <span class="n">empty</span> <span class="k">for</span> <span class="n">unices</span><span class="o">.</span>
+<span class="n">wxWidgets_LIBRARIES</span>        <span class="o">-</span> <span class="n">Path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">wxWidgets</span> <span class="n">libraries</span><span class="o">.</span>
+<span class="n">wxWidgets_LIBRARY_DIRS</span>     <span class="o">-</span> <span class="nb">compile</span> <span class="n">time</span> <span class="n">link</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">useful</span> <span class="k">for</span>
+                             <span class="n">rpath</span> <span class="n">on</span> <span class="n">UNIX</span><span class="o">.</span> <span class="n">Typically</span> <span class="n">an</span> <span class="n">empty</span> <span class="n">string</span>
+                             <span class="ow">in</span> <span class="n">WIN32</span> <span class="n">environment</span><span class="o">.</span>
+<span class="n">wxWidgets_DEFINITIONS</span>      <span class="o">-</span> <span class="n">Contains</span> <span class="n">defines</span> <span class="n">required</span> <span class="n">to</span> <span class="nb">compile</span><span class="o">/</span><span class="n">link</span>
+                             <span class="n">against</span> <span class="n">WX</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">WXUSINGDLL</span>
+<span class="n">wxWidgets_DEFINITIONS_DEBUG</span><span class="o">-</span> <span class="n">Contains</span> <span class="n">defines</span> <span class="n">required</span> <span class="n">to</span> <span class="nb">compile</span><span class="o">/</span><span class="n">link</span>
+                             <span class="n">against</span> <span class="n">WX</span> <span class="n">debug</span> <span class="n">builds</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">__WXDEBUG__</span>
+<span class="n">wxWidgets_CXX_FLAGS</span>        <span class="o">-</span> <span class="n">Include</span> <span class="n">dirs</span> <span class="ow">and</span> <span class="n">compiler</span> <span class="n">flags</span> <span class="k">for</span>
+                             <span class="n">unices</span><span class="p">,</span> <span class="n">empty</span> <span class="n">on</span> <span class="n">WIN32</span><span class="o">.</span> <span class="n">Essentially</span>
+                             <span class="s2">&quot;`wx-config --cxxflags`&quot;</span><span class="o">.</span>
+<span class="n">wxWidgets_USE_FILE</span>         <span class="o">-</span> <span class="n">Convenience</span> <span class="n">include</span> <span class="n">file</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Sample usage:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span># Note that for MinGW users the order of libs is important!
+find_package(wxWidgets COMPONENTS net gl core base)
+if(wxWidgets_FOUND)
+  include(${wxWidgets_USE_FILE})
+  # and for each of your dependent executable/library targets:
+  target_link_libraries(&lt;YourTarget&gt; ${wxWidgets_LIBRARIES})
+endif()
+</pre></div>
+</div>
+<p>If wxWidgets is required (i.e., not an optional part):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>find_package(wxWidgets REQUIRED net gl core base)
+include(${wxWidgets_USE_FILE})
+# and for each of your dependent executable/library targets:
+target_link_libraries(&lt;YourTarget&gt; ${wxWidgets_LIBRARIES})
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindWish.html"
+                        title="previous chapter">FindWish</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindwxWindows.html"
+                        title="next chapter">FindwxWindows</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindwxWidgets.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindwxWindows.html" title="FindwxWindows"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindWish.html" title="FindWish"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

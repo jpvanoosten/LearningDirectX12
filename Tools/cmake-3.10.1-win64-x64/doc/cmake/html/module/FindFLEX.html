@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindFLEX &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindFLTK2" href="FindFLTK2.html" />
+    <link rel="prev" title="FindEXPAT" href="FindEXPAT.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindFLTK2.html" title="FindFLTK2"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindEXPAT.html" title="FindEXPAT"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findflex">
+<span id="module:FindFLEX"></span><h1>FindFLEX<a class="headerlink" href="#findflex" title="Permalink to this headline">¶</a></h1>
+<p>Find flex executable and provides a macro to generate custom build rules</p>
+<p>The module defines the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">FLEX_FOUND</span> <span class="o">-</span> <span class="n">true</span> <span class="ow">is</span> <span class="n">flex</span> <span class="n">executable</span> <span class="ow">is</span> <span class="n">found</span>
+<span class="n">FLEX_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">flex</span> <span class="n">executable</span>
+<span class="n">FLEX_VERSION</span> <span class="o">-</span> <span class="n">the</span> <span class="n">version</span> <span class="n">of</span> <span class="n">flex</span>
+<span class="n">FLEX_LIBRARIES</span> <span class="o">-</span> <span class="n">The</span> <span class="n">flex</span> <span class="n">libraries</span>
+<span class="n">FLEX_INCLUDE_DIRS</span> <span class="o">-</span> <span class="n">The</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">flex</span> <span class="n">headers</span>
+</pre></div>
+</div>
+<p>The minimum required version of flex can be specified using the
+standard syntax, e.g.  find_package(FLEX 2.5.13)</p>
+<p>If flex is found on the system, the module provides the macro:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">FLEX_TARGET</span><span class="p">(</span><span class="n">Name</span> <span class="n">FlexInput</span> <span class="n">FlexOutput</span>
+            <span class="p">[</span><span class="n">COMPILE_FLAGS</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">DEFINES_FILE</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+<p>which creates a custom command to generate the &lt;FlexOutput&gt; file from
+the &lt;FlexInput&gt; file.  If COMPILE_FLAGS option is specified, the next
+parameter is added to the flex command line. If flex is configured to
+output a header file, the DEFINES_FILE option may be used to specify its
+name. Name is an alias used to get details of this custom command.
+Indeed the macro defines the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>FLEX_${Name}_DEFINED - true is the macro ran successfully
+FLEX_${Name}_OUTPUTS - the source file generated by the custom rule, an
+alias for FlexOutput
+FLEX_${Name}_INPUT - the flex source file, an alias for ${FlexInput}
+FLEX_${Name}_OUTPUT_HEADER - the header flex output, if any.
+</pre></div>
+</div>
+<p>Flex scanners oftenly use tokens defined by Bison: the code generated
+by Flex depends of the header generated by Bison.  This module also
+defines a macro:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ADD_FLEX_BISON_DEPENDENCY</span><span class="p">(</span><span class="n">FlexTarget</span> <span class="n">BisonTarget</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which adds the required dependency between a scanner and a parser
+where &lt;FlexTarget&gt; and &lt;BisonTarget&gt; are the first parameters of
+respectively FLEX_TARGET and BISON_TARGET macros.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">====================================================================</span>
+<span class="n">Example</span><span class="p">:</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="n">BISON</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">FLEX</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>BISON_TARGET(MyParser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+FLEX_TARGET(MyScanner lexer.l  ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp)
+ADD_FLEX_BISON_DEPENDENCY(MyScanner MyParser)
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span> include_directories(${CMAKE_CURRENT_BINARY_DIR})
+ add_executable(Foo
+    Foo.cc
+    ${BISON_MyParser_OUTPUTS}
+    ${FLEX_MyScanner_OUTPUTS}
+ )
+====================================================================
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindEXPAT.html"
+                        title="previous chapter">FindEXPAT</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindFLTK2.html"
+                        title="next chapter">FindFLTK2</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindFLEX.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindFLTK2.html" title="FindFLTK2"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindEXPAT.html" title="FindEXPAT"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

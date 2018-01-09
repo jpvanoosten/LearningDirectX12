@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindSDL_image &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindSDL_mixer" href="FindSDL_mixer.html" />
+    <link rel="prev" title="FindRuby" href="FindRuby.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindSDL_mixer.html" title="FindSDL_mixer"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindRuby.html" title="FindRuby"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findsdl-image">
+<span id="module:FindSDL_image"></span><h1>FindSDL_image<a class="headerlink" href="#findsdl-image" title="Permalink to this headline">¶</a></h1>
+<p>Locate SDL_image library</p>
+<p>This module defines:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SDL_IMAGE_LIBRARIES</span><span class="p">,</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">library</span> <span class="n">to</span> <span class="n">link</span> <span class="n">against</span>
+<span class="n">SDL_IMAGE_INCLUDE_DIRS</span><span class="p">,</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="n">the</span> <span class="n">headers</span>
+<span class="n">SDL_IMAGE_FOUND</span><span class="p">,</span> <span class="k">if</span> <span class="n">false</span><span class="p">,</span> <span class="n">do</span> <span class="ow">not</span> <span class="k">try</span> <span class="n">to</span> <span class="n">link</span> <span class="n">against</span>
+<span class="n">SDL_IMAGE_VERSION_STRING</span> <span class="o">-</span> <span class="n">human</span><span class="o">-</span><span class="n">readable</span> <span class="n">string</span> <span class="n">containing</span> <span class="n">the</span>
+                           <span class="n">version</span> <span class="n">of</span> <span class="n">SDL_image</span>
+</pre></div>
+</div>
+<p>For backward compatibility the following variables are also set:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SDLIMAGE_LIBRARY</span> <span class="p">(</span><span class="n">same</span> <span class="n">value</span> <span class="k">as</span> <span class="n">SDL_IMAGE_LIBRARIES</span><span class="p">)</span>
+<span class="n">SDLIMAGE_INCLUDE_DIR</span> <span class="p">(</span><span class="n">same</span> <span class="n">value</span> <span class="k">as</span> <span class="n">SDL_IMAGE_INCLUDE_DIRS</span><span class="p">)</span>
+<span class="n">SDLIMAGE_FOUND</span> <span class="p">(</span><span class="n">same</span> <span class="n">value</span> <span class="k">as</span> <span class="n">SDL_IMAGE_FOUND</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>$SDLDIR is an environment variable that would correspond to the
+./configure &#8211;prefix=$SDLDIR used in building SDL.</p>
+<p>Created by Eric Wing.  This was influenced by the FindSDL.cmake
+module, but with modifications to recognize OS X frameworks and
+additional Unix paths (FreeBSD, etc).</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindRuby.html"
+                        title="previous chapter">FindRuby</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindSDL_mixer.html"
+                        title="next chapter">FindSDL_mixer</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindSDL_image.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindSDL_mixer.html" title="FindSDL_mixer"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindRuby.html" title="FindRuby"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindHDF5 &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindHg" href="FindHg.html" />
+    <link rel="prev" title="FindGTK" href="FindGTK.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindHg.html" title="FindHg"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindGTK.html" title="FindGTK"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findhdf5">
+<span id="module:FindHDF5"></span><h1>FindHDF5<a class="headerlink" href="#findhdf5" title="Permalink to this headline">¶</a></h1>
+<p>Find HDF5, a library for reading and writing self describing array data.</p>
+<p>This module invokes the HDF5 wrapper compiler that should be installed
+alongside HDF5.  Depending upon the HDF5 Configuration, the wrapper
+compiler is called either h5cc or h5pcc.  If this succeeds, the module
+will then call the compiler with the -show argument to see what flags
+are used when compiling an HDF5 client application.</p>
+<p>The module will optionally accept the COMPONENTS argument.  If no
+COMPONENTS are specified, then the find module will default to finding
+only the HDF5 C library.  If one or more COMPONENTS are specified, the
+module will attempt to find the language bindings for the specified
+components.  The only valid components are C, CXX, Fortran, HL, and
+Fortran_HL.  If the COMPONENTS argument is not given, the module will
+attempt to find only the C bindings.</p>
+<p>This module will read the variable
+HDF5_USE_STATIC_LIBRARIES to determine whether or not to prefer a
+static link to a dynamic link for HDF5 and all of it&#8217;s dependencies.
+To use this feature, make sure that the HDF5_USE_STATIC_LIBRARIES
+variable is set before the call to find_package.</p>
+<p>To provide the module with a hint about where to find your HDF5
+installation, you can set the environment variable HDF5_ROOT.  The
+Find module will then look in this path when searching for HDF5
+executables, paths, and libraries.</p>
+<p>Both the serial and parallel HDF5 wrappers are considered and the first
+directory to contain either one will be used.  In the event that both appear
+in the same directory the serial version is preferentially selected. This
+behavior can be reversed by setting the variable HDF5_PREFER_PARALLEL to
+true.</p>
+<p>In addition to finding the includes and libraries required to compile
+an HDF5 client application, this module also makes an effort to find
+tools that come with the HDF5 distribution that may be useful for
+regression testing.</p>
+<p>This module will define the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">HDF5_FOUND</span> <span class="o">-</span> <span class="n">true</span> <span class="k">if</span> <span class="n">HDF5</span> <span class="n">was</span> <span class="n">found</span> <span class="n">on</span> <span class="n">the</span> <span class="n">system</span>
+<span class="n">HDF5_VERSION</span> <span class="o">-</span> <span class="n">HDF5</span> <span class="n">version</span> <span class="ow">in</span> <span class="nb">format</span> <span class="n">Major</span><span class="o">.</span><span class="n">Minor</span><span class="o">.</span><span class="n">Release</span>
+<span class="n">HDF5_INCLUDE_DIRS</span> <span class="o">-</span> <span class="n">Location</span> <span class="n">of</span> <span class="n">the</span> <span class="n">hdf5</span> <span class="n">includes</span>
+<span class="n">HDF5_INCLUDE_DIR</span> <span class="o">-</span> <span class="n">Location</span> <span class="n">of</span> <span class="n">the</span> <span class="n">hdf5</span> <span class="n">includes</span> <span class="p">(</span><span class="n">deprecated</span><span class="p">)</span>
+<span class="n">HDF5_DEFINITIONS</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">compiler</span> <span class="n">definitions</span> <span class="k">for</span> <span class="n">HDF5</span>
+<span class="n">HDF5_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">requested</span> <span class="n">bindings</span>
+<span class="n">HDF5_HL_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">high</span> <span class="n">level</span> <span class="n">API</span> <span class="k">for</span> <span class="nb">all</span>
+                    <span class="n">bindings</span><span class="p">,</span> <span class="k">if</span> <span class="n">the</span> <span class="n">HL</span> <span class="n">component</span> <span class="ow">is</span> <span class="n">enabled</span>
+</pre></div>
+</div>
+<p>Available components are: C CXX Fortran and HL.  For each enabled language
+binding, a corresponding HDF5_${LANG}_LIBRARIES variable, and potentially
+HDF5_${LANG}_DEFINITIONS, will be defined.
+If the HL component is enabled, then an HDF5_${LANG}_HL_LIBRARIES will
+also be defined.  With all components enabled, the following variables will be defined:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">HDF5_C_DEFINITIONS</span> <span class="o">--</span> <span class="n">Required</span> <span class="n">compiler</span> <span class="n">definitions</span> <span class="k">for</span> <span class="n">HDF5</span> <span class="n">C</span> <span class="n">bindings</span>
+<span class="n">HDF5_CXX_DEFINITIONS</span> <span class="o">--</span> <span class="n">Required</span> <span class="n">compiler</span> <span class="n">definitions</span> <span class="k">for</span> <span class="n">HDF5</span> <span class="n">C</span><span class="o">++</span> <span class="n">bindings</span>
+<span class="n">HDF5_Fortran_DEFINITIONS</span> <span class="o">--</span> <span class="n">Required</span> <span class="n">compiler</span> <span class="n">definitions</span> <span class="k">for</span> <span class="n">HDF5</span> <span class="n">Fortran</span> <span class="n">bindings</span>
+<span class="n">HDF5_C_INCLUDE_DIRS</span> <span class="o">--</span> <span class="n">Required</span> <span class="n">include</span> <span class="n">directories</span> <span class="k">for</span> <span class="n">HDF5</span> <span class="n">C</span> <span class="n">bindings</span>
+<span class="n">HDF5_CXX_INCLUDE_DIRS</span> <span class="o">--</span> <span class="n">Required</span> <span class="n">include</span> <span class="n">directories</span> <span class="k">for</span> <span class="n">HDF5</span> <span class="n">C</span><span class="o">++</span> <span class="n">bindings</span>
+<span class="n">HDF5_Fortran_INCLUDE_DIRS</span> <span class="o">--</span> <span class="n">Required</span> <span class="n">include</span> <span class="n">directories</span> <span class="k">for</span> <span class="n">HDF5</span> <span class="n">Fortran</span> <span class="n">bindings</span>
+<span class="n">HDF5_C_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">C</span> <span class="n">bindings</span>
+<span class="n">HDF5_CXX_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">C</span><span class="o">++</span> <span class="n">bindings</span>
+<span class="n">HDF5_Fortran_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">Fortran</span> <span class="n">bindings</span>
+<span class="n">HDF5_C_HL_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">high</span> <span class="n">level</span> <span class="n">C</span> <span class="n">bindings</span>
+<span class="n">HDF5_CXX_HL_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">high</span> <span class="n">level</span> <span class="n">C</span><span class="o">++</span> <span class="n">bindings</span>
+<span class="n">HDF5_Fortran_HL_LIBRARIES</span> <span class="o">-</span> <span class="n">Required</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">the</span> <span class="n">high</span> <span class="n">level</span> <span class="n">Fortran</span>
+                            <span class="n">bindings</span><span class="o">.</span>
+
+<span class="n">HDF5_IS_PARALLEL</span> <span class="o">-</span> <span class="n">Whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">HDF5</span> <span class="n">was</span> <span class="n">found</span> <span class="k">with</span> <span class="n">parallel</span> <span class="n">IO</span> <span class="n">support</span>
+<span class="n">HDF5_C_COMPILER_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">C</span> <span class="n">wrapper</span> <span class="n">compiler</span>
+<span class="n">HDF5_CXX_COMPILER_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">C</span><span class="o">++</span> <span class="n">wrapper</span> <span class="n">compiler</span>
+<span class="n">HDF5_Fortran_COMPILER_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">Fortran</span> <span class="n">wrapper</span> <span class="n">compiler</span>
+<span class="n">HDF5_C_COMPILER_EXECUTABLE_NO_INTERROGATE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">primary</span> <span class="n">C</span> <span class="n">compiler</span>
+                                            <span class="n">which</span> <span class="ow">is</span> <span class="n">also</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">wrapper</span>
+<span class="n">HDF5_CXX_COMPILER_EXECUTABLE_NO_INTERROGATE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">primary</span> <span class="n">C</span><span class="o">++</span>
+                                              <span class="n">compiler</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">also</span>
+                                              <span class="n">the</span> <span class="n">HDF5</span> <span class="n">wrapper</span>
+<span class="n">HDF5_Fortran_COMPILER_EXECUTABLE_NO_INTERROGATE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">primary</span>
+                                                  <span class="n">Fortran</span> <span class="n">compiler</span> <span class="n">which</span>
+                                                  <span class="ow">is</span> <span class="n">also</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">wrapper</span>
+<span class="n">HDF5_DIFF_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">HDF5</span> <span class="n">dataset</span> <span class="n">comparison</span> <span class="n">tool</span>
+</pre></div>
+</div>
+<p>The following variable can be set to guide the search for HDF5 libraries and includes:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">HDF5_ROOT</span></code></dt>
+<dd>Specify the path to the HDF5 installation to use.</dd>
+<dt><code class="docutils literal"><span class="pre">HDF5_FIND_DEBUG</span></code></dt>
+<dd>Set to a true value to get some extra debugging output.</dd>
+<dt><code class="docutils literal"><span class="pre">HDF5_NO_FIND_PACKAGE_CONFIG_FILE</span></code></dt>
+<dd>Set to a true value to skip trying to find <code class="docutils literal"><span class="pre">hdf5-config.cmake</span></code>.</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindGTK.html"
+                        title="previous chapter">FindGTK</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindHg.html"
+                        title="next chapter">FindHg</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindHDF5.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindHg.html" title="FindHg"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindGTK.html" title="FindGTK"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

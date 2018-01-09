@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>cmake_host_system_information &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cmake_minimum_required" href="cmake_minimum_required.html" />
+    <link rel="prev" title="break" href="break.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cmake_minimum_required.html" title="cmake_minimum_required"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="break.html" title="break"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cmake-host-system-information">
+<span id="command:cmake_host_system_information"></span><h1>cmake_host_system_information<a class="headerlink" href="#cmake-host-system-information" title="Permalink to this headline">¶</a></h1>
+<p>Query host system specific information.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cmake_host_system_information</span><span class="p">(</span><span class="n">RESULT</span> <span class="o">&lt;</span><span class="n">variable</span><span class="o">&gt;</span> <span class="n">QUERY</span> <span class="o">&lt;</span><span class="n">key</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Queries system information of the host system on which cmake runs.
+One or more <code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be provided to select the information to be
+queried.  The list of queried values is stored in <code class="docutils literal"><span class="pre">&lt;variable&gt;</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">&lt;key&gt;</span></code> can be one of the following values:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Key</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">NUMBER_OF_LOGICAL_CORES</span></code></td>
+<td>Number of logical cores</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">NUMBER_OF_PHYSICAL_CORES</span></code></td>
+<td>Number of physical cores</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">HOSTNAME</span></code></td>
+<td>Hostname</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">FQDN</span></code></td>
+<td>Fully qualified domain name</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">TOTAL_VIRTUAL_MEMORY</span></code></td>
+<td>Total virtual memory in megabytes</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">AVAILABLE_VIRTUAL_MEMORY</span></code></td>
+<td>Available virtual memory in megabytes</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">TOTAL_PHYSICAL_MEMORY</span></code></td>
+<td>Total physical memory in megabytes</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">AVAILABLE_PHYSICAL_MEMORY</span></code></td>
+<td>Available physical memory in megabytes</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">IS_64BIT</span></code></td>
+<td>One if processor is 64Bit</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">HAS_FPU</span></code></td>
+<td>One if processor has floating point unit</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">HAS_MMX</span></code></td>
+<td>One if processor supports MMX instructions</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">HAS_MMX_PLUS</span></code></td>
+<td>One if porcessor supports Ext. MMX instructions</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">HAS_SSE</span></code></td>
+<td>One if porcessor supports SSE instructions</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">HAS_SSE2</span></code></td>
+<td>One if porcessor supports SSE2 instructions</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">HAS_SSE_FP</span></code></td>
+<td>One if porcessor supports SSE FP instructions</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">HAS_SSE_MMX</span></code></td>
+<td>One if porcessor supports SSE MMX instructions</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">HAS_AMD_3DNOW</span></code></td>
+<td>One if porcessor supports 3DNow instructions</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">HAS_AMD_3DNOW_PLUS</span></code></td>
+<td>One if porcessor supports 3DNow+ instructions</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">HAS_IA64</span></code></td>
+<td>One if IA64 processor emulating x86</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">HAS_SERIAL_NUMBER</span></code></td>
+<td>One if processor has serial number</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">PROCESSOR_SERIAL_NUMBER</span></code></td>
+<td>Processor serial number</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">PROCESSOR_NAME</span></code></td>
+<td>Human readable processor name</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">PROCESSOR_DESCRIPTION</span></code></td>
+<td>Human readable full processor description</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">OS_NAME</span></code></td>
+<td>See <span class="target" id="index-0-variable:CMAKE_HOST_SYSTEM_NAME"></span><a class="reference internal" href="../variable/CMAKE_HOST_SYSTEM_NAME.html#variable:CMAKE_HOST_SYSTEM_NAME" title="CMAKE_HOST_SYSTEM_NAME"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_HOST_SYSTEM_NAME</span></code></a></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">OS_RELEASE</span></code></td>
+<td>The OS sub-type e.g. on Windows <code class="docutils literal"><span class="pre">Professional</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">OS_VERSION</span></code></td>
+<td>The OS build ID</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">OS_PLATFORM</span></code></td>
+<td>See <span class="target" id="index-0-variable:CMAKE_HOST_SYSTEM_PROCESSOR"></span><a class="reference internal" href="../variable/CMAKE_HOST_SYSTEM_PROCESSOR.html#variable:CMAKE_HOST_SYSTEM_PROCESSOR" title="CMAKE_HOST_SYSTEM_PROCESSOR"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_HOST_SYSTEM_PROCESSOR</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="break.html"
+                        title="previous chapter">break</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cmake_minimum_required.html"
+                        title="next chapter">cmake_minimum_required</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/cmake_host_system_information.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cmake_minimum_required.html" title="cmake_minimum_required"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="break.html" title="break"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

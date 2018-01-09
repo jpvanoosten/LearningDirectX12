@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CMakeForceCompiler &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CMakeGraphVizOptions" href="CMakeGraphVizOptions.html" />
+    <link rel="prev" title="CMakeFindPackageMode" href="CMakeFindPackageMode.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CMakeGraphVizOptions.html" title="CMakeGraphVizOptions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CMakeFindPackageMode.html" title="CMakeFindPackageMode"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cmakeforcecompiler">
+<span id="module:CMakeForceCompiler"></span><h1>CMakeForceCompiler<a class="headerlink" href="#cmakeforcecompiler" title="Permalink to this headline">¶</a></h1>
+<p>Deprecated.  Do not use.</p>
+<p>The macros provided by this module were once intended for use by
+cross-compiling toolchain files when CMake was not able to automatically
+detect the compiler identification.  Since the introduction of this module,
+CMake&#8217;s compiler identification capabilities have improved and can now be
+taught to recognize any compiler.  Furthermore, the suite of information
+CMake detects from a compiler is now too extensive to be provided by
+toolchain files using these macros.</p>
+<p>One common use case for this module was to skip CMake&#8217;s checks for a
+working compiler when using a cross-compiler that cannot link binaries
+without special flags or custom linker scripts.  This case is now supported
+by setting the <span class="target" id="index-0-variable:CMAKE_TRY_COMPILE_TARGET_TYPE"></span><a class="reference internal" href="../variable/CMAKE_TRY_COMPILE_TARGET_TYPE.html#variable:CMAKE_TRY_COMPILE_TARGET_TYPE" title="CMAKE_TRY_COMPILE_TARGET_TYPE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_TRY_COMPILE_TARGET_TYPE</span></code></a> variable in the
+toolchain file instead.</p>
+<hr class="docutils" />
+<p>Macro CMAKE_FORCE_C_COMPILER has the following signature:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_FORCE_C_COMPILER</span><span class="p">(</span><span class="o">&lt;</span><span class="n">compiler</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">compiler</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It sets CMAKE_C_COMPILER to the given compiler and the cmake internal
+variable CMAKE_C_COMPILER_ID to the given compiler-id.  It also
+bypasses the check for working compiler and basic compiler information
+tests.</p>
+<p>Macro CMAKE_FORCE_CXX_COMPILER has the following signature:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_FORCE_CXX_COMPILER</span><span class="p">(</span><span class="o">&lt;</span><span class="n">compiler</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">compiler</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It sets CMAKE_CXX_COMPILER to the given compiler and the cmake
+internal variable CMAKE_CXX_COMPILER_ID to the given compiler-id.  It
+also bypasses the check for working compiler and basic compiler
+information tests.</p>
+<p>Macro CMAKE_FORCE_Fortran_COMPILER has the following signature:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_FORCE_Fortran_COMPILER</span><span class="p">(</span><span class="o">&lt;</span><span class="n">compiler</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">compiler</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It sets CMAKE_Fortran_COMPILER to the given compiler and the cmake
+internal variable CMAKE_Fortran_COMPILER_ID to the given compiler-id.
+It also bypasses the check for working compiler and basic compiler
+information tests.</p>
+<p>So a simple toolchain file could look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">include</span> <span class="p">(</span><span class="n">CMakeForceCompiler</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="n">CMAKE_SYSTEM_NAME</span> <span class="n">Generic</span><span class="p">)</span>
+<span class="n">CMAKE_FORCE_C_COMPILER</span>   <span class="p">(</span><span class="n">chc12</span> <span class="n">MetrowerksHicross</span><span class="p">)</span>
+<span class="n">CMAKE_FORCE_CXX_COMPILER</span> <span class="p">(</span><span class="n">chc12</span> <span class="n">MetrowerksHicross</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CMakeFindPackageMode.html"
+                        title="previous chapter">CMakeFindPackageMode</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CMakeGraphVizOptions.html"
+                        title="next chapter">CMakeGraphVizOptions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CMakeForceCompiler.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CMakeGraphVizOptions.html" title="CMakeGraphVizOptions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CMakeFindPackageMode.html" title="CMakeFindPackageMode"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CSharpUtilities &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CTest" href="CTest.html" />
+    <link rel="prev" title="CPackWIX" href="CPackWIX.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CTest.html" title="CTest"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CPackWIX.html" title="CPackWIX"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="csharputilities">
+<span id="module:CSharpUtilities"></span><h1>CSharpUtilities<a class="headerlink" href="#csharputilities" title="Permalink to this headline">¶</a></h1>
+<p>Functions to make configuration of CSharp/.NET targets easier.</p>
+<p>A collection of CMake utility functions useful for dealing with CSharp
+targets for Visual Studio generators from version 2010 and later.</p>
+<p>The following functions are provided by this module:</p>
+<p><strong>Main functions</strong></p>
+<ul class="simple">
+<li><span class="target" id="index-0-command:csharp_set_windows_forms_properties"></span><a class="reference internal" href="#command:csharp_set_windows_forms_properties" title="csharp_set_windows_forms_properties"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_set_windows_forms_properties()</span></code></a></li>
+<li><span class="target" id="index-0-command:csharp_set_designer_cs_properties"></span><a class="reference internal" href="#command:csharp_set_designer_cs_properties" title="csharp_set_designer_cs_properties"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_set_designer_cs_properties()</span></code></a></li>
+<li><span class="target" id="index-0-command:csharp_set_xaml_cs_properties"></span><a class="reference internal" href="#command:csharp_set_xaml_cs_properties" title="csharp_set_xaml_cs_properties"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_set_xaml_cs_properties()</span></code></a></li>
+</ul>
+<p><strong>Helper functions</strong></p>
+<ul class="simple">
+<li><span class="target" id="index-0-command:csharp_get_filename_keys"></span><a class="reference internal" href="#command:csharp_get_filename_keys" title="csharp_get_filename_keys"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_get_filename_keys()</span></code></a></li>
+<li><span class="target" id="index-0-command:csharp_get_filename_key_base"></span><a class="reference internal" href="#command:csharp_get_filename_key_base" title="csharp_get_filename_key_base"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_get_filename_key_base()</span></code></a></li>
+<li><span class="target" id="index-0-command:csharp_get_dependentupon_name"></span><a class="reference internal" href="#command:csharp_get_dependentupon_name" title="csharp_get_dependentupon_name"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_get_dependentupon_name()</span></code></a></li>
+</ul>
+<div class="section" id="main-functions-provided-by-the-module">
+<h2>Main functions provided by the module<a class="headerlink" href="#main-functions-provided-by-the-module" title="Permalink to this headline">¶</a></h2>
+<dl class="command">
+<dt id="command:csharp_set_windows_forms_properties">
+<code class="descname">csharp_set_windows_forms_properties</code><a class="headerlink" href="#command:csharp_set_windows_forms_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets source file properties for use of Windows Forms. Use this, if your CSharp
+target uses Windows Forms:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">csharp_set_windows_forms_properties</span><span class="p">([</span><span class="o">&lt;</span><span class="n">file1</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">file2</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">...</span><span class="p">]]])</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">&lt;fileN&gt;</span></code></dt>
+<dd>List of all source files which are relevant for setting the
+<span class="target" id="index-0-prop_sf:VS_CSHARP_&lt;tagname&gt;"></span><a class="reference internal" href="../prop_sf/VS_CSHARP_tagname.html#prop_sf:VS_CSHARP_&lt;tagname&gt;" title="VS_CSHARP_&lt;tagname&gt;"><code class="xref cmake cmake-prop_sf docutils literal"><span class="pre">VS_CSHARP_&lt;tagname&gt;</span></code></a> properties (including <code class="docutils literal"><span class="pre">.cs</span></code>, <code class="docutils literal"><span class="pre">.resx</span></code> and
+<code class="docutils literal"><span class="pre">.Designer.cs</span></code> extensions).</dd>
+</dl>
+<p>In the list of all given files for all files ending with <code class="docutils literal"><span class="pre">.Designer.cs</span></code> and
+<code class="docutils literal"><span class="pre">.resx</span></code> is searched.  For every <em>designer</em> or <em>resource</em> file a file with the
+same base name but only <code class="docutils literal"><span class="pre">.cs</span></code> as extension is searched.  If this is found, the
+<span class="target" id="index-1-prop_sf:VS_CSHARP_&lt;tagname&gt;"></span><a class="reference internal" href="../prop_sf/VS_CSHARP_tagname.html#prop_sf:VS_CSHARP_&lt;tagname&gt;" title="VS_CSHARP_&lt;tagname&gt;"><code class="xref cmake cmake-prop_sf docutils literal"><span class="pre">VS_CSHARP_&lt;tagname&gt;</span></code></a> properties are set as follows:</p>
+<dl class="docutils">
+<dt>for the <strong>.cs</strong> file:</dt>
+<dd><ul class="first last simple">
+<li>VS_CSHARP_SubType &#8220;Form&#8221;</li>
+</ul>
+</dd>
+<dt>for the <strong>.Designer.cs</strong> file (if it exists):</dt>
+<dd><ul class="first last simple">
+<li>VS_CSHARP_DependentUpon &lt;cs-filename&gt;</li>
+<li>VS_CSHARP_DesignTime &#8220;&#8221; (delete tag if previously defined)</li>
+<li>VS_CSHARP_AutoGen &#8220;&#8221;(delete tag if previously defined)</li>
+</ul>
+</dd>
+<dt>for the <strong>.resx</strong> file (if it exists):</dt>
+<dd><ul class="first last simple">
+<li>VS_RESOURCE_GENERATOR &#8220;&#8221; (delete tag if previously defined)</li>
+<li>VS_CSHARP_DependentUpon &lt;cs-filename&gt;</li>
+<li>VS_CSHARP_SubType &#8220;Designer&#8221;</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="command">
+<dt id="command:csharp_set_designer_cs_properties">
+<code class="descname">csharp_set_designer_cs_properties</code><a class="headerlink" href="#command:csharp_set_designer_cs_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets source file properties of <code class="docutils literal"><span class="pre">.Designer.cs</span></code> files depending on
+sibling filenames. Use this, if your CSharp target does <strong>not</strong>
+use Windows Forms (for Windows Forms use
+<span class="target" id="index-1-command:csharp_set_designer_cs_properties"></span><a class="reference internal" href="#command:csharp_set_designer_cs_properties" title="csharp_set_designer_cs_properties"><code class="xref cmake cmake-command docutils literal"><span class="pre">csharp_set_designer_cs_properties()</span></code></a> instead):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">csharp_set_designer_cs_properties</span><span class="p">([</span><span class="o">&lt;</span><span class="n">file1</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">file2</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">...</span><span class="p">]]])</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">&lt;fileN&gt;</span></code></dt>
+<dd>List of all source files which are relevant for setting the
+<span class="target" id="index-2-prop_sf:VS_CSHARP_&lt;tagname&gt;"></span><a class="reference internal" href="../prop_sf/VS_CSHARP_tagname.html#prop_sf:VS_CSHARP_&lt;tagname&gt;" title="VS_CSHARP_&lt;tagname&gt;"><code class="xref cmake cmake-prop_sf docutils literal"><span class="pre">VS_CSHARP_&lt;tagname&gt;</span></code></a> properties (including <code class="docutils literal"><span class="pre">.cs</span></code>,
+<code class="docutils literal"><span class="pre">.resx</span></code>, <code class="docutils literal"><span class="pre">.settings</span></code> and <code class="docutils literal"><span class="pre">.Designer.cs</span></code> extensions).</dd>
+</dl>
+<p>In the list of all given files for all files ending with
+<code class="docutils literal"><span class="pre">.Designer.cs</span></code> is searched. For every <em>designer</em> file all files
+with the same base name but different extensions are searched. If
+a match is found, the source file properties of the <em>designer</em> file
+are set depending on the extension of the matched file:</p>
+<dl class="docutils">
+<dt>if match is <strong>.resx</strong> file:</dt>
+<dd><ul class="first last simple">
+<li>VS_CSHARP_AutoGen &#8220;True&#8221;</li>
+<li>VS_CSHARP_DesignTime &#8220;True&#8221;</li>
+<li>VS_CSHARP_DependentUpon &lt;resx-filename&gt;</li>
+</ul>
+</dd>
+<dt>if match is <strong>.cs</strong> file:</dt>
+<dd><ul class="first last simple">
+<li>VS_CSHARP_DependentUpon &lt;cs-filename&gt;</li>
+</ul>
+</dd>
+<dt>if match is <strong>.settings</strong> file:</dt>
+<dd><ul class="first last simple">
+<li>VS_CSHARP_AutoGen &#8220;True&#8221;</li>
+<li>VS_CSHARP_DesignTimeSharedInput &#8220;True&#8221;</li>
+<li>VS_CSHARP_DependentUpon &lt;settings-filename&gt;</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Because the source file properties of the <code class="docutils literal"><span class="pre">.Designer.cs</span></code> file are set according
+to the found matches and every match sets the <strong>VS_CSHARP_DependentUpon</strong>
+property, there should only be one match for each <code class="docutils literal"><span class="pre">Designer.cs</span></code> file.</p>
+</div>
+<dl class="command">
+<dt id="command:csharp_set_xaml_cs_properties">
+<code class="descname">csharp_set_xaml_cs_properties</code><a class="headerlink" href="#command:csharp_set_xaml_cs_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets source file properties for use of Windows Presentation Foundation (WPF) and
+XAML. Use this, if your CSharp target uses WPF/XAML:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">csharp_set_xaml_cs_properties</span><span class="p">([</span><span class="o">&lt;</span><span class="n">file1</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">file2</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">...</span><span class="p">]]])</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">&lt;fileN&gt;</span></code></dt>
+<dd>List of all source files which are relevant for setting the
+<span class="target" id="index-3-prop_sf:VS_CSHARP_&lt;tagname&gt;"></span><a class="reference internal" href="../prop_sf/VS_CSHARP_tagname.html#prop_sf:VS_CSHARP_&lt;tagname&gt;" title="VS_CSHARP_&lt;tagname&gt;"><code class="xref cmake cmake-prop_sf docutils literal"><span class="pre">VS_CSHARP_&lt;tagname&gt;</span></code></a> properties (including <code class="docutils literal"><span class="pre">.cs</span></code>,
+<code class="docutils literal"><span class="pre">.xaml</span></code>, and <code class="docutils literal"><span class="pre">.xaml.cs</span></code> extensions).</dd>
+</dl>
+<p>In the list of all given files for all files ending with
+<code class="docutils literal"><span class="pre">.xaml.cs</span></code> is searched. For every <em>xaml-cs</em> file, a file
+with the same base name but extension <code class="docutils literal"><span class="pre">.xaml</span></code> is searched.
+If a match is found, the source file properties of the <code class="docutils literal"><span class="pre">.xaml.cs</span></code>
+file are set:</p>
+<blockquote>
+<div><ul class="simple">
+<li>VS_CSHARP_DependentUpon &lt;xaml-filename&gt;</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="helper-functions-which-are-used-by-the-above-ones">
+<h2>Helper functions which are used by the above ones<a class="headerlink" href="#helper-functions-which-are-used-by-the-above-ones" title="Permalink to this headline">¶</a></h2>
+<dl class="command">
+<dt id="command:csharp_get_filename_keys">
+<code class="descname">csharp_get_filename_keys</code><a class="headerlink" href="#command:csharp_get_filename_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function which computes a list of key values to identify
+source files independently of relative/absolute paths given in cmake
+and eliminates case sensitivity:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">csharp_get_filename_keys</span><span class="p">(</span><span class="n">OUT</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">file1</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">file2</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">...</span><span class="p">]]])</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">OUT</span></code></dt>
+<dd>Name of the variable in which the list of keys is stored</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;fileN&gt;</span></code></dt>
+<dd>filename(s) as given to to CSharp target using <span class="target" id="index-0-command:add_library"></span><a class="reference internal" href="../command/add_library.html#command:add_library" title="add_library"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_library()</span></code></a>
+or <span class="target" id="index-0-command:add_executable"></span><a class="reference internal" href="../command/add_executable.html#command:add_executable" title="add_executable"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_executable()</span></code></a></dd>
+</dl>
+<p>In some way the function applies a canonicalization to the source names.
+This is necessary to find file matches if the files have been added to
+the target with different directory prefixes:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">add_library</span><span class="p">(</span><span class="s">lib</span>
+  <span class="s">myfile.cs</span>
+  <span class="o">${</span><span class="nv">CMAKE_CURRENT_SOURCE_DIR</span><span class="o">}</span><span class="s">/myfile.Designer.cs</span><span class="p">)</span>
+
+<span class="nb">set_source_files_properties</span><span class="p">(</span><span class="s">myfile.Designer.cs</span> <span class="s">PROPERTIES</span>
+  <span class="s">VS_CSHARP_DependentUpon</span> <span class="s">myfile.cs</span><span class="p">)</span>
+
+<span class="c"># this will fail, because in cmake</span>
+<span class="c">#  - ${CMAKE_CURRENT_SOURCE_DIR}/myfile.Designer.cs</span>
+<span class="c">#  - myfile.Designer.cs</span>
+<span class="c"># are not the same source file. The source file property is not set.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="command">
+<dt id="command:csharp_get_filename_key_base">
+<code class="descname">csharp_get_filename_key_base</code><a class="headerlink" href="#command:csharp_get_filename_key_base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full filepath and name <strong>without</strong> extension of a key.
+KEY is expected to be a key from csharp_get_filename_keys. In BASE
+the value of KEY without the file extension is returned:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">csharp_get_filename_key_base</span><span class="p">(</span><span class="n">BASE</span> <span class="n">KEY</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">BASE</span></code></dt>
+<dd>Name of the variable with the computed &#8220;base&#8221; of <code class="docutils literal"><span class="pre">KEY</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">KEY</span></code></dt>
+<dd>The key of which the base will be computed. Expected to be a
+upper case full filename.</dd>
+</dl>
+</dd></dl>
+
+<dl class="command">
+<dt id="command:csharp_get_dependentupon_name">
+<code class="descname">csharp_get_dependentupon_name</code><a class="headerlink" href="#command:csharp_get_dependentupon_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a string which can be used as value for the source file property
+<span class="target" id="index-4-prop_sf:VS_CSHARP_&lt;tagname&gt;"></span><a class="reference internal" href="../prop_sf/VS_CSHARP_tagname.html#prop_sf:VS_CSHARP_&lt;tagname&gt;" title="VS_CSHARP_&lt;tagname&gt;"><code class="xref cmake cmake-prop_sf docutils literal"><span class="pre">VS_CSHARP_&lt;tagname&gt;</span></code></a> with <em>target</em> being <code class="docutils literal"><span class="pre">DependentUpon</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">csharp_get_dependentupon_name</span><span class="p">(</span><span class="n">NAME</span> <span class="n">FILE</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">NAME</span></code></dt>
+<dd>Name of the variable with the result value</dd>
+<dt><code class="docutils literal"><span class="pre">FILE</span></code></dt>
+<dd>Filename to convert to <code class="docutils literal"><span class="pre">&lt;DependentUpon&gt;</span></code> value</dd>
+</dl>
+<p>Actually this is only the filename without any path given at the moment.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CSharpUtilities</a><ul>
+<li><a class="reference internal" href="#main-functions-provided-by-the-module">Main functions provided by the module</a></li>
+<li><a class="reference internal" href="#helper-functions-which-are-used-by-the-above-ones">Helper functions which are used by the above ones</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CPackWIX.html"
+                        title="previous chapter">CPackWIX</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CTest.html"
+                        title="next chapter">CTest</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CSharpUtilities.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CTest.html" title="CTest"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CPackWIX.html" title="CPackWIX"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

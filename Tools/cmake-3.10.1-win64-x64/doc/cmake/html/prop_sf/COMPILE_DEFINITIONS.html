@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>COMPILE_DEFINITIONS &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="COMPILE_FLAGS" href="COMPILE_FLAGS.html" />
+    <link rel="prev" title="AUTORCC_OPTIONS" href="AUTORCC_OPTIONS.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="COMPILE_FLAGS.html" title="COMPILE_FLAGS"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="AUTORCC_OPTIONS.html" title="AUTORCC_OPTIONS"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" accesskey="U">cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="compile-definitions">
+<span id="prop_sf:COMPILE_DEFINITIONS"></span><h1>COMPILE_DEFINITIONS<a class="headerlink" href="#compile-definitions" title="Permalink to this headline">¶</a></h1>
+<p>Preprocessor definitions for compiling a source file.</p>
+<p>The COMPILE_DEFINITIONS property may be set to a semicolon-separated
+list of preprocessor definitions using the syntax VAR or VAR=value.
+Function-style definitions are not supported.  CMake will
+automatically escape the value correctly for the native build system
+(note that CMake language syntax may require escapes to specify some
+values).  This property may be set on a per-configuration basis using
+the name COMPILE_DEFINITIONS_&lt;CONFIG&gt; where &lt;CONFIG&gt; is an upper-case
+name (ex.  &#8220;COMPILE_DEFINITIONS_DEBUG&#8221;).</p>
+<p>CMake will automatically drop some definitions that are not supported
+by the native build tool.  Xcode does not support per-configuration
+definitions on source files.</p>
+<p>Disclaimer: Most native build tools have poor support for escaping
+certain values.  CMake has work-arounds for many cases but some values
+may just not be possible to pass correctly.  If a value does not seem
+to be escaped correctly, do not attempt to work-around the problem by
+adding escape sequences to the value.  Your work-around may break in a
+future version of CMake that has improved escape support.  Instead
+consider defining the macro in a (configured) header file.  Then
+report the limitation.  Known limitations include:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#          - broken almost everywhere</span>
+<span class="p">;</span>          <span class="o">-</span> <span class="n">broken</span> <span class="ow">in</span> <span class="n">VS</span> <span class="n">IDE</span> <span class="mf">7.0</span> <span class="ow">and</span> <span class="n">Borland</span> <span class="n">Makefiles</span>
+<span class="p">,</span>          <span class="o">-</span> <span class="n">broken</span> <span class="ow">in</span> <span class="n">VS</span> <span class="n">IDE</span>
+<span class="o">%</span>          <span class="o">-</span> <span class="n">broken</span> <span class="ow">in</span> <span class="n">some</span> <span class="n">cases</span> <span class="ow">in</span> <span class="n">NMake</span>
+<span class="o">&amp;</span> <span class="o">|</span>        <span class="o">-</span> <span class="n">broken</span> <span class="ow">in</span> <span class="n">some</span> <span class="n">cases</span> <span class="n">on</span> <span class="n">MinGW</span>
+<span class="o">^</span> <span class="o">&lt;</span> <span class="o">&gt;</span> \<span class="s2">&quot;   - broken in most Make tools on Windows</span>
+</pre></div>
+</div>
+<p>CMake does not reject these values outright because they do work in
+some cases.  Use with caution.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="AUTORCC_OPTIONS.html"
+                        title="previous chapter">AUTORCC_OPTIONS</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="COMPILE_FLAGS.html"
+                        title="next chapter">COMPILE_FLAGS</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/prop_sf/COMPILE_DEFINITIONS.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="COMPILE_FLAGS.html" title="COMPILE_FLAGS"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="AUTORCC_OPTIONS.html" title="AUTORCC_OPTIONS"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" >cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

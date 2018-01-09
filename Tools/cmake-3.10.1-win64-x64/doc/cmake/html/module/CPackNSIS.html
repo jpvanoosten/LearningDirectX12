@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CPackNSIS &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CPackPackageMaker" href="CPackPackageMaker.html" />
+    <link rel="prev" title="CPackIFWConfigureFile" href="CPackIFWConfigureFile.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CPackPackageMaker.html" title="CPackPackageMaker"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CPackIFWConfigureFile.html" title="CPackIFWConfigureFile"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cpacknsis">
+<span id="module:CPackNSIS"></span><h1>CPackNSIS<a class="headerlink" href="#cpacknsis" title="Permalink to this headline">¶</a></h1>
+<p>CPack NSIS generator specific options</p>
+<div class="section" id="variables-specific-to-cpack-nsis-generator">
+<h2>Variables specific to CPack NSIS generator<a class="headerlink" href="#variables-specific-to-cpack-nsis-generator" title="Permalink to this headline">¶</a></h2>
+<p>The following variables are specific to the graphical installers built
+on Windows using the Nullsoft Installation System.</p>
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_INSTALL_ROOT">
+<code class="descname">CPACK_NSIS_INSTALL_ROOT</code><a class="headerlink" href="#variable:CPACK_NSIS_INSTALL_ROOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default installation directory presented to the end user by the NSIS
+installer is under this root dir. The full directory presented to the end
+user is: ${CPACK_NSIS_INSTALL_ROOT}/${CPACK_PACKAGE_INSTALL_DIRECTORY}</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MUI_ICON">
+<code class="descname">CPACK_NSIS_MUI_ICON</code><a class="headerlink" href="#variable:CPACK_NSIS_MUI_ICON" title="Permalink to this definition">¶</a></dt>
+<dd><p>An icon filename.  The name of a <code class="docutils literal"><span class="pre">*.ico</span></code> file used as the main icon for the
+generated install program.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MUI_UNIICON">
+<code class="descname">CPACK_NSIS_MUI_UNIICON</code><a class="headerlink" href="#variable:CPACK_NSIS_MUI_UNIICON" title="Permalink to this definition">¶</a></dt>
+<dd><p>An icon filename.  The name of a <code class="docutils literal"><span class="pre">*.ico</span></code> file used as the main icon for the
+generated uninstall program.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_INSTALLER_MUI_ICON_CODE">
+<code class="descname">CPACK_NSIS_INSTALLER_MUI_ICON_CODE</code><a class="headerlink" href="#variable:CPACK_NSIS_INSTALLER_MUI_ICON_CODE" title="Permalink to this definition">¶</a></dt>
+<dd><p>undocumented.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP">
+<code class="descname">CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP</code><a class="headerlink" href="#variable:CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>The filename of a bitmap to use as the NSIS MUI_WELCOMEFINISHPAGE_BITMAP.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MUI_UNWELCOMEFINISHPAGE_BITMAP">
+<code class="descname">CPACK_NSIS_MUI_UNWELCOMEFINISHPAGE_BITMAP</code><a class="headerlink" href="#variable:CPACK_NSIS_MUI_UNWELCOMEFINISHPAGE_BITMAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>The filename of a bitmap to use as the NSIS MUI_UNWELCOMEFINISHPAGE_BITMAP.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS">
+<code class="descname">CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS</code><a class="headerlink" href="#variable:CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extra NSIS commands that will be added to the beginning of the install
+Section, before your install tree is available on the target system.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_EXTRA_INSTALL_COMMANDS">
+<code class="descname">CPACK_NSIS_EXTRA_INSTALL_COMMANDS</code><a class="headerlink" href="#variable:CPACK_NSIS_EXTRA_INSTALL_COMMANDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extra NSIS commands that will be added to the end of the install Section,
+after your install tree is available on the target system.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS">
+<code class="descname">CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS</code><a class="headerlink" href="#variable:CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extra NSIS commands that will be added to the uninstall Section, before
+your install tree is removed from the target system.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_COMPRESSOR">
+<code class="descname">CPACK_NSIS_COMPRESSOR</code><a class="headerlink" href="#variable:CPACK_NSIS_COMPRESSOR" title="Permalink to this definition">¶</a></dt>
+<dd><p>The arguments that will be passed to the NSIS SetCompressor command.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL">
+<code class="descname">CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL</code><a class="headerlink" href="#variable:CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ask about uninstalling previous versions first.  If this is set to &#8220;ON&#8221;,
+then an installer will look for previous installed versions and if one is
+found, ask the user whether to uninstall it before proceeding with the
+install.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MODIFY_PATH">
+<code class="descname">CPACK_NSIS_MODIFY_PATH</code><a class="headerlink" href="#variable:CPACK_NSIS_MODIFY_PATH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify PATH toggle.  If this is set to &#8220;ON&#8221;, then an extra page will appear
+in the installer that will allow the user to choose whether the program
+directory should be added to the system PATH variable.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_DISPLAY_NAME">
+<code class="descname">CPACK_NSIS_DISPLAY_NAME</code><a class="headerlink" href="#variable:CPACK_NSIS_DISPLAY_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>The display name string that appears in the Windows Add/Remove Program
+control panel</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_PACKAGE_NAME">
+<code class="descname">CPACK_NSIS_PACKAGE_NAME</code><a class="headerlink" href="#variable:CPACK_NSIS_PACKAGE_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>The title displayed at the top of the installer.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_INSTALLED_ICON_NAME">
+<code class="descname">CPACK_NSIS_INSTALLED_ICON_NAME</code><a class="headerlink" href="#variable:CPACK_NSIS_INSTALLED_ICON_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>A path to the executable that contains the installer icon.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_HELP_LINK">
+<code class="descname">CPACK_NSIS_HELP_LINK</code><a class="headerlink" href="#variable:CPACK_NSIS_HELP_LINK" title="Permalink to this definition">¶</a></dt>
+<dd><p>URL to a web site providing assistance in installing your application.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_URL_INFO_ABOUT">
+<code class="descname">CPACK_NSIS_URL_INFO_ABOUT</code><a class="headerlink" href="#variable:CPACK_NSIS_URL_INFO_ABOUT" title="Permalink to this definition">¶</a></dt>
+<dd><p>URL to a web site providing more information about your application.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_CONTACT">
+<code class="descname">CPACK_NSIS_CONTACT</code><a class="headerlink" href="#variable:CPACK_NSIS_CONTACT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contact information for questions and comments about the installation
+process.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_&lt;compName&gt;_INSTALL_DIRECTORY">
+<code class="descname">CPACK_NSIS_&lt;compName&gt;_INSTALL_DIRECTORY</code><a class="headerlink" href="#variable:CPACK_NSIS_<compName>_INSTALL_DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Custom install directory for the specified component &lt;compName&gt; instead
+of $INSTDIR.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_CREATE_ICONS_EXTRA">
+<code class="descname">CPACK_NSIS_CREATE_ICONS_EXTRA</code><a class="headerlink" href="#variable:CPACK_NSIS_CREATE_ICONS_EXTRA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional NSIS commands for creating start menu shortcuts.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_DELETE_ICONS_EXTRA">
+<code class="descname">CPACK_NSIS_DELETE_ICONS_EXTRA</code><a class="headerlink" href="#variable:CPACK_NSIS_DELETE_ICONS_EXTRA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional NSIS commands to uninstall start menu shortcuts.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_EXECUTABLES_DIRECTORY">
+<code class="descname">CPACK_NSIS_EXECUTABLES_DIRECTORY</code><a class="headerlink" href="#variable:CPACK_NSIS_EXECUTABLES_DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creating NSIS start menu links assumes that they are in &#8216;bin&#8217; unless this
+variable is set.  For example, you would set this to &#8216;exec&#8217; if your
+executables are in an exec directory.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MUI_FINISHPAGE_RUN">
+<code class="descname">CPACK_NSIS_MUI_FINISHPAGE_RUN</code><a class="headerlink" href="#variable:CPACK_NSIS_MUI_FINISHPAGE_RUN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify an executable to add an option to run on the finish page of the
+NSIS installer.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_NSIS_MENU_LINKS">
+<code class="descname">CPACK_NSIS_MENU_LINKS</code><a class="headerlink" href="#variable:CPACK_NSIS_MENU_LINKS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify links in [application] menu.  This should contain a list of pair
+&#8220;link&#8221; &#8220;link name&#8221;. The link may be an URL or a path relative to
+installation prefix.  Like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="n">CPACK_NSIS_MENU_LINKS</span>
+    <span class="s2">&quot;doc/cmake-@CMake_VERSION_MAJOR@.@CMake_VERSION_MINOR@/cmake.html&quot;</span>
+    <span class="s2">&quot;CMake Help&quot;</span> <span class="s2">&quot;https://cmake.org&quot;</span> <span class="s2">&quot;CMake Web Site&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CPackNSIS</a><ul>
+<li><a class="reference internal" href="#variables-specific-to-cpack-nsis-generator">Variables specific to CPack NSIS generator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CPackIFWConfigureFile.html"
+                        title="previous chapter">CPackIFWConfigureFile</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CPackPackageMaker.html"
+                        title="next chapter">CPackPackageMaker</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CPackNSIS.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CPackPackageMaker.html" title="CPackPackageMaker"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CPackIFWConfigureFile.html" title="CPackIFWConfigureFile"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

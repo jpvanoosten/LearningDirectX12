@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>list &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="macro" href="macro.html" />
+    <link rel="prev" title="include_guard" href="include_guard.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="macro.html" title="macro"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="include_guard.html" title="include_guard"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="list">
+<span id="command:list"></span><h1>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h1>
+<p>List operations.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">LENGTH</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">GET</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">element</span> <span class="n">index</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">element</span> <span class="n">index</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">]</span>
+     <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">APPEND</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">])</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">FILTER</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">INCLUDE</span><span class="o">|</span><span class="n">EXCLUDE</span><span class="o">&gt;</span> <span class="n">REGEX</span> <span class="o">&lt;</span><span class="n">regular_expression</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">FIND</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">INSERT</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">element_index</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">element</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">])</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">REMOVE_ITEM</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">value</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">])</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">REMOVE_AT</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">index</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">index</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">])</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">REMOVE_DUPLICATES</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">REVERSE</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">SORT</span> <span class="o">&lt;</span><span class="nb">list</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">LENGTH</span></code> will return a given list&#8217;s length.</p>
+<p><code class="docutils literal"><span class="pre">GET</span></code> will return list of elements specified by indices from the list.</p>
+<p><code class="docutils literal"><span class="pre">APPEND</span></code> will append elements to the list.</p>
+<p><code class="docutils literal"><span class="pre">FILTER</span></code> will include or remove items from the list that match the
+mode&#8217;s pattern.
+In <code class="docutils literal"><span class="pre">REGEX</span></code> mode, items will be matched against the given regular expression.
+For more information on regular expressions see also the <span class="target" id="index-0-command:string"></span><a class="reference internal" href="string.html#command:string" title="string"><code class="xref cmake cmake-command docutils literal"><span class="pre">string()</span></code></a>
+command.</p>
+<p><code class="docutils literal"><span class="pre">FIND</span></code> will return the index of the element specified in the list or -1
+if it wasn&#8217;t found.</p>
+<p><code class="docutils literal"><span class="pre">INSERT</span></code> will insert elements to the list to the specified location.</p>
+<p><code class="docutils literal"><span class="pre">REMOVE_AT</span></code> and <code class="docutils literal"><span class="pre">REMOVE_ITEM</span></code> will remove items from the list.  The
+difference is that <code class="docutils literal"><span class="pre">REMOVE_ITEM</span></code> will remove the given items, while
+<code class="docutils literal"><span class="pre">REMOVE_AT</span></code> will remove the items at the given indices.</p>
+<p><code class="docutils literal"><span class="pre">REMOVE_DUPLICATES</span></code> will remove duplicated items in the list.</p>
+<p><code class="docutils literal"><span class="pre">REVERSE</span></code> reverses the contents of the list in-place.</p>
+<p><code class="docutils literal"><span class="pre">SORT</span></code> sorts the list in-place alphabetically.</p>
+<p>The list subcommands <code class="docutils literal"><span class="pre">APPEND</span></code>, <code class="docutils literal"><span class="pre">INSERT</span></code>, <code class="docutils literal"><span class="pre">FILTER</span></code>, <code class="docutils literal"><span class="pre">REMOVE_AT</span></code>,
+<code class="docutils literal"><span class="pre">REMOVE_ITEM</span></code>, <code class="docutils literal"><span class="pre">REMOVE_DUPLICATES</span></code>, <code class="docutils literal"><span class="pre">REVERSE</span></code> and <code class="docutils literal"><span class="pre">SORT</span></code> may create new
+values for the list within the current CMake variable scope.  Similar to the
+<span class="target" id="index-0-command:set"></span><a class="reference internal" href="set.html#command:set" title="set"><code class="xref cmake cmake-command docutils literal"><span class="pre">set()</span></code></a> command, the LIST command creates new variable values in the
+current scope, even if the list itself is actually defined in a parent
+scope.  To propagate the results of these operations upwards, use
+<span class="target" id="index-1-command:set"></span><a class="reference internal" href="set.html#command:set" title="set"><code class="xref cmake cmake-command docutils literal"><span class="pre">set()</span></code></a> with <code class="docutils literal"><span class="pre">PARENT_SCOPE</span></code>, <span class="target" id="index-2-command:set"></span><a class="reference internal" href="set.html#command:set" title="set"><code class="xref cmake cmake-command docutils literal"><span class="pre">set()</span></code></a> with
+<code class="docutils literal"><span class="pre">CACHE</span> <span class="pre">INTERNAL</span></code>, or some other means of value propagation.</p>
+<p>NOTES: A list in cmake is a <code class="docutils literal"><span class="pre">;</span></code> separated group of strings.  To create a
+list the set command can be used.  For example, <code class="docutils literal"><span class="pre">set(var</span> <span class="pre">a</span> <span class="pre">b</span> <span class="pre">c</span> <span class="pre">d</span> <span class="pre">e)</span></code>
+creates a list with <code class="docutils literal"><span class="pre">a;b;c;d;e</span></code>, and <code class="docutils literal"><span class="pre">set(var</span> <span class="pre">&quot;a</span> <span class="pre">b</span> <span class="pre">c</span> <span class="pre">d</span> <span class="pre">e&quot;)</span></code> creates a
+string or a list with one item in it.   (Note macro arguments are not
+variables, and therefore cannot be used in LIST commands.)</p>
+<p>When specifying index values, if <code class="docutils literal"><span class="pre">&lt;element</span> <span class="pre">index&gt;</span></code> is 0 or greater, it
+is indexed from the beginning of the list, with 0 representing the
+first list element.  If <code class="docutils literal"><span class="pre">&lt;element</span> <span class="pre">index&gt;</span></code> is -1 or lesser, it is indexed
+from the end of the list, with -1 representing the last list element.
+Be careful when counting with negative indices: they do not start from
+0.  -0 is equivalent to 0, the first list element.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="include_guard.html"
+                        title="previous chapter">include_guard</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="macro.html"
+                        title="next chapter">macro</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/list.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="macro.html" title="macro"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="include_guard.html" title="include_guard"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

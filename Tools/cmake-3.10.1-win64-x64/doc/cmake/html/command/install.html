@@ -1,0 +1,495 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>install &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="link_directories" href="link_directories.html" />
+    <link rel="prev" title="include_regular_expression" href="include_regular_expression.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="link_directories.html" title="link_directories"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="include_regular_expression.html" title="include_regular_expression"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="install">
+<span id="command:install"></span><h1><a class="toc-backref" href="#id1">install</a><a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#install" id="id1">install</a><ul>
+<li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
+<li><a class="reference internal" href="#installing-targets" id="id3">Installing Targets</a></li>
+<li><a class="reference internal" href="#installing-files" id="id4">Installing Files</a></li>
+<li><a class="reference internal" href="#installing-directories" id="id5">Installing Directories</a></li>
+<li><a class="reference internal" href="#custom-installation-logic" id="id6">Custom Installation Logic</a></li>
+<li><a class="reference internal" href="#installing-exports" id="id7">Installing Exports</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Specify rules to run at install time.</p>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This command generates installation rules for a project.  Rules
+specified by calls to this command within a source directory are
+executed in order during installation.  The order across directories
+is not defined.</p>
+<p>There are multiple signatures for this command.  Some of them define
+installation options for files and targets.  Options common to
+multiple signatures are covered here but they are valid only for
+signatures that specify them.  The common options are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">DESTINATION</span></code></dt>
+<dd>Specify the directory on disk to which a file will be installed.
+If a full path (with a leading slash or drive letter) is given
+it is used directly.  If a relative path is given it is interpreted
+relative to the value of the <span class="target" id="index-0-variable:CMAKE_INSTALL_PREFIX"></span><a class="reference internal" href="../variable/CMAKE_INSTALL_PREFIX.html#variable:CMAKE_INSTALL_PREFIX" title="CMAKE_INSTALL_PREFIX"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code></a> variable.
+The prefix can be relocated at install time using the <code class="docutils literal"><span class="pre">DESTDIR</span></code>
+mechanism explained in the <span class="target" id="index-1-variable:CMAKE_INSTALL_PREFIX"></span><a class="reference internal" href="../variable/CMAKE_INSTALL_PREFIX.html#variable:CMAKE_INSTALL_PREFIX" title="CMAKE_INSTALL_PREFIX"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code></a> variable
+documentation.</dd>
+<dt><code class="docutils literal"><span class="pre">PERMISSIONS</span></code></dt>
+<dd>Specify permissions for installed files.  Valid permissions are
+<code class="docutils literal"><span class="pre">OWNER_READ</span></code>, <code class="docutils literal"><span class="pre">OWNER_WRITE</span></code>, <code class="docutils literal"><span class="pre">OWNER_EXECUTE</span></code>, <code class="docutils literal"><span class="pre">GROUP_READ</span></code>,
+<code class="docutils literal"><span class="pre">GROUP_WRITE</span></code>, <code class="docutils literal"><span class="pre">GROUP_EXECUTE</span></code>, <code class="docutils literal"><span class="pre">WORLD_READ</span></code>, <code class="docutils literal"><span class="pre">WORLD_WRITE</span></code>,
+<code class="docutils literal"><span class="pre">WORLD_EXECUTE</span></code>, <code class="docutils literal"><span class="pre">SETUID</span></code>, and <code class="docutils literal"><span class="pre">SETGID</span></code>.  Permissions that do
+not make sense on certain platforms are ignored on those platforms.</dd>
+<dt><code class="docutils literal"><span class="pre">CONFIGURATIONS</span></code></dt>
+<dd>Specify a list of build configurations for which the install rule
+applies (Debug, Release, etc.).</dd>
+<dt><code class="docutils literal"><span class="pre">COMPONENT</span></code></dt>
+<dd>Specify an installation component name with which the install rule
+is associated, such as &#8220;runtime&#8221; or &#8220;development&#8221;.  During
+component-specific installation only install rules associated with
+the given component name will be executed.  During a full installation
+all components are installed unless marked with <code class="docutils literal"><span class="pre">EXCLUDE_FROM_ALL</span></code>.
+If <code class="docutils literal"><span class="pre">COMPONENT</span></code> is not provided a default component &#8220;Unspecified&#8221; is
+created.  The default component name may be controlled with the
+<span class="target" id="index-0-variable:CMAKE_INSTALL_DEFAULT_COMPONENT_NAME"></span><a class="reference internal" href="../variable/CMAKE_INSTALL_DEFAULT_COMPONENT_NAME.html#variable:CMAKE_INSTALL_DEFAULT_COMPONENT_NAME" title="CMAKE_INSTALL_DEFAULT_COMPONENT_NAME"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_INSTALL_DEFAULT_COMPONENT_NAME</span></code></a> variable.</dd>
+<dt><code class="docutils literal"><span class="pre">EXCLUDE_FROM_ALL</span></code></dt>
+<dd>Specify that the file is excluded from a full installation and only
+installed as part of a component-specific installation</dd>
+<dt><code class="docutils literal"><span class="pre">RENAME</span></code></dt>
+<dd>Specify a name for an installed file that may be different from the
+original file.  Renaming is allowed only when a single file is
+installed by the command.</dd>
+<dt><code class="docutils literal"><span class="pre">OPTIONAL</span></code></dt>
+<dd>Specify that it is not an error if the file to be installed does
+not exist.</dd>
+</dl>
+<p>Command signatures that install files may print messages during
+installation.  Use the <span class="target" id="index-0-variable:CMAKE_INSTALL_MESSAGE"></span><a class="reference internal" href="../variable/CMAKE_INSTALL_MESSAGE.html#variable:CMAKE_INSTALL_MESSAGE" title="CMAKE_INSTALL_MESSAGE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_INSTALL_MESSAGE</span></code></a> variable
+to control which messages are printed.</p>
+</div>
+<div class="section" id="installing-targets">
+<h2><a class="toc-backref" href="#id3">Installing Targets</a><a class="headerlink" href="#installing-targets" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="n">TARGETS</span> <span class="n">targets</span><span class="o">...</span> <span class="p">[</span><span class="n">EXPORT</span> <span class="o">&lt;</span><span class="n">export</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">]</span>
+        <span class="p">[[</span><span class="n">ARCHIVE</span><span class="o">|</span><span class="n">LIBRARY</span><span class="o">|</span><span class="n">RUNTIME</span><span class="o">|</span><span class="n">OBJECTS</span><span class="o">|</span><span class="n">FRAMEWORK</span><span class="o">|</span><span class="n">BUNDLE</span><span class="o">|</span>
+          <span class="n">PRIVATE_HEADER</span><span class="o">|</span><span class="n">PUBLIC_HEADER</span><span class="o">|</span><span class="n">RESOURCE</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">DESTINATION</span> <span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">PERMISSIONS</span> <span class="n">permissions</span><span class="o">...</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">CONFIGURATIONS</span> <span class="p">[</span><span class="n">Debug</span><span class="o">|</span><span class="n">Release</span><span class="o">|...</span><span class="p">]]</span>
+         <span class="p">[</span><span class="n">COMPONENT</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">OPTIONAL</span><span class="p">]</span> <span class="p">[</span><span class="n">EXCLUDE_FROM_ALL</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">NAMELINK_ONLY</span><span class="o">|</span><span class="n">NAMELINK_SKIP</span><span class="p">]</span>
+        <span class="p">]</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">INCLUDES</span> <span class="n">DESTINATION</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">]]</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">TARGETS</span></code> form specifies rules for installing targets from a
+project.  There are six kinds of target files that may be installed:
+<code class="docutils literal"><span class="pre">ARCHIVE</span></code>, <code class="docutils literal"><span class="pre">LIBRARY</span></code>, <code class="docutils literal"><span class="pre">RUNTIME</span></code>, <code class="docutils literal"><span class="pre">OBJECTS</span></code>, <code class="docutils literal"><span class="pre">FRAMEWORK</span></code>, and
+<code class="docutils literal"><span class="pre">BUNDLE</span></code>. Executables are treated as <code class="docutils literal"><span class="pre">RUNTIME</span></code> targets, except that
+those marked with the <code class="docutils literal"><span class="pre">MACOSX_BUNDLE</span></code> property are treated as <code class="docutils literal"><span class="pre">BUNDLE</span></code>
+targets on OS X.  Static libraries are treated as <code class="docutils literal"><span class="pre">ARCHIVE</span></code> targets,
+except that those marked with the <code class="docutils literal"><span class="pre">FRAMEWORK</span></code> property are treated
+as <code class="docutils literal"><span class="pre">FRAMEWORK</span></code> targets on OS X.
+Module libraries are always treated as <code class="docutils literal"><span class="pre">LIBRARY</span></code> targets.
+For non-DLL platforms shared libraries are treated as <code class="docutils literal"><span class="pre">LIBRARY</span></code>
+targets, except that those marked with the <code class="docutils literal"><span class="pre">FRAMEWORK</span></code> property are
+treated as <code class="docutils literal"><span class="pre">FRAMEWORK</span></code> targets on OS X.  For DLL platforms the DLL
+part of a shared library is treated as a <code class="docutils literal"><span class="pre">RUNTIME</span></code> target and the
+corresponding import library is treated as an <code class="docutils literal"><span class="pre">ARCHIVE</span></code> target.
+All Windows-based systems including Cygwin are DLL platforms. Object
+libraries are always treated as <code class="docutils literal"><span class="pre">OBJECTS</span></code> targets.
+The <code class="docutils literal"><span class="pre">ARCHIVE</span></code>, <code class="docutils literal"><span class="pre">LIBRARY</span></code>, <code class="docutils literal"><span class="pre">RUNTIME</span></code>, <code class="docutils literal"><span class="pre">OBJECTS</span></code>, and <code class="docutils literal"><span class="pre">FRAMEWORK</span></code>
+arguments change the type of target to which the subsequent properties
+apply. If none is given the installation properties apply to all target
+types.  If only one is given then only targets of that type will be
+installed (which can be used to install just a DLL or just an import
+library).</p>
+<p>The <code class="docutils literal"><span class="pre">PRIVATE_HEADER</span></code>, <code class="docutils literal"><span class="pre">PUBLIC_HEADER</span></code>, and <code class="docutils literal"><span class="pre">RESOURCE</span></code> arguments
+cause subsequent properties to be applied to installing a <code class="docutils literal"><span class="pre">FRAMEWORK</span></code>
+shared library target&#8217;s associated files on non-Apple platforms.  Rules
+defined by these arguments are ignored on Apple platforms because the
+associated files are installed into the appropriate locations inside
+the framework folder.  See documentation of the
+<span class="target" id="index-0-prop_tgt:PRIVATE_HEADER"></span><a class="reference internal" href="../prop_tgt/PRIVATE_HEADER.html#prop_tgt:PRIVATE_HEADER" title="PRIVATE_HEADER"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">PRIVATE_HEADER</span></code></a>, <span class="target" id="index-0-prop_tgt:PUBLIC_HEADER"></span><a class="reference internal" href="../prop_tgt/PUBLIC_HEADER.html#prop_tgt:PUBLIC_HEADER" title="PUBLIC_HEADER"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">PUBLIC_HEADER</span></code></a>, and
+<span class="target" id="index-0-prop_tgt:RESOURCE"></span><a class="reference internal" href="../prop_tgt/RESOURCE.html#prop_tgt:RESOURCE" title="RESOURCE"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">RESOURCE</span></code></a> target properties for details.</p>
+<p>Either <code class="docutils literal"><span class="pre">NAMELINK_ONLY</span></code> or <code class="docutils literal"><span class="pre">NAMELINK_SKIP</span></code> may be specified as a
+<code class="docutils literal"><span class="pre">LIBRARY</span></code> option.  On some platforms a versioned shared library
+has a symbolic link such as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">lib</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">so</span> <span class="o">-&gt;</span> <span class="n">lib</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">so</span><span class="o">.</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">lib&lt;name&gt;.so.1</span></code> is the soname of the library and <code class="docutils literal"><span class="pre">lib&lt;name&gt;.so</span></code>
+is a &#8220;namelink&#8221; allowing linkers to find the library when given
+<code class="docutils literal"><span class="pre">-l&lt;name&gt;</span></code>.  The <code class="docutils literal"><span class="pre">NAMELINK_ONLY</span></code> option causes installation of only the
+namelink when a library target is installed.  The <code class="docutils literal"><span class="pre">NAMELINK_SKIP</span></code> option
+causes installation of library files other than the namelink when a
+library target is installed.  When neither option is given both
+portions are installed.  On platforms where versioned shared libraries
+do not have namelinks or when a library is not versioned the
+<code class="docutils literal"><span class="pre">NAMELINK_SKIP</span></code> option installs the library and the <code class="docutils literal"><span class="pre">NAMELINK_ONLY</span></code>
+option installs nothing.  See the <span class="target" id="index-0-prop_tgt:VERSION"></span><a class="reference internal" href="../prop_tgt/VERSION.html#prop_tgt:VERSION" title="VERSION"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">VERSION</span></code></a> and
+<span class="target" id="index-0-prop_tgt:SOVERSION"></span><a class="reference internal" href="../prop_tgt/SOVERSION.html#prop_tgt:SOVERSION" title="SOVERSION"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">SOVERSION</span></code></a> target properties for details on creating versioned
+shared libraries.</p>
+<p>The <code class="docutils literal"><span class="pre">INCLUDES</span> <span class="pre">DESTINATION</span></code> specifies a list of directories
+which will be added to the <span class="target" id="index-0-prop_tgt:INTERFACE_INCLUDE_DIRECTORIES"></span><a class="reference internal" href="../prop_tgt/INTERFACE_INCLUDE_DIRECTORIES.html#prop_tgt:INTERFACE_INCLUDE_DIRECTORIES" title="INTERFACE_INCLUDE_DIRECTORIES"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">INTERFACE_INCLUDE_DIRECTORIES</span></code></a>
+target property of the <code class="docutils literal"><span class="pre">&lt;targets&gt;</span></code> when exported by the
+<span class="target" id="index-0-command:install"></span><a class="reference internal" href="#command:install" title="install"><code class="xref cmake cmake-command docutils literal"><span class="pre">install(EXPORT)</span></code></a> command.  If a relative path is
+specified, it is treated as relative to the <code class="docutils literal"><span class="pre">$&lt;INSTALL_PREFIX&gt;</span></code>.
+This is independent of the rest of the argument groups and does
+not actually install anything.</p>
+<p>One or more groups of properties may be specified in a single call to
+the <code class="docutils literal"><span class="pre">TARGETS</span></code> form of this command.  A target may be installed more than
+once to different locations.  Consider hypothetical targets <code class="docutils literal"><span class="pre">myExe</span></code>,
+<code class="docutils literal"><span class="pre">mySharedLib</span></code>, and <code class="docutils literal"><span class="pre">myStaticLib</span></code>.  The code:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span> <span class="s">myExe</span> <span class="s">mySharedLib</span> <span class="s">myStaticLib</span>
+        <span class="s">RUNTIME</span> <span class="s">DESTINATION</span> <span class="s">bin</span>
+        <span class="s">LIBRARY</span> <span class="s">DESTINATION</span> <span class="s">lib</span>
+        <span class="s">ARCHIVE</span> <span class="s">DESTINATION</span> <span class="s">lib/static</span><span class="p">)</span>
+<span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span> <span class="s">mySharedLib</span> <span class="s">DESTINATION</span> <span class="s">/some/full/path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will install <code class="docutils literal"><span class="pre">myExe</span></code> to <code class="docutils literal"><span class="pre">&lt;prefix&gt;/bin</span></code> and <code class="docutils literal"><span class="pre">myStaticLib</span></code> to
+<code class="docutils literal"><span class="pre">&lt;prefix&gt;/lib/static</span></code>.  On non-DLL platforms <code class="docutils literal"><span class="pre">mySharedLib</span></code> will be
+installed to <code class="docutils literal"><span class="pre">&lt;prefix&gt;/lib</span></code> and <code class="docutils literal"><span class="pre">/some/full/path</span></code>.  On DLL platforms
+the <code class="docutils literal"><span class="pre">mySharedLib</span></code> DLL will be installed to <code class="docutils literal"><span class="pre">&lt;prefix&gt;/bin</span></code> and
+<code class="docutils literal"><span class="pre">/some/full/path</span></code> and its import library will be installed to
+<code class="docutils literal"><span class="pre">&lt;prefix&gt;/lib/static</span></code> and <code class="docutils literal"><span class="pre">/some/full/path</span></code>.</p>
+<p>The <code class="docutils literal"><span class="pre">EXPORT</span></code> option associates the installed target files with an
+export called <code class="docutils literal"><span class="pre">&lt;export-name&gt;</span></code>.  It must appear before any <code class="docutils literal"><span class="pre">RUNTIME</span></code>,
+<code class="docutils literal"><span class="pre">LIBRARY</span></code>, <code class="docutils literal"><span class="pre">ARCHIVE</span></code>, or <code class="docutils literal"><span class="pre">OBJECTS</span></code> options.  To actually install the
+export file itself, call <code class="docutils literal"><span class="pre">install(EXPORT)</span></code>, documented below.</p>
+<p>Installing a target with the <span class="target" id="index-0-prop_tgt:EXCLUDE_FROM_ALL"></span><a class="reference internal" href="../prop_tgt/EXCLUDE_FROM_ALL.html#prop_tgt:EXCLUDE_FROM_ALL" title="EXCLUDE_FROM_ALL"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">EXCLUDE_FROM_ALL</span></code></a> target property
+set to <code class="docutils literal"><span class="pre">TRUE</span></code> has undefined behavior.</p>
+<p>The install destination given to the target install <code class="docutils literal"><span class="pre">DESTINATION</span></code> may
+use &#8220;generator expressions&#8221; with the syntax <code class="docutils literal"><span class="pre">$&lt;...&gt;</span></code>.  See the
+<span class="target" id="index-0-manual:cmake-generator-expressions(7)"></span><a class="reference internal" href="../manual/cmake-generator-expressions.7.html#manual:cmake-generator-expressions(7)" title="cmake-generator-expressions(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-generator-expressions(7)</span></code></a> manual for available expressions.</p>
+</div>
+<div class="section" id="installing-files">
+<h2><a class="toc-backref" href="#id4">Installing Files</a><a class="headerlink" href="#installing-files" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="o">&lt;</span><span class="n">FILES</span><span class="o">|</span><span class="n">PROGRAMS</span><span class="o">&gt;</span> <span class="n">files</span><span class="o">...</span> <span class="n">DESTINATION</span> <span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span>
+        <span class="p">[</span><span class="n">PERMISSIONS</span> <span class="n">permissions</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">CONFIGURATIONS</span> <span class="p">[</span><span class="n">Debug</span><span class="o">|</span><span class="n">Release</span><span class="o">|...</span><span class="p">]]</span>
+        <span class="p">[</span><span class="n">COMPONENT</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">RENAME</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">OPTIONAL</span><span class="p">]</span> <span class="p">[</span><span class="n">EXCLUDE_FROM_ALL</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">FILES</span></code> form specifies rules for installing files for a project.
+File names given as relative paths are interpreted with respect to the
+current source directory.  Files installed by this form are by default
+given permissions <code class="docutils literal"><span class="pre">OWNER_WRITE</span></code>, <code class="docutils literal"><span class="pre">OWNER_READ</span></code>, <code class="docutils literal"><span class="pre">GROUP_READ</span></code>, and
+<code class="docutils literal"><span class="pre">WORLD_READ</span></code> if no <code class="docutils literal"><span class="pre">PERMISSIONS</span></code> argument is given.</p>
+<p>The <code class="docutils literal"><span class="pre">PROGRAMS</span></code> form is identical to the <code class="docutils literal"><span class="pre">FILES</span></code> form except that the
+default permissions for the installed file also include <code class="docutils literal"><span class="pre">OWNER_EXECUTE</span></code>,
+<code class="docutils literal"><span class="pre">GROUP_EXECUTE</span></code>, and <code class="docutils literal"><span class="pre">WORLD_EXECUTE</span></code>.  This form is intended to install
+programs that are not targets, such as shell scripts.  Use the <code class="docutils literal"><span class="pre">TARGETS</span></code>
+form to install targets built within the project.</p>
+<p>The list of <code class="docutils literal"><span class="pre">files...</span></code> given to <code class="docutils literal"><span class="pre">FILES</span></code> or <code class="docutils literal"><span class="pre">PROGRAMS</span></code> may use
+&#8220;generator expressions&#8221; with the syntax <code class="docutils literal"><span class="pre">$&lt;...&gt;</span></code>.  See the
+<span class="target" id="index-1-manual:cmake-generator-expressions(7)"></span><a class="reference internal" href="../manual/cmake-generator-expressions.7.html#manual:cmake-generator-expressions(7)" title="cmake-generator-expressions(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-generator-expressions(7)</span></code></a> manual for available expressions.
+However, if any item begins in a generator expression it must evaluate
+to a full path.</p>
+<p>The install destination given to the files install <code class="docutils literal"><span class="pre">DESTINATION</span></code> may
+use &#8220;generator expressions&#8221; with the syntax <code class="docutils literal"><span class="pre">$&lt;...&gt;</span></code>.  See the
+<span class="target" id="index-2-manual:cmake-generator-expressions(7)"></span><a class="reference internal" href="../manual/cmake-generator-expressions.7.html#manual:cmake-generator-expressions(7)" title="cmake-generator-expressions(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-generator-expressions(7)</span></code></a> manual for available expressions.</p>
+</div>
+<div class="section" id="installing-directories">
+<h2><a class="toc-backref" href="#id5">Installing Directories</a><a class="headerlink" href="#installing-directories" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="n">DIRECTORY</span> <span class="n">dirs</span><span class="o">...</span> <span class="n">DESTINATION</span> <span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span>
+        <span class="p">[</span><span class="n">FILE_PERMISSIONS</span> <span class="n">permissions</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">DIRECTORY_PERMISSIONS</span> <span class="n">permissions</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">USE_SOURCE_PERMISSIONS</span><span class="p">]</span> <span class="p">[</span><span class="n">OPTIONAL</span><span class="p">]</span> <span class="p">[</span><span class="n">MESSAGE_NEVER</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">CONFIGURATIONS</span> <span class="p">[</span><span class="n">Debug</span><span class="o">|</span><span class="n">Release</span><span class="o">|...</span><span class="p">]]</span>
+        <span class="p">[</span><span class="n">COMPONENT</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">EXCLUDE_FROM_ALL</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">FILES_MATCHING</span><span class="p">]</span>
+        <span class="p">[[</span><span class="n">PATTERN</span> <span class="o">&lt;</span><span class="n">pattern</span><span class="o">&gt;</span> <span class="o">|</span> <span class="n">REGEX</span> <span class="o">&lt;</span><span class="n">regex</span><span class="o">&gt;</span><span class="p">]</span>
+         <span class="p">[</span><span class="n">EXCLUDE</span><span class="p">]</span> <span class="p">[</span><span class="n">PERMISSIONS</span> <span class="n">permissions</span><span class="o">...</span><span class="p">]]</span> <span class="p">[</span><span class="o">...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">DIRECTORY</span></code> form installs contents of one or more directories to a
+given destination.  The directory structure is copied verbatim to the
+destination.  The last component of each directory name is appended to
+the destination directory but a trailing slash may be used to avoid
+this because it leaves the last component empty.  Directory names
+given as relative paths are interpreted with respect to the current
+source directory.  If no input directory names are given the
+destination directory will be created but nothing will be installed
+into it.  The <code class="docutils literal"><span class="pre">FILE_PERMISSIONS</span></code> and <code class="docutils literal"><span class="pre">DIRECTORY_PERMISSIONS</span></code> options
+specify permissions given to files and directories in the destination.
+If <code class="docutils literal"><span class="pre">USE_SOURCE_PERMISSIONS</span></code> is specified and <code class="docutils literal"><span class="pre">FILE_PERMISSIONS</span></code> is not,
+file permissions will be copied from the source directory structure.
+If no permissions are specified files will be given the default
+permissions specified in the <code class="docutils literal"><span class="pre">FILES</span></code> form of the command, and the
+directories will be given the default permissions specified in the
+<code class="docutils literal"><span class="pre">PROGRAMS</span></code> form of the command.</p>
+<p>The <code class="docutils literal"><span class="pre">MESSAGE_NEVER</span></code> option disables file installation status output.</p>
+<p>Installation of directories may be controlled with fine granularity
+using the <code class="docutils literal"><span class="pre">PATTERN</span></code> or <code class="docutils literal"><span class="pre">REGEX</span></code> options.  These &#8220;match&#8221; options specify a
+globbing pattern or regular expression to match directories or files
+encountered within input directories.  They may be used to apply
+certain options (see below) to a subset of the files and directories
+encountered.  The full path to each input file or directory (with
+forward slashes) is matched against the expression.  A <code class="docutils literal"><span class="pre">PATTERN</span></code> will
+match only complete file names: the portion of the full path matching
+the pattern must occur at the end of the file name and be preceded by
+a slash.  A <code class="docutils literal"><span class="pre">REGEX</span></code> will match any portion of the full path but it may
+use <code class="docutils literal"><span class="pre">/</span></code> and <code class="docutils literal"><span class="pre">$</span></code> to simulate the <code class="docutils literal"><span class="pre">PATTERN</span></code> behavior.  By default all
+files and directories are installed whether or not they are matched.
+The <code class="docutils literal"><span class="pre">FILES_MATCHING</span></code> option may be given before the first match option
+to disable installation of files (but not directories) not matched by
+any expression.  For example, the code</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">install</span><span class="p">(</span><span class="s">DIRECTORY</span> <span class="s">src/</span> <span class="s">DESTINATION</span> <span class="s">include/myproj</span>
+        <span class="s">FILES_MATCHING</span> <span class="s">PATTERN</span> <span class="s2">&quot;*.h&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will extract and install header files from a source tree.</p>
+<p>Some options may follow a <code class="docutils literal"><span class="pre">PATTERN</span></code> or <code class="docutils literal"><span class="pre">REGEX</span></code> expression and are applied
+only to files or directories matching them.  The <code class="docutils literal"><span class="pre">EXCLUDE</span></code> option will
+skip the matched file or directory.  The <code class="docutils literal"><span class="pre">PERMISSIONS</span></code> option overrides
+the permissions setting for the matched file or directory.  For
+example the code</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">install</span><span class="p">(</span><span class="s">DIRECTORY</span> <span class="s">icons</span> <span class="s">scripts/</span> <span class="s">DESTINATION</span> <span class="s">share/myproj</span>
+        <span class="s">PATTERN</span> <span class="s2">&quot;CVS&quot;</span> <span class="s">EXCLUDE</span>
+        <span class="s">PATTERN</span> <span class="s2">&quot;scripts/*&quot;</span>
+        <span class="s">PERMISSIONS</span> <span class="s">OWNER_EXECUTE</span> <span class="s">OWNER_WRITE</span> <span class="s">OWNER_READ</span>
+                    <span class="s">GROUP_EXECUTE</span> <span class="s">GROUP_READ</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will install the <code class="docutils literal"><span class="pre">icons</span></code> directory to <code class="docutils literal"><span class="pre">share/myproj/icons</span></code> and the
+<code class="docutils literal"><span class="pre">scripts</span></code> directory to <code class="docutils literal"><span class="pre">share/myproj</span></code>.  The icons will get default
+file permissions, the scripts will be given specific permissions, and any
+<code class="docutils literal"><span class="pre">CVS</span></code> directories will be excluded.</p>
+<p>The list of <code class="docutils literal"><span class="pre">dirs...</span></code> given to <code class="docutils literal"><span class="pre">DIRECTORY</span></code> and the install destination
+given to the directory install <code class="docutils literal"><span class="pre">DESTINATION</span></code> may use &#8220;generator expressions&#8221;
+with the syntax <code class="docutils literal"><span class="pre">$&lt;...&gt;</span></code>.  See the <span class="target" id="index-3-manual:cmake-generator-expressions(7)"></span><a class="reference internal" href="../manual/cmake-generator-expressions.7.html#manual:cmake-generator-expressions(7)" title="cmake-generator-expressions(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-generator-expressions(7)</span></code></a>
+manual for available expressions.</p>
+</div>
+<div class="section" id="custom-installation-logic">
+<h2><a class="toc-backref" href="#id6">Custom Installation Logic</a><a class="headerlink" href="#custom-installation-logic" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">([[</span><span class="n">SCRIPT</span> <span class="o">&lt;</span><span class="n">file</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">CODE</span> <span class="o">&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="p">]]</span>
+        <span class="p">[</span><span class="n">COMPONENT</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">EXCLUDE_FROM_ALL</span><span class="p">]</span> <span class="p">[</span><span class="o">...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">SCRIPT</span></code> form will invoke the given CMake script files during
+installation.  If the script file name is a relative path it will be
+interpreted with respect to the current source directory.  The <code class="docutils literal"><span class="pre">CODE</span></code>
+form will invoke the given CMake code during installation.  Code is
+specified as a single argument inside a double-quoted string.  For
+example, the code</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">install</span><span class="p">(</span><span class="s">CODE</span> <span class="s2">&quot;MESSAGE(\&quot;</span><span class="s">Sample</span> <span class="s">install</span> <span class="s">message.\</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will print a message during installation.</p>
+</div>
+<div class="section" id="installing-exports">
+<h2><a class="toc-backref" href="#id7">Installing Exports</a><a class="headerlink" href="#installing-exports" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="p">(</span><span class="n">EXPORT</span> <span class="o">&lt;</span><span class="n">export</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">DESTINATION</span> <span class="o">&lt;</span><span class="nb">dir</span><span class="o">&gt;</span>
+        <span class="p">[</span><span class="n">NAMESPACE</span> <span class="o">&lt;</span><span class="n">namespace</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[[</span><span class="n">FILE</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">cmake</span><span class="p">]</span><span class="o">|</span>
+        <span class="p">[</span><span class="n">EXPORT_ANDROID_MK</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">mk</span><span class="p">]]</span>
+        <span class="p">[</span><span class="n">PERMISSIONS</span> <span class="n">permissions</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">CONFIGURATIONS</span> <span class="p">[</span><span class="n">Debug</span><span class="o">|</span><span class="n">Release</span><span class="o">|...</span><span class="p">]]</span>
+        <span class="p">[</span><span class="n">EXPORT_LINK_INTERFACE_LIBRARIES</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">COMPONENT</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="p">]</span>
+        <span class="p">[</span><span class="n">EXCLUDE_FROM_ALL</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">EXPORT</span></code> form generates and installs a CMake file containing code to
+import targets from the installation tree into another project.
+Target installations are associated with the export <code class="docutils literal"><span class="pre">&lt;export-name&gt;</span></code>
+using the <code class="docutils literal"><span class="pre">EXPORT</span></code> option of the <code class="docutils literal"><span class="pre">install(TARGETS)</span></code> signature
+documented above.  The <code class="docutils literal"><span class="pre">NAMESPACE</span></code> option will prepend <code class="docutils literal"><span class="pre">&lt;namespace&gt;</span></code> to
+the target names as they are written to the import file.  By default
+the generated file will be called <code class="docutils literal"><span class="pre">&lt;export-name&gt;.cmake</span></code> but the <code class="docutils literal"><span class="pre">FILE</span></code>
+option may be used to specify a different name.  The value given to
+the <code class="docutils literal"><span class="pre">FILE</span></code> option must be a file name with the <code class="docutils literal"><span class="pre">.cmake</span></code> extension.
+If a <code class="docutils literal"><span class="pre">CONFIGURATIONS</span></code> option is given then the file will only be installed
+when one of the named configurations is installed.  Additionally, the
+generated import file will reference only the matching target
+configurations.  The <code class="docutils literal"><span class="pre">EXPORT_LINK_INTERFACE_LIBRARIES</span></code> keyword, if
+present, causes the contents of the properties matching
+<code class="docutils literal"><span class="pre">(IMPORTED_)?LINK_INTERFACE_LIBRARIES(_&lt;CONFIG&gt;)?</span></code> to be exported, when
+policy <span class="target" id="index-0-policy:CMP0022"></span><a class="reference internal" href="../policy/CMP0022.html#policy:CMP0022" title="CMP0022"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0022</span></code></a> is <code class="docutils literal"><span class="pre">NEW</span></code>.  If a <code class="docutils literal"><span class="pre">COMPONENT</span></code> option is
+specified that does not match that given to the targets associated with
+<code class="docutils literal"><span class="pre">&lt;export-name&gt;</span></code> the behavior is undefined.  If a library target is
+included in the export but a target to which it links is not included
+the behavior is unspecified.</p>
+<p>In additon to cmake language files, the <code class="docutils literal"><span class="pre">EXPORT_ANDROID_MK</span></code> option maybe
+used to specifiy an export to the android ndk build system.  The Android
+NDK supports the use of prebuilt libraries, both static and shared. This
+allows cmake to build the libraries of a project and make them available
+to an ndk build system complete with transitive dependencies, include flags
+and defines required to use the libraries.</p>
+<p>The <code class="docutils literal"><span class="pre">EXPORT</span></code> form is useful to help outside projects use targets built
+and installed by the current project.  For example, the code</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span> <span class="s">myexe</span> <span class="s">EXPORT</span> <span class="s">myproj</span> <span class="s">DESTINATION</span> <span class="s">bin</span><span class="p">)</span>
+<span class="nb">install</span><span class="p">(</span><span class="s">EXPORT</span> <span class="s">myproj</span> <span class="s">NAMESPACE</span> <span class="s">mp_</span> <span class="s">DESTINATION</span> <span class="s">lib/myproj</span><span class="p">)</span>
+<span class="nb">install</span><span class="p">(</span><span class="s">EXPORT_ANDROID_MK</span> <span class="s">myexp</span> <span class="s">DESTINATION</span> <span class="s">share/ndk-modules</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will install the executable myexe to <code class="docutils literal"><span class="pre">&lt;prefix&gt;/bin</span></code> and code to import
+it in the file <code class="docutils literal"><span class="pre">&lt;prefix&gt;/lib/myproj/myproj.cmake</span></code> and
+<code class="docutils literal"><span class="pre">&lt;prefix&gt;/lib/share/ndk-modules/Android.mk</span></code>.  An outside project
+may load this file with the include command and reference the <code class="docutils literal"><span class="pre">myexe</span></code>
+executable from the installation tree using the imported target name
+<code class="docutils literal"><span class="pre">mp_myexe</span></code> as if the target were built in its own tree.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This command supercedes the <span class="target" id="index-0-command:install_targets"></span><a class="reference internal" href="install_targets.html#command:install_targets" title="install_targets"><code class="xref cmake cmake-command docutils literal"><span class="pre">install_targets()</span></code></a> command and
+the <span class="target" id="index-0-prop_tgt:PRE_INSTALL_SCRIPT"></span><a class="reference internal" href="../prop_tgt/PRE_INSTALL_SCRIPT.html#prop_tgt:PRE_INSTALL_SCRIPT" title="PRE_INSTALL_SCRIPT"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">PRE_INSTALL_SCRIPT</span></code></a> and <span class="target" id="index-0-prop_tgt:POST_INSTALL_SCRIPT"></span><a class="reference internal" href="../prop_tgt/POST_INSTALL_SCRIPT.html#prop_tgt:POST_INSTALL_SCRIPT" title="POST_INSTALL_SCRIPT"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">POST_INSTALL_SCRIPT</span></code></a>
+target properties.  It also replaces the <code class="docutils literal"><span class="pre">FILES</span></code> forms of the
+<span class="target" id="index-0-command:install_files"></span><a class="reference internal" href="install_files.html#command:install_files" title="install_files"><code class="xref cmake cmake-command docutils literal"><span class="pre">install_files()</span></code></a> and <span class="target" id="index-0-command:install_programs"></span><a class="reference internal" href="install_programs.html#command:install_programs" title="install_programs"><code class="xref cmake cmake-command docutils literal"><span class="pre">install_programs()</span></code></a> commands.
+The processing order of these install rules relative to
+those generated by <span class="target" id="index-1-command:install_targets"></span><a class="reference internal" href="install_targets.html#command:install_targets" title="install_targets"><code class="xref cmake cmake-command docutils literal"><span class="pre">install_targets()</span></code></a>,
+<span class="target" id="index-1-command:install_files"></span><a class="reference internal" href="install_files.html#command:install_files" title="install_files"><code class="xref cmake cmake-command docutils literal"><span class="pre">install_files()</span></code></a>, and <span class="target" id="index-1-command:install_programs"></span><a class="reference internal" href="install_programs.html#command:install_programs" title="install_programs"><code class="xref cmake cmake-command docutils literal"><span class="pre">install_programs()</span></code></a> commands
+is not defined.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">install</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#installing-targets">Installing Targets</a></li>
+<li><a class="reference internal" href="#installing-files">Installing Files</a></li>
+<li><a class="reference internal" href="#installing-directories">Installing Directories</a></li>
+<li><a class="reference internal" href="#custom-installation-logic">Custom Installation Logic</a></li>
+<li><a class="reference internal" href="#installing-exports">Installing Exports</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="include_regular_expression.html"
+                        title="previous chapter">include_regular_expression</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="link_directories.html"
+                        title="next chapter">link_directories</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/install.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="link_directories.html" title="link_directories"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="include_regular_expression.html" title="include_regular_expression"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

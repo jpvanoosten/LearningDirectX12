@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CPackBundle &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CPackComponent" href="CPackComponent.html" />
+    <link rel="prev" title="CPackArchive" href="CPackArchive.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CPackComponent.html" title="CPackComponent"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CPackArchive.html" title="CPackArchive"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cpackbundle">
+<span id="module:CPackBundle"></span><h1>CPackBundle<a class="headerlink" href="#cpackbundle" title="Permalink to this headline">¶</a></h1>
+<p>CPack Bundle generator (Mac OS X) specific options</p>
+<div class="section" id="variables-specific-to-cpack-bundle-generator">
+<h2>Variables specific to CPack Bundle generator<a class="headerlink" href="#variables-specific-to-cpack-bundle-generator" title="Permalink to this headline">¶</a></h2>
+<p>Installers built on Mac OS X using the Bundle generator use the
+aforementioned DragNDrop (CPACK_DMG_xxx) variables, plus the following
+Bundle-specific parameters (CPACK_BUNDLE_xxx).</p>
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_NAME">
+<code class="descname">CPACK_BUNDLE_NAME</code><a class="headerlink" href="#variable:CPACK_BUNDLE_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the generated bundle. This appears in the OSX finder as the
+bundle name. Required.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_PLIST">
+<code class="descname">CPACK_BUNDLE_PLIST</code><a class="headerlink" href="#variable:CPACK_BUNDLE_PLIST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to an OSX plist file that will be used for the generated bundle. This
+assumes that the caller has generated or specified their own Info.plist
+file. Required.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_ICON">
+<code class="descname">CPACK_BUNDLE_ICON</code><a class="headerlink" href="#variable:CPACK_BUNDLE_ICON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to an OSX icon file that will be used as the icon for the generated
+bundle. This is the icon that appears in the OSX finder for the bundle, and
+in the OSX dock when the bundle is opened.  Required.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_STARTUP_COMMAND">
+<code class="descname">CPACK_BUNDLE_STARTUP_COMMAND</code><a class="headerlink" href="#variable:CPACK_BUNDLE_STARTUP_COMMAND" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to a startup script. This is a path to an executable or script that
+will be run whenever an end-user double-clicks the generated bundle in the
+OSX Finder. Optional.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_APPLE_CERT_APP">
+<code class="descname">CPACK_BUNDLE_APPLE_CERT_APP</code><a class="headerlink" href="#variable:CPACK_BUNDLE_APPLE_CERT_APP" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of your Apple supplied code signing certificate for the application.
+The name usually takes the form &#8220;Developer ID Application: [Name]&#8221; or
+&#8220;3rd Party Mac Developer Application: [Name]&#8221;. If this variable is not set
+the application will not be signed.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_APPLE_ENTITLEMENTS">
+<code class="descname">CPACK_BUNDLE_APPLE_ENTITLEMENTS</code><a class="headerlink" href="#variable:CPACK_BUNDLE_APPLE_ENTITLEMENTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the plist file that contains your apple entitlements for sandboxing
+your application. This file is required for submission to the Mac App Store.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_APPLE_CODESIGN_FILES">
+<code class="descname">CPACK_BUNDLE_APPLE_CODESIGN_FILES</code><a class="headerlink" href="#variable:CPACK_BUNDLE_APPLE_CODESIGN_FILES" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of additional files that you wish to be signed. You do not need to
+list the main application folder, or the main executable. You should
+list any frameworks and plugins that are included in your app bundle.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_BUNDLE_APPLE_CODESIGN_PARAMETER">
+<code class="descname">CPACK_BUNDLE_APPLE_CODESIGN_PARAMETER</code><a class="headerlink" href="#variable:CPACK_BUNDLE_APPLE_CODESIGN_PARAMETER" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional parameter that will passed to codesign.
+Default value: &#8220;&#8211;deep -f&#8221;</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_COMMAND_CODESIGN">
+<code class="descname">CPACK_COMMAND_CODESIGN</code><a class="headerlink" href="#variable:CPACK_COMMAND_CODESIGN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the codesign(1) command used to sign applications with an
+Apple cert. This variable can be used to override the automatically
+detected command (or specify its location if the auto-detection fails
+to find it.)</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CPackBundle</a><ul>
+<li><a class="reference internal" href="#variables-specific-to-cpack-bundle-generator">Variables specific to CPack Bundle generator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CPackArchive.html"
+                        title="previous chapter">CPackArchive</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CPackComponent.html"
+                        title="next chapter">CPackComponent</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CPackBundle.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CPackComponent.html" title="CPackComponent"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CPackArchive.html" title="CPackArchive"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>include_guard &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="list" href="list.html" />
+    <link rel="prev" title="include" href="include.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="list.html" title="list"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="include.html" title="include"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="include-guard">
+<span id="command:include_guard"></span><h1>include_guard<a class="headerlink" href="#include-guard" title="Permalink to this headline">¶</a></h1>
+<p>Provides an include guard for the file currently being processed by CMake.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">include_guard</span><span class="p">([</span><span class="n">DIRECTORY</span><span class="o">|</span><span class="n">GLOBAL</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Sets up an include guard for the current CMake file (see the
+<span class="target" id="index-0-variable:CMAKE_CURRENT_LIST_FILE"></span><a class="reference internal" href="../variable/CMAKE_CURRENT_LIST_FILE.html#variable:CMAKE_CURRENT_LIST_FILE" title="CMAKE_CURRENT_LIST_FILE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CURRENT_LIST_FILE</span></code></a> variable documentation).</p>
+<p>CMake will end its processing of the current file at the location of the
+<span class="target" id="index-0-command:include_guard"></span><a class="reference internal" href="#command:include_guard" title="include_guard"><code class="xref cmake cmake-command docutils literal"><span class="pre">include_guard()</span></code></a> command if the current file has already been
+processed for the applicable scope (see below). This provides functionality
+similar to the include guards commonly used in source headers or to the
+<code class="docutils literal"><span class="pre">#pragma</span> <span class="pre">once</span></code> directive. If the current file has been processed previously
+for the applicable scope, the effect is as though <span class="target" id="index-0-command:return"></span><a class="reference internal" href="return.html#command:return" title="return"><code class="xref cmake cmake-command docutils literal"><span class="pre">return()</span></code></a> had been
+called. Do not call this command from inside a function being defined within
+the current file.</p>
+<p>An optional argument specifying the scope of the guard may be provided.
+Possible values for the option are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">DIRECTORY</span></code></dt>
+<dd>The include guard applies within the current directory and below. The file
+will only be included once within this directory scope, but may be included
+again by other files outside of this directory (i.e. a parent directory or
+another directory not pulled in by <span class="target" id="index-0-command:add_subdirectory"></span><a class="reference internal" href="add_subdirectory.html#command:add_subdirectory" title="add_subdirectory"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_subdirectory()</span></code></a> or
+<span class="target" id="index-0-command:include"></span><a class="reference internal" href="include.html#command:include" title="include"><code class="xref cmake cmake-command docutils literal"><span class="pre">include()</span></code></a> from the current file or its children).</dd>
+<dt><code class="docutils literal"><span class="pre">GLOBAL</span></code></dt>
+<dd>The include guard applies globally to the whole build. The current file
+will only be included once regardless of the scope.</dd>
+</dl>
+<p>If no arguments given, <code class="docutils literal"><span class="pre">include_guard</span></code> has the same scope as a variable,
+meaning that the include guard effect is isolated by the most recent
+function scope or current directory if no inner function scopes exist.
+In this case the command behavior is the same as:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">if</span><span class="p">(</span><span class="s">__CURRENT_FILE_VAR__</span><span class="p">)</span>
+  <span class="nb">return</span><span class="p">()</span>
+<span class="nb">endif</span><span class="p">()</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">__CURRENT_FILE_VAR__</span> <span class="s">TRUE</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="include.html"
+                        title="previous chapter">include</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="list.html"
+                        title="next chapter">list</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/include_guard.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="list.html" title="list"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="include.html" title="include"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

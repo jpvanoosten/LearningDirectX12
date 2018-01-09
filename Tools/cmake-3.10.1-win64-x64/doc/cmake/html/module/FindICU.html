@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindICU &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindImageMagick" href="FindImageMagick.html" />
+    <link rel="prev" title="FindIcotool" href="FindIcotool.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindImageMagick.html" title="FindImageMagick"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindIcotool.html" title="FindIcotool"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findicu">
+<span id="module:FindICU"></span><h1>FindICU<a class="headerlink" href="#findicu" title="Permalink to this headline">¶</a></h1>
+<p>Find the International Components for Unicode (ICU) libraries and
+programs.</p>
+<p>This module supports multiple components.
+Components can include any of: <code class="docutils literal"><span class="pre">data</span></code>, <code class="docutils literal"><span class="pre">i18n</span></code>, <code class="docutils literal"><span class="pre">io</span></code>, <code class="docutils literal"><span class="pre">le</span></code>,
+<code class="docutils literal"><span class="pre">lx</span></code>, <code class="docutils literal"><span class="pre">test</span></code>, <code class="docutils literal"><span class="pre">tu</span></code> and <code class="docutils literal"><span class="pre">uc</span></code>.</p>
+<p>Note that on Windows <code class="docutils literal"><span class="pre">data</span></code> is named <code class="docutils literal"><span class="pre">dt</span></code> and <code class="docutils literal"><span class="pre">i18n</span></code> is named
+<code class="docutils literal"><span class="pre">in</span></code>; any of the names may be used, and the appropriate
+platform-specific library name will be automatically selected.</p>
+<p>This module reports information about the ICU installation in
+several variables.  General variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_VERSION</span> <span class="o">-</span> <span class="n">ICU</span> <span class="n">release</span> <span class="n">version</span>
+<span class="n">ICU_FOUND</span> <span class="o">-</span> <span class="n">true</span> <span class="k">if</span> <span class="n">the</span> <span class="n">main</span> <span class="n">programs</span> <span class="ow">and</span> <span class="n">libraries</span> <span class="n">were</span> <span class="n">found</span>
+<span class="n">ICU_LIBRARIES</span> <span class="o">-</span> <span class="n">component</span> <span class="n">libraries</span> <span class="n">to</span> <span class="n">be</span> <span class="n">linked</span>
+<span class="n">ICU_INCLUDE_DIRS</span> <span class="o">-</span> <span class="n">the</span> <span class="n">directories</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">ICU</span> <span class="n">headers</span>
+</pre></div>
+</div>
+<p>Imported targets:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU</span><span class="p">::</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal"><span class="pre">&lt;C&gt;</span></code> is the name of an ICU component, for example
+<code class="docutils literal"><span class="pre">ICU::i18n</span></code>.</p>
+<p>ICU programs are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_GENCNVAL_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">gencnval</span> <span class="n">executable</span>
+<span class="n">ICU_ICUINFO_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icuinfo</span> <span class="n">executable</span>
+<span class="n">ICU_GENBRK_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">genbrk</span> <span class="n">executable</span>
+<span class="n">ICU_ICU</span><span class="o">-</span><span class="n">CONFIG_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icu</span><span class="o">-</span><span class="n">config</span> <span class="n">executable</span>
+<span class="n">ICU_GENRB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">genrb</span> <span class="n">executable</span>
+<span class="n">ICU_GENDICT_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">gendict</span> <span class="n">executable</span>
+<span class="n">ICU_DERB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">derb</span> <span class="n">executable</span>
+<span class="n">ICU_PKGDATA_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">pkgdata</span> <span class="n">executable</span>
+<span class="n">ICU_UCONV_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">uconv</span> <span class="n">executable</span>
+<span class="n">ICU_GENCFU_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">gencfu</span> <span class="n">executable</span>
+<span class="n">ICU_MAKECONV_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">makeconv</span> <span class="n">executable</span>
+<span class="n">ICU_GENNORM2_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">gennorm2</span> <span class="n">executable</span>
+<span class="n">ICU_GENCCODE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">genccode</span> <span class="n">executable</span>
+<span class="n">ICU_GENSPREP_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">gensprep</span> <span class="n">executable</span>
+<span class="n">ICU_ICUPKG_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icupkg</span> <span class="n">executable</span>
+<span class="n">ICU_GENCMN_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">gencmn</span> <span class="n">executable</span>
+</pre></div>
+</div>
+<p>ICU component libraries are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_FOUND</span> <span class="o">-</span> <span class="n">ON</span> <span class="k">if</span> <span class="n">component</span> <span class="n">was</span> <span class="n">found</span>
+<span class="n">ICU_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARIES</span> <span class="o">-</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">component</span>
+</pre></div>
+</div>
+<p>ICU datafiles are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_MAKEFILE_INC</span> <span class="o">-</span> <span class="n">Makefile</span><span class="o">.</span><span class="n">inc</span>
+<span class="n">ICU_PKGDATA_INC</span> <span class="o">-</span> <span class="n">pkgdata</span><span class="o">.</span><span class="n">inc</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal"><span class="pre">&lt;C&gt;</span></code> is the uppercased name of the component.</p>
+<p>This module reads hints about search results from:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_ROOT</span> <span class="o">-</span> <span class="n">the</span> <span class="n">root</span> <span class="n">of</span> <span class="n">the</span> <span class="n">ICU</span> <span class="n">installation</span>
+</pre></div>
+</div>
+<p>The environment variable <code class="docutils literal"><span class="pre">ICU_ROOT</span></code> may also be used; the
+ICU_ROOT variable takes precedence.</p>
+<p>The following cache variables may also be set:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_</span><span class="o">&lt;</span><span class="n">P</span><span class="o">&gt;</span><span class="n">_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">executable</span> <span class="o">&lt;</span><span class="n">P</span><span class="o">&gt;</span>
+<span class="n">ICU_INCLUDE_DIR</span> <span class="o">-</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">ICU</span> <span class="n">headers</span>
+<span class="n">ICU_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARY</span> <span class="o">-</span> <span class="n">the</span> <span class="n">library</span> <span class="k">for</span> <span class="n">component</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In most cases none of the above variables will require setting,
+unless multiple ICU versions are available and a specific version
+is required.</p>
+</div>
+<p>Other variables one may set to control this module are:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ICU_DEBUG</span> <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">debug</span> <span class="n">output</span> <span class="kn">from</span> <span class="nn">FindICU.</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindIcotool.html"
+                        title="previous chapter">FindIcotool</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindImageMagick.html"
+                        title="next chapter">FindImageMagick</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindICU.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindImageMagick.html" title="FindImageMagick"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindIcotool.html" title="FindIcotool"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

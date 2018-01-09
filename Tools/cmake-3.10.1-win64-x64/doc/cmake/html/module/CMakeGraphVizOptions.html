@@ -1,0 +1,295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CMakeGraphVizOptions &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CMakePackageConfigHelpers" href="CMakePackageConfigHelpers.html" />
+    <link rel="prev" title="CMakeForceCompiler" href="CMakeForceCompiler.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CMakePackageConfigHelpers.html" title="CMakePackageConfigHelpers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CMakeForceCompiler.html" title="CMakeForceCompiler"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cmakegraphvizoptions">
+<span id="module:CMakeGraphVizOptions"></span><h1>CMakeGraphVizOptions<a class="headerlink" href="#cmakegraphvizoptions" title="Permalink to this headline">¶</a></h1>
+<p>The builtin graphviz support of CMake.</p>
+<div class="section" id="variables-specific-to-the-graphviz-support">
+<h2>Variables specific to the graphviz support<a class="headerlink" href="#variables-specific-to-the-graphviz-support" title="Permalink to this headline">¶</a></h2>
+<p>CMake
+can generate <a class="reference external" href="http://www.graphviz.org/">graphviz</a> files, showing the dependencies between the
+targets in a project and also external libraries which are linked
+against.  When CMake is run with the <code class="docutils literal"><span class="pre">--graphviz=foo.dot</span></code> option, it will
+produce:</p>
+<ul class="simple">
+<li>a <code class="docutils literal"><span class="pre">foo.dot</span></code> file showing all dependencies in the project</li>
+<li>a <code class="docutils literal"><span class="pre">foo.dot.&lt;target&gt;</span></code> file for each target, file showing on which other targets the respective target depends</li>
+<li>a <code class="docutils literal"><span class="pre">foo.dot.&lt;target&gt;.dependers</span></code> file, showing which other targets depend on the respective target</li>
+</ul>
+<p>The different dependency types <code class="docutils literal"><span class="pre">PUBLIC</span></code>, <code class="docutils literal"><span class="pre">PRIVATE</span></code> and <code class="docutils literal"><span class="pre">INTERFACE</span></code>
+are represented as solid, dashed and dotted edges.</p>
+<p>This can result in huge graphs.  Using the file
+<code class="docutils literal"><span class="pre">CMakeGraphVizOptions.cmake</span></code> the look and content of the generated
+graphs can be influenced.  This file is searched first in
+<span class="target" id="index-0-variable:CMAKE_BINARY_DIR"></span><a class="reference internal" href="../variable/CMAKE_BINARY_DIR.html#variable:CMAKE_BINARY_DIR" title="CMAKE_BINARY_DIR"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_BINARY_DIR</span></code></a> and then in <span class="target" id="index-0-variable:CMAKE_SOURCE_DIR"></span><a class="reference internal" href="../variable/CMAKE_SOURCE_DIR.html#variable:CMAKE_SOURCE_DIR" title="CMAKE_SOURCE_DIR"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_SOURCE_DIR</span></code></a>.  If found, it is
+read and the variables set in it are used to adjust options for the
+generated graphviz files.</p>
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_GRAPH_TYPE">
+<code class="descname">GRAPHVIZ_GRAPH_TYPE</code><a class="headerlink" href="#variable:GRAPHVIZ_GRAPH_TYPE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The graph type.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : &#8220;digraph&#8221;</li>
+</ul>
+<p>Valid graph types are:</p>
+<ul class="simple">
+<li>&#8220;graph&#8221; : Nodes are joined with lines</li>
+<li>&#8220;digraph&#8221; : Nodes are joined with arrows showing direction</li>
+<li>&#8220;strict graph&#8221; : Like &#8220;graph&#8221; but max one line between each node</li>
+<li>&#8220;strict digraph&#8221; : Like &#8220;graph&#8221; but max one line between each node in each direction</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_GRAPH_NAME">
+<code class="descname">GRAPHVIZ_GRAPH_NAME</code><a class="headerlink" href="#variable:GRAPHVIZ_GRAPH_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>The graph name.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : &#8220;GG&#8221;</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_GRAPH_HEADER">
+<code class="descname">GRAPHVIZ_GRAPH_HEADER</code><a class="headerlink" href="#variable:GRAPHVIZ_GRAPH_HEADER" title="Permalink to this definition">¶</a></dt>
+<dd><p>The header written at the top of the graphviz file.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : &#8220;node [n  fontsize = &#8220;12&#8221;];&#8221;</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_NODE_PREFIX">
+<code class="descname">GRAPHVIZ_NODE_PREFIX</code><a class="headerlink" href="#variable:GRAPHVIZ_NODE_PREFIX" title="Permalink to this definition">¶</a></dt>
+<dd><p>The prefix for each node in the graphviz file.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : &#8220;node&#8221;</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_EXECUTABLES">
+<code class="descname">GRAPHVIZ_EXECUTABLES</code><a class="headerlink" href="#variable:GRAPHVIZ_EXECUTABLES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude executables from the generated graphs.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_STATIC_LIBS">
+<code class="descname">GRAPHVIZ_STATIC_LIBS</code><a class="headerlink" href="#variable:GRAPHVIZ_STATIC_LIBS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude static libraries from the generated graphs.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_SHARED_LIBS">
+<code class="descname">GRAPHVIZ_SHARED_LIBS</code><a class="headerlink" href="#variable:GRAPHVIZ_SHARED_LIBS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude shared libraries from the generated graphs.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_MODULE_LIBS">
+<code class="descname">GRAPHVIZ_MODULE_LIBS</code><a class="headerlink" href="#variable:GRAPHVIZ_MODULE_LIBS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude module libraries from the generated graphs.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_EXTERNAL_LIBS">
+<code class="descname">GRAPHVIZ_EXTERNAL_LIBS</code><a class="headerlink" href="#variable:GRAPHVIZ_EXTERNAL_LIBS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude external libraries from the generated graphs.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_IGNORE_TARGETS">
+<code class="descname">GRAPHVIZ_IGNORE_TARGETS</code><a class="headerlink" href="#variable:GRAPHVIZ_IGNORE_TARGETS" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of regular expressions for ignoring targets.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : empty</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_GENERATE_PER_TARGET">
+<code class="descname">GRAPHVIZ_GENERATE_PER_TARGET</code><a class="headerlink" href="#variable:GRAPHVIZ_GENERATE_PER_TARGET" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude per target graphs <code class="docutils literal"><span class="pre">foo.dot.&lt;target&gt;</span></code>.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:GRAPHVIZ_GENERATE_DEPENDERS">
+<code class="descname">GRAPHVIZ_GENERATE_DEPENDERS</code><a class="headerlink" href="#variable:GRAPHVIZ_GENERATE_DEPENDERS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this to FALSE to exclude depender graphs <code class="docutils literal"><span class="pre">foo.dot.&lt;target&gt;.dependers</span></code>.</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : TRUE</li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CMakeGraphVizOptions</a><ul>
+<li><a class="reference internal" href="#variables-specific-to-the-graphviz-support">Variables specific to the graphviz support</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CMakeForceCompiler.html"
+                        title="previous chapter">CMakeForceCompiler</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CMakePackageConfigHelpers.html"
+                        title="next chapter">CMakePackageConfigHelpers</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CMakeGraphVizOptions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CMakePackageConfigHelpers.html" title="CMakePackageConfigHelpers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CMakeForceCompiler.html" title="CMakeForceCompiler"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>Visual Studio 15 2017 &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Green Hills MULTI" href="Green Hills MULTI.html" />
+    <link rel="prev" title="Visual Studio 14 2015" href="Visual Studio 14 2015.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Green Hills MULTI.html" title="Green Hills MULTI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Visual Studio 14 2015.html" title="Visual Studio 14 2015"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-generators.7.html" accesskey="U">cmake-generators(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="visual-studio-15-2017">
+<span id="generator:Visual Studio 15 2017"></span><h1>Visual Studio 15 2017<a class="headerlink" href="#visual-studio-15-2017" title="Permalink to this headline">¶</a></h1>
+<p>Generates Visual Studio 15 (VS 2017) project files.</p>
+<p>The <span class="target" id="index-0-variable:CMAKE_GENERATOR_PLATFORM"></span><a class="reference internal" href="../variable/CMAKE_GENERATOR_PLATFORM.html#variable:CMAKE_GENERATOR_PLATFORM" title="CMAKE_GENERATOR_PLATFORM"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_GENERATOR_PLATFORM</span></code></a> variable may be set
+to specify a target platform name (architecture).</p>
+<p>For compatibility with CMake versions prior to 3.1, one may specify
+a target platform name optionally at the end of this generator name:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">Visual</span> <span class="pre">Studio</span> <span class="pre">15</span> <span class="pre">2017</span> <span class="pre">Win64</span></code></dt>
+<dd>Specify target platform <code class="docutils literal"><span class="pre">x64</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">Visual</span> <span class="pre">Studio</span> <span class="pre">15</span> <span class="pre">2017</span> <span class="pre">ARM</span></code></dt>
+<dd>Specify target platform <code class="docutils literal"><span class="pre">ARM</span></code>.</dd>
+</dl>
+<div class="section" id="instance-selection">
+<h2>Instance Selection<a class="headerlink" href="#instance-selection" title="Permalink to this headline">¶</a></h2>
+<p>VS 2017 supports multiple installations on the same machine.
+CMake queries the Visual Studio Installer to locate VS instances.
+If more than one instance is installed we do not define which one
+is chosen by default.  If the <code class="docutils literal"><span class="pre">VS150COMNTOOLS</span></code> environment variable
+is set and points to the <code class="docutils literal"><span class="pre">Common7/Tools</span></code> directory within one of
+the instances, that instance will be used.  The environment variable
+must remain consistently set whenever CMake is re-run within a given
+build tree.</p>
+</div>
+<div class="section" id="toolset-selection">
+<h2>Toolset Selection<a class="headerlink" href="#toolset-selection" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">v141</span></code> toolset that comes with Visual Studio 15 2017 is selected by
+default.  The <span class="target" id="index-0-variable:CMAKE_GENERATOR_TOOLSET"></span><a class="reference internal" href="../variable/CMAKE_GENERATOR_TOOLSET.html#variable:CMAKE_GENERATOR_TOOLSET" title="CMAKE_GENERATOR_TOOLSET"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_GENERATOR_TOOLSET</span></code></a> option may be set, perhaps
+via the <span class="target" id="index-0-manual:cmake(1)"></span><a class="reference internal" href="../manual/cmake.1.html#manual:cmake(1)" title="cmake(1)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake(1)</span></code></a> <code class="docutils literal"><span class="pre">-T</span></code> option, to specify another toolset.</p>
+<p>For each toolset that comes with this version of Visual Studio, there are
+variants that are themselves compiled for 32-bit (x86) and 64-bit (x64) hosts
+(independent of the architecture they target).  By default Visual Studio
+chooses the 32-bit variant even on a 64-bit host.  One may request use of the
+64-bit host tools by adding a <code class="docutils literal"><span class="pre">host=x64</span></code> option to the toolset specification.
+See the <span class="target" id="index-1-variable:CMAKE_GENERATOR_TOOLSET"></span><a class="reference internal" href="../variable/CMAKE_GENERATOR_TOOLSET.html#variable:CMAKE_GENERATOR_TOOLSET" title="CMAKE_GENERATOR_TOOLSET"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_GENERATOR_TOOLSET</span></code></a> variable for details.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Visual Studio 15 2017</a><ul>
+<li><a class="reference internal" href="#instance-selection">Instance Selection</a></li>
+<li><a class="reference internal" href="#toolset-selection">Toolset Selection</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Visual Studio 14 2015.html"
+                        title="previous chapter">Visual Studio 14 2015</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Green Hills MULTI.html"
+                        title="next chapter">Green Hills MULTI</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/generator/Visual Studio 15 2017.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Green Hills MULTI.html" title="Green Hills MULTI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Visual Studio 14 2015.html" title="Visual Studio 14 2015"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-generators.7.html" >cmake-generators(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>variable_requires &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="write_file" href="write_file.html" />
+    <link rel="prev" title="utility_source" href="utility_source.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="write_file.html" title="write_file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="utility_source.html" title="utility_source"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="variable-requires">
+<span id="command:variable_requires"></span><h1>variable_requires<a class="headerlink" href="#variable-requires" title="Permalink to this headline">¶</a></h1>
+<p>Disallowed.  See CMake Policy <span class="target" id="index-0-policy:CMP0035"></span><a class="reference internal" href="../policy/CMP0035.html#policy:CMP0035" title="CMP0035"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0035</span></code></a>.</p>
+<p>Use the <span class="target" id="index-0-command:if"></span><a class="reference internal" href="if.html#command:if" title="if"><code class="xref cmake cmake-command docutils literal"><span class="pre">if()</span></code></a> command instead.</p>
+<p>Assert satisfaction of an option&#8217;s required variables.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">variable_requires</span><span class="p">(</span><span class="n">TEST_VARIABLE</span> <span class="n">RESULT_VARIABLE</span>
+                  <span class="n">REQUIRED_VARIABLE1</span>
+                  <span class="n">REQUIRED_VARIABLE2</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first argument (<code class="docutils literal"><span class="pre">TEST_VARIABLE</span></code>) is the name of the variable to be
+tested, if that variable is false nothing else is done.  If
+<code class="docutils literal"><span class="pre">TEST_VARIABLE</span></code> is true, then the next argument (<code class="docutils literal"><span class="pre">RESULT_VARIABLE</span></code>)
+is a variable that is set to true if all the required variables are set.
+The rest of the arguments are variables that must be true or not set
+to NOTFOUND to avoid an error.  If any are not true, an error is
+reported.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="utility_source.html"
+                        title="previous chapter">utility_source</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="write_file.html"
+                        title="next chapter">write_file</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/variable_requires.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="write_file.html" title="write_file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="utility_source.html" title="utility_source"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

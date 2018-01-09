@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>AUTOMOC_DEPEND_FILTERS &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="AUTOMOC_MACRO_NAMES" href="AUTOMOC_MACRO_NAMES.html" />
+    <link rel="prev" title="AUTOMOC_COMPILER_PREDEFINES" href="AUTOMOC_COMPILER_PREDEFINES.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="AUTOMOC_MACRO_NAMES.html" title="AUTOMOC_MACRO_NAMES"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="AUTOMOC_COMPILER_PREDEFINES.html" title="AUTOMOC_COMPILER_PREDEFINES"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" accesskey="U">cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="automoc-depend-filters">
+<span id="prop_tgt:AUTOMOC_DEPEND_FILTERS"></span><h1>AUTOMOC_DEPEND_FILTERS<a class="headerlink" href="#automoc-depend-filters" title="Permalink to this headline">¶</a></h1>
+<p>Filter definitions used by <span class="target" id="index-0-prop_tgt:AUTOMOC"></span><a class="reference internal" href="AUTOMOC.html#prop_tgt:AUTOMOC" title="AUTOMOC"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">AUTOMOC</span></code></a> to extract file names from
+source code as additional dependencies for the <code class="docutils literal"><span class="pre">moc</span></code> file.</p>
+<p>This property is only used if the <span class="target" id="index-1-prop_tgt:AUTOMOC"></span><a class="reference internal" href="AUTOMOC.html#prop_tgt:AUTOMOC" title="AUTOMOC"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">AUTOMOC</span></code></a> property is <code class="docutils literal"><span class="pre">ON</span></code>
+for this target.</p>
+<p>Filters are defined as <code class="docutils literal"><span class="pre">KEYWORD;REGULAR_EXPRESSION</span></code> pairs. First the file
+content is searched for <code class="docutils literal"><span class="pre">KEYWORD</span></code>. If it is found at least once, then file
+names are extracted by successively searching for <code class="docutils literal"><span class="pre">REGULAR_EXPRESSION</span></code> and
+taking the first match group.</p>
+<p>Consider a filter extracts the file name <code class="docutils literal"><span class="pre">DEP</span></code> from the content of a file
+<code class="docutils literal"><span class="pre">FOO</span></code>. If <code class="docutils literal"><span class="pre">DEP</span></code> changes, then the <code class="docutils literal"><span class="pre">moc</span></code> file for <code class="docutils literal"><span class="pre">FOO</span></code> gets rebuilt.
+The file <code class="docutils literal"><span class="pre">DEP</span></code> is searched for first in the vicinity
+of <code class="docutils literal"><span class="pre">FOO</span></code> and afterwards in the target&#8217;s <span class="target" id="index-0-prop_tgt:INCLUDE_DIRECTORIES"></span><a class="reference internal" href="INCLUDE_DIRECTORIES.html#prop_tgt:INCLUDE_DIRECTORIES" title="INCLUDE_DIRECTORIES"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">INCLUDE_DIRECTORIES</span></code></a>.</p>
+<p>By default <span class="target" id="index-0-prop_tgt:AUTOMOC_DEPEND_FILTERS"></span><a class="reference internal" href="#prop_tgt:AUTOMOC_DEPEND_FILTERS" title="AUTOMOC_DEPEND_FILTERS"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">AUTOMOC_DEPEND_FILTERS</span></code></a> is initialized from
+<span class="target" id="index-0-variable:CMAKE_AUTOMOC_DEPEND_FILTERS"></span><a class="reference internal" href="../variable/CMAKE_AUTOMOC_DEPEND_FILTERS.html#variable:CMAKE_AUTOMOC_DEPEND_FILTERS" title="CMAKE_AUTOMOC_DEPEND_FILTERS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_AUTOMOC_DEPEND_FILTERS</span></code></a>, which is empty by default.</p>
+<p>See the <span class="target" id="index-0-manual:cmake-qt(7)"></span><a class="reference internal" href="../manual/cmake-qt.7.html#manual:cmake-qt(7)" title="cmake-qt(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-qt(7)</span></code></a> manual for more information on using CMake
+with Qt.</p>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Consider a file <code class="docutils literal"><span class="pre">FOO.hpp</span></code> holds a custom macro <code class="docutils literal"><span class="pre">OBJ_JSON_FILE</span></code> and we
+want the <code class="docutils literal"><span class="pre">moc</span></code> file to depend on the macro`s file name argument:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">My_Class</span> <span class="p">:</span> <span class="n">public</span> <span class="n">QObject</span>
+<span class="p">{</span>
+  <span class="n">Q_OBJECT</span>
+  <span class="n">OBJ_JSON_FILE</span> <span class="p">(</span> <span class="s2">&quot;DEP.json&quot;</span> <span class="p">)</span>
+<span class="o">...</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Then we might use <span class="target" id="index-1-variable:CMAKE_AUTOMOC_DEPEND_FILTERS"></span><a class="reference internal" href="../variable/CMAKE_AUTOMOC_DEPEND_FILTERS.html#variable:CMAKE_AUTOMOC_DEPEND_FILTERS" title="CMAKE_AUTOMOC_DEPEND_FILTERS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_AUTOMOC_DEPEND_FILTERS</span></code></a> to
+define a filter like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="n">CMAKE_AUTOMOC_DEPEND_FILTERS</span>
+  <span class="s2">&quot;OBJ_JSON_FILE&quot;</span> <span class="s2">&quot;[</span><span class="se">\n</span><span class="s2">][ </span><span class="se">\t</span><span class="s2">]*OBJ_JSON_FILE[ </span><span class="se">\t</span><span class="s2">]*</span><span class="se">\\</span><span class="s2">([ </span><span class="se">\t</span><span class="s2">]*</span><span class="se">\&quot;</span><span class="s2">([^</span><span class="se">\&quot;</span><span class="s2">]+)</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">AUTOMOC_DEPEND_FILTERS</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="AUTOMOC_COMPILER_PREDEFINES.html"
+                        title="previous chapter">AUTOMOC_COMPILER_PREDEFINES</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="AUTOMOC_MACRO_NAMES.html"
+                        title="next chapter">AUTOMOC_MACRO_NAMES</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/prop_tgt/AUTOMOC_DEPEND_FILTERS.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="AUTOMOC_MACRO_NAMES.html" title="AUTOMOC_MACRO_NAMES"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="AUTOMOC_COMPILER_PREDEFINES.html" title="AUTOMOC_COMPILER_PREDEFINES"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" >cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

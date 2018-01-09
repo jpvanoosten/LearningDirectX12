@@ -1,0 +1,1006 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>cmake-developer(7) &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cmake-generator-expressions(7)" href="cmake-generator-expressions.7.html" />
+    <link rel="prev" title="cmake-compile-features(7)" href="cmake-compile-features.7.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cmake-generator-expressions.7.html" title="cmake-generator-expressions(7)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cmake-compile-features.7.html" title="cmake-compile-features(7)"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="manual:cmake-developer(7)"></span><div class="section" id="cmake-developer-7">
+<h1><a class="toc-backref" href="#id2">cmake-developer(7)</a><a class="headerlink" href="#cmake-developer-7" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#cmake-developer-7" id="id2">cmake-developer(7)</a><ul>
+<li><a class="reference internal" href="#introduction" id="id3">Introduction</a></li>
+<li><a class="reference internal" href="#adding-compile-features" id="id4">Adding Compile Features</a></li>
+<li><a class="reference internal" href="#help" id="id5">Help</a><ul>
+<li><a class="reference internal" href="#markup-constructs" id="id6">Markup Constructs</a></li>
+<li><a class="reference internal" href="#cmake-domain" id="id7">CMake Domain</a></li>
+<li><a class="reference internal" href="#cross-references" id="id8">Cross-References</a></li>
+<li><a class="reference internal" href="#style" id="id9">Style</a><ul>
+<li><a class="reference internal" href="#style-section-headers" id="id10">Style: Section Headers</a></li>
+<li><a class="reference internal" href="#style-whitespace" id="id11">Style: Whitespace</a></li>
+<li><a class="reference internal" href="#style-line-length" id="id12">Style: Line Length</a></li>
+<li><a class="reference internal" href="#style-prose" id="id13">Style: Prose</a></li>
+<li><a class="reference internal" href="#style-starting-literal-blocks" id="id14">Style: Starting Literal Blocks</a></li>
+<li><a class="reference internal" href="#style-cmake-command-signatures" id="id15">Style: CMake Command Signatures</a></li>
+<li><a class="reference internal" href="#style-boolean-constants" id="id16">Style: Boolean Constants</a></li>
+<li><a class="reference internal" href="#style-inline-literals" id="id17">Style: Inline Literals</a></li>
+<li><a class="reference internal" href="#style-cross-references" id="id18">Style: Cross-References</a></li>
+<li><a class="reference internal" href="#style-referencing-cmake-concepts" id="id19">Style: Referencing CMake Concepts</a></li>
+<li><a class="reference internal" href="#style-referencing-cmake-domain-objects" id="id20">Style: Referencing CMake Domain Objects</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modules" id="id21">Modules</a><ul>
+<li><a class="reference internal" href="#module-documentation" id="id22">Module Documentation</a></li>
+<li><a class="reference internal" href="#find-modules" id="id23">Find Modules</a><ul>
+<li><a class="reference internal" href="#standard-variable-names" id="id24">Standard Variable Names</a></li>
+<li><a class="reference internal" href="#a-sample-find-module" id="id25">A Sample Find Module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id3">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This manual is intended for reference by developers modifying the CMake
+source tree itself, and by those authoring externally-maintained modules.</p>
+</div>
+<div class="section" id="adding-compile-features">
+<h2><a class="toc-backref" href="#id4">Adding Compile Features</a><a class="headerlink" href="#adding-compile-features" title="Permalink to this headline">¶</a></h2>
+<p>CMake reports an error if a compiler whose features are known does not report
+support for a particular requested feature.  A compiler is considered to have
+known features if it reports support for at least one feature.</p>
+<p>When adding a new compile feature to CMake, it is therefore necessary to list
+support for the feature for all CompilerIds which already have one or more
+feature supported, if the new feature is available for any version of the
+compiler.</p>
+<p>When adding the first supported feature to a particular CompilerId, it is
+necessary to list support for all features known to cmake (See
+<span class="target" id="index-0-variable:CMAKE_C_COMPILE_FEATURES"></span><a class="reference internal" href="../variable/CMAKE_C_COMPILE_FEATURES.html#variable:CMAKE_C_COMPILE_FEATURES" title="CMAKE_C_COMPILE_FEATURES"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_C_COMPILE_FEATURES</span></code></a> and
+<span class="target" id="index-0-variable:CMAKE_CXX_COMPILE_FEATURES"></span><a class="reference internal" href="../variable/CMAKE_CXX_COMPILE_FEATURES.html#variable:CMAKE_CXX_COMPILE_FEATURES" title="CMAKE_CXX_COMPILE_FEATURES"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CXX_COMPILE_FEATURES</span></code></a> as appropriate), where available for
+the compiler.  Ensure that the <code class="docutils literal"><span class="pre">CMAKE_&lt;LANG&gt;_STANDARD_DEFAULT</span></code> is set to
+the computed internal variable <code class="docutils literal"><span class="pre">CMAKE_&lt;LANG&gt;_STANDARD_COMPUTED_DEFAULT</span></code>
+for compiler versions which should be supported.</p>
+<p>It is sensible to record the features for the most recent version of a
+particular CompilerId first, and then work backwards.  It is sensible to
+try to create a continuous range of versions of feature releases of the
+compiler.  Gaps in the range indicate incorrect features recorded for
+intermediate releases.</p>
+<p>Generally, features are made available for a particular version if the
+compiler vendor documents availability of the feature with that
+version.  Note that sometimes partially implemented features appear to
+be functional in previous releases (such as <code class="docutils literal"><span class="pre">cxx_constexpr</span></code> in GNU 4.6,
+though availability is documented in GNU 4.7), and sometimes compiler vendors
+document availability of features, though supporting infrastructure is
+not available (such as <code class="docutils literal"><span class="pre">__has_feature(cxx_generic_lambdas)</span></code> indicating
+non-availability in Clang 3.4, though it is documented as available, and
+fixed in Clang 3.5).  Similar cases for other compilers and versions
+need to be investigated when extending CMake to support them.</p>
+<p>When a vendor releases a new version of a known compiler which supports
+a previously unsupported feature, and there are already known features for
+that compiler, the feature should be listed as supported in CMake for
+that version of the compiler as soon as reasonably possible.</p>
+<p>Standard-specific/compiler-specific variables such
+<code class="docutils literal"><span class="pre">CMAKE_CXX98_COMPILE_FEATURES</span></code> are deliberately not documented.  They
+only exist for the compiler-specific implementation of adding the <code class="docutils literal"><span class="pre">-std</span></code>
+compile flag for compilers which need that.</p>
+</div>
+<div class="section" id="help">
+<h2><a class="toc-backref" href="#id5">Help</a><a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">Help</span></code> directory contains CMake help manual source files.
+They are written using the <a class="reference external" href="http://docutils.sourceforge.net/docs/ref/rst/introduction.html">reStructuredText</a> markup syntax and
+processed by <a class="reference external" href="http://sphinx-doc.org">Sphinx</a> to generate the CMake help manuals.</p>
+<div class="section" id="markup-constructs">
+<h3><a class="toc-backref" href="#id6">Markup Constructs</a><a class="headerlink" href="#markup-constructs" title="Permalink to this headline">¶</a></h3>
+<p>In addition to using Sphinx to generate the CMake help manuals, we
+also use a C++-implemented document processor to print documents for
+the <code class="docutils literal"><span class="pre">--help-*</span></code> command-line help options.  It supports a subset of
+reStructuredText markup.  When authoring or modifying documents,
+please verify that the command-line help looks good in addition to the
+Sphinx-generated html and man pages.</p>
+<p>The command-line help processor supports the following constructs
+defined by reStructuredText, Sphinx, and a CMake extension to Sphinx.</p>
+<dl class="docutils">
+<dt>CMake Domain directives</dt>
+<dd>Directives defined in the <a class="reference internal" href="#cmake-domain">CMake Domain</a> for defining CMake
+documentation objects are printed in command-line help output as
+if the lines were normal paragraph text with interpretation.</dd>
+<dt>CMake Domain interpreted text roles</dt>
+<dd>Interpreted text roles defined in the <a class="reference internal" href="#cmake-domain">CMake Domain</a> for
+cross-referencing CMake documentation objects are replaced by their
+link text in command-line help output.  Other roles are printed
+literally and not processed.</dd>
+<dt><code class="docutils literal"><span class="pre">code-block</span></code> directive</dt>
+<dd>Add a literal code block without interpretation.  The command-line
+help processor prints the block content without the leading directive
+line and with common indentation replaced by one space.</dd>
+<dt><code class="docutils literal"><span class="pre">include</span></code> directive</dt>
+<dd>Include another document source file.  The command-line help
+processor prints the included document inline with the referencing
+document.</dd>
+<dt>literal block after <code class="docutils literal"><span class="pre">::</span></code></dt>
+<dd>A paragraph ending in <code class="docutils literal"><span class="pre">::</span></code> followed by a blank line treats
+the following indented block as literal text without interpretation.
+The command-line help processor prints the <code class="docutils literal"><span class="pre">::</span></code> literally and
+prints the block content with common indentation replaced by one
+space.</dd>
+<dt><code class="docutils literal"><span class="pre">note</span></code> directive</dt>
+<dd>Call out a side note.  The command-line help processor prints the
+block content as if the lines were normal paragraph text with
+interpretation.</dd>
+<dt><code class="docutils literal"><span class="pre">parsed-literal</span></code> directive</dt>
+<dd>Add a literal block with markup interpretation.  The command-line
+help processor prints the block content without the leading
+directive line and with common indentation replaced by one space.</dd>
+<dt><code class="docutils literal"><span class="pre">productionlist</span></code> directive</dt>
+<dd>Render context-free grammar productions.  The command-line help
+processor prints the block content as if the lines were normal
+paragraph text with interpretation.</dd>
+<dt><code class="docutils literal"><span class="pre">replace</span></code> directive</dt>
+<dd>Define a <code class="docutils literal"><span class="pre">|substitution|</span></code> replacement.
+The command-line help processor requires a substitution replacement
+to be defined before it is referenced.</dd>
+<dt><code class="docutils literal"><span class="pre">|substitution|</span></code> reference</dt>
+<dd>Reference a substitution replacement previously defined by
+the <code class="docutils literal"><span class="pre">replace</span></code> directive.  The command-line help processor
+performs the substitution and replaces all newlines in the
+replacement text with spaces.</dd>
+<dt><code class="docutils literal"><span class="pre">toctree</span></code> directive</dt>
+<dd>Include other document sources in the Table-of-Contents
+document tree.  The command-line help processor prints
+the referenced documents inline as part of the referencing
+document.</dd>
+</dl>
+<p>Inline markup constructs not listed above are printed literally in the
+command-line help output.  We prefer to use inline markup constructs that
+look correct in source form, so avoid use of \-escapes in favor of inline
+literals when possible.</p>
+<p>Explicit markup blocks not matching directives listed above are removed from
+command-line help output.  Do not use them, except for plain <code class="docutils literal"><span class="pre">..</span></code> comments
+that are removed by Sphinx too.</p>
+<p>Note that nested indentation of blocks is not recognized by the
+command-line help processor.  Therefore:</p>
+<ul class="simple">
+<li>Explicit markup blocks are recognized only when not indented
+inside other blocks.</li>
+<li>Literal blocks after paragraphs ending in <code class="docutils literal"><span class="pre">::</span></code> but not
+at the top indentation level may consume all indented lines
+following them.</li>
+</ul>
+<p>Try to avoid these cases in practice.</p>
+</div>
+<div class="section" id="cmake-domain">
+<h3><a class="toc-backref" href="#id7">CMake Domain</a><a class="headerlink" href="#cmake-domain" title="Permalink to this headline">¶</a></h3>
+<p>CMake adds a <a class="reference external" href="http://sphinx-doc.org/domains.html">Sphinx Domain</a> called <code class="docutils literal"><span class="pre">cmake</span></code>, also called the
+&#8220;CMake Domain&#8221;.  It defines several &#8220;object&#8221; types for CMake
+documentation:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">command</span></code></dt>
+<dd>A CMake language command.</dd>
+<dt><code class="docutils literal"><span class="pre">generator</span></code></dt>
+<dd>A CMake native build system generator.
+See the <span class="target" id="index-0-manual:cmake(1)"></span><a class="reference internal" href="cmake.1.html#manual:cmake(1)" title="cmake(1)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake(1)</span></code></a> command-line tool&#8217;s <code class="docutils literal"><span class="pre">-G</span></code> option.</dd>
+<dt><code class="docutils literal"><span class="pre">manual</span></code></dt>
+<dd>A CMake manual page, like this <span class="target" id="index-0-manual:cmake-developer(7)"></span><a class="reference internal" href="#manual:cmake-developer(7)" title="cmake-developer(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-developer(7)</span></code></a> manual.</dd>
+<dt><code class="docutils literal"><span class="pre">module</span></code></dt>
+<dd>A CMake module.
+See the <span class="target" id="index-0-manual:cmake-modules(7)"></span><a class="reference internal" href="cmake-modules.7.html#manual:cmake-modules(7)" title="cmake-modules(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-modules(7)</span></code></a> manual
+and the <span class="target" id="index-0-command:include"></span><a class="reference internal" href="../command/include.html#command:include" title="include"><code class="xref cmake cmake-command docutils literal"><span class="pre">include()</span></code></a> command.</dd>
+<dt><code class="docutils literal"><span class="pre">policy</span></code></dt>
+<dd>A CMake policy.
+See the <span class="target" id="index-0-manual:cmake-policies(7)"></span><a class="reference internal" href="cmake-policies.7.html#manual:cmake-policies(7)" title="cmake-policies(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-policies(7)</span></code></a> manual
+and the <span class="target" id="index-0-command:cmake_policy"></span><a class="reference internal" href="../command/cmake_policy.html#command:cmake_policy" title="cmake_policy"><code class="xref cmake cmake-command docutils literal"><span class="pre">cmake_policy()</span></code></a> command.</dd>
+<dt><code class="docutils literal"><span class="pre">prop_cache,</span> <span class="pre">prop_dir,</span> <span class="pre">prop_gbl,</span> <span class="pre">prop_sf,</span> <span class="pre">prop_inst,</span> <span class="pre">prop_test,</span> <span class="pre">prop_tgt</span></code></dt>
+<dd>A CMake cache, directory, global, source file, installed file, test,
+or target property, respectively.  See the <span class="target" id="index-0-manual:cmake-properties(7)"></span><a class="reference internal" href="cmake-properties.7.html#manual:cmake-properties(7)" title="cmake-properties(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-properties(7)</span></code></a>
+manual and the <span class="target" id="index-0-command:set_property"></span><a class="reference internal" href="../command/set_property.html#command:set_property" title="set_property"><code class="xref cmake cmake-command docutils literal"><span class="pre">set_property()</span></code></a> command.</dd>
+<dt><code class="docutils literal"><span class="pre">variable</span></code></dt>
+<dd>A CMake language variable.
+See the <span class="target" id="index-0-manual:cmake-variables(7)"></span><a class="reference internal" href="cmake-variables.7.html#manual:cmake-variables(7)" title="cmake-variables(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-variables(7)</span></code></a> manual
+and the <span class="target" id="index-0-command:set"></span><a class="reference internal" href="../command/set.html#command:set" title="set"><code class="xref cmake cmake-command docutils literal"><span class="pre">set()</span></code></a> command.</dd>
+</dl>
+<p>Documentation objects in the CMake Domain come from two sources.
+First, the CMake extension to Sphinx transforms every document named
+with the form <code class="docutils literal"><span class="pre">Help/&lt;type&gt;/&lt;file-name&gt;.rst</span></code> to a domain object with
+type <code class="docutils literal"><span class="pre">&lt;type&gt;</span></code>.  The object name is extracted from the document title,
+which is expected to be of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="nb">object</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="o">-------------</span>
+</pre></div>
+</div>
+<p>and to appear at or near the top of the <code class="docutils literal"><span class="pre">.rst</span></code> file before any other
+lines starting in a letter, digit, or <code class="docutils literal"><span class="pre">&lt;</span></code>.  If no such title appears
+literally in the <code class="docutils literal"><span class="pre">.rst</span></code> file, the object name is the <code class="docutils literal"><span class="pre">&lt;file-name&gt;</span></code>.
+If a title does appear, it is expected that <code class="docutils literal"><span class="pre">&lt;file-name&gt;</span></code> is equal
+to <code class="docutils literal"><span class="pre">&lt;object-name&gt;</span></code> with any <code class="docutils literal"><span class="pre">&lt;</span></code> and <code class="docutils literal"><span class="pre">&gt;</span></code> characters removed.</p>
+<p>Second, the CMake Domain provides directives to define objects inside
+other documents:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">command</span><span class="p">::</span> <span class="nt">&lt;command-name&gt;</span>
+
+ This indented block documents &lt;command-name&gt;.
+
+<span class="p">..</span> <span class="ow">variable</span><span class="p">::</span> <span class="nt">&lt;variable-name&gt;</span>
+
+ This indented block documents &lt;variable-name&gt;.
+</pre></div>
+</div>
+<p>Object types for which no directive is available must be defined using
+the first approach above.</p>
+</div>
+<div class="section" id="cross-references">
+<h3><a class="toc-backref" href="#id8">Cross-References</a><a class="headerlink" href="#cross-references" title="Permalink to this headline">¶</a></h3>
+<p>Sphinx uses reStructuredText interpreted text roles to provide
+cross-reference syntax.  The <a class="reference internal" href="#cmake-domain">CMake Domain</a> provides for each
+domain object type a role of the same name to cross-reference it.
+CMake Domain roles are inline markup of the forms:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>:type:`name`
+:type:`text &lt;name&gt;`
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">type</span></code> is the domain object type and <code class="docutils literal"><span class="pre">name</span></code> is the
+domain object name.  In the first form the link text will be
+<code class="docutils literal"><span class="pre">name</span></code> (or <code class="docutils literal"><span class="pre">name()</span></code> if the type is <code class="docutils literal"><span class="pre">command</span></code>) and in
+the second form the link text will be the explicit <code class="docutils literal"><span class="pre">text</span></code>.
+For example, the code:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="m">*</span> The <span class="na">:command:</span><span class="nv">`list`</span> command.
+<span class="m">*</span> The <span class="na">:command:</span><span class="nv">`list(APPEND)`</span> sub-command.
+<span class="m">*</span> The <span class="na">:command:</span><span class="nv">`list() command &lt;list&gt;`</span>.
+<span class="m">*</span> The <span class="na">:command:</span><span class="nv">`list(APPEND) sub-command &lt;list&gt;`</span>.
+<span class="m">*</span> The <span class="na">:variable:</span><span class="nv">`CMAKE_VERSION`</span> variable.
+<span class="m">*</span> The :prop_tgt:<span class="nv">`OUTPUT_NAME_&lt;CONFIG&gt;`</span> target property.
+</pre></div>
+</div>
+<p>produces:</p>
+<ul class="simple">
+<li>The <span class="target" id="index-0-command:list"></span><a class="reference internal" href="../command/list.html#command:list" title="list"><code class="xref cmake cmake-command docutils literal"><span class="pre">list()</span></code></a> command.</li>
+<li>The <span class="target" id="index-1-command:list"></span><a class="reference internal" href="../command/list.html#command:list" title="list"><code class="xref cmake cmake-command docutils literal"><span class="pre">list(APPEND)</span></code></a> sub-command.</li>
+<li>The <span class="target" id="index-2-command:list"></span><a class="reference internal" href="../command/list.html#command:list" title="list"><code class="xref cmake cmake-command docutils literal"><span class="pre">list()</span> <span class="pre">command</span></code></a>.</li>
+<li>The <span class="target" id="index-3-command:list"></span><a class="reference internal" href="../command/list.html#command:list" title="list"><code class="xref cmake cmake-command docutils literal"><span class="pre">list(APPEND)</span> <span class="pre">sub-command</span></code></a>.</li>
+<li>The <span class="target" id="index-0-variable:CMAKE_VERSION"></span><a class="reference internal" href="../variable/CMAKE_VERSION.html#variable:CMAKE_VERSION" title="CMAKE_VERSION"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_VERSION</span></code></a> variable.</li>
+<li>The <span class="target" id="index-0-prop_tgt:OUTPUT_NAME_&lt;CONFIG&gt;"></span><a class="reference internal" href="../prop_tgt/OUTPUT_NAME_CONFIG.html#prop_tgt:OUTPUT_NAME_&lt;CONFIG&gt;" title="OUTPUT_NAME_&lt;CONFIG&gt;"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">OUTPUT_NAME_&lt;CONFIG&gt;</span></code></a> target property.</li>
+</ul>
+<p>Note that CMake Domain roles differ from Sphinx and reStructuredText
+convention in that the form <code class="docutils literal"><span class="pre">a&lt;b&gt;</span></code>, without a space preceding <code class="docutils literal"><span class="pre">&lt;</span></code>,
+is interpreted as a name instead of link text with an explicit target.
+This is necessary because we use <code class="docutils literal"><span class="pre">&lt;placeholders&gt;</span></code> frequently in
+object names like <code class="docutils literal"><span class="pre">OUTPUT_NAME_&lt;CONFIG&gt;</span></code>.  The form <code class="docutils literal"><span class="pre">a</span> <span class="pre">&lt;b&gt;</span></code>,
+with a space preceding <code class="docutils literal"><span class="pre">&lt;</span></code>, is still interpreted as a link text
+with an explicit target.</p>
+</div>
+<div class="section" id="style">
+<h3><a class="toc-backref" href="#id9">Style</a><a class="headerlink" href="#style" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="style-section-headers">
+<h4><a class="toc-backref" href="#id10">Style: Section Headers</a><a class="headerlink" href="#style-section-headers" title="Permalink to this headline">¶</a></h4>
+<p>When marking section titles, make the section decoration line as long as
+the title text.  Use only a line below the title, not above. For
+example:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="gh">Title Text</span>
+<span class="gh">----------</span>
+</pre></div>
+</div>
+<p>Capitalize the first letter of each non-minor word in the title.</p>
+<p>The section header underline character hierarchy is</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">#</span></code>: Manual group (part) in the master document</li>
+<li><code class="docutils literal"><span class="pre">*</span></code>: Manual (chapter) title</li>
+<li><code class="docutils literal"><span class="pre">=</span></code>: Section within a manual</li>
+<li><code class="docutils literal"><span class="pre">-</span></code>: Subsection or <a class="reference internal" href="#cmake-domain">CMake Domain</a> object document title</li>
+<li><code class="docutils literal"><span class="pre">^</span></code>: Subsubsection or <a class="reference internal" href="#cmake-domain">CMake Domain</a> object document section</li>
+<li><code class="docutils literal"><span class="pre">&quot;</span></code>: Paragraph or <a class="reference internal" href="#cmake-domain">CMake Domain</a> object document subsection</li>
+</ul>
+</div>
+<div class="section" id="style-whitespace">
+<h4><a class="toc-backref" href="#id11">Style: Whitespace</a><a class="headerlink" href="#style-whitespace" title="Permalink to this headline">¶</a></h4>
+<p>Use two spaces for indentation.  Use two spaces between sentences in
+prose.</p>
+</div>
+<div class="section" id="style-line-length">
+<h4><a class="toc-backref" href="#id12">Style: Line Length</a><a class="headerlink" href="#style-line-length" title="Permalink to this headline">¶</a></h4>
+<p>Prefer to restrict the width of lines to 75-80 columns.  This is not a
+hard restriction, but writing new paragraphs wrapped at 75 columns
+allows space for adding minor content without significant re-wrapping of
+content.</p>
+</div>
+<div class="section" id="style-prose">
+<h4><a class="toc-backref" href="#id13">Style: Prose</a><a class="headerlink" href="#style-prose" title="Permalink to this headline">¶</a></h4>
+<p>Use American English spellings in prose.</p>
+</div>
+<div class="section" id="style-starting-literal-blocks">
+<h4><a class="toc-backref" href="#id14">Style: Starting Literal Blocks</a><a class="headerlink" href="#style-starting-literal-blocks" title="Permalink to this headline">¶</a></h4>
+<p>Prefer to mark the start of literal blocks with <code class="docutils literal"><span class="pre">::</span></code> at the end of
+the preceding paragraph. In cases where the following block gets
+a <code class="docutils literal"><span class="pre">code-block</span></code> marker, put a single <code class="docutils literal"><span class="pre">:</span></code> at the end of the preceding
+paragraph.</p>
+</div>
+<div class="section" id="style-cmake-command-signatures">
+<h4><a class="toc-backref" href="#id15">Style: CMake Command Signatures</a><a class="headerlink" href="#style-cmake-command-signatures" title="Permalink to this headline">¶</a></h4>
+<p>Command signatures should be marked up as plain literal blocks, not as
+cmake <code class="docutils literal"><span class="pre">code-blocks</span></code>.</p>
+<p>Signatures are separated from preceding content by a section header.
+That is, use:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="cp">... preceding paragraph.</span>
+
+<span class="gh">Normal Libraries</span>
+<span class="gh">^^^^^^^^^^^^^^^^</span>
+
+<span class="se">::</span>
+
+<span class="s">  add_library(&lt;lib&gt; ...)</span>
+
+This signature is used for ...
+</pre></div>
+</div>
+<p>Signatures of commands should wrap optional parts with square brackets,
+and should mark list of optional arguments with an ellipsis (<code class="docutils literal"><span class="pre">...</span></code>).
+Elements of the signature which are specified by the user should be
+specified with angle brackets, and may be referred to in prose using
+<code class="docutils literal"><span class="pre">inline-literal</span></code> syntax.</p>
+</div>
+<div class="section" id="style-boolean-constants">
+<h4><a class="toc-backref" href="#id16">Style: Boolean Constants</a><a class="headerlink" href="#style-boolean-constants" title="Permalink to this headline">¶</a></h4>
+<p>Use &#8220;<code class="docutils literal"><span class="pre">OFF</span></code>&#8221; and &#8220;<code class="docutils literal"><span class="pre">ON</span></code>&#8221; for boolean values which can be modified by
+the user, such as <span class="target" id="index-0-prop_tgt:POSITION_INDEPENDENT_CODE"></span><a class="reference internal" href="../prop_tgt/POSITION_INDEPENDENT_CODE.html#prop_tgt:POSITION_INDEPENDENT_CODE" title="POSITION_INDEPENDENT_CODE"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">POSITION_INDEPENDENT_CODE</span></code></a>. Such properties
+may be &#8220;enabled&#8221; and &#8220;disabled&#8221;. Use &#8220;<code class="docutils literal"><span class="pre">True</span></code>&#8221; and &#8220;<code class="docutils literal"><span class="pre">False</span></code>&#8221; for
+inherent values which can&#8217;t be modified after being set, such as the
+<span class="target" id="index-0-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> property of a build target.</p>
+</div>
+<div class="section" id="style-inline-literals">
+<h4><a class="toc-backref" href="#id17">Style: Inline Literals</a><a class="headerlink" href="#style-inline-literals" title="Permalink to this headline">¶</a></h4>
+<p>Mark up references to keywords in signatures, file names, and other
+technical terms with <code class="docutils literal"><span class="pre">inline-literal</span></code> syntax, for example:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span>If <span class="s">``WIN32``</span> is used with <span class="na">:command:</span><span class="nv">`add_executable`</span>, the
+:prop_tgt:<span class="nv">`WIN32_EXECUTABLE`</span> target property is enabled. That command
+creates the file <span class="s">``&lt;name&gt;.exe``</span> on Windows.
+</pre></div>
+</div>
+</div>
+<div class="section" id="style-cross-references">
+<h4><a class="toc-backref" href="#id18">Style: Cross-References</a><a class="headerlink" href="#style-cross-references" title="Permalink to this headline">¶</a></h4>
+<p>Mark up linkable references as links, including repeats.
+An alternative, which is used by wikipedia
+(<a class="reference external" href="http://en.wikipedia.org/wiki/WP:REPEATLINK">http://en.wikipedia.org/wiki/WP:REPEATLINK</a>),
+is to link to a reference only once per article. That style is not used
+in CMake documentation.</p>
+</div>
+<div class="section" id="style-referencing-cmake-concepts">
+<h4><a class="toc-backref" href="#id19">Style: Referencing CMake Concepts</a><a class="headerlink" href="#style-referencing-cmake-concepts" title="Permalink to this headline">¶</a></h4>
+<p>If referring to a concept which corresponds to a property, and that
+concept is described in a high-level manual, prefer to link to the
+manual section instead of the property. For example:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span>This command creates an <span class="na">:ref:</span><span class="nv">`Imported Target &lt;Imported Targets&gt;`</span>.
+</pre></div>
+</div>
+<p>instead of:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span>This command creates an :prop_tgt:<span class="nv">`IMPORTED`</span> target.
+</pre></div>
+</div>
+<p>The latter should be used only when referring specifically to the
+property.</p>
+<p>References to manual sections are not automatically created by creating
+a section, but code such as:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="nt">_`Imported Targets`:</span>
+</pre></div>
+</div>
+<p>creates a suitable anchor.  Use an anchor name which matches the name
+of the corresponding section.  Refer to the anchor using a
+cross-reference with specified text.</p>
+<p>Imported Targets need the <code class="docutils literal"><span class="pre">IMPORTED</span></code> term marked up with care in
+particular because the term may refer to a command keyword
+(<code class="docutils literal"><span class="pre">IMPORTED</span></code>), a target property (<span class="target" id="index-1-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a>), or a
+concept (<a class="reference internal" href="cmake-buildsystem.7.html#imported-targets"><span class="std std-ref">Imported Targets</span></a>).</p>
+<p>Where a property, command or variable is related conceptually to others,
+by for example, being related to the buildsystem description, generator
+expressions or Qt, each relevant property, command or variable should
+link to the primary manual, which provides high-level information.  Only
+particular information relating to the command should be in the
+documentation of the command.</p>
+</div>
+<div class="section" id="style-referencing-cmake-domain-objects">
+<h4><a class="toc-backref" href="#id20">Style: Referencing CMake Domain Objects</a><a class="headerlink" href="#style-referencing-cmake-domain-objects" title="Permalink to this headline">¶</a></h4>
+<p>When referring to <a class="reference internal" href="#cmake-domain">CMake Domain</a> objects such as properties, variables,
+commands etc, prefer to link to the target object and follow that with
+the type of object it is.  For example:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span>Set the :prop_tgt:<span class="nv">`AUTOMOC`</span> target property to <span class="s">``ON``</span>.
+</pre></div>
+</div>
+<p>Instead of</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span>Set the target property :prop_tgt:<span class="nv">`AUTOMOC`</span> to <span class="s">``ON``</span>.
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">policy</span></code> directive is an exception, and the type us usually
+referred to before the link:</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span>If policy :prop_tgt:<span class="nv">`CMP0022`</span> is set to <span class="s">``NEW``</span> the behavior is ...
+</pre></div>
+</div>
+<p>However, markup self-references with <code class="docutils literal"><span class="pre">inline-literal</span></code> syntax.
+For example, within the <span class="target" id="index-0-command:add_executable"></span><a class="reference internal" href="../command/add_executable.html#command:add_executable" title="add_executable"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_executable()</span></code></a> command
+documentation, use</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="s">``add_executable``</span>
+</pre></div>
+</div>
+<p>not</p>
+<div class="highlight-rst"><div class="highlight"><pre><span></span><span class="na">:command:</span><span class="nv">`add_executable`</span>
+</pre></div>
+</div>
+<p>which is used elsewhere.</p>
+</div>
+</div>
+</div>
+<div class="section" id="modules">
+<h2><a class="toc-backref" href="#id21">Modules</a><a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">Modules</span></code> directory contains CMake-language <code class="docutils literal"><span class="pre">.cmake</span></code> module files.</p>
+<div class="section" id="module-documentation">
+<h3><a class="toc-backref" href="#id22">Module Documentation</a><a class="headerlink" href="#module-documentation" title="Permalink to this headline">¶</a></h3>
+<p>To document CMake module <code class="docutils literal"><span class="pre">Modules/&lt;module-name&gt;.cmake</span></code>, modify
+<code class="docutils literal"><span class="pre">Help/manual/cmake-modules.7.rst</span></code> to reference the module in the
+<code class="docutils literal"><span class="pre">toctree</span></code> directive, in sorted order, as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">module</span><span class="o">/&lt;</span><span class="n">module</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Then add the module document file <code class="docutils literal"><span class="pre">Help/module/&lt;module-name&gt;.rst</span></code>
+containing just the line:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">cmake</span><span class="o">-</span><span class="n">module</span><span class="p">::</span> <span class="o">../../</span><span class="n">Modules</span><span class="o">/&lt;</span><span class="n">module</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;.</span><span class="n">cmake</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">cmake-module</span></code> directive will scan the module file to extract
+reStructuredText markup from comment blocks that start in <code class="docutils literal"><span class="pre">.rst:</span></code>.
+At the top of <code class="docutils literal"><span class="pre">Modules/&lt;module-name&gt;.cmake</span></code>, begin with the following
+license notice:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c"># Distributed under the OSI-approved BSD 3-Clause License.  See accompanying</span>
+<span class="c"># file Copyright.txt or https://cmake.org/licensing for details.</span>
+</pre></div>
+</div>
+<p>After this notice, add a <em>BLANK</em> line.  Then, add documentation using
+a <a class="reference internal" href="cmake-language.7.html#line-comment"><span class="std std-ref">Line Comment</span></a> block of the form:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c">#.rst:</span>
+<span class="c"># &lt;module-name&gt;</span>
+<span class="c"># -------------</span>
+<span class="c">#</span>
+<span class="c"># &lt;reStructuredText documentation of module&gt;</span>
+</pre></div>
+</div>
+<p>or a <a class="reference internal" href="cmake-language.7.html#bracket-comment"><span class="std std-ref">Bracket Comment</span></a> of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#[[.rst:</span>
+<span class="o">&lt;</span><span class="n">module</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="o">-------------</span>
+
+<span class="o">&lt;</span><span class="n">reStructuredText</span> <span class="n">documentation</span> <span class="n">of</span> <span class="n">module</span><span class="o">&gt;</span>
+<span class="c1">#]]</span>
+</pre></div>
+</div>
+<p>Any number of <code class="docutils literal"><span class="pre">=</span></code> may be used in the opening and closing brackets
+as long as they match.  Content on the line containing the closing
+bracket is excluded if and only if the line starts in <code class="docutils literal"><span class="pre">#</span></code>.</p>
+<p>Additional such <code class="docutils literal"><span class="pre">.rst:</span></code> comments may appear anywhere in the module file.
+All such comments must start with <code class="docutils literal"><span class="pre">#</span></code> in the first column.</p>
+<p>For example, a <code class="docutils literal"><span class="pre">Modules/Findxxx.cmake</span></code> module may contain:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Distributed under the OSI-approved BSD 3-Clause License.  See accompanying</span>
+<span class="c1"># file Copyright.txt or https://cmake.org/licensing for details.</span>
+
+<span class="c1">#.rst:</span>
+<span class="c1"># FindXxx</span>
+<span class="c1"># -------</span>
+<span class="c1">#</span>
+<span class="c1"># This is a cool module.</span>
+<span class="c1"># This module does really cool stuff.</span>
+<span class="c1"># It can do even more than you think.</span>
+<span class="c1">#</span>
+<span class="c1"># It even needs two paragraphs to tell you about it.</span>
+<span class="c1"># And it defines the following variables:</span>
+<span class="c1">#</span>
+<span class="c1"># * VAR_COOL: this is great isn&#39;t it?</span>
+<span class="c1"># * VAR_REALLY_COOL: cool right?</span>
+
+<span class="o">&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+
+<span class="c1">#[========================================[.rst:</span>
+<span class="o">..</span> <span class="n">command</span><span class="p">::</span> <span class="n">xxx_do_something</span>
+
+ <span class="n">This</span> <span class="n">command</span> <span class="n">does</span> <span class="n">something</span> <span class="k">for</span> <span class="n">Xxx</span><span class="p">::</span>
+
+  <span class="n">xxx_do_something</span><span class="p">(</span><span class="n">some</span> <span class="n">arguments</span><span class="p">)</span>
+<span class="c1">#]========================================]</span>
+<span class="n">macro</span><span class="p">(</span><span class="n">xxx_do_something</span><span class="p">)</span>
+  <span class="o">&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+<span class="n">endmacro</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Test the documentation formatting by running
+<code class="docutils literal"><span class="pre">cmake</span> <span class="pre">--help-module</span> <span class="pre">&lt;module-name&gt;</span></code>, and also by enabling the
+<code class="docutils literal"><span class="pre">SPHINX_HTML</span></code> and <code class="docutils literal"><span class="pre">SPHINX_MAN</span></code> options to build the documentation.
+Edit the comments until generated documentation looks satisfactory.  To
+have a .cmake file in this directory NOT show up in the modules
+documentation, simply leave out the <code class="docutils literal"><span class="pre">Help/module/&lt;module-name&gt;.rst</span></code>
+file and the <code class="docutils literal"><span class="pre">Help/manual/cmake-modules.7.rst</span></code> toctree entry.</p>
+</div>
+<div class="section" id="find-modules">
+<span id="id1"></span><h3><a class="toc-backref" href="#id23">Find Modules</a><a class="headerlink" href="#find-modules" title="Permalink to this headline">¶</a></h3>
+<p>A &#8220;find module&#8221; is a <code class="docutils literal"><span class="pre">Modules/Find&lt;package&gt;.cmake</span></code> file to be loaded
+by the <span class="target" id="index-0-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a> command when invoked for <code class="docutils literal"><span class="pre">&lt;package&gt;</span></code>.</p>
+<p>The primary task of a find module is to determine whether a package
+exists on the system, set the <code class="docutils literal"><span class="pre">&lt;package&gt;_FOUND</span></code> variable to reflect
+this and provide any variables, macros and imported targets required to
+use the package.  A find module is useful in cases where an upstream
+library does not provide a
+<a class="reference internal" href="cmake-packages.7.html#config-file-packages"><span class="std std-ref">config file package</span></a>.</p>
+<p>The traditional approach is to use variables for everything, including
+libraries and executables: see the <a class="reference internal" href="#standard-variable-names">Standard Variable Names</a> section
+below.  This is what most of the existing find modules provided by CMake
+do.</p>
+<p>The more modern approach is to behave as much like
+<a class="reference internal" href="cmake-packages.7.html#config-file-packages"><span class="std std-ref">config file packages</span></a> files as possible, by
+providing <a class="reference internal" href="cmake-buildsystem.7.html#imported-targets"><span class="std std-ref">imported target</span></a>.  This has the advantage
+of propagating <a class="reference internal" href="cmake-buildsystem.7.html#target-usage-requirements"><span class="std std-ref">Transitive Usage Requirements</span></a> to consumers.</p>
+<p>In either case (or even when providing both variables and imported
+targets), find modules should provide backwards compatibility with old
+versions that had the same name.</p>
+<p>A FindFoo.cmake module will typically be loaded by the command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="n">Foo</span> <span class="p">[</span><span class="n">major</span><span class="p">[</span><span class="o">.</span><span class="n">minor</span><span class="p">[</span><span class="o">.</span><span class="n">patch</span><span class="p">[</span><span class="o">.</span><span class="n">tweak</span><span class="p">]]]]</span>
+             <span class="p">[</span><span class="n">EXACT</span><span class="p">]</span> <span class="p">[</span><span class="n">QUIET</span><span class="p">]</span> <span class="p">[</span><span class="n">REQUIRED</span><span class="p">]</span>
+             <span class="p">[[</span><span class="n">COMPONENTS</span><span class="p">]</span> <span class="p">[</span><span class="n">components</span><span class="o">...</span><span class="p">]]</span>
+             <span class="p">[</span><span class="n">OPTIONAL_COMPONENTS</span> <span class="n">components</span><span class="o">...</span><span class="p">]</span>
+             <span class="p">[</span><span class="n">NO_POLICY_SCOPE</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>See the <span class="target" id="index-1-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a> documentation for details on what
+variables are set for the find module.  Most of these are dealt with by
+using <span class="target" id="index-0-module:FindPackageHandleStandardArgs"></span><a class="reference internal" href="../module/FindPackageHandleStandardArgs.html#module:FindPackageHandleStandardArgs" title="FindPackageHandleStandardArgs"><code class="xref cmake cmake-module docutils literal"><span class="pre">FindPackageHandleStandardArgs</span></code></a>.</p>
+<p>Briefly, the module should only locate versions of the package
+compatible with the requested version, as described by the
+<code class="docutils literal"><span class="pre">Foo_FIND_VERSION</span></code> family of variables.  If <code class="docutils literal"><span class="pre">Foo_FIND_QUIETLY</span></code> is
+set to true, it should avoid printing messages, including anything
+complaining about the package not being found.  If <code class="docutils literal"><span class="pre">Foo_FIND_REQUIRED</span></code>
+is set to true, the module should issue a <code class="docutils literal"><span class="pre">FATAL_ERROR</span></code> if the package
+cannot be found.  If neither are set to true, it should print a
+non-fatal message if it cannot find the package.</p>
+<p>Packages that find multiple semi-independent parts (like bundles of
+libraries) should search for the components listed in
+<code class="docutils literal"><span class="pre">Foo_FIND_COMPONENTS</span></code> if it is set , and only set <code class="docutils literal"><span class="pre">Foo_FOUND</span></code> to
+true if for each searched-for component <code class="docutils literal"><span class="pre">&lt;c&gt;</span></code> that was not found,
+<code class="docutils literal"><span class="pre">Foo_FIND_REQUIRED_&lt;c&gt;</span></code> is not set to true.  The <code class="docutils literal"><span class="pre">HANDLE_COMPONENTS</span></code>
+argument of <code class="docutils literal"><span class="pre">find_package_handle_standard_args()</span></code> can be used to
+implement this.</p>
+<p>If <code class="docutils literal"><span class="pre">Foo_FIND_COMPONENTS</span></code> is not set, which modules are searched for
+and required is up to the find module, but should be documented.</p>
+<p>For internal implementation, it is a generally accepted convention that
+variables starting with underscore are for temporary use only.</p>
+<p>Like all modules, find modules should be properly documented.  To add a
+module to the CMake documentation, follow the steps in the <a class="reference internal" href="#module-documentation">Module
+Documentation</a> section above.</p>
+<div class="section" id="standard-variable-names">
+<h4><a class="toc-backref" href="#id24">Standard Variable Names</a><a class="headerlink" href="#standard-variable-names" title="Permalink to this headline">¶</a></h4>
+<p>For a <code class="docutils literal"><span class="pre">FindXxx.cmake</span></code> module that takes the approach of setting
+variables (either instead of or in addition to creating imported
+targets), the following variable names should be used to keep things
+consistent between find modules.  Note that all variables start with
+<code class="docutils literal"><span class="pre">Xxx_</span></code> to make sure they do not interfere with other find modules; the
+same consideration applies to macros, functions and imported targets.</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">Xxx_INCLUDE_DIRS</span></code></dt>
+<dd>The final set of include directories listed in one variable for use by
+client code.  This should not be a cache entry.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_LIBRARIES</span></code></dt>
+<dd>The libraries to link against to use Xxx. These should include full
+paths.  This should not be a cache entry.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_DEFINITIONS</span></code></dt>
+<dd>Definitions to use when compiling code that uses Xxx. This really
+shouldn&#8217;t include options such as <code class="docutils literal"><span class="pre">-DHAS_JPEG</span></code> that a client
+source-code file uses to decide whether to <code class="docutils literal"><span class="pre">#include</span> <span class="pre">&lt;jpeg.h&gt;</span></code></dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_EXECUTABLE</span></code></dt>
+<dd>Where to find the Xxx tool.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_Yyy_EXECUTABLE</span></code></dt>
+<dd>Where to find the Yyy tool that comes with Xxx.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_LIBRARY_DIRS</span></code></dt>
+<dd>Optionally, the final set of library directories listed in one
+variable for use by client code.  This should not be a cache entry.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_ROOT_DIR</span></code></dt>
+<dd>Where to find the base directory of Xxx.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_VERSION_Yy</span></code></dt>
+<dd>Expect Version Yy if true. Make sure at most one of these is ever true.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_WRAP_Yy</span></code></dt>
+<dd>If False, do not try to use the relevant CMake wrapping command.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_Yy_FOUND</span></code></dt>
+<dd>If False, optional Yy part of Xxx system is not available.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_FOUND</span></code></dt>
+<dd>Set to false, or undefined, if we haven&#8217;t found, or don&#8217;t want to use
+Xxx.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_NOT_FOUND_MESSAGE</span></code></dt>
+<dd>Should be set by config-files in the case that it has set
+<code class="docutils literal"><span class="pre">Xxx_FOUND</span></code> to FALSE.  The contained message will be printed by the
+<span class="target" id="index-2-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a> command and by
+<code class="docutils literal"><span class="pre">find_package_handle_standard_args()</span></code> to inform the user about the
+problem.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_RUNTIME_LIBRARY_DIRS</span></code></dt>
+<dd>Optionally, the runtime library search path for use when running an
+executable linked to shared libraries.  The list should be used by
+user code to create the <code class="docutils literal"><span class="pre">PATH</span></code> on windows or <code class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></code> on
+UNIX.  This should not be a cache entry.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_VERSION</span></code></dt>
+<dd>The full version string of the package found, if any.  Note that many
+existing modules provide <code class="docutils literal"><span class="pre">Xxx_VERSION_STRING</span></code> instead.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_VERSION_MAJOR</span></code></dt>
+<dd>The major version of the package found, if any.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_VERSION_MINOR</span></code></dt>
+<dd>The minor version of the package found, if any.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_VERSION_PATCH</span></code></dt>
+<dd>The patch version of the package found, if any.</dd>
+</dl>
+<p>The following names should not usually be used in CMakeLists.txt files, but
+are typically cache variables for users to edit and control the
+behaviour of find modules (like entering the path to a library manually)</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">Xxx_LIBRARY</span></code></dt>
+<dd>The path of the Xxx library (as used with <span class="target" id="index-0-command:find_library"></span><a class="reference internal" href="../command/find_library.html#command:find_library" title="find_library"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_library()</span></code></a>, for
+example).</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_Yy_LIBRARY</span></code></dt>
+<dd>The path of the Yy library that is part of the Xxx system. It may or
+may not be required to use Xxx.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_INCLUDE_DIR</span></code></dt>
+<dd>Where to find headers for using the Xxx library.</dd>
+<dt><code class="docutils literal"><span class="pre">Xxx_Yy_INCLUDE_DIR</span></code></dt>
+<dd>Where to find headers for using the Yy library of the Xxx system.</dd>
+</dl>
+<p>To prevent users being overwhelmed with settings to configure, try to
+keep as many options as possible out of the cache, leaving at least one
+option which can be used to disable use of the module, or locate a
+not-found library (e.g. <code class="docutils literal"><span class="pre">Xxx_ROOT_DIR</span></code>).  For the same reason, mark
+most cache options as advanced.  For packages which provide both debug
+and release binaries, it is common to create cache variables with a
+<code class="docutils literal"><span class="pre">_LIBRARY_&lt;CONFIG&gt;</span></code> suffix, such as <code class="docutils literal"><span class="pre">Foo_LIBRARY_RELEASE</span></code> and
+<code class="docutils literal"><span class="pre">Foo_LIBRARY_DEBUG</span></code>.</p>
+<p>While these are the standard variable names, you should provide
+backwards compatibility for any old names that were actually in use.
+Make sure you comment them as deprecated, so that no-one starts using
+them.</p>
+</div>
+<div class="section" id="a-sample-find-module">
+<h4><a class="toc-backref" href="#id25">A Sample Find Module</a><a class="headerlink" href="#a-sample-find-module" title="Permalink to this headline">¶</a></h4>
+<p>We will describe how to create a simple find module for a library
+<code class="docutils literal"><span class="pre">Foo</span></code>.</p>
+<p>The first thing that is needed is a license notice.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c"># Distributed under the OSI-approved BSD 3-Clause License.  See accompanying</span>
+<span class="c"># file Copyright.txt or https://cmake.org/licensing for details.</span>
+</pre></div>
+</div>
+<p>Next we need module documentation.  CMake&#8217;s documentation system requires you
+to follow the license notice with a blank line and then with a documentation
+marker and the name of the module.  You should follow this with a simple
+statement of what the module does.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c">#.rst:</span>
+<span class="c"># FindFoo</span>
+<span class="c"># -------</span>
+<span class="c">#</span>
+<span class="c"># Finds the Foo library</span>
+<span class="c">#</span>
+</pre></div>
+</div>
+<p>More description may be required for some packages.  If there are
+caveats or other details users of the module should be aware of, you can
+add further paragraphs below this.  Then you need to document what
+variables and imported targets are set by the module, such as</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c"># This will define the following variables::</span>
+<span class="c">#</span>
+<span class="c">#   Foo_FOUND    - True if the system has the Foo library</span>
+<span class="c">#   Foo_VERSION  - The version of the Foo library which was found</span>
+<span class="c">#</span>
+<span class="c"># and the following imported targets::</span>
+<span class="c">#</span>
+<span class="c">#   Foo::Foo   - The Foo library</span>
+</pre></div>
+</div>
+<p>If the package provides any macros, they should be listed here, but can
+be documented where they are defined.  See the <a class="reference internal" href="#module-documentation">Module
+Documentation</a> section above for more details.</p>
+<p>Now the actual libraries and so on have to be found.  The code here will
+obviously vary from module to module (dealing with that, after all, is the
+point of find modules), but there tends to be a common pattern for libraries.</p>
+<p>First, we try to use <code class="docutils literal"><span class="pre">pkg-config</span></code> to find the library.  Note that we
+cannot rely on this, as it may not be available, but it provides a good
+starting point.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">find_package</span><span class="p">(</span><span class="s">PkgConfig</span><span class="p">)</span>
+<span class="nb">pkg_check_modules</span><span class="p">(</span><span class="s">PC_Foo</span> <span class="s">QUIET</span> <span class="s">Foo</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This should define some variables starting <code class="docutils literal"><span class="pre">PC_Foo_</span></code> that contain the
+information from the <code class="docutils literal"><span class="pre">Foo.pc</span></code> file.</p>
+<p>Now we need to find the libraries and include files; we use the
+information from <code class="docutils literal"><span class="pre">pkg-config</span></code> to provide hints to CMake about where to
+look.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">find_path</span><span class="p">(</span><span class="s">Foo_INCLUDE_DIR</span>
+  <span class="s">NAMES</span> <span class="s">foo.h</span>
+  <span class="s">PATHS</span> <span class="o">${</span><span class="nv">PC_Foo_INCLUDE_DIRS</span><span class="o">}</span>
+  <span class="s">PATH_SUFFIXES</span> <span class="s">Foo</span>
+<span class="p">)</span>
+<span class="nb">find_library</span><span class="p">(</span><span class="s">Foo_LIBRARY</span>
+  <span class="s">NAMES</span> <span class="s">foo</span>
+  <span class="s">PATHS</span> <span class="o">${</span><span class="nv">PC_Foo_LIBRARY_DIRS</span><span class="o">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If you have a good way of getting the version (from a header file, for
+example), you can use that information to set <code class="docutils literal"><span class="pre">Foo_VERSION</span></code> (although
+note that find modules have traditionally used <code class="docutils literal"><span class="pre">Foo_VERSION_STRING</span></code>,
+so you may want to set both).  Otherwise, attempt to use the information
+from <code class="docutils literal"><span class="pre">pkg-config</span></code></p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="s">Foo_VERSION</span> <span class="o">${</span><span class="nv">PC_Foo_VERSION</span><span class="o">}</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we can use <span class="target" id="index-1-module:FindPackageHandleStandardArgs"></span><a class="reference internal" href="../module/FindPackageHandleStandardArgs.html#module:FindPackageHandleStandardArgs" title="FindPackageHandleStandardArgs"><code class="xref cmake cmake-module docutils literal"><span class="pre">FindPackageHandleStandardArgs</span></code></a> to do most of the
+rest of the work for us</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">include</span><span class="p">(</span><span class="s">FindPackageHandleStandardArgs</span><span class="p">)</span>
+<span class="nb">find_package_handle_standard_args</span><span class="p">(</span><span class="s">Foo</span>
+  <span class="s">FOUND_VAR</span> <span class="s">Foo_FOUND</span>
+  <span class="s">REQUIRED_VARS</span>
+    <span class="s">Foo_LIBRARY</span>
+    <span class="s">Foo_INCLUDE_DIR</span>
+  <span class="s">VERSION_VAR</span> <span class="s">Foo_VERSION</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This will check that the <code class="docutils literal"><span class="pre">REQUIRED_VARS</span></code> contain values (that do not
+end in <code class="docutils literal"><span class="pre">-NOTFOUND</span></code>) and set <code class="docutils literal"><span class="pre">Foo_FOUND</span></code> appropriately.  It will also
+cache those values.  If <code class="docutils literal"><span class="pre">Foo_VERSION</span></code> is set, and a required version
+was passed to <span class="target" id="index-3-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a>, it will check the requested version
+against the one in <code class="docutils literal"><span class="pre">Foo_VERSION</span></code>.  It will also print messages as
+appropriate; note that if the package was found, it will print the
+contents of the first required variable to indicate where it was found.</p>
+<p>At this point, we have to provide a way for users of the find module to
+link to the library or libraries that were found.  There are two
+approaches, as discussed in the <a class="reference internal" href="#find-modules">Find Modules</a> section above.  The
+traditional variable approach looks like</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">if</span><span class="p">(</span><span class="s">Foo_FOUND</span><span class="p">)</span>
+  <span class="nb">set</span><span class="p">(</span><span class="s">Foo_LIBRARIES</span> <span class="o">${</span><span class="nv">Foo_LIBRARY</span><span class="o">}</span><span class="p">)</span>
+  <span class="nb">set</span><span class="p">(</span><span class="s">Foo_INCLUDE_DIRS</span> <span class="o">${</span><span class="nv">Foo_INCLUDE_DIR</span><span class="o">}</span><span class="p">)</span>
+  <span class="nb">set</span><span class="p">(</span><span class="s">Foo_DEFINITIONS</span> <span class="o">${</span><span class="nv">PC_Foo_CFLAGS_OTHER</span><span class="o">}</span><span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If more than one library was found, all of them should be included in
+these variables (see the <a class="reference internal" href="#standard-variable-names">Standard Variable Names</a> section for more
+information).</p>
+<p>When providing imported targets, these should be namespaced (hence the
+<code class="docutils literal"><span class="pre">Foo::</span></code> prefix); CMake will recognize that values passed to
+<span class="target" id="index-0-command:target_link_libraries"></span><a class="reference internal" href="../command/target_link_libraries.html#command:target_link_libraries" title="target_link_libraries"><code class="xref cmake cmake-command docutils literal"><span class="pre">target_link_libraries()</span></code></a> that contain <code class="docutils literal"><span class="pre">::</span></code> in their name are
+supposed to be imported targets (rather than just library names), and
+will produce appropriate diagnostic messages if that target does not
+exist (see policy <span class="target" id="index-0-policy:CMP0028"></span><a class="reference internal" href="../policy/CMP0028.html#policy:CMP0028" title="CMP0028"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0028</span></code></a>).</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">if</span><span class="p">(</span><span class="s">Foo_FOUND</span> <span class="s">AND</span> <span class="s">NOT</span> <span class="s">TARGET</span> <span class="s">Foo::Foo</span><span class="p">)</span>
+  <span class="nb">add_library</span><span class="p">(</span><span class="s">Foo::Foo</span> <span class="s">UNKNOWN</span> <span class="s">IMPORTED</span><span class="p">)</span>
+  <span class="nb">set_target_properties</span><span class="p">(</span><span class="s">Foo::Foo</span> <span class="s">PROPERTIES</span>
+    <span class="s">IMPORTED_LOCATION</span> <span class="s2">&quot;${Foo_LIBRARY}&quot;</span>
+    <span class="s">INTERFACE_COMPILE_OPTIONS</span> <span class="s2">&quot;${PC_Foo_CFLAGS_OTHER}&quot;</span>
+    <span class="s">INTERFACE_INCLUDE_DIRECTORIES</span> <span class="s2">&quot;${Foo_INCLUDE_DIR}&quot;</span>
+  <span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>One thing to note about this is that the <code class="docutils literal"><span class="pre">INTERFACE_INCLUDE_DIRECTORIES</span></code> and
+similar properties should only contain information about the target itself, and
+not any of its dependencies.  Instead, those dependencies should also be
+targets, and CMake should be told that they are dependencies of this target.
+CMake will then combine all the necessary information automatically.</p>
+<p>The type of the <span class="target" id="index-2-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> target created in the
+<span class="target" id="index-0-command:add_library"></span><a class="reference internal" href="../command/add_library.html#command:add_library" title="add_library"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_library()</span></code></a> command can always be specified as <code class="docutils literal"><span class="pre">UNKNOWN</span></code>
+type.  This simplifies the code in cases where static or shared variants may
+be found, and CMake will determine the type by inspecting the files.</p>
+<p>If the library is available with multiple configurations, the
+<span class="target" id="index-0-prop_tgt:IMPORTED_CONFIGURATIONS"></span><a class="reference internal" href="../prop_tgt/IMPORTED_CONFIGURATIONS.html#prop_tgt:IMPORTED_CONFIGURATIONS" title="IMPORTED_CONFIGURATIONS"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED_CONFIGURATIONS</span></code></a> target property should also be
+populated:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">if</span><span class="p">(</span><span class="s">Foo_FOUND</span><span class="p">)</span>
+  <span class="nb">if</span> <span class="p">(</span><span class="s">NOT</span> <span class="s">TARGET</span> <span class="s">Foo::Foo</span><span class="p">)</span>
+    <span class="nb">add_library</span><span class="p">(</span><span class="s">Foo::Foo</span> <span class="s">UNKNOWN</span> <span class="s">IMPORTED</span><span class="p">)</span>
+  <span class="nb">endif</span><span class="p">()</span>
+  <span class="nb">if</span> <span class="p">(</span><span class="s">Foo_LIBRARY_RELEASE</span><span class="p">)</span>
+    <span class="nb">set_property</span><span class="p">(</span><span class="s">TARGET</span> <span class="s">Foo::Foo</span> <span class="s">APPEND</span> <span class="s">PROPERTY</span>
+      <span class="s">IMPORTED_CONFIGURATIONS</span> <span class="s">RELEASE</span>
+    <span class="p">)</span>
+    <span class="nb">set_target_properties</span><span class="p">(</span><span class="s">Foo::Foo</span> <span class="s">PROPERTIES</span>
+      <span class="s">IMPORTED_LOCATION_RELEASE</span> <span class="s2">&quot;${Foo_LIBRARY_RELEASE}&quot;</span>
+    <span class="p">)</span>
+  <span class="nb">endif</span><span class="p">()</span>
+  <span class="nb">if</span> <span class="p">(</span><span class="s">Foo_LIBRARY_DEBUG</span><span class="p">)</span>
+    <span class="nb">set_property</span><span class="p">(</span><span class="s">TARGET</span> <span class="s">Foo::Foo</span> <span class="s">APPEND</span> <span class="s">PROPERTY</span>
+      <span class="s">IMPORTED_CONFIGURATIONS</span> <span class="s">DEBUG</span>
+    <span class="p">)</span>
+    <span class="nb">set_target_properties</span><span class="p">(</span><span class="s">Foo::Foo</span> <span class="s">PROPERTIES</span>
+      <span class="s">IMPORTED_LOCATION_DEBUG</span> <span class="s2">&quot;${Foo_LIBRARY_DEBUG}&quot;</span>
+    <span class="p">)</span>
+  <span class="nb">endif</span><span class="p">()</span>
+  <span class="nb">set_target_properties</span><span class="p">(</span><span class="s">Foo::Foo</span> <span class="s">PROPERTIES</span>
+    <span class="s">INTERFACE_COMPILE_OPTIONS</span> <span class="s2">&quot;${PC_Foo_CFLAGS_OTHER}&quot;</span>
+    <span class="s">INTERFACE_INCLUDE_DIRECTORIES</span> <span class="s2">&quot;${Foo_INCLUDE_DIR}&quot;</span>
+  <span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">RELEASE</span></code> variant should be listed first in the property
+so that that variant is chosen if the user uses a configuration which is
+not an exact match for any listed <code class="docutils literal"><span class="pre">IMPORTED_CONFIGURATIONS</span></code>.</p>
+<p>Most of the cache variables should be hidden in the <code class="docutils literal"><span class="pre">ccmake</span></code> interface unless
+the user explicitly asks to edit them.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">mark_as_advanced</span><span class="p">(</span>
+  <span class="s">Foo_INCLUDE_DIR</span>
+  <span class="s">Foo_LIBRARY</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If this module replaces an older version, you should set compatibility variables
+to cause the least disruption possible.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c"># compatibility variables</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">Foo_VERSION_STRING</span> <span class="o">${</span><span class="nv">Foo_VERSION</span><span class="o">}</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">cmake-developer(7)</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#adding-compile-features">Adding Compile Features</a></li>
+<li><a class="reference internal" href="#help">Help</a><ul>
+<li><a class="reference internal" href="#markup-constructs">Markup Constructs</a></li>
+<li><a class="reference internal" href="#cmake-domain">CMake Domain</a></li>
+<li><a class="reference internal" href="#cross-references">Cross-References</a></li>
+<li><a class="reference internal" href="#style">Style</a><ul>
+<li><a class="reference internal" href="#style-section-headers">Style: Section Headers</a></li>
+<li><a class="reference internal" href="#style-whitespace">Style: Whitespace</a></li>
+<li><a class="reference internal" href="#style-line-length">Style: Line Length</a></li>
+<li><a class="reference internal" href="#style-prose">Style: Prose</a></li>
+<li><a class="reference internal" href="#style-starting-literal-blocks">Style: Starting Literal Blocks</a></li>
+<li><a class="reference internal" href="#style-cmake-command-signatures">Style: CMake Command Signatures</a></li>
+<li><a class="reference internal" href="#style-boolean-constants">Style: Boolean Constants</a></li>
+<li><a class="reference internal" href="#style-inline-literals">Style: Inline Literals</a></li>
+<li><a class="reference internal" href="#style-cross-references">Style: Cross-References</a></li>
+<li><a class="reference internal" href="#style-referencing-cmake-concepts">Style: Referencing CMake Concepts</a></li>
+<li><a class="reference internal" href="#style-referencing-cmake-domain-objects">Style: Referencing CMake Domain Objects</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modules">Modules</a><ul>
+<li><a class="reference internal" href="#module-documentation">Module Documentation</a></li>
+<li><a class="reference internal" href="#find-modules">Find Modules</a><ul>
+<li><a class="reference internal" href="#standard-variable-names">Standard Variable Names</a></li>
+<li><a class="reference internal" href="#a-sample-find-module">A Sample Find Module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cmake-compile-features.7.html"
+                        title="previous chapter">cmake-compile-features(7)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cmake-generator-expressions.7.html"
+                        title="next chapter">cmake-generator-expressions(7)</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/manual/cmake-developer.7.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cmake-generator-expressions.7.html" title="cmake-generator-expressions(7)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cmake-compile-features.7.html" title="cmake-compile-features(7)"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+ 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

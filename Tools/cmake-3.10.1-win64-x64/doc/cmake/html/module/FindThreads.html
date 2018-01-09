@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindThreads &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindTIFF" href="FindTIFF.html" />
+    <link rel="prev" title="FindTclStub" href="FindTclStub.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindTIFF.html" title="FindTIFF"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindTclStub.html" title="FindTclStub"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findthreads">
+<span id="module:FindThreads"></span><h1>FindThreads<a class="headerlink" href="#findthreads" title="Permalink to this headline">¶</a></h1>
+<p>This module determines the thread library of the system.</p>
+<p>The following variables are set</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>CMAKE_THREAD_LIBS_INIT     - the thread library
+CMAKE_USE_SPROC_INIT       - are we using sproc?
+CMAKE_USE_WIN32_THREADS_INIT - using WIN32 threads?
+CMAKE_USE_PTHREADS_INIT    - are we using pthreads
+CMAKE_HP_PTHREADS_INIT     - are we using hp pthreads
+</pre></div>
+</div>
+<p>The following import target is created</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Threads</span><span class="p">::</span><span class="n">Threads</span>
+</pre></div>
+</div>
+<p>For systems with multiple thread libraries, caller can set</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_THREAD_PREFER_PTHREAD</span>
+</pre></div>
+</div>
+<p>If the use of the -pthread compiler and linker flag is preferred then the
+caller can set</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">THREADS_PREFER_PTHREAD_FLAG</span>
+</pre></div>
+</div>
+<p>Please note that the compiler flag can only be used with the imported
+target. Use of both the imported target as well as this switch is highly
+recommended for new code.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindTclStub.html"
+                        title="previous chapter">FindTclStub</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindTIFF.html"
+                        title="next chapter">FindTIFF</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindThreads.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindTIFF.html" title="FindTIFF"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindTclStub.html" title="FindTclStub"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

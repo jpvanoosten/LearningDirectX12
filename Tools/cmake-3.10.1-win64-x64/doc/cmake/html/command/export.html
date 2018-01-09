@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>export &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="fltk_wrap_ui" href="fltk_wrap_ui.html" />
+    <link rel="prev" title="enable_testing" href="enable_testing.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fltk_wrap_ui.html" title="fltk_wrap_ui"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="enable_testing.html" title="enable_testing"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="export">
+<span id="command:export"></span><h1>export<a class="headerlink" href="#export" title="Permalink to this headline">¶</a></h1>
+<p>Export targets from the build tree for use by outside projects.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span><span class="p">(</span><span class="n">EXPORT</span> <span class="o">&lt;</span><span class="n">export</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">NAMESPACE</span> <span class="o">&lt;</span><span class="n">namespace</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">FILE</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Create a file <code class="docutils literal"><span class="pre">&lt;filename&gt;</span></code> that may be included by outside projects to
+import targets from the current project&#8217;s build tree.  This is useful
+during cross-compiling to build utility executables that can run on
+the host platform in one project and then import them into another
+project being compiled for the target platform.  If the <code class="docutils literal"><span class="pre">NAMESPACE</span></code>
+option is given the <code class="docutils literal"><span class="pre">&lt;namespace&gt;</span></code> string will be prepended to all target
+names written to the file.</p>
+<p>Target installations are associated with the export <code class="docutils literal"><span class="pre">&lt;export-name&gt;</span></code>
+using the <code class="docutils literal"><span class="pre">EXPORT</span></code> option of the <span class="target" id="index-0-command:install"></span><a class="reference internal" href="install.html#command:install" title="install"><code class="xref cmake cmake-command docutils literal"><span class="pre">install(TARGETS)</span></code></a> command.</p>
+<p>The file created by this command is specific to the build tree and
+should never be installed.  See the <span class="target" id="index-1-command:install"></span><a class="reference internal" href="install.html#command:install" title="install"><code class="xref cmake cmake-command docutils literal"><span class="pre">install(EXPORT)</span></code></a> command to
+export targets from an installation tree.</p>
+<p>The properties set on the generated IMPORTED targets will have the
+same values as the final values of the input TARGETS.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span><span class="p">(</span><span class="n">TARGETS</span> <span class="p">[</span><span class="n">target1</span> <span class="p">[</span><span class="n">target2</span> <span class="p">[</span><span class="o">...</span><span class="p">]]]</span> <span class="p">[</span><span class="n">NAMESPACE</span> <span class="o">&lt;</span><span class="n">namespace</span><span class="o">&gt;</span><span class="p">]</span>
+       <span class="p">[</span><span class="n">APPEND</span><span class="p">]</span> <span class="n">FILE</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">EXPORT_LINK_INTERFACE_LIBRARIES</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This signature is similar to the <code class="docutils literal"><span class="pre">EXPORT</span></code> signature, but targets are listed
+explicitly rather than specified as an export-name.  If the APPEND option is
+given the generated code will be appended to the file instead of overwriting it.
+The EXPORT_LINK_INTERFACE_LIBRARIES keyword, if present, causes the
+contents of the properties matching
+<code class="docutils literal"><span class="pre">(IMPORTED_)?LINK_INTERFACE_LIBRARIES(_&lt;CONFIG&gt;)?</span></code> to be exported, when
+policy CMP0022 is NEW.  If a library target is included in the export
+but a target to which it links is not included the behavior is
+unspecified.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span><span class="p">(</span><span class="n">PACKAGE</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Store the current build directory in the CMake user package registry
+for package <code class="docutils literal"><span class="pre">&lt;name&gt;</span></code>.  The find_package command may consider the
+directory while searching for package <code class="docutils literal"><span class="pre">&lt;name&gt;</span></code>.  This helps dependent
+projects find and use a package from the current project&#8217;s build tree
+without help from the user.  Note that the entry in the package
+registry that this command creates works only in conjunction with a
+package configuration file (<code class="docutils literal"><span class="pre">&lt;name&gt;Config.cmake</span></code>) that works with the
+build tree. In some cases, for example for packaging and for system
+wide installations, it is not desirable to write the user package
+registry. If the <span class="target" id="index-0-variable:CMAKE_EXPORT_NO_PACKAGE_REGISTRY"></span><a class="reference internal" href="../variable/CMAKE_EXPORT_NO_PACKAGE_REGISTRY.html#variable:CMAKE_EXPORT_NO_PACKAGE_REGISTRY" title="CMAKE_EXPORT_NO_PACKAGE_REGISTRY"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_EXPORT_NO_PACKAGE_REGISTRY</span></code></a> variable
+is enabled, the <code class="docutils literal"><span class="pre">export(PACKAGE)</span></code> command will do nothing.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span><span class="p">(</span><span class="n">TARGETS</span> <span class="p">[</span><span class="n">target1</span> <span class="p">[</span><span class="n">target2</span> <span class="p">[</span><span class="o">...</span><span class="p">]]]</span>  <span class="p">[</span><span class="n">ANDROID_MK</span> <span class="o">&lt;</span><span class="n">filename</span><span class="o">&gt;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This signature exports cmake built targets to the android ndk build system
+by creating an Android.mk file that references the prebuilt targets. The
+Android NDK supports the use of prebuilt libraries, both static and shared.
+This allows cmake to build the libraries of a project and make them available
+to an ndk build system complete with transitive dependencies, include flags
+and defines required to use the libraries. The signature takes a list of
+targets and puts them in the Android.mk file specified by the <code class="docutils literal"><span class="pre">&lt;filename&gt;</span></code>
+given. This signature can only be used if policy CMP0022 is NEW for all
+targets given. A error will be issued if that policy is set to OLD for one
+of the targets.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="enable_testing.html"
+                        title="previous chapter">enable_testing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fltk_wrap_ui.html"
+                        title="next chapter">fltk_wrap_ui</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/export.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fltk_wrap_ui.html" title="fltk_wrap_ui"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="enable_testing.html" title="enable_testing"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

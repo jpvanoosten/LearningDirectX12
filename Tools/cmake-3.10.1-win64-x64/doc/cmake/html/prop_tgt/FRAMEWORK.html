@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FRAMEWORK &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FRAMEWORK_VERSION" href="FRAMEWORK_VERSION.html" />
+    <link rel="prev" title="Fortran_MODULE_DIRECTORY" href="Fortran_MODULE_DIRECTORY.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FRAMEWORK_VERSION.html" title="FRAMEWORK_VERSION"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Fortran_MODULE_DIRECTORY.html" title="Fortran_MODULE_DIRECTORY"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" accesskey="U">cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="framework">
+<span id="prop_tgt:FRAMEWORK"></span><h1>FRAMEWORK<a class="headerlink" href="#framework" title="Permalink to this headline">¶</a></h1>
+<p>Build <code class="docutils literal"><span class="pre">SHARED</span></code> or <code class="docutils literal"><span class="pre">STATIC</span></code> library as Framework Bundle on the OS X and iOS.</p>
+<p>If such a library target has this property set to <code class="docutils literal"><span class="pre">TRUE</span></code> it will be
+built as a framework when built on the OS X and iOS.  It will have the
+directory structure required for a framework and will be suitable to
+be used with the <code class="docutils literal"><span class="pre">-framework</span></code> option</p>
+<p>To customize <code class="docutils literal"><span class="pre">Info.plist</span></code> file in the framework, use
+<span class="target" id="index-0-prop_tgt:MACOSX_FRAMEWORK_INFO_PLIST"></span><a class="reference internal" href="MACOSX_FRAMEWORK_INFO_PLIST.html#prop_tgt:MACOSX_FRAMEWORK_INFO_PLIST" title="MACOSX_FRAMEWORK_INFO_PLIST"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">MACOSX_FRAMEWORK_INFO_PLIST</span></code></a> target property.</p>
+<p>For OS X see also the <span class="target" id="index-0-prop_tgt:FRAMEWORK_VERSION"></span><a class="reference internal" href="FRAMEWORK_VERSION.html#prop_tgt:FRAMEWORK_VERSION" title="FRAMEWORK_VERSION"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">FRAMEWORK_VERSION</span></code></a> target property.</p>
+<p>Example of creation <code class="docutils literal"><span class="pre">dynamicFramework</span></code>:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">add_library</span><span class="p">(</span><span class="s">dynamicFramework</span> <span class="s">SHARED</span>
+            <span class="s">dynamicFramework.c</span>
+            <span class="s">dynamicFramework.h</span>
+<span class="p">)</span>
+<span class="nb">set_target_properties</span><span class="p">(</span><span class="s">dynamicFramework</span> <span class="s">PROPERTIES</span>
+  <span class="s">FRAMEWORK</span> <span class="s">TRUE</span>
+  <span class="s">FRAMEWORK_VERSION</span> <span class="s">C</span>
+  <span class="s">MACOSX_FRAMEWORK_IDENTIFIER</span> <span class="s">com.cmake.dynamicFramework</span>
+  <span class="s">MACOSX_FRAMEWORK_INFO_PLIST</span> <span class="s">Info.plist</span>
+  <span class="c"># &quot;current version&quot; in semantic format in Mach-O binary file</span>
+  <span class="s">VERSION</span> <span class="s">16.4.0</span>
+  <span class="c"># &quot;compatibility version&quot; in semantic format in Mach-O binary file</span>
+  <span class="s">SOVERSION</span> <span class="s">1.0.0</span>
+  <span class="s">PUBLIC_HEADER</span> <span class="s">dynamicFramework.h</span>
+  <span class="s">XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY</span> <span class="s2">&quot;iPhone Developer&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Fortran_MODULE_DIRECTORY.html"
+                        title="previous chapter">Fortran_MODULE_DIRECTORY</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FRAMEWORK_VERSION.html"
+                        title="next chapter">FRAMEWORK_VERSION</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/prop_tgt/FRAMEWORK.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FRAMEWORK_VERSION.html" title="FRAMEWORK_VERSION"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Fortran_MODULE_DIRECTORY.html" title="Fortran_MODULE_DIRECTORY"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" >cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

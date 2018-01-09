@@ -1,0 +1,536 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>string &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="unset" href="unset.html" />
+    <link rel="prev" title="site_name" href="site_name.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="unset.html" title="unset"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="site_name.html" title="site_name"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="string">
+<span id="command:string"></span><h1><a class="toc-backref" href="#id2">string</a><a class="headerlink" href="#string" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#string" id="id2">string</a><ul>
+<li><a class="reference internal" href="#search-and-replace" id="id3">Search and Replace</a><ul>
+<li><a class="reference internal" href="#find" id="id4">FIND</a></li>
+<li><a class="reference internal" href="#replace" id="id5">REPLACE</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regular-expressions" id="id6">Regular Expressions</a><ul>
+<li><a class="reference internal" href="#regex-match" id="id7">REGEX MATCH</a></li>
+<li><a class="reference internal" href="#regex-matchall" id="id8">REGEX MATCHALL</a></li>
+<li><a class="reference internal" href="#regex-replace" id="id9">REGEX REPLACE</a></li>
+<li><a class="reference internal" href="#regex-specification" id="id10">Regex Specification</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#manipulation" id="id11">Manipulation</a><ul>
+<li><a class="reference internal" href="#append" id="id12">APPEND</a></li>
+<li><a class="reference internal" href="#prepend" id="id13">PREPEND</a></li>
+<li><a class="reference internal" href="#concat" id="id14">CONCAT</a></li>
+<li><a class="reference internal" href="#tolower" id="id15">TOLOWER</a></li>
+<li><a class="reference internal" href="#toupper" id="id16">TOUPPER</a></li>
+<li><a class="reference internal" href="#length" id="id17">LENGTH</a></li>
+<li><a class="reference internal" href="#substring" id="id18">SUBSTRING</a></li>
+<li><a class="reference internal" href="#strip" id="id19">STRIP</a></li>
+<li><a class="reference internal" href="#genex-strip" id="id20">GENEX_STRIP</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#comparison" id="id21">Comparison</a></li>
+<li><a class="reference internal" href="#hashing" id="id22">Hashing</a></li>
+<li><a class="reference internal" href="#generation" id="id23">Generation</a><ul>
+<li><a class="reference internal" href="#ascii" id="id24">ASCII</a></li>
+<li><a class="reference internal" href="#configure" id="id25">CONFIGURE</a></li>
+<li><a class="reference internal" href="#random" id="id26">RANDOM</a></li>
+<li><a class="reference internal" href="#timestamp" id="id27">TIMESTAMP</a></li>
+<li><a class="reference internal" href="#uuid" id="id28">UUID</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p>String operations.</p>
+<div class="section" id="search-and-replace">
+<h2><a class="toc-backref" href="#id3">Search and Replace</a><a class="headerlink" href="#search-and-replace" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="find">
+<h3><a class="toc-backref" href="#id4">FIND</a><a class="headerlink" href="#find" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">FIND</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">substring</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">REVERSE</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Return the position where the given substring was found in
+the supplied string.  If the <code class="docutils literal"><span class="pre">REVERSE</span></code> flag was used, the command will
+search for the position of the last occurrence of the specified
+substring.  If the substring is not found, a position of -1 is returned.</p>
+</div>
+<div class="section" id="replace">
+<h3><a class="toc-backref" href="#id5">REPLACE</a><a class="headerlink" href="#replace" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">REPLACE</span> <span class="o">&lt;</span><span class="n">match_string</span><span class="o">&gt;</span>
+       <span class="o">&lt;</span><span class="n">replace_string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span>
+       <span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Replace all occurrences of <code class="docutils literal"><span class="pre">match_string</span></code> in the input
+with <code class="docutils literal"><span class="pre">replace_string</span></code> and store the result in the output.</p>
+</div>
+</div>
+<div class="section" id="regular-expressions">
+<h2><a class="toc-backref" href="#id6">Regular Expressions</a><a class="headerlink" href="#regular-expressions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="regex-match">
+<h3><a class="toc-backref" href="#id7">REGEX MATCH</a><a class="headerlink" href="#regex-match" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">REGEX</span> <span class="n">MATCH</span> <span class="o">&lt;</span><span class="n">regular_expression</span><span class="o">&gt;</span>
+       <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Match the regular expression once and store the match in the output variable.
+All <code class="docutils literal"><span class="pre">&lt;input&gt;</span></code> arguments are concatenated before matching.</p>
+</div>
+<div class="section" id="regex-matchall">
+<h3><a class="toc-backref" href="#id8">REGEX MATCHALL</a><a class="headerlink" href="#regex-matchall" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">REGEX</span> <span class="n">MATCHALL</span> <span class="o">&lt;</span><span class="n">regular_expression</span><span class="o">&gt;</span>
+       <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Match the regular expression as many times as possible and store the matches
+in the output variable as a list.
+All <code class="docutils literal"><span class="pre">&lt;input&gt;</span></code> arguments are concatenated before matching.</p>
+</div>
+<div class="section" id="regex-replace">
+<h3><a class="toc-backref" href="#id9">REGEX REPLACE</a><a class="headerlink" href="#regex-replace" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">REGEX</span> <span class="n">REPLACE</span> <span class="o">&lt;</span><span class="n">regular_expression</span><span class="o">&gt;</span>
+       <span class="o">&lt;</span><span class="n">replace_expression</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span>
+       <span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Match the regular expression as many times as possible and substitute the
+replacement expression for the match in the output.
+All <code class="docutils literal"><span class="pre">&lt;input&gt;</span></code> arguments are concatenated before matching.</p>
+<p>The replace expression may refer to paren-delimited subexpressions of the
+match using <code class="docutils literal"><span class="pre">\1</span></code>, <code class="docutils literal"><span class="pre">\2</span></code>, ..., <code class="docutils literal"><span class="pre">\9</span></code>.  Note that two backslashes (<code class="docutils literal"><span class="pre">\\1</span></code>)
+are required in CMake code to get a backslash through argument parsing.</p>
+</div>
+<div class="section" id="regex-specification">
+<span id="id1"></span><h3><a class="toc-backref" href="#id10">Regex Specification</a><a class="headerlink" href="#regex-specification" title="Permalink to this headline">¶</a></h3>
+<p>The following characters have special meaning in regular expressions:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">^</span></code></dt>
+<dd>Matches at beginning of input</dd>
+<dt><code class="docutils literal"><span class="pre">$</span></code></dt>
+<dd>Matches at end of input</dd>
+<dt><code class="docutils literal"><span class="pre">.</span></code></dt>
+<dd>Matches any single character</dd>
+<dt><code class="docutils literal"><span class="pre">[</span> <span class="pre">]</span></code></dt>
+<dd>Matches any character(s) inside the brackets</dd>
+<dt><code class="docutils literal"><span class="pre">[^</span> <span class="pre">]</span></code></dt>
+<dd>Matches any character(s) not inside the brackets</dd>
+<dt><code class="docutils literal"><span class="pre">-</span></code></dt>
+<dd>Inside brackets, specifies an inclusive range between
+characters on either side e.g. <code class="docutils literal"><span class="pre">[a-f]</span></code> is <code class="docutils literal"><span class="pre">[abcdef]</span></code>
+To match a literal <code class="docutils literal"><span class="pre">-</span></code> using brackets, make it the first
+or the last character e.g. <code class="docutils literal"><span class="pre">[+*/-]</span></code> matches basic
+mathematical operators.</dd>
+<dt><code class="docutils literal"><span class="pre">*</span></code></dt>
+<dd>Matches preceding pattern zero or more times</dd>
+<dt><code class="docutils literal"><span class="pre">+</span></code></dt>
+<dd>Matches preceding pattern one or more times</dd>
+<dt><code class="docutils literal"><span class="pre">?</span></code></dt>
+<dd>Matches preceding pattern zero or once only</dd>
+<dt><code class="docutils literal"><span class="pre">|</span></code></dt>
+<dd>Matches a pattern on either side of the <code class="docutils literal"><span class="pre">|</span></code></dd>
+<dt><code class="docutils literal"><span class="pre">()</span></code></dt>
+<dd>Saves a matched subexpression, which can be referenced
+in the <code class="docutils literal"><span class="pre">REGEX</span> <span class="pre">REPLACE</span></code> operation. Additionally it is saved
+by all regular expression-related commands, including
+e.g. <span class="target" id="index-0-command:if"></span><a class="reference internal" href="if.html#command:if" title="if"><code class="xref cmake cmake-command docutils literal"><span class="pre">if(MATCHES)</span></code></a>, in the variables
+<span class="target" id="index-0-variable:CMAKE_MATCH_&lt;n&gt;"></span><a class="reference internal" href="../variable/CMAKE_MATCH_n.html#variable:CMAKE_MATCH_&lt;n&gt;" title="CMAKE_MATCH_&lt;n&gt;"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_MATCH_&lt;n&gt;</span></code></a> for <code class="docutils literal"><span class="pre">&lt;n&gt;</span></code> 0..9.</dd>
+</dl>
+<p><code class="docutils literal"><span class="pre">*</span></code>, <code class="docutils literal"><span class="pre">+</span></code> and <code class="docutils literal"><span class="pre">?</span></code> have higher precedence than concatenation.  <code class="docutils literal"><span class="pre">|</span></code>
+has lower precedence than concatenation.  This means that the regular
+expression <code class="docutils literal"><span class="pre">^ab+d$</span></code> matches <code class="docutils literal"><span class="pre">abbd</span></code> but not <code class="docutils literal"><span class="pre">ababd</span></code>, and the regular
+expression <code class="docutils literal"><span class="pre">^(ab|cd)$</span></code> matches <code class="docutils literal"><span class="pre">ab</span></code> but not <code class="docutils literal"><span class="pre">abd</span></code>.</p>
+</div>
+</div>
+<div class="section" id="manipulation">
+<h2><a class="toc-backref" href="#id11">Manipulation</a><a class="headerlink" href="#manipulation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="append">
+<h3><a class="toc-backref" href="#id12">APPEND</a><a class="headerlink" href="#append" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">APPEND</span> <span class="o">&lt;</span><span class="n">string</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Append all the input arguments to the string.</p>
+</div>
+<div class="section" id="prepend">
+<h3><a class="toc-backref" href="#id13">PREPEND</a><a class="headerlink" href="#prepend" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">PREPEND</span> <span class="o">&lt;</span><span class="n">string</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Prepend all the input arguments to the string.</p>
+</div>
+<div class="section" id="concat">
+<h3><a class="toc-backref" href="#id14">CONCAT</a><a class="headerlink" href="#concat" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">CONCAT</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Concatenate all the input arguments together and store
+the result in the named output variable.</p>
+</div>
+<div class="section" id="tolower">
+<h3><a class="toc-backref" href="#id15">TOLOWER</a><a class="headerlink" href="#tolower" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">TOLOWER</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Convert string to lower characters.</p>
+</div>
+<div class="section" id="toupper">
+<h3><a class="toc-backref" href="#id16">TOUPPER</a><a class="headerlink" href="#toupper" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">TOUPPER</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Convert string to upper characters.</p>
+</div>
+<div class="section" id="length">
+<h3><a class="toc-backref" href="#id17">LENGTH</a><a class="headerlink" href="#length" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">LENGTH</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Store in an output variable a given string&#8217;s length.</p>
+</div>
+<div class="section" id="substring">
+<h3><a class="toc-backref" href="#id18">SUBSTRING</a><a class="headerlink" href="#substring" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">SUBSTRING</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">begin</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">length</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Store in an output variable a substring of a given string.  If length is
+<code class="docutils literal"><span class="pre">-1</span></code> the remainder of the string starting at begin will be returned.
+If string is shorter than length then end of string is used instead.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">CMake 3.1 and below reported an error if length pointed past
+the end of string.</p>
+</div>
+</div>
+<div class="section" id="strip">
+<h3><a class="toc-backref" href="#id19">STRIP</a><a class="headerlink" href="#strip" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">STRIP</span> <span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Store in an output variable a substring of a given string with leading and
+trailing spaces removed.</p>
+</div>
+<div class="section" id="genex-strip">
+<h3><a class="toc-backref" href="#id20">GENEX_STRIP</a><a class="headerlink" href="#genex-strip" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">GENEX_STRIP</span> <span class="o">&lt;</span><span class="nb">input</span> <span class="n">string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Strip any <span class="target" id="index-0-manual:cmake-generator-expressions(7)"></span><a class="reference internal" href="../manual/cmake-generator-expressions.7.html#manual:cmake-generator-expressions(7)" title="cmake-generator-expressions(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">generator</span> <span class="pre">expressions</span></code></a>
+from the <code class="docutils literal"><span class="pre">input</span> <span class="pre">string</span></code> and store the result in the <code class="docutils literal"><span class="pre">output</span> <span class="pre">variable</span></code>.</p>
+</div>
+</div>
+<div class="section" id="comparison">
+<h2><a class="toc-backref" href="#id21">Comparison</a><a class="headerlink" href="#comparison" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">COMPARE</span> <span class="n">LESS</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">string</span><span class="p">(</span><span class="n">COMPARE</span> <span class="n">GREATER</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">string</span><span class="p">(</span><span class="n">COMPARE</span> <span class="n">EQUAL</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">string</span><span class="p">(</span><span class="n">COMPARE</span> <span class="n">NOTEQUAL</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">string</span><span class="p">(</span><span class="n">COMPARE</span> <span class="n">LESS_EQUAL</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">string</span><span class="p">(</span><span class="n">COMPARE</span> <span class="n">GREATER_EQUAL</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">string2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Compare the strings and store true or false in the output variable.</p>
+</div>
+<div class="section" id="hashing">
+<span id="supported-hash-algorithms"></span><h2><a class="toc-backref" href="#id22">Hashing</a><a class="headerlink" href="#hashing" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="o">&lt;</span><span class="n">HASH</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nb">input</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Compute a cryptographic hash of the input string.
+The supported <code class="docutils literal"><span class="pre">&lt;HASH&gt;</span></code> algorithm names are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">MD5</span></code></dt>
+<dd>Message-Digest Algorithm 5, RFC 1321.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA1</span></code></dt>
+<dd>US Secure Hash Algorithm 1, RFC 3174.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA224</span></code></dt>
+<dd>US Secure Hash Algorithms, RFC 4634.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA256</span></code></dt>
+<dd>US Secure Hash Algorithms, RFC 4634.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA384</span></code></dt>
+<dd>US Secure Hash Algorithms, RFC 4634.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA512</span></code></dt>
+<dd>US Secure Hash Algorithms, RFC 4634.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA3_224</span></code></dt>
+<dd>Keccak SHA-3.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA3_256</span></code></dt>
+<dd>Keccak SHA-3.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA3_384</span></code></dt>
+<dd>Keccak SHA-3.</dd>
+<dt><code class="docutils literal"><span class="pre">SHA3_512</span></code></dt>
+<dd>Keccak SHA-3.</dd>
+</dl>
+</div>
+<div class="section" id="generation">
+<h2><a class="toc-backref" href="#id23">Generation</a><a class="headerlink" href="#generation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ascii">
+<h3><a class="toc-backref" href="#id24">ASCII</a><a class="headerlink" href="#ascii" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">ASCII</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span> <span class="o">...</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Convert all numbers into corresponding ASCII characters.</p>
+</div>
+<div class="section" id="configure">
+<h3><a class="toc-backref" href="#id25">CONFIGURE</a><a class="headerlink" href="#configure" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">CONFIGURE</span> <span class="o">&lt;</span><span class="n">string1</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span>
+       <span class="p">[</span><span class="nd">@ONLY</span><span class="p">]</span> <span class="p">[</span><span class="n">ESCAPE_QUOTES</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Transform a string like <span class="target" id="index-0-command:configure_file"></span><a class="reference internal" href="configure_file.html#command:configure_file" title="configure_file"><code class="xref cmake cmake-command docutils literal"><span class="pre">configure_file()</span></code></a> transforms a file.</p>
+</div>
+<div class="section" id="random">
+<h3><a class="toc-backref" href="#id26">RANDOM</a><a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">RANDOM</span> <span class="p">[</span><span class="n">LENGTH</span> <span class="o">&lt;</span><span class="n">length</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">ALPHABET</span> <span class="o">&lt;</span><span class="n">alphabet</span><span class="o">&gt;</span><span class="p">]</span>
+       <span class="p">[</span><span class="n">RANDOM_SEED</span> <span class="o">&lt;</span><span class="n">seed</span><span class="o">&gt;</span><span class="p">]</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Return a random string of given length consisting of
+characters from the given alphabet.  Default length is 5 characters
+and default alphabet is all numbers and upper and lower case letters.
+If an integer <code class="docutils literal"><span class="pre">RANDOM_SEED</span></code> is given, its value will be used to seed the
+random number generator.</p>
+</div>
+<div class="section" id="timestamp">
+<h3><a class="toc-backref" href="#id27">TIMESTAMP</a><a class="headerlink" href="#timestamp" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">TIMESTAMP</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="nb">format</span> <span class="n">string</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">UTC</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Write a string representation of the current date
+and/or time to the output variable.</p>
+<p>Should the command be unable to obtain a timestamp the output variable
+will be set to the empty string &#8220;&#8221;.</p>
+<p>The optional <code class="docutils literal"><span class="pre">UTC</span></code> flag requests the current date/time representation to
+be in Coordinated Universal Time (UTC) rather than local time.</p>
+<p>The optional <code class="docutils literal"><span class="pre">&lt;format</span> <span class="pre">string&gt;</span></code> may contain the following format
+specifiers:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%%</span>        <span class="n">A</span> <span class="n">literal</span> <span class="n">percent</span> <span class="n">sign</span> <span class="p">(</span><span class="o">%</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">d</span>        <span class="n">The</span> <span class="n">day</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">month</span> <span class="p">(</span><span class="mi">01</span><span class="o">-</span><span class="mi">31</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">H</span>        <span class="n">The</span> <span class="n">hour</span> <span class="n">on</span> <span class="n">a</span> <span class="mi">24</span><span class="o">-</span><span class="n">hour</span> <span class="n">clock</span> <span class="p">(</span><span class="mi">00</span><span class="o">-</span><span class="mi">23</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">I</span>        <span class="n">The</span> <span class="n">hour</span> <span class="n">on</span> <span class="n">a</span> <span class="mi">12</span><span class="o">-</span><span class="n">hour</span> <span class="n">clock</span> <span class="p">(</span><span class="mi">01</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">j</span>        <span class="n">The</span> <span class="n">day</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">year</span> <span class="p">(</span><span class="mi">001</span><span class="o">-</span><span class="mi">366</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">m</span>        <span class="n">The</span> <span class="n">month</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">year</span> <span class="p">(</span><span class="mi">01</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">b</span>        <span class="n">Abbreviated</span> <span class="n">month</span> <span class="n">name</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">Oct</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">B</span>        <span class="n">Full</span> <span class="n">month</span> <span class="n">name</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">October</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">M</span>        <span class="n">The</span> <span class="n">minute</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">hour</span> <span class="p">(</span><span class="mi">00</span><span class="o">-</span><span class="mi">59</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">s</span>        <span class="n">Seconds</span> <span class="n">since</span> <span class="n">midnight</span> <span class="p">(</span><span class="n">UTC</span><span class="p">)</span> <span class="mi">1</span><span class="o">-</span><span class="n">Jan</span><span class="o">-</span><span class="mi">1970</span> <span class="p">(</span><span class="n">UNIX</span> <span class="n">time</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">S</span>        <span class="n">The</span> <span class="n">second</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">minute</span><span class="o">.</span>
+          <span class="mi">60</span> <span class="n">represents</span> <span class="n">a</span> <span class="n">leap</span> <span class="n">second</span><span class="o">.</span> <span class="p">(</span><span class="mi">00</span><span class="o">-</span><span class="mi">60</span><span class="p">)</span>
+<span class="o">%</span><span class="n">U</span>        <span class="n">The</span> <span class="n">week</span> <span class="n">number</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">year</span> <span class="p">(</span><span class="mi">00</span><span class="o">-</span><span class="mi">53</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">w</span>        <span class="n">The</span> <span class="n">day</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">week</span><span class="o">.</span> <span class="mi">0</span> <span class="ow">is</span> <span class="n">Sunday</span><span class="o">.</span> <span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">6</span><span class="p">)</span>
+<span class="o">%</span><span class="n">a</span>        <span class="n">Abbreviated</span> <span class="n">weekday</span> <span class="n">name</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">Fri</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">A</span>        <span class="n">Full</span> <span class="n">weekday</span> <span class="n">name</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">Friday</span><span class="p">)</span><span class="o">.</span>
+<span class="o">%</span><span class="n">y</span>        <span class="n">The</span> <span class="n">last</span> <span class="n">two</span> <span class="n">digits</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">year</span> <span class="p">(</span><span class="mi">00</span><span class="o">-</span><span class="mi">99</span><span class="p">)</span>
+<span class="o">%</span><span class="n">Y</span>        <span class="n">The</span> <span class="n">current</span> <span class="n">year</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Unknown format specifiers will be ignored and copied to the output
+as-is.</p>
+<p>If no explicit <code class="docutils literal"><span class="pre">&lt;format</span> <span class="pre">string&gt;</span></code> is given it will default to:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">Y</span><span class="o">-%</span><span class="n">m</span><span class="o">-%</span><span class="n">dT</span><span class="o">%</span><span class="n">H</span><span class="p">:</span><span class="o">%</span><span class="n">M</span><span class="p">:</span><span class="o">%</span><span class="n">S</span>    <span class="k">for</span> <span class="n">local</span> <span class="n">time</span><span class="o">.</span>
+<span class="o">%</span><span class="n">Y</span><span class="o">-%</span><span class="n">m</span><span class="o">-%</span><span class="n">dT</span><span class="o">%</span><span class="n">H</span><span class="p">:</span><span class="o">%</span><span class="n">M</span><span class="p">:</span><span class="o">%</span><span class="n">SZ</span>   <span class="k">for</span> <span class="n">UTC</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">MAKE_C_IDENTIFIER</span> <span class="o">&lt;</span><span class="nb">input</span> <span class="n">string</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Write a string which can be used as an identifier in C.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the <code class="docutils literal"><span class="pre">SOURCE_DATE_EPOCH</span></code> environment variable is set,
+its value will be used instead of the current time.
+See <a class="reference external" href="https://reproducible-builds.org/specs/source-date-epoch/">https://reproducible-builds.org/specs/source-date-epoch/</a> for details.</p>
+</div>
+</div>
+<div class="section" id="uuid">
+<h3><a class="toc-backref" href="#id28">UUID</a><a class="headerlink" href="#uuid" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">string</span><span class="p">(</span><span class="n">UUID</span> <span class="o">&lt;</span><span class="n">output</span> <span class="n">variable</span><span class="o">&gt;</span> <span class="n">NAMESPACE</span> <span class="o">&lt;</span><span class="n">namespace</span><span class="o">&gt;</span> <span class="n">NAME</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span>
+       <span class="n">TYPE</span> <span class="o">&lt;</span><span class="n">MD5</span><span class="o">|</span><span class="n">SHA1</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">UPPER</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Create a univerally unique identifier (aka GUID) as per RFC4122
+based on the hash of the combined values of <code class="docutils literal"><span class="pre">&lt;namespace&gt;</span></code>
+(which itself has to be a valid UUID) and <code class="docutils literal"><span class="pre">&lt;name&gt;</span></code>.
+The hash algorithm can be either <code class="docutils literal"><span class="pre">MD5</span></code> (Version 3 UUID) or
+<code class="docutils literal"><span class="pre">SHA1</span></code> (Version 5 UUID).
+A UUID has the format <code class="docutils literal"><span class="pre">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</span></code>
+where each <cite>x</cite> represents a lower case hexadecimal character.
+Where required an uppercase representation can be requested
+with the optional <code class="docutils literal"><span class="pre">UPPER</span></code> flag.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">string</a><ul>
+<li><a class="reference internal" href="#search-and-replace">Search and Replace</a><ul>
+<li><a class="reference internal" href="#find">FIND</a></li>
+<li><a class="reference internal" href="#replace">REPLACE</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#regular-expressions">Regular Expressions</a><ul>
+<li><a class="reference internal" href="#regex-match">REGEX MATCH</a></li>
+<li><a class="reference internal" href="#regex-matchall">REGEX MATCHALL</a></li>
+<li><a class="reference internal" href="#regex-replace">REGEX REPLACE</a></li>
+<li><a class="reference internal" href="#regex-specification">Regex Specification</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#manipulation">Manipulation</a><ul>
+<li><a class="reference internal" href="#append">APPEND</a></li>
+<li><a class="reference internal" href="#prepend">PREPEND</a></li>
+<li><a class="reference internal" href="#concat">CONCAT</a></li>
+<li><a class="reference internal" href="#tolower">TOLOWER</a></li>
+<li><a class="reference internal" href="#toupper">TOUPPER</a></li>
+<li><a class="reference internal" href="#length">LENGTH</a></li>
+<li><a class="reference internal" href="#substring">SUBSTRING</a></li>
+<li><a class="reference internal" href="#strip">STRIP</a></li>
+<li><a class="reference internal" href="#genex-strip">GENEX_STRIP</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#comparison">Comparison</a></li>
+<li><a class="reference internal" href="#hashing">Hashing</a></li>
+<li><a class="reference internal" href="#generation">Generation</a><ul>
+<li><a class="reference internal" href="#ascii">ASCII</a></li>
+<li><a class="reference internal" href="#configure">CONFIGURE</a></li>
+<li><a class="reference internal" href="#random">RANDOM</a></li>
+<li><a class="reference internal" href="#timestamp">TIMESTAMP</a></li>
+<li><a class="reference internal" href="#uuid">UUID</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="site_name.html"
+                        title="previous chapter">site_name</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="unset.html"
+                        title="next chapter">unset</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/string.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="unset.html" title="unset"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="site_name.html" title="site_name"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

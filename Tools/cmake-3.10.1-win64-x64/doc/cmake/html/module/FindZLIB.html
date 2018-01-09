@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindZLIB &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FortranCInterface" href="FortranCInterface.html" />
+    <link rel="prev" title="FindXMLRPC" href="FindXMLRPC.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FortranCInterface.html" title="FortranCInterface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindXMLRPC.html" title="FindXMLRPC"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findzlib">
+<span id="module:FindZLIB"></span><h1>FindZLIB<a class="headerlink" href="#findzlib" title="Permalink to this headline">¶</a></h1>
+<p>Find the native ZLIB includes and library.</p>
+<div class="section" id="imported-targets">
+<h2>IMPORTED Targets<a class="headerlink" href="#imported-targets" title="Permalink to this headline">¶</a></h2>
+<p>This module defines <span class="target" id="index-0-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> target <code class="docutils literal"><span class="pre">ZLIB::ZLIB</span></code>, if
+ZLIB has been found.</p>
+</div>
+<div class="section" id="result-variables">
+<h2>Result Variables<a class="headerlink" href="#result-variables" title="Permalink to this headline">¶</a></h2>
+<p>This module defines the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ZLIB_INCLUDE_DIRS</span>   <span class="o">-</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="n">zlib</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span>
+<span class="n">ZLIB_LIBRARIES</span>      <span class="o">-</span> <span class="n">List</span> <span class="n">of</span> <span class="n">libraries</span> <span class="n">when</span> <span class="n">using</span> <span class="n">zlib</span><span class="o">.</span>
+<span class="n">ZLIB_FOUND</span>          <span class="o">-</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">zlib</span> <span class="n">found</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ZLIB_VERSION_STRING</span> <span class="o">-</span> <span class="n">The</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span> <span class="n">found</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+<span class="n">ZLIB_VERSION_MAJOR</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">major</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+<span class="n">ZLIB_VERSION_MINOR</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">minor</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+<span class="n">ZLIB_VERSION_PATCH</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">patch</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+<span class="n">ZLIB_VERSION_TWEAK</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">tweak</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="backward-compatibility">
+<h2>Backward Compatibility<a class="headerlink" href="#backward-compatibility" title="Permalink to this headline">¶</a></h2>
+<p>The following variable are provided for backward compatibility</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ZLIB_MAJOR_VERSION</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">major</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+<span class="n">ZLIB_MINOR_VERSION</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">minor</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+<span class="n">ZLIB_PATCH_VERSION</span>  <span class="o">-</span> <span class="n">The</span> <span class="n">patch</span> <span class="n">version</span> <span class="n">of</span> <span class="n">zlib</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="hints">
+<h2>Hints<a class="headerlink" href="#hints" title="Permalink to this headline">¶</a></h2>
+<p>A user may set <code class="docutils literal"><span class="pre">ZLIB_ROOT</span></code> to a zlib installation root to tell this
+module where to look.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FindZLIB</a><ul>
+<li><a class="reference internal" href="#imported-targets">IMPORTED Targets</a></li>
+<li><a class="reference internal" href="#result-variables">Result Variables</a></li>
+<li><a class="reference internal" href="#backward-compatibility">Backward Compatibility</a></li>
+<li><a class="reference internal" href="#hints">Hints</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindXMLRPC.html"
+                        title="previous chapter">FindXMLRPC</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FortranCInterface.html"
+                        title="next chapter">FortranCInterface</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindZLIB.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FortranCInterface.html" title="FortranCInterface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindXMLRPC.html" title="FindXMLRPC"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

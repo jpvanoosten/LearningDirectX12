@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>INTERFACE_LINK_LIBRARIES &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="INTERFACE_POSITION_INDEPENDENT_CODE" href="INTERFACE_POSITION_INDEPENDENT_CODE.html" />
+    <link rel="prev" title="INTERFACE_INCLUDE_DIRECTORIES" href="INTERFACE_INCLUDE_DIRECTORIES.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="INTERFACE_POSITION_INDEPENDENT_CODE.html" title="INTERFACE_POSITION_INDEPENDENT_CODE"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="INTERFACE_INCLUDE_DIRECTORIES.html" title="INTERFACE_INCLUDE_DIRECTORIES"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" accesskey="U">cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="interface-link-libraries">
+<span id="prop_tgt:INTERFACE_LINK_LIBRARIES"></span><h1>INTERFACE_LINK_LIBRARIES<a class="headerlink" href="#interface-link-libraries" title="Permalink to this headline">¶</a></h1>
+<p>List public interface libraries for a library.</p>
+<p>This property contains the list of transitive link dependencies.  When
+the target is linked into another target using the
+<span class="target" id="index-0-command:target_link_libraries"></span><a class="reference internal" href="../command/target_link_libraries.html#command:target_link_libraries" title="target_link_libraries"><code class="xref cmake cmake-command docutils literal"><span class="pre">target_link_libraries()</span></code></a> command, the libraries listed (and
+recursively their link interface libraries) will be provided to the
+other target also.  This property is overridden by the
+<span class="target" id="index-0-prop_tgt:LINK_INTERFACE_LIBRARIES"></span><a class="reference internal" href="LINK_INTERFACE_LIBRARIES.html#prop_tgt:LINK_INTERFACE_LIBRARIES" title="LINK_INTERFACE_LIBRARIES"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">LINK_INTERFACE_LIBRARIES</span></code></a> or
+<span class="target" id="index-0-prop_tgt:LINK_INTERFACE_LIBRARIES_&lt;CONFIG&gt;"></span><a class="reference internal" href="LINK_INTERFACE_LIBRARIES_CONFIG.html#prop_tgt:LINK_INTERFACE_LIBRARIES_&lt;CONFIG&gt;" title="LINK_INTERFACE_LIBRARIES_&lt;CONFIG&gt;"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">LINK_INTERFACE_LIBRARIES_&lt;CONFIG&gt;</span></code></a> property if policy
+<span class="target" id="index-0-policy:CMP0022"></span><a class="reference internal" href="../policy/CMP0022.html#policy:CMP0022" title="CMP0022"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0022</span></code></a> is <code class="docutils literal"><span class="pre">OLD</span></code> or unset.</p>
+<p>Contents of <code class="docutils literal"><span class="pre">INTERFACE_LINK_LIBRARIES</span></code> may use &#8220;generator expressions&#8221;
+with the syntax <code class="docutils literal"><span class="pre">$&lt;...&gt;</span></code>.  See the <span class="target" id="index-0-manual:cmake-generator-expressions(7)"></span><a class="reference internal" href="../manual/cmake-generator-expressions.7.html#manual:cmake-generator-expressions(7)" title="cmake-generator-expressions(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-generator-expressions(7)</span></code></a>
+manual for available expressions.  See the <span class="target" id="index-0-manual:cmake-buildsystem(7)"></span><a class="reference internal" href="../manual/cmake-buildsystem.7.html#manual:cmake-buildsystem(7)" title="cmake-buildsystem(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-buildsystem(7)</span></code></a>
+manual for more on defining buildsystem properties.</p>
+<div class="section" id="creating-relocatable-packages">
+<h2>Creating Relocatable Packages<a class="headerlink" href="#creating-relocatable-packages" title="Permalink to this headline">¶</a></h2>
+<p>Note that it is not advisable to populate the
+<code class="docutils literal"><span class="pre">INTERFACE_LINK_LIBRARIES</span></code> of a target with absolute paths to dependencies.
+That would hard-code into installed packages the library file paths
+for dependencies <strong>as found on the machine the package was made on</strong>.</p>
+<p>See the <a class="reference internal" href="../manual/cmake-packages.7.html#creating-relocatable-packages"><span class="std std-ref">Creating Relocatable Packages</span></a> section of the
+<span class="target" id="index-0-manual:cmake-packages(7)"></span><a class="reference internal" href="../manual/cmake-packages.7.html#manual:cmake-packages(7)" title="cmake-packages(7)"><code class="xref cmake cmake-manual docutils literal"><span class="pre">cmake-packages(7)</span></code></a> manual for discussion of additional care
+that must be taken when specifying usage requirements while creating
+packages for redistribution.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">INTERFACE_LINK_LIBRARIES</a><ul>
+<li><a class="reference internal" href="#creating-relocatable-packages">Creating Relocatable Packages</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="INTERFACE_INCLUDE_DIRECTORIES.html"
+                        title="previous chapter">INTERFACE_INCLUDE_DIRECTORIES</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="INTERFACE_POSITION_INDEPENDENT_CODE.html"
+                        title="next chapter">INTERFACE_POSITION_INDEPENDENT_CODE</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/prop_tgt/INTERFACE_LINK_LIBRARIES.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="INTERFACE_POSITION_INDEPENDENT_CODE.html" title="INTERFACE_POSITION_INDEPENDENT_CODE"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="INTERFACE_INCLUDE_DIRECTORIES.html" title="INTERFACE_INCLUDE_DIRECTORIES"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-properties.7.html" >cmake-properties(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

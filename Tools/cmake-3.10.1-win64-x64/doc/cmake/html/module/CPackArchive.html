@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CPackArchive &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CPackBundle" href="CPackBundle.html" />
+    <link rel="prev" title="CMakeVerifyManifest" href="CMakeVerifyManifest.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CPackBundle.html" title="CPackBundle"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CMakeVerifyManifest.html" title="CMakeVerifyManifest"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cpackarchive">
+<span id="module:CPackArchive"></span><h1>CPackArchive<a class="headerlink" href="#cpackarchive" title="Permalink to this headline">¶</a></h1>
+<p>Archive CPack generator that supports packaging of sources and binaries in
+different formats:</p>
+<blockquote>
+<div><ul class="simple">
+<li>7Z - 7zip - (.7z)</li>
+<li>TBZ2 (.tar.bz2)</li>
+<li>TGZ (.tar.gz)</li>
+<li>TXZ (.tar.xz)</li>
+<li>TZ (.tar.Z)</li>
+<li>ZIP (.zip)</li>
+</ul>
+</div></blockquote>
+<div class="section" id="variables-specific-to-cpack-archive-generator">
+<h2>Variables specific to CPack Archive generator<a class="headerlink" href="#variables-specific-to-cpack-archive-generator" title="Permalink to this headline">¶</a></h2>
+<dl class="variable">
+<dt id="variable:CPACK_ARCHIVE_FILE_NAME">
+<code class="descname">CPACK_ARCHIVE_FILE_NAME</code><a class="headerlink" href="#variable:CPACK_ARCHIVE_FILE_NAME" title="Permalink to this definition">¶</a></dt>
+<dt id="variable:CPACK_ARCHIVE_&lt;component&gt;_FILE_NAME">
+<code class="descname">CPACK_ARCHIVE_&lt;component&gt;_FILE_NAME</code><a class="headerlink" href="#variable:CPACK_ARCHIVE_<component>_FILE_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Package file name without extension which is added automatically depending
+on the archive format.</p>
+<ul>
+<li><p class="first">Mandatory : YES</p>
+</li>
+<li><dl class="first docutils">
+<dt>Default <span class="classifier-delimiter">:</span> <span class="classifier"><code class="docutils literal"><span class="pre">&lt;CPACK_PACKAGE_FILE_NAME&gt;[-&lt;component&gt;].&lt;extension&gt;</span></code> with</span></dt>
+<dd><p class="first last">spaces replaced by &#8216;-&#8216;</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_ARCHIVE_COMPONENT_INSTALL">
+<code class="descname">CPACK_ARCHIVE_COMPONENT_INSTALL</code><a class="headerlink" href="#variable:CPACK_ARCHIVE_COMPONENT_INSTALL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable component packaging for CPackArchive</p>
+<ul class="simple">
+<li>Mandatory : NO</li>
+<li>Default   : OFF</li>
+</ul>
+<p>If enabled (ON) multiple packages are generated. By default a single package
+containing files of all components is generated.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CPackArchive</a><ul>
+<li><a class="reference internal" href="#variables-specific-to-cpack-archive-generator">Variables specific to CPack Archive generator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CMakeVerifyManifest.html"
+                        title="previous chapter">CMakeVerifyManifest</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CPackBundle.html"
+                        title="next chapter">CPackBundle</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CPackArchive.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CPackBundle.html" title="CPackBundle"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CMakeVerifyManifest.html" title="CMakeVerifyManifest"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

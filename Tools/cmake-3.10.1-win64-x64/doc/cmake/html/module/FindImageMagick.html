@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindImageMagick &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindIntl" href="FindIntl.html" />
+    <link rel="prev" title="FindICU" href="FindICU.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindIntl.html" title="FindIntl"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindICU.html" title="FindICU"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findimagemagick">
+<span id="module:FindImageMagick"></span><h1>FindImageMagick<a class="headerlink" href="#findimagemagick" title="Permalink to this headline">¶</a></h1>
+<p>Find the ImageMagick binary suite.</p>
+<p>This module will search for a set of ImageMagick tools specified as
+components in the FIND_PACKAGE call.  Typical components include, but
+are not limited to (future versions of ImageMagick might have
+additional components not listed here):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">animate</span>
+<span class="n">compare</span>
+<span class="n">composite</span>
+<span class="n">conjure</span>
+<span class="n">convert</span>
+<span class="n">display</span>
+<span class="n">identify</span>
+<span class="kn">import</span>
+<span class="nn">mogrify</span>
+<span class="n">montage</span>
+<span class="n">stream</span>
+</pre></div>
+</div>
+<p>If no component is specified in the FIND_PACKAGE call, then it only
+searches for the ImageMagick executable directory.  This code defines
+the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ImageMagick_FOUND</span>                  <span class="o">-</span> <span class="n">TRUE</span> <span class="k">if</span> <span class="nb">all</span> <span class="n">components</span> <span class="n">are</span> <span class="n">found</span><span class="o">.</span>
+<span class="n">ImageMagick_EXECUTABLE_DIR</span>         <span class="o">-</span> <span class="n">Full</span> <span class="n">path</span> <span class="n">to</span> <span class="n">executables</span> <span class="n">directory</span><span class="o">.</span>
+<span class="n">ImageMagick_</span><span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="n">_FOUND</span>      <span class="o">-</span> <span class="n">TRUE</span> <span class="k">if</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">found</span><span class="o">.</span>
+<span class="n">ImageMagick_</span><span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="n">_EXECUTABLE</span> <span class="o">-</span> <span class="n">Full</span> <span class="n">path</span> <span class="n">to</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span> <span class="n">executable</span><span class="o">.</span>
+<span class="n">ImageMagick_VERSION_STRING</span>         <span class="o">-</span> <span class="n">the</span> <span class="n">version</span> <span class="n">of</span> <span class="n">ImageMagick</span> <span class="n">found</span>
+                                     <span class="p">(</span><span class="n">since</span> <span class="n">CMake</span> <span class="mf">2.8</span><span class="o">.</span><span class="mi">8</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>ImageMagick_VERSION_STRING will not work for old versions like 5.2.3.</p>
+<p>There are also components for the following ImageMagick APIs:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Magick</span><span class="o">++</span>
+<span class="n">MagickWand</span>
+<span class="n">MagickCore</span>
+</pre></div>
+</div>
+<p>For these components the following variables are set:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ImageMagick_FOUND</span>                    <span class="o">-</span> <span class="n">TRUE</span> <span class="k">if</span> <span class="nb">all</span> <span class="n">components</span> <span class="n">are</span> <span class="n">found</span><span class="o">.</span>
+<span class="n">ImageMagick_INCLUDE_DIRS</span>             <span class="o">-</span> <span class="n">Full</span> <span class="n">paths</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">include</span> <span class="n">dirs</span><span class="o">.</span>
+<span class="n">ImageMagick_LIBRARIES</span>                <span class="o">-</span> <span class="n">Full</span> <span class="n">paths</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">libraries</span><span class="o">.</span>
+<span class="n">ImageMagick_</span><span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="n">_FOUND</span>        <span class="o">-</span> <span class="n">TRUE</span> <span class="k">if</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">found</span><span class="o">.</span>
+<span class="n">ImageMagick_</span><span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="n">_INCLUDE_DIRS</span> <span class="o">-</span> <span class="n">Full</span> <span class="n">path</span> <span class="n">to</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span> <span class="n">include</span> <span class="n">dirs</span><span class="o">.</span>
+<span class="n">ImageMagick_</span><span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="n">_LIBRARIES</span>    <span class="o">-</span> <span class="n">Full</span> <span class="n">path</span> <span class="n">to</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span> <span class="n">libraries</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Example Usages:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="n">ImageMagick</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">ImageMagick</span> <span class="n">COMPONENTS</span> <span class="n">convert</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">ImageMagick</span> <span class="n">COMPONENTS</span> <span class="n">convert</span> <span class="n">mogrify</span> <span class="n">display</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">ImageMagick</span> <span class="n">COMPONENTS</span> <span class="n">Magick</span><span class="o">++</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">ImageMagick</span> <span class="n">COMPONENTS</span> <span class="n">Magick</span><span class="o">++</span> <span class="n">convert</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the standard FIND_PACKAGE features are supported (i.e.,
+QUIET, REQUIRED, etc.).</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindICU.html"
+                        title="previous chapter">FindICU</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindIntl.html"
+                        title="next chapter">FindIntl</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindImageMagick.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindIntl.html" title="FindIntl"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindICU.html" title="FindICU"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

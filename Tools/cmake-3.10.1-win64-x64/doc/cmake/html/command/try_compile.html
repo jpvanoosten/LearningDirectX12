@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>try_compile &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="try_run" href="try_run.html" />
+    <link rel="prev" title="target_sources" href="target_sources.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="try_run.html" title="try_run"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="target_sources.html" title="target_sources"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="try-compile">
+<span id="command:try_compile"></span><h1><a class="toc-backref" href="#id1">try_compile</a><a class="headerlink" href="#try-compile" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#try-compile" id="id1">try_compile</a><ul>
+<li><a class="reference internal" href="#try-compiling-whole-projects" id="id2">Try Compiling Whole Projects</a></li>
+<li><a class="reference internal" href="#try-compiling-source-files" id="id3">Try Compiling Source Files</a></li>
+<li><a class="reference internal" href="#other-behavior-settings" id="id4">Other Behavior Settings</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Try building some code.</p>
+<div class="section" id="try-compiling-whole-projects">
+<h2><a class="toc-backref" href="#id2">Try Compiling Whole Projects</a><a class="headerlink" href="#try-compiling-whole-projects" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">try_compile</span><span class="p">(</span><span class="n">RESULT_VAR</span> <span class="o">&lt;</span><span class="n">bindir</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">srcdir</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="n">projectName</span><span class="o">&gt;</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">targetName</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">CMAKE_FLAGS</span> <span class="o">&lt;</span><span class="n">flags</span><span class="o">&gt;...</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">OUTPUT_VARIABLE</span> <span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Try building a project.  The success or failure of the <code class="docutils literal"><span class="pre">try_compile</span></code>,
+i.e. <code class="docutils literal"><span class="pre">TRUE</span></code> or <code class="docutils literal"><span class="pre">FALSE</span></code> respectively, is returned in <code class="docutils literal"><span class="pre">RESULT_VAR</span></code>.</p>
+<p>In this form, <code class="docutils literal"><span class="pre">&lt;srcdir&gt;</span></code> should contain a complete CMake project with a
+<code class="docutils literal"><span class="pre">CMakeLists.txt</span></code> file and all sources.  The <code class="docutils literal"><span class="pre">&lt;bindir&gt;</span></code> and <code class="docutils literal"><span class="pre">&lt;srcdir&gt;</span></code>
+will not be deleted after this command is run.  Specify <code class="docutils literal"><span class="pre">&lt;targetName&gt;</span></code> to
+build a specific target instead of the <code class="docutils literal"><span class="pre">all</span></code> or <code class="docutils literal"><span class="pre">ALL_BUILD</span></code> target.  See
+below for the meaning of other options.</p>
+</div>
+<div class="section" id="try-compiling-source-files">
+<h2><a class="toc-backref" href="#id3">Try Compiling Source Files</a><a class="headerlink" href="#try-compiling-source-files" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">try_compile</span><span class="p">(</span><span class="n">RESULT_VAR</span> <span class="o">&lt;</span><span class="n">bindir</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">srcfile</span><span class="o">|</span><span class="n">SOURCES</span> <span class="n">srcfile</span><span class="o">...&gt;</span>
+            <span class="p">[</span><span class="n">CMAKE_FLAGS</span> <span class="o">&lt;</span><span class="n">flags</span><span class="o">&gt;...</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">COMPILE_DEFINITIONS</span> <span class="o">&lt;</span><span class="n">defs</span><span class="o">&gt;...</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">LINK_LIBRARIES</span> <span class="o">&lt;</span><span class="n">libs</span><span class="o">&gt;...</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">OUTPUT_VARIABLE</span> <span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">COPY_FILE</span> <span class="o">&lt;</span><span class="n">fileName</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">COPY_FILE_ERROR</span> <span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]]</span>
+            <span class="p">[</span><span class="o">&lt;</span><span class="n">LANG</span><span class="o">&gt;</span><span class="n">_STANDARD</span> <span class="o">&lt;</span><span class="n">std</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="o">&lt;</span><span class="n">LANG</span><span class="o">&gt;</span><span class="n">_STANDARD_REQUIRED</span> <span class="o">&lt;</span><span class="nb">bool</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">[</span><span class="o">&lt;</span><span class="n">LANG</span><span class="o">&gt;</span><span class="n">_EXTENSIONS</span> <span class="o">&lt;</span><span class="nb">bool</span><span class="o">&gt;</span><span class="p">]</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+<p>Try building an executable from one or more source files.  The success or
+failure of the <code class="docutils literal"><span class="pre">try_compile</span></code>, i.e. <code class="docutils literal"><span class="pre">TRUE</span></code> or <code class="docutils literal"><span class="pre">FALSE</span></code> respectively, is
+returned in <code class="docutils literal"><span class="pre">RESULT_VAR</span></code>.</p>
+<p>In this form the user need only supply one or more source files that include a
+definition for <code class="docutils literal"><span class="pre">main</span></code>.  CMake will create a <code class="docutils literal"><span class="pre">CMakeLists.txt</span></code> file to build
+the source(s) as an executable that looks something like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>add_definitions(&lt;expanded COMPILE_DEFINITIONS from caller&gt;)
+include_directories(${INCLUDE_DIRECTORIES})
+link_directories(${LINK_DIRECTORIES})
+add_executable(cmTryCompileExec &lt;srcfile&gt;...)
+target_link_libraries(cmTryCompileExec ${LINK_LIBRARIES})
+</pre></div>
+</div>
+<p>The options are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">CMAKE_FLAGS</span> <span class="pre">&lt;flags&gt;...</span></code></dt>
+<dd>Specify flags of the form <code class="docutils literal"><span class="pre">-DVAR:TYPE=VALUE</span></code> to be passed to
+the <code class="docutils literal"><span class="pre">cmake</span></code> command-line used to drive the test build.
+The above example shows how values for variables
+<code class="docutils literal"><span class="pre">INCLUDE_DIRECTORIES</span></code>, <code class="docutils literal"><span class="pre">LINK_DIRECTORIES</span></code>, and <code class="docutils literal"><span class="pre">LINK_LIBRARIES</span></code>
+are used.</dd>
+<dt><code class="docutils literal"><span class="pre">COMPILE_DEFINITIONS</span> <span class="pre">&lt;defs&gt;...</span></code></dt>
+<dd>Specify <code class="docutils literal"><span class="pre">-Ddefinition</span></code> arguments to pass to <code class="docutils literal"><span class="pre">add_definitions</span></code>
+in the generated test project.</dd>
+<dt><code class="docutils literal"><span class="pre">COPY_FILE</span> <span class="pre">&lt;fileName&gt;</span></code></dt>
+<dd>Copy the linked executable to the given <code class="docutils literal"><span class="pre">&lt;fileName&gt;</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">COPY_FILE_ERROR</span> <span class="pre">&lt;var&gt;</span></code></dt>
+<dd>Use after <code class="docutils literal"><span class="pre">COPY_FILE</span></code> to capture into variable <code class="docutils literal"><span class="pre">&lt;var&gt;</span></code> any error
+message encountered while trying to copy the file.</dd>
+<dt><code class="docutils literal"><span class="pre">LINK_LIBRARIES</span> <span class="pre">&lt;libs&gt;...</span></code></dt>
+<dd><p class="first">Specify libraries to be linked in the generated project.
+The list of libraries may refer to system libraries and to
+<a class="reference internal" href="../manual/cmake-buildsystem.7.html#imported-targets"><span class="std std-ref">Imported Targets</span></a> from the calling project.</p>
+<p class="last">If this option is specified, any <code class="docutils literal"><span class="pre">-DLINK_LIBRARIES=...</span></code> value
+given to the <code class="docutils literal"><span class="pre">CMAKE_FLAGS</span></code> option will be ignored.</p>
+</dd>
+<dt><code class="docutils literal"><span class="pre">OUTPUT_VARIABLE</span> <span class="pre">&lt;var&gt;</span></code></dt>
+<dd>Store the output from the build process the given variable.</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;LANG&gt;_STANDARD</span> <span class="pre">&lt;std&gt;</span></code></dt>
+<dd>Specify the <span class="target" id="index-0-prop_tgt:C_STANDARD"></span><a class="reference internal" href="../prop_tgt/C_STANDARD.html#prop_tgt:C_STANDARD" title="C_STANDARD"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">C_STANDARD</span></code></a>, <span class="target" id="index-0-prop_tgt:CXX_STANDARD"></span><a class="reference internal" href="../prop_tgt/CXX_STANDARD.html#prop_tgt:CXX_STANDARD" title="CXX_STANDARD"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CXX_STANDARD</span></code></a>,
+or <span class="target" id="index-0-prop_tgt:CUDA_STANDARD"></span><a class="reference internal" href="../prop_tgt/CUDA_STANDARD.html#prop_tgt:CUDA_STANDARD" title="CUDA_STANDARD"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CUDA_STANDARD</span></code></a> target property of the generated project.</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;LANG&gt;_STANDARD_REQUIRED</span> <span class="pre">&lt;bool&gt;</span></code></dt>
+<dd>Specify the <span class="target" id="index-0-prop_tgt:C_STANDARD_REQUIRED"></span><a class="reference internal" href="../prop_tgt/C_STANDARD_REQUIRED.html#prop_tgt:C_STANDARD_REQUIRED" title="C_STANDARD_REQUIRED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">C_STANDARD_REQUIRED</span></code></a>,
+<span class="target" id="index-0-prop_tgt:CXX_STANDARD_REQUIRED"></span><a class="reference internal" href="../prop_tgt/CXX_STANDARD_REQUIRED.html#prop_tgt:CXX_STANDARD_REQUIRED" title="CXX_STANDARD_REQUIRED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CXX_STANDARD_REQUIRED</span></code></a>, or <span class="target" id="index-0-prop_tgt:CUDA_STANDARD_REQUIRED"></span><a class="reference internal" href="../prop_tgt/CUDA_STANDARD_REQUIRED.html#prop_tgt:CUDA_STANDARD_REQUIRED" title="CUDA_STANDARD_REQUIRED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CUDA_STANDARD_REQUIRED</span></code></a>
+target property of the generated project.</dd>
+<dt><code class="docutils literal"><span class="pre">&lt;LANG&gt;_EXTENSIONS</span> <span class="pre">&lt;bool&gt;</span></code></dt>
+<dd>Specify the <span class="target" id="index-0-prop_tgt:C_EXTENSIONS"></span><a class="reference internal" href="../prop_tgt/C_EXTENSIONS.html#prop_tgt:C_EXTENSIONS" title="C_EXTENSIONS"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">C_EXTENSIONS</span></code></a>, <span class="target" id="index-0-prop_tgt:CXX_EXTENSIONS"></span><a class="reference internal" href="../prop_tgt/CXX_EXTENSIONS.html#prop_tgt:CXX_EXTENSIONS" title="CXX_EXTENSIONS"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CXX_EXTENSIONS</span></code></a>,
+or <span class="target" id="index-0-prop_tgt:CUDA_EXTENSIONS"></span><a class="reference internal" href="../prop_tgt/CUDA_EXTENSIONS.html#prop_tgt:CUDA_EXTENSIONS" title="CUDA_EXTENSIONS"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">CUDA_EXTENSIONS</span></code></a> target property of the generated project.</dd>
+</dl>
+<p>In this version all files in <code class="docutils literal"><span class="pre">&lt;bindir&gt;/CMakeFiles/CMakeTmp</span></code> will be
+cleaned automatically.  For debugging, <code class="docutils literal"><span class="pre">--debug-trycompile</span></code> can be
+passed to <code class="docutils literal"><span class="pre">cmake</span></code> to avoid this clean.  However, multiple sequential
+<code class="docutils literal"><span class="pre">try_compile</span></code> operations reuse this single output directory.  If you use
+<code class="docutils literal"><span class="pre">--debug-trycompile</span></code>, you can only debug one <code class="docutils literal"><span class="pre">try_compile</span></code> call at a time.
+The recommended procedure is to protect all <code class="docutils literal"><span class="pre">try_compile</span></code> calls in your
+project by <code class="docutils literal"><span class="pre">if(NOT</span> <span class="pre">DEFINED</span> <span class="pre">RESULT_VAR)</span></code> logic, configure with cmake
+all the way through once, then delete the cache entry associated with
+the try_compile call of interest, and then re-run cmake again with
+<code class="docutils literal"><span class="pre">--debug-trycompile</span></code>.</p>
+</div>
+<div class="section" id="other-behavior-settings">
+<h2><a class="toc-backref" href="#id4">Other Behavior Settings</a><a class="headerlink" href="#other-behavior-settings" title="Permalink to this headline">¶</a></h2>
+<p>If set, the following variables are passed in to the generated
+try_compile CMakeLists.txt to initialize compile target properties with
+default values:</p>
+<ul class="simple">
+<li><span class="target" id="index-0-variable:CMAKE_ENABLE_EXPORTS"></span><a class="reference internal" href="../variable/CMAKE_ENABLE_EXPORTS.html#variable:CMAKE_ENABLE_EXPORTS" title="CMAKE_ENABLE_EXPORTS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_ENABLE_EXPORTS</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_LINK_SEARCH_START_STATIC"></span><a class="reference internal" href="../variable/CMAKE_LINK_SEARCH_START_STATIC.html#variable:CMAKE_LINK_SEARCH_START_STATIC" title="CMAKE_LINK_SEARCH_START_STATIC"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_LINK_SEARCH_START_STATIC</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_LINK_SEARCH_END_STATIC"></span><a class="reference internal" href="../variable/CMAKE_LINK_SEARCH_END_STATIC.html#variable:CMAKE_LINK_SEARCH_END_STATIC" title="CMAKE_LINK_SEARCH_END_STATIC"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_LINK_SEARCH_END_STATIC</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_POSITION_INDEPENDENT_CODE"></span><a class="reference internal" href="../variable/CMAKE_POSITION_INDEPENDENT_CODE.html#variable:CMAKE_POSITION_INDEPENDENT_CODE" title="CMAKE_POSITION_INDEPENDENT_CODE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_POSITION_INDEPENDENT_CODE</span></code></a></li>
+</ul>
+<p>If <span class="target" id="index-0-policy:CMP0056"></span><a class="reference internal" href="../policy/CMP0056.html#policy:CMP0056" title="CMP0056"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0056</span></code></a> is set to <code class="docutils literal"><span class="pre">NEW</span></code>, then
+<span class="target" id="index-0-variable:CMAKE_EXE_LINKER_FLAGS"></span><a class="reference internal" href="../variable/CMAKE_EXE_LINKER_FLAGS.html#variable:CMAKE_EXE_LINKER_FLAGS" title="CMAKE_EXE_LINKER_FLAGS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_EXE_LINKER_FLAGS</span></code></a> is passed in as well.</p>
+<p>The current setting of <span class="target" id="index-0-policy:CMP0065"></span><a class="reference internal" href="../policy/CMP0065.html#policy:CMP0065" title="CMP0065"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0065</span></code></a> is set in the generated project.</p>
+<p>Set the <span class="target" id="index-0-variable:CMAKE_TRY_COMPILE_CONFIGURATION"></span><a class="reference internal" href="../variable/CMAKE_TRY_COMPILE_CONFIGURATION.html#variable:CMAKE_TRY_COMPILE_CONFIGURATION" title="CMAKE_TRY_COMPILE_CONFIGURATION"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_TRY_COMPILE_CONFIGURATION</span></code></a> variable to choose
+a build configuration.</p>
+<p>Set the <span class="target" id="index-0-variable:CMAKE_TRY_COMPILE_TARGET_TYPE"></span><a class="reference internal" href="../variable/CMAKE_TRY_COMPILE_TARGET_TYPE.html#variable:CMAKE_TRY_COMPILE_TARGET_TYPE" title="CMAKE_TRY_COMPILE_TARGET_TYPE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_TRY_COMPILE_TARGET_TYPE</span></code></a> variable to specify
+the type of target used for the source file signature.</p>
+<p>Set the <span class="target" id="index-0-variable:CMAKE_TRY_COMPILE_PLATFORM_VARIABLES"></span><a class="reference internal" href="../variable/CMAKE_TRY_COMPILE_PLATFORM_VARIABLES.html#variable:CMAKE_TRY_COMPILE_PLATFORM_VARIABLES" title="CMAKE_TRY_COMPILE_PLATFORM_VARIABLES"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_TRY_COMPILE_PLATFORM_VARIABLES</span></code></a> variable to specify
+variables that must be propagated into the test project.  This variable is
+meant for use only in toolchain files.</p>
+<p>If <span class="target" id="index-0-policy:CMP0067"></span><a class="reference internal" href="../policy/CMP0067.html#policy:CMP0067" title="CMP0067"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0067</span></code></a> is set to <code class="docutils literal"><span class="pre">NEW</span></code>, or any of the <code class="docutils literal"><span class="pre">&lt;LANG&gt;_STANDARD</span></code>,
+<code class="docutils literal"><span class="pre">&lt;LANG&gt;_STANDARD_REQUIRED</span></code>, or <code class="docutils literal"><span class="pre">&lt;LANG&gt;_EXTENSIONS</span></code> options are used,
+then the language standard variables are honored:</p>
+<ul class="simple">
+<li><span class="target" id="index-0-variable:CMAKE_C_STANDARD"></span><a class="reference internal" href="../variable/CMAKE_C_STANDARD.html#variable:CMAKE_C_STANDARD" title="CMAKE_C_STANDARD"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_C_STANDARD</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_C_STANDARD_REQUIRED"></span><a class="reference internal" href="../variable/CMAKE_C_STANDARD_REQUIRED.html#variable:CMAKE_C_STANDARD_REQUIRED" title="CMAKE_C_STANDARD_REQUIRED"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_C_STANDARD_REQUIRED</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_C_EXTENSIONS"></span><a class="reference internal" href="../variable/CMAKE_C_EXTENSIONS.html#variable:CMAKE_C_EXTENSIONS" title="CMAKE_C_EXTENSIONS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_C_EXTENSIONS</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_CXX_STANDARD"></span><a class="reference internal" href="../variable/CMAKE_CXX_STANDARD.html#variable:CMAKE_CXX_STANDARD" title="CMAKE_CXX_STANDARD"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CXX_STANDARD</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_CXX_STANDARD_REQUIRED"></span><a class="reference internal" href="../variable/CMAKE_CXX_STANDARD_REQUIRED.html#variable:CMAKE_CXX_STANDARD_REQUIRED" title="CMAKE_CXX_STANDARD_REQUIRED"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CXX_STANDARD_REQUIRED</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_CXX_EXTENSIONS"></span><a class="reference internal" href="../variable/CMAKE_CXX_EXTENSIONS.html#variable:CMAKE_CXX_EXTENSIONS" title="CMAKE_CXX_EXTENSIONS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CXX_EXTENSIONS</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_CUDA_STANDARD"></span><a class="reference internal" href="../variable/CMAKE_CUDA_STANDARD.html#variable:CMAKE_CUDA_STANDARD" title="CMAKE_CUDA_STANDARD"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CUDA_STANDARD</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_CUDA_STANDARD_REQUIRED"></span><a class="reference internal" href="../variable/CMAKE_CUDA_STANDARD_REQUIRED.html#variable:CMAKE_CUDA_STANDARD_REQUIRED" title="CMAKE_CUDA_STANDARD_REQUIRED"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CUDA_STANDARD_REQUIRED</span></code></a></li>
+<li><span class="target" id="index-0-variable:CMAKE_CUDA_EXTENSIONS"></span><a class="reference internal" href="../variable/CMAKE_CUDA_EXTENSIONS.html#variable:CMAKE_CUDA_EXTENSIONS" title="CMAKE_CUDA_EXTENSIONS"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_CUDA_EXTENSIONS</span></code></a></li>
+</ul>
+<p>Their values are used to set the corresponding target properties in
+the generated project (unless overridden by an explicit option).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">try_compile</a><ul>
+<li><a class="reference internal" href="#try-compiling-whole-projects">Try Compiling Whole Projects</a></li>
+<li><a class="reference internal" href="#try-compiling-source-files">Try Compiling Source Files</a></li>
+<li><a class="reference internal" href="#other-behavior-settings">Other Behavior Settings</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="target_sources.html"
+                        title="previous chapter">target_sources</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="try_run.html"
+                        title="next chapter">try_run</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/try_compile.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="try_run.html" title="try_run"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="target_sources.html" title="target_sources"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

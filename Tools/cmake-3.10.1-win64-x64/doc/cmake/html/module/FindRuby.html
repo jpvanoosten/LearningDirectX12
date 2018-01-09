@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindRuby &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindSDL_image" href="FindSDL_image.html" />
+    <link rel="prev" title="FindRTI" href="FindRTI.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindSDL_image.html" title="FindSDL_image"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindRTI.html" title="FindRTI"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findruby">
+<span id="module:FindRuby"></span><h1>FindRuby<a class="headerlink" href="#findruby" title="Permalink to this headline">¶</a></h1>
+<p>Find Ruby</p>
+<p>This module finds if Ruby is installed and determines where the
+include files and libraries are.  Ruby 1.8, 1.9, 2.0 and 2.1 are
+supported.</p>
+<p>The minimum required version of Ruby can be specified using the
+standard syntax, e.g.  find_package(Ruby 1.8)</p>
+<p>It also determines what the name of the library is.  This code sets
+the following variables:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">RUBY_EXECUTABLE</span></code></dt>
+<dd>full path to the ruby binary</dd>
+<dt><code class="docutils literal"><span class="pre">RUBY_INCLUDE_DIRS</span></code></dt>
+<dd>include dirs to be used when using the ruby library</dd>
+<dt><code class="docutils literal"><span class="pre">RUBY_LIBRARY</span></code></dt>
+<dd>full path to the ruby library</dd>
+<dt><code class="docutils literal"><span class="pre">RUBY_VERSION</span></code></dt>
+<dd>the version of ruby which was found, e.g. &#8220;1.8.7&#8221;</dd>
+<dt><code class="docutils literal"><span class="pre">RUBY_FOUND</span></code></dt>
+<dd>set to true if ruby ws found successfully</dd>
+</dl>
+<p>Also:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">RUBY_INCLUDE_PATH</span></code></dt>
+<dd>same as RUBY_INCLUDE_DIRS, only provided for compatibility reasons, don&#8217;t use it</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindRTI.html"
+                        title="previous chapter">FindRTI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindSDL_image.html"
+                        title="next chapter">FindSDL_image</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindRuby.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindSDL_image.html" title="FindSDL_image"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindRTI.html" title="FindRTI"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

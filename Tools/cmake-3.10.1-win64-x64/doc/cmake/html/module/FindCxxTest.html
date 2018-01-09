@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindCxxTest &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindCygwin" href="FindCygwin.html" />
+    <link rel="prev" title="FindCVS" href="FindCVS.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindCygwin.html" title="FindCygwin"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindCVS.html" title="FindCVS"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findcxxtest">
+<span id="module:FindCxxTest"></span><h1>FindCxxTest<a class="headerlink" href="#findcxxtest" title="Permalink to this headline">¶</a></h1>
+<p>Find CxxTest</p>
+<p>Find the CxxTest suite and declare a helper macro for creating unit
+tests and integrating them with CTest.  For more details on CxxTest
+see <a class="reference external" href="http://cxxtest.tigris.org">http://cxxtest.tigris.org</a></p>
+<p>INPUT Variables</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CXXTEST_USE_PYTHON</span> <span class="p">[</span><span class="n">deprecated</span> <span class="n">since</span> <span class="mf">1.3</span><span class="p">]</span>
+    <span class="n">Only</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">case</span> <span class="n">both</span> <span class="n">Python</span> <span class="o">&amp;</span> <span class="n">Perl</span>
+    <span class="n">are</span> <span class="n">detected</span> <span class="n">on</span> <span class="n">the</span> <span class="n">system</span> <span class="n">to</span> <span class="n">control</span>
+    <span class="n">which</span> <span class="n">CxxTest</span> <span class="n">code</span> <span class="n">generator</span> <span class="ow">is</span> <span class="n">used</span><span class="o">.</span>
+    <span class="n">Valid</span> <span class="n">only</span> <span class="k">for</span> <span class="n">CxxTest</span> <span class="n">version</span> <span class="mf">3.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">NOTE</span><span class="p">:</span> <span class="n">In</span> <span class="n">older</span> <span class="n">versions</span> <span class="n">of</span> <span class="n">this</span> <span class="n">Find</span> <span class="n">Module</span><span class="p">,</span>
+<span class="n">this</span> <span class="n">variable</span> <span class="n">controlled</span> <span class="k">if</span> <span class="n">the</span> <span class="n">Python</span> <span class="n">test</span>
+<span class="n">generator</span> <span class="n">was</span> <span class="n">used</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">the</span> <span class="n">Perl</span> <span class="n">one</span><span class="p">,</span>
+<span class="n">regardless</span> <span class="n">of</span> <span class="n">which</span> <span class="n">scripting</span> <span class="n">language</span> <span class="n">the</span>
+<span class="n">user</span> <span class="n">had</span> <span class="n">installed</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CXXTEST_TESTGEN_ARGS</span> <span class="p">(</span><span class="n">since</span> <span class="n">CMake</span> <span class="mf">2.8</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">Specify</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">options</span> <span class="n">to</span> <span class="k">pass</span> <span class="n">to</span> <span class="n">the</span> <span class="n">CxxTest</span> <span class="n">code</span>
+    <span class="n">generator</span><span class="o">.</span>  <span class="n">If</span> <span class="ow">not</span> <span class="n">defined</span><span class="p">,</span> <span class="o">--</span><span class="n">error</span><span class="o">-</span><span class="n">printer</span> <span class="ow">is</span>
+    <span class="n">passed</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>OUTPUT Variables</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CXXTEST_FOUND</span>
+    <span class="kc">True</span> <span class="k">if</span> <span class="n">the</span> <span class="n">CxxTest</span> <span class="n">framework</span> <span class="n">was</span> <span class="n">found</span>
+<span class="n">CXXTEST_INCLUDE_DIRS</span>
+    <span class="n">Where</span> <span class="n">to</span> <span class="n">find</span> <span class="n">the</span> <span class="n">CxxTest</span> <span class="n">include</span> <span class="n">directory</span>
+<span class="n">CXXTEST_PERL_TESTGEN_EXECUTABLE</span>
+    <span class="n">The</span> <span class="n">perl</span><span class="o">-</span><span class="n">based</span> <span class="n">test</span> <span class="n">generator</span>
+<span class="n">CXXTEST_PYTHON_TESTGEN_EXECUTABLE</span>
+    <span class="n">The</span> <span class="n">python</span><span class="o">-</span><span class="n">based</span> <span class="n">test</span> <span class="n">generator</span>
+<span class="n">CXXTEST_TESTGEN_EXECUTABLE</span> <span class="p">(</span><span class="n">since</span> <span class="n">CMake</span> <span class="mf">2.8</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">The</span> <span class="n">test</span> <span class="n">generator</span> <span class="n">that</span> <span class="ow">is</span> <span class="n">actually</span> <span class="n">used</span> <span class="p">(</span><span class="n">chosen</span> <span class="n">using</span> <span class="n">user</span> <span class="n">preferences</span>
+    <span class="ow">and</span> <span class="n">interpreters</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">system</span><span class="p">)</span>
+<span class="n">CXXTEST_TESTGEN_INTERPRETER</span> <span class="p">(</span><span class="n">since</span> <span class="n">CMake</span> <span class="mf">2.8</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">The</span> <span class="n">full</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">Perl</span> <span class="ow">or</span> <span class="n">Python</span> <span class="n">executable</span> <span class="n">on</span> <span class="n">the</span> <span class="n">system</span><span class="p">,</span> <span class="n">on</span>
+    <span class="n">platforms</span> <span class="n">where</span> <span class="n">the</span> <span class="n">script</span> <span class="n">cannot</span> <span class="n">be</span> <span class="n">executed</span> <span class="n">using</span> <span class="n">its</span> <span class="n">shebang</span> <span class="n">line</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>MACROS for optional use by CMake users:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CXXTEST_ADD_TEST</span><span class="p">(</span><span class="o">&lt;</span><span class="n">test_name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">gen_source_file</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">input_files_to_testgen</span><span class="o">...&gt;</span><span class="p">)</span>
+   <span class="n">Creates</span> <span class="n">a</span> <span class="n">CxxTest</span> <span class="n">runner</span> <span class="ow">and</span> <span class="n">adds</span> <span class="n">it</span> <span class="n">to</span> <span class="n">the</span> <span class="n">CTest</span> <span class="n">testing</span> <span class="n">suite</span>
+   <span class="n">Parameters</span><span class="p">:</span>
+       <span class="n">test_name</span>               <span class="n">The</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">test</span>
+       <span class="n">gen_source_file</span>         <span class="n">The</span> <span class="n">generated</span> <span class="n">source</span> <span class="n">filename</span> <span class="n">to</span> <span class="n">be</span>
+                               <span class="n">generated</span> <span class="n">by</span> <span class="n">CxxTest</span>
+       <span class="n">input_files_to_testgen</span>  <span class="n">The</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">header</span> <span class="n">files</span> <span class="n">containing</span> <span class="n">the</span>
+                               <span class="n">CxxTest</span><span class="p">::</span><span class="n">TestSuite</span><span class="s1">&#39;s to be included in</span>
+                               <span class="n">this</span> <span class="n">runner</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#==============</span>
+<span class="n">Example</span> <span class="n">Usage</span><span class="p">:</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>find_package(CxxTest)
+if(CXXTEST_FOUND)
+    include_directories(${CXXTEST_INCLUDE_DIR})
+    enable_testing()
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    CXXTEST_ADD_TEST(unittest_foo foo_test.cc
+                      ${CMAKE_CURRENT_SOURCE_DIR}/foo_test.h)
+    target_link_libraries(unittest_foo foo) # as needed
+endif()
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">will</span> <span class="p">(</span><span class="k">if</span> <span class="n">CxxTest</span> <span class="ow">is</span> <span class="n">found</span><span class="p">):</span>
+<span class="mf">1.</span> <span class="n">Invoke</span> <span class="n">the</span> <span class="n">testgen</span> <span class="n">executable</span> <span class="n">to</span> <span class="n">autogenerate</span> <span class="n">foo_test</span><span class="o">.</span><span class="n">cc</span> <span class="ow">in</span> <span class="n">the</span>
+   <span class="n">binary</span> <span class="n">tree</span> <span class="kn">from</span> <span class="s2">&quot;foo_test.h&quot;</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">current</span> <span class="n">source</span> <span class="n">directory</span><span class="o">.</span>
+<span class="mf">2.</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">executable</span> <span class="ow">and</span> <span class="n">test</span> <span class="n">called</span> <span class="n">unittest_foo</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#=============</span>
+<span class="n">Example</span> <span class="n">foo_test</span><span class="o">.</span><span class="n">h</span><span class="p">:</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#include &lt;cxxtest/TestSuite.h&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyTestSuite</span> <span class="p">:</span> <span class="n">public</span> <span class="n">CxxTest</span><span class="p">::</span><span class="n">TestSuite</span>
+<span class="p">{</span>
+<span class="n">public</span><span class="p">:</span>
+   <span class="n">void</span> <span class="n">testAddition</span><span class="p">(</span> <span class="n">void</span> <span class="p">)</span>
+   <span class="p">{</span>
+      <span class="n">TS_ASSERT</span><span class="p">(</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">);</span>
+      <span class="n">TS_ASSERT_EQUALS</span><span class="p">(</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindCVS.html"
+                        title="previous chapter">FindCVS</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindCygwin.html"
+                        title="next chapter">FindCygwin</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindCxxTest.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindCygwin.html" title="FindCygwin"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindCVS.html" title="FindCVS"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

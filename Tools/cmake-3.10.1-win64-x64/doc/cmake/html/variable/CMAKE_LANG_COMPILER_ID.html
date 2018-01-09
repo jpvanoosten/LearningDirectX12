@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CMAKE_&lt;LANG&gt;_COMPILER_ID &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CMAKE_&lt;LANG&gt;_COMPILER_LOADED" href="CMAKE_LANG_COMPILER_LOADED.html" />
+    <link rel="prev" title="CMAKE_&lt;LANG&gt;_COMPILER_EXTERNAL_TOOLCHAIN" href="CMAKE_LANG_COMPILER_EXTERNAL_TOOLCHAIN.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CMAKE_LANG_COMPILER_LOADED.html" title="CMAKE_&lt;LANG&gt;_COMPILER_LOADED"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CMAKE_LANG_COMPILER_EXTERNAL_TOOLCHAIN.html" title="CMAKE_&lt;LANG&gt;_COMPILER_EXTERNAL_TOOLCHAIN"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-variables.7.html" accesskey="U">cmake-variables(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cmake-lang-compiler-id">
+<span id="variable:CMAKE_<LANG>_COMPILER_ID"></span><h1>CMAKE_&lt;LANG&gt;_COMPILER_ID<a class="headerlink" href="#cmake-lang-compiler-id" title="Permalink to this headline">¶</a></h1>
+<p>Compiler identification string.</p>
+<p>A short string unique to the compiler vendor.  Possible values
+include:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Absoft</span> <span class="o">=</span> <span class="n">Absoft</span> <span class="n">Fortran</span> <span class="p">(</span><span class="n">absoft</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">ADSP</span> <span class="o">=</span> <span class="n">Analog</span> <span class="n">VisualDSP</span><span class="o">++</span> <span class="p">(</span><span class="n">analog</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">AppleClang</span> <span class="o">=</span> <span class="n">Apple</span> <span class="n">Clang</span> <span class="p">(</span><span class="n">apple</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">ARMCC</span> <span class="o">=</span> <span class="n">ARM</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">arm</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">Bruce</span> <span class="o">=</span> <span class="n">Bruce</span> <span class="n">C</span> <span class="n">Compiler</span>
+<span class="n">CCur</span> <span class="o">=</span> <span class="n">Concurrent</span> <span class="n">Fortran</span> <span class="p">(</span><span class="n">ccur</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">Clang</span> <span class="o">=</span> <span class="n">LLVM</span> <span class="n">Clang</span> <span class="p">(</span><span class="n">clang</span><span class="o">.</span><span class="n">llvm</span><span class="o">.</span><span class="n">org</span><span class="p">)</span>
+<span class="n">Cray</span> <span class="o">=</span> <span class="n">Cray</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">cray</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">Embarcadero</span><span class="p">,</span> <span class="n">Borland</span> <span class="o">=</span> <span class="n">Embarcadero</span> <span class="p">(</span><span class="n">embarcadero</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">G95</span> <span class="o">=</span> <span class="n">G95</span> <span class="n">Fortran</span> <span class="p">(</span><span class="n">g95</span><span class="o">.</span><span class="n">org</span><span class="p">)</span>
+<span class="n">GNU</span> <span class="o">=</span> <span class="n">GNU</span> <span class="n">Compiler</span> <span class="n">Collection</span> <span class="p">(</span><span class="n">gcc</span><span class="o">.</span><span class="n">gnu</span><span class="o">.</span><span class="n">org</span><span class="p">)</span>
+<span class="n">HP</span> <span class="o">=</span> <span class="n">Hewlett</span><span class="o">-</span><span class="n">Packard</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">hp</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">IAR</span> <span class="o">=</span> <span class="n">IAR</span> <span class="n">Systems</span> <span class="p">(</span><span class="n">iar</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">Intel</span> <span class="o">=</span> <span class="n">Intel</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">intel</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">MIPSpro</span> <span class="o">=</span> <span class="n">SGI</span> <span class="n">MIPSpro</span> <span class="p">(</span><span class="n">sgi</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">MSVC</span> <span class="o">=</span> <span class="n">Microsoft</span> <span class="n">Visual</span> <span class="n">Studio</span> <span class="p">(</span><span class="n">microsoft</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">NVIDIA</span> <span class="o">=</span> <span class="n">NVIDIA</span> <span class="n">CUDA</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">nvidia</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">OpenWatcom</span> <span class="o">=</span> <span class="n">Open</span> <span class="n">Watcom</span> <span class="p">(</span><span class="n">openwatcom</span><span class="o">.</span><span class="n">org</span><span class="p">)</span>
+<span class="n">PGI</span> <span class="o">=</span> <span class="n">The</span> <span class="n">Portland</span> <span class="n">Group</span> <span class="p">(</span><span class="n">pgroup</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">Flang</span> <span class="o">=</span> <span class="n">Flang</span> <span class="n">Fortran</span> <span class="n">Compiler</span>
+<span class="n">PathScale</span> <span class="o">=</span> <span class="n">PathScale</span> <span class="p">(</span><span class="n">pathscale</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">SDCC</span> <span class="o">=</span> <span class="n">Small</span> <span class="n">Device</span> <span class="n">C</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">sdcc</span><span class="o">.</span><span class="n">sourceforge</span><span class="o">.</span><span class="n">net</span><span class="p">)</span>
+<span class="n">SunPro</span> <span class="o">=</span> <span class="n">Oracle</span> <span class="n">Solaris</span> <span class="n">Studio</span> <span class="p">(</span><span class="n">oracle</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">TI</span> <span class="o">=</span> <span class="n">Texas</span> <span class="n">Instruments</span> <span class="p">(</span><span class="n">ti</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+<span class="n">TinyCC</span> <span class="o">=</span> <span class="n">Tiny</span> <span class="n">C</span> <span class="n">Compiler</span> <span class="p">(</span><span class="n">tinycc</span><span class="o">.</span><span class="n">org</span><span class="p">)</span>
+<span class="n">XL</span><span class="p">,</span> <span class="n">VisualAge</span><span class="p">,</span> <span class="n">zOS</span> <span class="o">=</span> <span class="n">IBM</span> <span class="n">XL</span> <span class="p">(</span><span class="n">ibm</span><span class="o">.</span><span class="n">com</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This variable is not guaranteed to be defined for all compilers or
+languages.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CMAKE_LANG_COMPILER_EXTERNAL_TOOLCHAIN.html"
+                        title="previous chapter">CMAKE_&lt;LANG&gt;_COMPILER_EXTERNAL_TOOLCHAIN</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CMAKE_LANG_COMPILER_LOADED.html"
+                        title="next chapter">CMAKE_&lt;LANG&gt;_COMPILER_LOADED</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/variable/CMAKE_LANG_COMPILER_ID.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CMAKE_LANG_COMPILER_LOADED.html" title="CMAKE_&lt;LANG&gt;_COMPILER_LOADED"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CMAKE_LANG_COMPILER_EXTERNAL_TOOLCHAIN.html" title="CMAKE_&lt;LANG&gt;_COMPILER_EXTERNAL_TOOLCHAIN"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-variables.7.html" >cmake-variables(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindOpenACC &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindOpenAL" href="FindOpenAL.html" />
+    <link rel="prev" title="FindMPI" href="FindMPI.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindOpenAL.html" title="FindOpenAL"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindMPI.html" title="FindMPI"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findopenacc">
+<span id="module:FindOpenACC"></span><h1>FindOpenACC<a class="headerlink" href="#findopenacc" title="Permalink to this headline">¶</a></h1>
+<p>Detect OpenACC support by the compiler.</p>
+<p>This module can be used to detect OpenACC support in a compiler.
+If the compiler supports OpenACC, the flags required to compile with
+OpenACC support are returned in variables for the different languages.
+Currently, only PGI, GNU and Cray compilers are supported.</p>
+<div class="section" id="variables">
+<h2>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h2>
+<p>This module will set the following variables per language in your
+project, where <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> is one of C, CXX, or Fortran:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">OpenACC_&lt;lang&gt;_FOUND</span></code></dt>
+<dd>Variable indicating if OpenACC support for <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> was detected.</dd>
+<dt><code class="docutils literal"><span class="pre">OpenACC_&lt;lang&gt;_FLAGS</span></code></dt>
+<dd>OpenACC compiler flags for <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code>, separated by spaces.</dd>
+</dl>
+<p>The module will also try to provide the OpenACC version variables:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">OpenACC_&lt;lang&gt;_SPEC_DATE</span></code></dt>
+<dd>Date of the OpenACC specification implemented by the <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> compiler.</dd>
+<dt><code class="docutils literal"><span class="pre">OpenACC_&lt;lang&gt;_VERSION_MAJOR</span></code></dt>
+<dd>Major version of OpenACC implemented by the <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> compiler.</dd>
+<dt><code class="docutils literal"><span class="pre">OpenACC_&lt;lang&gt;_VERSION_MINOR</span></code></dt>
+<dd>Minor version of OpenACC implemented by the <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> compiler.</dd>
+<dt><code class="docutils literal"><span class="pre">OpenACC_&lt;lang&gt;_VERSION</span></code></dt>
+<dd>OpenACC version implemented by the <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> compiler.</dd>
+</dl>
+<p>The specification date is formatted as given in the OpenACC standard:
+<code class="docutils literal"><span class="pre">yyyymm</span></code> where <code class="docutils literal"><span class="pre">yyyy</span></code> and <code class="docutils literal"><span class="pre">mm</span></code> represents the year and month of
+the OpenACC specification implemented by the <code class="docutils literal"><span class="pre">&lt;lang&gt;</span></code> compiler.</p>
+</div>
+<div class="section" id="input-variables">
+<h2>Input Variables<a class="headerlink" href="#input-variables" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">OpenACC_ACCEL_TARGET=&lt;target&gt;</span></code>
+If set, will the correct target accelerator flag set to the &lt;target&gt; will
+be returned with OpenACC_&lt;lang&gt;_FLAGS.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FindOpenACC</a><ul>
+<li><a class="reference internal" href="#variables">Variables</a></li>
+<li><a class="reference internal" href="#input-variables">Input Variables</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindMPI.html"
+                        title="previous chapter">FindMPI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindOpenAL.html"
+                        title="next chapter">FindOpenAL</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindOpenACC.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindOpenAL.html" title="FindOpenAL"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindMPI.html" title="FindMPI"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

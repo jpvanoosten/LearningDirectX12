@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindBoost &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindBullet" href="FindBullet.html" />
+    <link rel="prev" title="FindBacktrace" href="FindBacktrace.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindBullet.html" title="FindBullet"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindBacktrace.html" title="FindBacktrace"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findboost">
+<span id="module:FindBoost"></span><h1>FindBoost<a class="headerlink" href="#findboost" title="Permalink to this headline">¶</a></h1>
+<p>Find Boost include dirs and libraries</p>
+<p>Use this module by invoking find_package with the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="n">Boost</span>
+  <span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="p">[</span><span class="n">EXACT</span><span class="p">]</span>      <span class="c1"># Minimum or EXACT version e.g. 1.36.0</span>
+  <span class="p">[</span><span class="n">REQUIRED</span><span class="p">]</span>             <span class="c1"># Fail with error if Boost is not found</span>
+  <span class="p">[</span><span class="n">COMPONENTS</span> <span class="o">&lt;</span><span class="n">libs</span><span class="o">&gt;...</span><span class="p">]</span> <span class="c1"># Boost libraries by their canonical name</span>
+  <span class="p">)</span>                      <span class="c1"># e.g. &quot;date_time&quot; for &quot;libboost_date_time&quot;</span>
+</pre></div>
+</div>
+<p>This module finds headers and requested component libraries OR a CMake
+package configuration file provided by a &#8220;Boost CMake&#8221; build.  For the
+latter case skip to the &#8220;Boost CMake&#8221; section below.  For the former
+case results are reported in variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Boost_FOUND</span>            <span class="o">-</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">headers</span> <span class="ow">and</span> <span class="n">requested</span> <span class="n">libraries</span> <span class="n">were</span> <span class="n">found</span>
+<span class="n">Boost_INCLUDE_DIRS</span>     <span class="o">-</span> <span class="n">Boost</span> <span class="n">include</span> <span class="n">directories</span>
+<span class="n">Boost_LIBRARY_DIRS</span>     <span class="o">-</span> <span class="n">Link</span> <span class="n">directories</span> <span class="k">for</span> <span class="n">Boost</span> <span class="n">libraries</span>
+<span class="n">Boost_LIBRARIES</span>        <span class="o">-</span> <span class="n">Boost</span> <span class="n">component</span> <span class="n">libraries</span> <span class="n">to</span> <span class="n">be</span> <span class="n">linked</span>
+<span class="n">Boost_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_FOUND</span>        <span class="o">-</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">component</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span> <span class="n">was</span> <span class="n">found</span> <span class="p">(</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">upper</span><span class="o">-</span><span class="n">case</span><span class="p">)</span>
+<span class="n">Boost_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARY</span>      <span class="o">-</span> <span class="n">Libraries</span> <span class="n">to</span> <span class="n">link</span> <span class="k">for</span> <span class="n">component</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span> <span class="p">(</span><span class="n">may</span> <span class="n">include</span>
+                         <span class="n">target_link_libraries</span> <span class="n">debug</span><span class="o">/</span><span class="n">optimized</span> <span class="n">keywords</span><span class="p">)</span>
+<span class="n">Boost_VERSION</span>          <span class="o">-</span> <span class="n">BOOST_VERSION</span> <span class="n">value</span> <span class="kn">from</span> <span class="nn">boost</span><span class="o">/</span><span class="n">version</span><span class="o">.</span><span class="n">hpp</span>
+<span class="n">Boost_LIB_VERSION</span>      <span class="o">-</span> <span class="n">Version</span> <span class="n">string</span> <span class="n">appended</span> <span class="n">to</span> <span class="n">library</span> <span class="n">filenames</span>
+<span class="n">Boost_MAJOR_VERSION</span>    <span class="o">-</span> <span class="n">Boost</span> <span class="n">major</span> <span class="n">version</span> <span class="n">number</span> <span class="p">(</span><span class="n">X</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+<span class="n">Boost_MINOR_VERSION</span>    <span class="o">-</span> <span class="n">Boost</span> <span class="n">minor</span> <span class="n">version</span> <span class="n">number</span> <span class="p">(</span><span class="n">Y</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">Y</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+<span class="n">Boost_SUBMINOR_VERSION</span> <span class="o">-</span> <span class="n">Boost</span> <span class="n">subminor</span> <span class="n">version</span> <span class="n">number</span> <span class="p">(</span><span class="n">Z</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">Z</span><span class="p">)</span>
+<span class="n">Boost_LIB_DIAGNOSTIC_DEFINITIONS</span> <span class="p">(</span><span class="n">Windows</span><span class="p">)</span>
+                       <span class="o">-</span> <span class="n">Pass</span> <span class="n">to</span> <span class="n">add_definitions</span><span class="p">()</span> <span class="n">to</span> <span class="n">have</span> <span class="n">diagnostic</span>
+                         <span class="n">information</span> <span class="n">about</span> <span class="n">Boost</span><span class="s1">&#39;s automatic linking</span>
+                         <span class="n">displayed</span> <span class="n">during</span> <span class="n">compilation</span>
+</pre></div>
+</div>
+<p>This module reads hints about search locations from variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">BOOST_ROOT</span>             <span class="o">-</span> <span class="n">Preferred</span> <span class="n">installation</span> <span class="n">prefix</span>
+ <span class="p">(</span><span class="ow">or</span> <span class="n">BOOSTROOT</span><span class="p">)</span>
+<span class="n">BOOST_INCLUDEDIR</span>       <span class="o">-</span> <span class="n">Preferred</span> <span class="n">include</span> <span class="n">directory</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span><span class="n">include</span>
+<span class="n">BOOST_LIBRARYDIR</span>       <span class="o">-</span> <span class="n">Preferred</span> <span class="n">library</span> <span class="n">directory</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="o">&lt;</span><span class="n">prefix</span><span class="o">&gt;/</span><span class="n">lib</span>
+<span class="n">Boost_NO_SYSTEM_PATHS</span>  <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">searching</span> <span class="ow">in</span> <span class="n">locations</span> <span class="ow">not</span>
+                         <span class="n">specified</span> <span class="n">by</span> <span class="n">these</span> <span class="n">hint</span> <span class="n">variables</span><span class="o">.</span> <span class="n">Default</span> <span class="ow">is</span> <span class="n">OFF</span><span class="o">.</span>
+<span class="n">Boost_ADDITIONAL_VERSIONS</span>
+                       <span class="o">-</span> <span class="n">List</span> <span class="n">of</span> <span class="n">Boost</span> <span class="n">versions</span> <span class="ow">not</span> <span class="n">known</span> <span class="n">to</span> <span class="n">this</span> <span class="n">module</span>
+                         <span class="p">(</span><span class="n">Boost</span> <span class="n">install</span> <span class="n">locations</span> <span class="n">may</span> <span class="n">contain</span> <span class="n">the</span> <span class="n">version</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and saves search results persistently in CMake cache entries:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Boost_INCLUDE_DIR</span>         <span class="o">-</span> <span class="n">Directory</span> <span class="n">containing</span> <span class="n">Boost</span> <span class="n">headers</span>
+<span class="n">Boost_LIBRARY_DIR_RELEASE</span> <span class="o">-</span> <span class="n">Directory</span> <span class="n">containing</span> <span class="n">release</span> <span class="n">Boost</span> <span class="n">libraries</span>
+<span class="n">Boost_LIBRARY_DIR_DEBUG</span>   <span class="o">-</span> <span class="n">Directory</span> <span class="n">containing</span> <span class="n">debug</span> <span class="n">Boost</span> <span class="n">libraries</span>
+<span class="n">Boost_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARY_DEBUG</span>   <span class="o">-</span> <span class="n">Component</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span> <span class="n">library</span> <span class="n">debug</span> <span class="n">variant</span>
+<span class="n">Boost_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARY_RELEASE</span> <span class="o">-</span> <span class="n">Component</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span> <span class="n">library</span> <span class="n">release</span> <span class="n">variant</span>
+</pre></div>
+</div>
+<p>The following <span class="target" id="index-0-prop_tgt:IMPORTED"></span><a class="reference internal" href="../prop_tgt/IMPORTED.html#prop_tgt:IMPORTED" title="IMPORTED"><code class="xref cmake cmake-prop_tgt docutils literal"><span class="pre">IMPORTED</span></code></a> targets are also defined:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Boost</span><span class="p">::</span><span class="n">boost</span>                  <span class="o">-</span> <span class="n">Target</span> <span class="k">for</span> <span class="n">header</span><span class="o">-</span><span class="n">only</span> <span class="n">dependencies</span>
+                                <span class="p">(</span><span class="n">Boost</span> <span class="n">include</span> <span class="n">directory</span><span class="p">)</span>
+<span class="n">Boost</span><span class="p">::</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span>                    <span class="o">-</span> <span class="n">Target</span> <span class="k">for</span> <span class="n">specific</span> <span class="n">component</span> <span class="n">dependency</span>
+                                <span class="p">(</span><span class="n">shared</span> <span class="ow">or</span> <span class="n">static</span> <span class="n">library</span><span class="p">);</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span> <span class="ow">is</span> <span class="n">lower</span><span class="o">-</span>
+                                <span class="n">case</span>
+<span class="n">Boost</span><span class="p">::</span><span class="n">diagnostic_definitions</span> <span class="o">-</span> <span class="n">interface</span> <span class="n">target</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">diagnostic</span>
+                                <span class="n">information</span> <span class="n">about</span> <span class="n">Boost</span><span class="s1">&#39;s automatic linking</span>
+                                <span class="n">during</span> <span class="n">compilation</span> <span class="p">(</span><span class="n">adds</span> <span class="n">BOOST_LIB_DIAGNOSTIC</span><span class="p">)</span>
+<span class="n">Boost</span><span class="p">::</span><span class="n">disable_autolinking</span>    <span class="o">-</span> <span class="n">interface</span> <span class="n">target</span> <span class="n">to</span> <span class="n">disable</span> <span class="n">automatic</span>
+                                <span class="n">linking</span> <span class="k">with</span> <span class="n">MSVC</span> <span class="p">(</span><span class="n">adds</span> <span class="n">BOOST_ALL_NO_LIB</span><span class="p">)</span>
+<span class="n">Boost</span><span class="p">::</span><span class="n">dynamic_linking</span>        <span class="o">-</span> <span class="n">interface</span> <span class="n">target</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">dynamic</span> <span class="n">linking</span>
+                                <span class="n">linking</span> <span class="k">with</span> <span class="n">MSVC</span> <span class="p">(</span><span class="n">adds</span> <span class="n">BOOST_ALL_DYN_LINK</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Implicit dependencies such as Boost::filesystem requiring
+Boost::system will be automatically detected and satisfied, even
+if system is not specified when using find_package and if
+Boost::system is not added to target_link_libraries.  If using
+Boost::thread, then Threads::Threads will also be added automatically.</p>
+<p>It is important to note that the imported targets behave differently
+than variables created by this module: multiple calls to
+find_package(Boost) in the same directory or sub-directories with
+different options (e.g. static or shared) will not override the
+values of the targets created by the first call.</p>
+<p>Users may set these hints or results as cache entries.  Projects
+should not read these entries directly but instead use the above
+result variables.  Note that some hint names start in upper-case
+&#8220;BOOST&#8221;.  One may specify these as environment variables if they are
+not specified as CMake variables or cache entries.</p>
+<p>This module first searches for the Boost header files using the above
+hint variables (excluding BOOST_LIBRARYDIR) and saves the result in
+Boost_INCLUDE_DIR.  Then it searches for requested component libraries
+using the above hints (excluding BOOST_INCLUDEDIR and
+Boost_ADDITIONAL_VERSIONS), &#8220;lib&#8221; directories near Boost_INCLUDE_DIR,
+and the library name configuration settings below.  It saves the
+library directories in Boost_LIBRARY_DIR_DEBUG and
+Boost_LIBRARY_DIR_RELEASE and individual library
+locations in Boost_&lt;C&gt;_LIBRARY_DEBUG and Boost_&lt;C&gt;_LIBRARY_RELEASE.
+When one changes settings used by previous searches in the same build
+tree (excluding environment variables) this module discards previous
+search results affected by the changes and searches again.</p>
+<p>Boost libraries come in many variants encoded in their file name.
+Users or projects may tell this module which variant to find by
+setting variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Boost_USE_DEBUG_LIBS</span>     <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="ow">or</span> <span class="n">OFF</span> <span class="n">to</span> <span class="n">specify</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">search</span>
+                           <span class="ow">and</span> <span class="n">use</span> <span class="n">the</span> <span class="n">debug</span> <span class="n">libraries</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">ON</span><span class="o">.</span>
+<span class="n">Boost_USE_RELEASE_LIBS</span>   <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="ow">or</span> <span class="n">OFF</span> <span class="n">to</span> <span class="n">specify</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">search</span>
+                           <span class="ow">and</span> <span class="n">use</span> <span class="n">the</span> <span class="n">release</span> <span class="n">libraries</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">ON</span><span class="o">.</span>
+<span class="n">Boost_USE_MULTITHREADED</span>  <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">OFF</span> <span class="n">to</span> <span class="n">use</span> <span class="n">the</span> <span class="n">non</span><span class="o">-</span><span class="n">multithreaded</span>
+                           <span class="n">libraries</span> <span class="p">(</span><span class="s1">&#39;mt&#39;</span> <span class="n">tag</span><span class="p">)</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">ON</span><span class="o">.</span>
+<span class="n">Boost_USE_STATIC_LIBS</span>    <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">force</span> <span class="n">the</span> <span class="n">use</span> <span class="n">of</span> <span class="n">the</span> <span class="n">static</span>
+                           <span class="n">libraries</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">OFF</span><span class="o">.</span>
+<span class="n">Boost_USE_STATIC_RUNTIME</span> <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="ow">or</span> <span class="n">OFF</span> <span class="n">to</span> <span class="n">specify</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">use</span>
+                           <span class="n">libraries</span> <span class="n">linked</span> <span class="n">statically</span> <span class="n">to</span> <span class="n">the</span> <span class="n">C</span><span class="o">++</span> <span class="n">runtime</span>
+                           <span class="p">(</span><span class="s1">&#39;s&#39;</span> <span class="n">tag</span><span class="p">)</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">platform</span> <span class="n">dependent</span><span class="o">.</span>
+<span class="n">Boost_USE_DEBUG_RUNTIME</span>  <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="ow">or</span> <span class="n">OFF</span> <span class="n">to</span> <span class="n">specify</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">use</span>
+                           <span class="n">libraries</span> <span class="n">linked</span> <span class="n">to</span> <span class="n">the</span> <span class="n">MS</span> <span class="n">debug</span> <span class="n">C</span><span class="o">++</span> <span class="n">runtime</span>
+                           <span class="p">(</span><span class="s1">&#39;g&#39;</span> <span class="n">tag</span><span class="p">)</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">ON</span><span class="o">.</span>
+<span class="n">Boost_USE_DEBUG_PYTHON</span>   <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">use</span> <span class="n">libraries</span> <span class="n">compiled</span> <span class="k">with</span> <span class="n">a</span>
+                           <span class="n">debug</span> <span class="n">Python</span> <span class="n">build</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span> <span class="n">tag</span><span class="p">)</span><span class="o">.</span> <span class="n">Default</span> <span class="ow">is</span> <span class="n">OFF</span><span class="o">.</span>
+<span class="n">Boost_USE_STLPORT</span>        <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">use</span> <span class="n">libraries</span> <span class="n">compiled</span> <span class="k">with</span>
+                           <span class="n">STLPort</span> <span class="p">(</span><span class="s1">&#39;p&#39;</span> <span class="n">tag</span><span class="p">)</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">OFF</span><span class="o">.</span>
+<span class="n">Boost_USE_STLPORT_DEPRECATED_NATIVE_IOSTREAMS</span>
+                         <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">use</span> <span class="n">libraries</span> <span class="n">compiled</span> <span class="k">with</span>
+                           <span class="n">STLPort</span> <span class="n">deprecated</span> <span class="s2">&quot;native iostreams&quot;</span>
+                           <span class="p">(</span><span class="s1">&#39;n&#39;</span> <span class="n">tag</span><span class="p">)</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">OFF</span><span class="o">.</span>
+<span class="n">Boost_COMPILER</span>           <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">the</span> <span class="n">compiler</span><span class="o">-</span><span class="n">specific</span> <span class="n">library</span> <span class="n">suffix</span>
+                           <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="s2">&quot;-gcc43&quot;</span><span class="p">)</span><span class="o">.</span>  <span class="n">Default</span> <span class="ow">is</span> <span class="n">auto</span><span class="o">-</span><span class="n">computed</span>
+                           <span class="k">for</span> <span class="n">the</span> <span class="n">C</span><span class="o">++</span> <span class="n">compiler</span> <span class="ow">in</span> <span class="n">use</span><span class="o">.</span>  <span class="n">A</span> <span class="nb">list</span> <span class="n">may</span> <span class="n">be</span>
+                           <span class="n">used</span> <span class="k">if</span> <span class="n">multiple</span> <span class="n">compatible</span> <span class="n">suffixes</span> <span class="n">should</span>
+                           <span class="n">be</span> <span class="n">tested</span> <span class="k">for</span><span class="p">,</span> <span class="ow">in</span> <span class="n">decreasing</span> <span class="n">order</span> <span class="n">of</span>
+                           <span class="n">preference</span><span class="o">.</span>
+<span class="n">Boost_THREADAPI</span>          <span class="o">-</span> <span class="n">Suffix</span> <span class="k">for</span> <span class="s2">&quot;thread&quot;</span> <span class="n">component</span> <span class="n">library</span> <span class="n">name</span><span class="p">,</span>
+                           <span class="n">such</span> <span class="k">as</span> <span class="s2">&quot;pthread&quot;</span> <span class="ow">or</span> <span class="s2">&quot;win32&quot;</span><span class="o">.</span>  <span class="n">Names</span> <span class="k">with</span>
+                           <span class="ow">and</span> <span class="n">without</span> <span class="n">this</span> <span class="n">suffix</span> <span class="n">will</span> <span class="n">both</span> <span class="n">be</span> <span class="n">tried</span><span class="o">.</span>
+<span class="n">Boost_NAMESPACE</span>          <span class="o">-</span> <span class="n">Alternate</span> <span class="n">namespace</span> <span class="n">used</span> <span class="n">to</span> <span class="n">build</span> <span class="n">boost</span> <span class="k">with</span>
+                           <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="k">if</span> <span class="nb">set</span> <span class="n">to</span> <span class="s2">&quot;myboost&quot;</span><span class="p">,</span> <span class="n">will</span> <span class="n">search</span> <span class="k">for</span>
+                           <span class="n">myboost_thread</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">boost_thread</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Other variables one may set to control this module are:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Boost_DEBUG</span>              <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">debug</span> <span class="n">output</span> <span class="kn">from</span> <span class="nn">FindBoost.</span>
+                           <span class="n">Please</span> <span class="n">enable</span> <span class="n">this</span> <span class="n">before</span> <span class="n">filing</span> <span class="nb">any</span> <span class="n">bug</span> <span class="n">report</span><span class="o">.</span>
+<span class="n">Boost_DETAILED_FAILURE_MSG</span>
+                         <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">add</span> <span class="n">detailed</span> <span class="n">information</span> <span class="n">to</span> <span class="n">the</span>
+                           <span class="n">failure</span> <span class="n">message</span> <span class="n">even</span> <span class="n">when</span> <span class="n">the</span> <span class="n">REQUIRED</span> <span class="n">option</span>
+                           <span class="ow">is</span> <span class="ow">not</span> <span class="n">given</span> <span class="n">to</span> <span class="n">the</span> <span class="n">find_package</span> <span class="n">call</span><span class="o">.</span>
+<span class="n">Boost_REALPATH</span>           <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">resolve</span> <span class="n">symlinks</span> <span class="k">for</span> <span class="n">discovered</span>
+                           <span class="n">libraries</span> <span class="n">to</span> <span class="n">assist</span> <span class="k">with</span> <span class="n">packaging</span><span class="o">.</span>  <span class="n">For</span> <span class="n">example</span><span class="p">,</span>
+                           <span class="n">the</span> <span class="s2">&quot;system&quot;</span> <span class="n">component</span> <span class="n">library</span> <span class="n">may</span> <span class="n">be</span> <span class="n">resolved</span> <span class="n">to</span>
+                           <span class="s2">&quot;/usr/lib/libboost_system.so.1.42.0&quot;</span> <span class="n">instead</span> <span class="n">of</span>
+                           <span class="s2">&quot;/usr/lib/libboost_system.so&quot;</span><span class="o">.</span>  <span class="n">This</span> <span class="n">does</span> <span class="ow">not</span>
+                           <span class="n">affect</span> <span class="n">linking</span> <span class="ow">and</span> <span class="n">should</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">enabled</span> <span class="n">unless</span>
+                           <span class="n">the</span> <span class="n">user</span> <span class="n">needs</span> <span class="n">this</span> <span class="n">information</span><span class="o">.</span>
+<span class="n">Boost_LIBRARY_DIR</span>        <span class="o">-</span> <span class="n">Default</span> <span class="n">value</span> <span class="k">for</span> <span class="n">Boost_LIBRARY_DIR_RELEASE</span> <span class="ow">and</span>
+                           <span class="n">Boost_LIBRARY_DIR_DEBUG</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>On Visual Studio and Borland compilers Boost headers request automatic
+linking to corresponding libraries.  This requires matching libraries
+to be linked explicitly or available in the link library search path.
+In this case setting Boost_USE_STATIC_LIBS to OFF may not achieve
+dynamic linking.  Boost automatic linking typically requests static
+libraries with a few exceptions (such as Boost.Python).  Use:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
+</pre></div>
+</div>
+<p>to ask Boost to report information about automatic linking requests.</p>
+<p>Example to find Boost headers only:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>find_package(Boost 1.36.0)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  add_executable(foo foo.cc)
+endif()
+</pre></div>
+</div>
+<p>Example to find Boost libraries and use imported targets:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package</span><span class="p">(</span><span class="n">Boost</span> <span class="mf">1.56</span> <span class="n">REQUIRED</span> <span class="n">COMPONENTS</span>
+             <span class="n">date_time</span> <span class="n">filesystem</span> <span class="n">iostreams</span><span class="p">)</span>
+<span class="n">add_executable</span><span class="p">(</span><span class="n">foo</span> <span class="n">foo</span><span class="o">.</span><span class="n">cc</span><span class="p">)</span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">foo</span> <span class="n">Boost</span><span class="p">::</span><span class="n">date_time</span> <span class="n">Boost</span><span class="p">::</span><span class="n">filesystem</span>
+                          <span class="n">Boost</span><span class="p">::</span><span class="n">iostreams</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example to find Boost headers and some <em>static</em> (release only) libraries:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+set(Boost_USE_DEBUG_LIBS         OFF) # ignore debug libs and
+set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package(Boost 1.36.0 COMPONENTS date_time filesystem system ...)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  add_executable(foo foo.cc)
+  target_link_libraries(foo ${Boost_LIBRARIES})
+endif()
+</pre></div>
+</div>
+<div class="section" id="boost-cmake">
+<h2>Boost CMake<a class="headerlink" href="#boost-cmake" title="Permalink to this headline">¶</a></h2>
+<p>If Boost was built using the boost-cmake project it provides a package
+configuration file for use with find_package&#8217;s Config mode.  This
+module looks for the package configuration file called
+BoostConfig.cmake or boost-config.cmake and stores the result in cache
+entry &#8220;Boost_DIR&#8221;.  If found, the package configuration file is loaded
+and this module returns with no further action.  See documentation of
+the Boost CMake package configuration for details on what it provides.</p>
+<p>Set Boost_NO_BOOST_CMAKE to ON to disable the search for boost-cmake.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FindBoost</a><ul>
+<li><a class="reference internal" href="#boost-cmake">Boost CMake</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindBacktrace.html"
+                        title="previous chapter">FindBacktrace</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindBullet.html"
+                        title="next chapter">FindBullet</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindBoost.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindBullet.html" title="FindBullet"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindBacktrace.html" title="FindBacktrace"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

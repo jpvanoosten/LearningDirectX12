@@ -1,0 +1,1171 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "CMAKE-DEVELOPER" "7" "Dec 13, 2017" "3.10.1" "CMake"
+.SH NAME
+cmake-developer \- CMake Developer Reference
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH INTRODUCTION
+.sp
+This manual is intended for reference by developers modifying the CMake
+source tree itself, and by those authoring externally\-maintained modules.
+.SH ADDING COMPILE FEATURES
+.sp
+CMake reports an error if a compiler whose features are known does not report
+support for a particular requested feature.  A compiler is considered to have
+known features if it reports support for at least one feature.
+.sp
+When adding a new compile feature to CMake, it is therefore necessary to list
+support for the feature for all CompilerIds which already have one or more
+feature supported, if the new feature is available for any version of the
+compiler.
+.sp
+When adding the first supported feature to a particular CompilerId, it is
+necessary to list support for all features known to cmake (See
+\fBCMAKE_C_COMPILE_FEATURES\fP and
+\fBCMAKE_CXX_COMPILE_FEATURES\fP as appropriate), where available for
+the compiler.  Ensure that the \fBCMAKE_<LANG>_STANDARD_DEFAULT\fP is set to
+the computed internal variable \fBCMAKE_<LANG>_STANDARD_COMPUTED_DEFAULT\fP
+for compiler versions which should be supported.
+.sp
+It is sensible to record the features for the most recent version of a
+particular CompilerId first, and then work backwards.  It is sensible to
+try to create a continuous range of versions of feature releases of the
+compiler.  Gaps in the range indicate incorrect features recorded for
+intermediate releases.
+.sp
+Generally, features are made available for a particular version if the
+compiler vendor documents availability of the feature with that
+version.  Note that sometimes partially implemented features appear to
+be functional in previous releases (such as \fBcxx_constexpr\fP in GNU 4.6,
+though availability is documented in GNU 4.7), and sometimes compiler vendors
+document availability of features, though supporting infrastructure is
+not available (such as \fB__has_feature(cxx_generic_lambdas)\fP indicating
+non\-availability in Clang 3.4, though it is documented as available, and
+fixed in Clang 3.5).  Similar cases for other compilers and versions
+need to be investigated when extending CMake to support them.
+.sp
+When a vendor releases a new version of a known compiler which supports
+a previously unsupported feature, and there are already known features for
+that compiler, the feature should be listed as supported in CMake for
+that version of the compiler as soon as reasonably possible.
+.sp
+Standard\-specific/compiler\-specific variables such
+\fBCMAKE_CXX98_COMPILE_FEATURES\fP are deliberately not documented.  They
+only exist for the compiler\-specific implementation of adding the \fB\-std\fP
+compile flag for compilers which need that.
+.SH HELP
+.sp
+The \fBHelp\fP directory contains CMake help manual source files.
+They are written using the \fI\%reStructuredText\fP markup syntax and
+processed by \fI\%Sphinx\fP to generate the CMake help manuals.
+.SS Markup Constructs
+.sp
+In addition to using Sphinx to generate the CMake help manuals, we
+also use a C++\-implemented document processor to print documents for
+the \fB\-\-help\-*\fP command\-line help options.  It supports a subset of
+reStructuredText markup.  When authoring or modifying documents,
+please verify that the command\-line help looks good in addition to the
+Sphinx\-generated html and man pages.
+.sp
+The command\-line help processor supports the following constructs
+defined by reStructuredText, Sphinx, and a CMake extension to Sphinx.
+.INDENT 0.0
+.TP
+.B CMake Domain directives
+Directives defined in the \fI\%CMake Domain\fP for defining CMake
+documentation objects are printed in command\-line help output as
+if the lines were normal paragraph text with interpretation.
+.TP
+.B CMake Domain interpreted text roles
+Interpreted text roles defined in the \fI\%CMake Domain\fP for
+cross\-referencing CMake documentation objects are replaced by their
+link text in command\-line help output.  Other roles are printed
+literally and not processed.
+.TP
+.B \fBcode\-block\fP directive
+Add a literal code block without interpretation.  The command\-line
+help processor prints the block content without the leading directive
+line and with common indentation replaced by one space.
+.TP
+.B \fBinclude\fP directive
+Include another document source file.  The command\-line help
+processor prints the included document inline with the referencing
+document.
+.TP
+.B literal block after \fB::\fP
+A paragraph ending in \fB::\fP followed by a blank line treats
+the following indented block as literal text without interpretation.
+The command\-line help processor prints the \fB::\fP literally and
+prints the block content with common indentation replaced by one
+space.
+.TP
+.B \fBnote\fP directive
+Call out a side note.  The command\-line help processor prints the
+block content as if the lines were normal paragraph text with
+interpretation.
+.TP
+.B \fBparsed\-literal\fP directive
+Add a literal block with markup interpretation.  The command\-line
+help processor prints the block content without the leading
+directive line and with common indentation replaced by one space.
+.TP
+.B \fBproductionlist\fP directive
+Render context\-free grammar productions.  The command\-line help
+processor prints the block content as if the lines were normal
+paragraph text with interpretation.
+.TP
+.B \fBreplace\fP directive
+Define a \fB|substitution|\fP replacement.
+The command\-line help processor requires a substitution replacement
+to be defined before it is referenced.
+.TP
+.B \fB|substitution|\fP reference
+Reference a substitution replacement previously defined by
+the \fBreplace\fP directive.  The command\-line help processor
+performs the substitution and replaces all newlines in the
+replacement text with spaces.
+.TP
+.B \fBtoctree\fP directive
+Include other document sources in the Table\-of\-Contents
+document tree.  The command\-line help processor prints
+the referenced documents inline as part of the referencing
+document.
+.UNINDENT
+.sp
+Inline markup constructs not listed above are printed literally in the
+command\-line help output.  We prefer to use inline markup constructs that
+look correct in source form, so avoid use of \e\-escapes in favor of inline
+literals when possible.
+.sp
+Explicit markup blocks not matching directives listed above are removed from
+command\-line help output.  Do not use them, except for plain \fB\&..\fP comments
+that are removed by Sphinx too.
+.sp
+Note that nested indentation of blocks is not recognized by the
+command\-line help processor.  Therefore:
+.INDENT 0.0
+.IP \(bu 2
+Explicit markup blocks are recognized only when not indented
+inside other blocks.
+.IP \(bu 2
+Literal blocks after paragraphs ending in \fB::\fP but not
+at the top indentation level may consume all indented lines
+following them.
+.UNINDENT
+.sp
+Try to avoid these cases in practice.
+.SS CMake Domain
+.sp
+CMake adds a \fI\%Sphinx Domain\fP called \fBcmake\fP, also called the
+"CMake Domain".  It defines several "object" types for CMake
+documentation:
+.INDENT 0.0
+.TP
+.B \fBcommand\fP
+A CMake language command.
+.TP
+.B \fBgenerator\fP
+A CMake native build system generator.
+See the \fBcmake(1)\fP command\-line tool\(aqs \fB\-G\fP option.
+.TP
+.B \fBmanual\fP
+A CMake manual page, like this \fI\%cmake\-developer(7)\fP manual.
+.TP
+.B \fBmodule\fP
+A CMake module.
+See the \fBcmake\-modules(7)\fP manual
+and the \fBinclude()\fP command.
+.TP
+.B \fBpolicy\fP
+A CMake policy.
+See the \fBcmake\-policies(7)\fP manual
+and the \fBcmake_policy()\fP command.
+.TP
+.B \fBprop_cache, prop_dir, prop_gbl, prop_sf, prop_inst, prop_test, prop_tgt\fP
+A CMake cache, directory, global, source file, installed file, test,
+or target property, respectively.  See the \fBcmake\-properties(7)\fP
+manual and the \fBset_property()\fP command.
+.TP
+.B \fBvariable\fP
+A CMake language variable.
+See the \fBcmake\-variables(7)\fP manual
+and the \fBset()\fP command.
+.UNINDENT
+.sp
+Documentation objects in the CMake Domain come from two sources.
+First, the CMake extension to Sphinx transforms every document named
+with the form \fBHelp/<type>/<file\-name>.rst\fP to a domain object with
+type \fB<type>\fP\&.  The object name is extracted from the document title,
+which is expected to be of the form:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+<object\-name>
+\-\-\-\-\-\-\-\-\-\-\-\-\-
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+and to appear at or near the top of the \fB\&.rst\fP file before any other
+lines starting in a letter, digit, or \fB<\fP\&.  If no such title appears
+literally in the \fB\&.rst\fP file, the object name is the \fB<file\-name>\fP\&.
+If a title does appear, it is expected that \fB<file\-name>\fP is equal
+to \fB<object\-name>\fP with any \fB<\fP and \fB>\fP characters removed.
+.sp
+Second, the CMake Domain provides directives to define objects inside
+other documents:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\&.. command:: <command\-name>
+
+ This indented block documents <command\-name>.
+
+\&.. variable:: <variable\-name>
+
+ This indented block documents <variable\-name>.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Object types for which no directive is available must be defined using
+the first approach above.
+.SS Cross\-References
+.sp
+Sphinx uses reStructuredText interpreted text roles to provide
+cross\-reference syntax.  The \fI\%CMake Domain\fP provides for each
+domain object type a role of the same name to cross\-reference it.
+CMake Domain roles are inline markup of the forms:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+:type:\(ganame\(ga
+:type:\(gatext <name>\(ga
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+where \fBtype\fP is the domain object type and \fBname\fP is the
+domain object name.  In the first form the link text will be
+\fBname\fP (or \fBname()\fP if the type is \fBcommand\fP) and in
+the second form the link text will be the explicit \fBtext\fP\&.
+For example, the code:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+* The :command:\(galist\(ga command.
+* The :command:\(galist(APPEND)\(ga sub\-command.
+* The :command:\(galist() command <list>\(ga.
+* The :command:\(galist(APPEND) sub\-command <list>\(ga.
+* The :variable:\(gaCMAKE_VERSION\(ga variable.
+* The :prop_tgt:\(gaOUTPUT_NAME_<CONFIG>\(ga target property.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+produces:
+.INDENT 0.0
+.IP \(bu 2
+The \fBlist()\fP command.
+.IP \(bu 2
+The \fBlist(APPEND)\fP sub\-command.
+.IP \(bu 2
+The \fBlist() command\fP\&.
+.IP \(bu 2
+The \fBlist(APPEND) sub\-command\fP\&.
+.IP \(bu 2
+The \fBCMAKE_VERSION\fP variable.
+.IP \(bu 2
+The \fBOUTPUT_NAME_<CONFIG>\fP target property.
+.UNINDENT
+.sp
+Note that CMake Domain roles differ from Sphinx and reStructuredText
+convention in that the form \fBa<b>\fP, without a space preceding \fB<\fP,
+is interpreted as a name instead of link text with an explicit target.
+This is necessary because we use \fB<placeholders>\fP frequently in
+object names like \fBOUTPUT_NAME_<CONFIG>\fP\&.  The form \fBa <b>\fP,
+with a space preceding \fB<\fP, is still interpreted as a link text
+with an explicit target.
+.SS Style
+.SS Style: Section Headers
+.sp
+When marking section titles, make the section decoration line as long as
+the title text.  Use only a line below the title, not above. For
+example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Title Text
+\-\-\-\-\-\-\-\-\-\-
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Capitalize the first letter of each non\-minor word in the title.
+.sp
+The section header underline character hierarchy is
+.INDENT 0.0
+.IP \(bu 2
+\fB#\fP: Manual group (part) in the master document
+.IP \(bu 2
+\fB*\fP: Manual (chapter) title
+.IP \(bu 2
+\fB=\fP: Section within a manual
+.IP \(bu 2
+\fB\-\fP: Subsection or \fI\%CMake Domain\fP object document title
+.IP \(bu 2
+\fB^\fP: Subsubsection or \fI\%CMake Domain\fP object document section
+.IP \(bu 2
+\fB"\fP: Paragraph or \fI\%CMake Domain\fP object document subsection
+.UNINDENT
+.SS Style: Whitespace
+.sp
+Use two spaces for indentation.  Use two spaces between sentences in
+prose.
+.SS Style: Line Length
+.sp
+Prefer to restrict the width of lines to 75\-80 columns.  This is not a
+hard restriction, but writing new paragraphs wrapped at 75 columns
+allows space for adding minor content without significant re\-wrapping of
+content.
+.SS Style: Prose
+.sp
+Use American English spellings in prose.
+.SS Style: Starting Literal Blocks
+.sp
+Prefer to mark the start of literal blocks with \fB::\fP at the end of
+the preceding paragraph. In cases where the following block gets
+a \fBcode\-block\fP marker, put a single \fB:\fP at the end of the preceding
+paragraph.
+.SS Style: CMake Command Signatures
+.sp
+Command signatures should be marked up as plain literal blocks, not as
+cmake \fBcode\-blocks\fP\&.
+.sp
+Signatures are separated from preceding content by a section header.
+That is, use:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\&... preceding paragraph.
+
+Normal Libraries
+^^^^^^^^^^^^^^^^
+
+::
+
+  add_library(<lib> ...)
+
+This signature is used for ...
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Signatures of commands should wrap optional parts with square brackets,
+and should mark list of optional arguments with an ellipsis (\fB\&...\fP).
+Elements of the signature which are specified by the user should be
+specified with angle brackets, and may be referred to in prose using
+\fBinline\-literal\fP syntax.
+.SS Style: Boolean Constants
+.sp
+Use "\fBOFF\fP" and "\fBON\fP" for boolean values which can be modified by
+the user, such as \fBPOSITION_INDEPENDENT_CODE\fP\&. Such properties
+may be "enabled" and "disabled". Use "\fBTrue\fP" and "\fBFalse\fP" for
+inherent values which can\(aqt be modified after being set, such as the
+\fBIMPORTED\fP property of a build target.
+.SS Style: Inline Literals
+.sp
+Mark up references to keywords in signatures, file names, and other
+technical terms with \fBinline\-literal\fP syntax, for example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+If \(ga\(gaWIN32\(ga\(ga is used with :command:\(gaadd_executable\(ga, the
+:prop_tgt:\(gaWIN32_EXECUTABLE\(ga target property is enabled. That command
+creates the file \(ga\(ga<name>.exe\(ga\(ga on Windows.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Style: Cross\-References
+.sp
+Mark up linkable references as links, including repeats.
+An alternative, which is used by wikipedia
+(\fI\%http://en.wikipedia.org/wiki/WP:REPEATLINK\fP),
+is to link to a reference only once per article. That style is not used
+in CMake documentation.
+.SS Style: Referencing CMake Concepts
+.sp
+If referring to a concept which corresponds to a property, and that
+concept is described in a high\-level manual, prefer to link to the
+manual section instead of the property. For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+This command creates an :ref:\(gaImported Target <Imported Targets>\(ga.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+instead of:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+This command creates an :prop_tgt:\(gaIMPORTED\(ga target.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The latter should be used only when referring specifically to the
+property.
+.sp
+References to manual sections are not automatically created by creating
+a section, but code such as:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\&.. _\(gaImported Targets\(ga:
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+creates a suitable anchor.  Use an anchor name which matches the name
+of the corresponding section.  Refer to the anchor using a
+cross\-reference with specified text.
+.sp
+Imported Targets need the \fBIMPORTED\fP term marked up with care in
+particular because the term may refer to a command keyword
+(\fBIMPORTED\fP), a target property (\fBIMPORTED\fP), or a
+concept (Imported Targets).
+.sp
+Where a property, command or variable is related conceptually to others,
+by for example, being related to the buildsystem description, generator
+expressions or Qt, each relevant property, command or variable should
+link to the primary manual, which provides high\-level information.  Only
+particular information relating to the command should be in the
+documentation of the command.
+.SS Style: Referencing CMake Domain Objects
+.sp
+When referring to \fI\%CMake Domain\fP objects such as properties, variables,
+commands etc, prefer to link to the target object and follow that with
+the type of object it is.  For example:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Set the :prop_tgt:\(gaAUTOMOC\(ga target property to \(ga\(gaON\(ga\(ga.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Instead of
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Set the target property :prop_tgt:\(gaAUTOMOC\(ga to \(ga\(gaON\(ga\(ga.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBpolicy\fP directive is an exception, and the type us usually
+referred to before the link:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+If policy :prop_tgt:\(gaCMP0022\(ga is set to \(ga\(gaNEW\(ga\(ga the behavior is ...
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+However, markup self\-references with \fBinline\-literal\fP syntax.
+For example, within the \fBadd_executable()\fP command
+documentation, use
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\(ga\(gaadd_executable\(ga\(ga
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+not
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+:command:\(gaadd_executable\(ga
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+which is used elsewhere.
+.SH MODULES
+.sp
+The \fBModules\fP directory contains CMake\-language \fB\&.cmake\fP module files.
+.SS Module Documentation
+.sp
+To document CMake module \fBModules/<module\-name>.cmake\fP, modify
+\fBHelp/manual/cmake\-modules.7.rst\fP to reference the module in the
+\fBtoctree\fP directive, in sorted order, as:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+/module/<module\-name>
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Then add the module document file \fBHelp/module/<module\-name>.rst\fP
+containing just the line:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\&.. cmake\-module:: ../../Modules/<module\-name>.cmake
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBcmake\-module\fP directive will scan the module file to extract
+reStructuredText markup from comment blocks that start in \fB\&.rst:\fP\&.
+At the top of \fBModules/<module\-name>.cmake\fP, begin with the following
+license notice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+# Distributed under the OSI\-approved BSD 3\-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+After this notice, add a \fIBLANK\fP line.  Then, add documentation using
+a Line Comment block of the form:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+#.rst:
+# <module\-name>
+# \-\-\-\-\-\-\-\-\-\-\-\-\-
+#
+# <reStructuredText documentation of module>
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+or a Bracket Comment of the form:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+#[[.rst:
+<module\-name>
+\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+<reStructuredText documentation of module>
+#]]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Any number of \fB=\fP may be used in the opening and closing brackets
+as long as they match.  Content on the line containing the closing
+bracket is excluded if and only if the line starts in \fB#\fP\&.
+.sp
+Additional such \fB\&.rst:\fP comments may appear anywhere in the module file.
+All such comments must start with \fB#\fP in the first column.
+.sp
+For example, a \fBModules/Findxxx.cmake\fP module may contain:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+# Distributed under the OSI\-approved BSD 3\-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+
+#.rst:
+# FindXxx
+# \-\-\-\-\-\-\-
+#
+# This is a cool module.
+# This module does really cool stuff.
+# It can do even more than you think.
+#
+# It even needs two paragraphs to tell you about it.
+# And it defines the following variables:
+#
+# * VAR_COOL: this is great isn\(aqt it?
+# * VAR_REALLY_COOL: cool right?
+
+<code>
+
+#[========================================[.rst:
+\&.. command:: xxx_do_something
+
+ This command does something for Xxx::
+
+  xxx_do_something(some arguments)
+#]========================================]
+macro(xxx_do_something)
+  <code>
+endmacro()
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Test the documentation formatting by running
+\fBcmake \-\-help\-module <module\-name>\fP, and also by enabling the
+\fBSPHINX_HTML\fP and \fBSPHINX_MAN\fP options to build the documentation.
+Edit the comments until generated documentation looks satisfactory.  To
+have a .cmake file in this directory NOT show up in the modules
+documentation, simply leave out the \fBHelp/module/<module\-name>.rst\fP
+file and the \fBHelp/manual/cmake\-modules.7.rst\fP toctree entry.
+.SS Find Modules
+.sp
+A "find module" is a \fBModules/Find<package>.cmake\fP file to be loaded
+by the \fBfind_package()\fP command when invoked for \fB<package>\fP\&.
+.sp
+The primary task of a find module is to determine whether a package
+exists on the system, set the \fB<package>_FOUND\fP variable to reflect
+this and provide any variables, macros and imported targets required to
+use the package.  A find module is useful in cases where an upstream
+library does not provide a
+config file package\&.
+.sp
+The traditional approach is to use variables for everything, including
+libraries and executables: see the \fI\%Standard Variable Names\fP section
+below.  This is what most of the existing find modules provided by CMake
+do.
+.sp
+The more modern approach is to behave as much like
+config file packages files as possible, by
+providing imported target\&.  This has the advantage
+of propagating Target Usage Requirements to consumers.
+.sp
+In either case (or even when providing both variables and imported
+targets), find modules should provide backwards compatibility with old
+versions that had the same name.
+.sp
+A FindFoo.cmake module will typically be loaded by the command:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+find_package(Foo [major[.minor[.patch[.tweak]]]]
+             [EXACT] [QUIET] [REQUIRED]
+             [[COMPONENTS] [components...]]
+             [OPTIONAL_COMPONENTS components...]
+             [NO_POLICY_SCOPE])
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+See the \fBfind_package()\fP documentation for details on what
+variables are set for the find module.  Most of these are dealt with by
+using \fBFindPackageHandleStandardArgs\fP\&.
+.sp
+Briefly, the module should only locate versions of the package
+compatible with the requested version, as described by the
+\fBFoo_FIND_VERSION\fP family of variables.  If \fBFoo_FIND_QUIETLY\fP is
+set to true, it should avoid printing messages, including anything
+complaining about the package not being found.  If \fBFoo_FIND_REQUIRED\fP
+is set to true, the module should issue a \fBFATAL_ERROR\fP if the package
+cannot be found.  If neither are set to true, it should print a
+non\-fatal message if it cannot find the package.
+.sp
+Packages that find multiple semi\-independent parts (like bundles of
+libraries) should search for the components listed in
+\fBFoo_FIND_COMPONENTS\fP if it is set , and only set \fBFoo_FOUND\fP to
+true if for each searched\-for component \fB<c>\fP that was not found,
+\fBFoo_FIND_REQUIRED_<c>\fP is not set to true.  The \fBHANDLE_COMPONENTS\fP
+argument of \fBfind_package_handle_standard_args()\fP can be used to
+implement this.
+.sp
+If \fBFoo_FIND_COMPONENTS\fP is not set, which modules are searched for
+and required is up to the find module, but should be documented.
+.sp
+For internal implementation, it is a generally accepted convention that
+variables starting with underscore are for temporary use only.
+.sp
+Like all modules, find modules should be properly documented.  To add a
+module to the CMake documentation, follow the steps in the \fI\%Module
+Documentation\fP section above.
+.SS Standard Variable Names
+.sp
+For a \fBFindXxx.cmake\fP module that takes the approach of setting
+variables (either instead of or in addition to creating imported
+targets), the following variable names should be used to keep things
+consistent between find modules.  Note that all variables start with
+\fBXxx_\fP to make sure they do not interfere with other find modules; the
+same consideration applies to macros, functions and imported targets.
+.INDENT 0.0
+.TP
+.B \fBXxx_INCLUDE_DIRS\fP
+The final set of include directories listed in one variable for use by
+client code.  This should not be a cache entry.
+.TP
+.B \fBXxx_LIBRARIES\fP
+The libraries to link against to use Xxx. These should include full
+paths.  This should not be a cache entry.
+.TP
+.B \fBXxx_DEFINITIONS\fP
+Definitions to use when compiling code that uses Xxx. This really
+shouldn\(aqt include options such as \fB\-DHAS_JPEG\fP that a client
+source\-code file uses to decide whether to \fB#include <jpeg.h>\fP
+.TP
+.B \fBXxx_EXECUTABLE\fP
+Where to find the Xxx tool.
+.TP
+.B \fBXxx_Yyy_EXECUTABLE\fP
+Where to find the Yyy tool that comes with Xxx.
+.TP
+.B \fBXxx_LIBRARY_DIRS\fP
+Optionally, the final set of library directories listed in one
+variable for use by client code.  This should not be a cache entry.
+.TP
+.B \fBXxx_ROOT_DIR\fP
+Where to find the base directory of Xxx.
+.TP
+.B \fBXxx_VERSION_Yy\fP
+Expect Version Yy if true. Make sure at most one of these is ever true.
+.TP
+.B \fBXxx_WRAP_Yy\fP
+If False, do not try to use the relevant CMake wrapping command.
+.TP
+.B \fBXxx_Yy_FOUND\fP
+If False, optional Yy part of Xxx system is not available.
+.TP
+.B \fBXxx_FOUND\fP
+Set to false, or undefined, if we haven\(aqt found, or don\(aqt want to use
+Xxx.
+.TP
+.B \fBXxx_NOT_FOUND_MESSAGE\fP
+Should be set by config\-files in the case that it has set
+\fBXxx_FOUND\fP to FALSE.  The contained message will be printed by the
+\fBfind_package()\fP command and by
+\fBfind_package_handle_standard_args()\fP to inform the user about the
+problem.
+.TP
+.B \fBXxx_RUNTIME_LIBRARY_DIRS\fP
+Optionally, the runtime library search path for use when running an
+executable linked to shared libraries.  The list should be used by
+user code to create the \fBPATH\fP on windows or \fBLD_LIBRARY_PATH\fP on
+UNIX.  This should not be a cache entry.
+.TP
+.B \fBXxx_VERSION\fP
+The full version string of the package found, if any.  Note that many
+existing modules provide \fBXxx_VERSION_STRING\fP instead.
+.TP
+.B \fBXxx_VERSION_MAJOR\fP
+The major version of the package found, if any.
+.TP
+.B \fBXxx_VERSION_MINOR\fP
+The minor version of the package found, if any.
+.TP
+.B \fBXxx_VERSION_PATCH\fP
+The patch version of the package found, if any.
+.UNINDENT
+.sp
+The following names should not usually be used in CMakeLists.txt files, but
+are typically cache variables for users to edit and control the
+behaviour of find modules (like entering the path to a library manually)
+.INDENT 0.0
+.TP
+.B \fBXxx_LIBRARY\fP
+The path of the Xxx library (as used with \fBfind_library()\fP, for
+example).
+.TP
+.B \fBXxx_Yy_LIBRARY\fP
+The path of the Yy library that is part of the Xxx system. It may or
+may not be required to use Xxx.
+.TP
+.B \fBXxx_INCLUDE_DIR\fP
+Where to find headers for using the Xxx library.
+.TP
+.B \fBXxx_Yy_INCLUDE_DIR\fP
+Where to find headers for using the Yy library of the Xxx system.
+.UNINDENT
+.sp
+To prevent users being overwhelmed with settings to configure, try to
+keep as many options as possible out of the cache, leaving at least one
+option which can be used to disable use of the module, or locate a
+not\-found library (e.g. \fBXxx_ROOT_DIR\fP).  For the same reason, mark
+most cache options as advanced.  For packages which provide both debug
+and release binaries, it is common to create cache variables with a
+\fB_LIBRARY_<CONFIG>\fP suffix, such as \fBFoo_LIBRARY_RELEASE\fP and
+\fBFoo_LIBRARY_DEBUG\fP\&.
+.sp
+While these are the standard variable names, you should provide
+backwards compatibility for any old names that were actually in use.
+Make sure you comment them as deprecated, so that no\-one starts using
+them.
+.SS A Sample Find Module
+.sp
+We will describe how to create a simple find module for a library
+\fBFoo\fP\&.
+.sp
+The first thing that is needed is a license notice.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+# Distributed under the OSI\-approved BSD 3\-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Next we need module documentation.  CMake\(aqs documentation system requires you
+to follow the license notice with a blank line and then with a documentation
+marker and the name of the module.  You should follow this with a simple
+statement of what the module does.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+#.rst:
+# FindFoo
+# \-\-\-\-\-\-\-
+#
+# Finds the Foo library
+#
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+More description may be required for some packages.  If there are
+caveats or other details users of the module should be aware of, you can
+add further paragraphs below this.  Then you need to document what
+variables and imported targets are set by the module, such as
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+# This will define the following variables::
+#
+#   Foo_FOUND    \- True if the system has the Foo library
+#   Foo_VERSION  \- The version of the Foo library which was found
+#
+# and the following imported targets::
+#
+#   Foo::Foo   \- The Foo library
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If the package provides any macros, they should be listed here, but can
+be documented where they are defined.  See the \fI\%Module
+Documentation\fP section above for more details.
+.sp
+Now the actual libraries and so on have to be found.  The code here will
+obviously vary from module to module (dealing with that, after all, is the
+point of find modules), but there tends to be a common pattern for libraries.
+.sp
+First, we try to use \fBpkg\-config\fP to find the library.  Note that we
+cannot rely on this, as it may not be available, but it provides a good
+starting point.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+find_package(PkgConfig)
+pkg_check_modules(PC_Foo QUIET Foo)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This should define some variables starting \fBPC_Foo_\fP that contain the
+information from the \fBFoo.pc\fP file.
+.sp
+Now we need to find the libraries and include files; we use the
+information from \fBpkg\-config\fP to provide hints to CMake about where to
+look.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+find_path(Foo_INCLUDE_DIR
+  NAMES foo.h
+  PATHS ${PC_Foo_INCLUDE_DIRS}
+  PATH_SUFFIXES Foo
+)
+find_library(Foo_LIBRARY
+  NAMES foo
+  PATHS ${PC_Foo_LIBRARY_DIRS}
+)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If you have a good way of getting the version (from a header file, for
+example), you can use that information to set \fBFoo_VERSION\fP (although
+note that find modules have traditionally used \fBFoo_VERSION_STRING\fP,
+so you may want to set both).  Otherwise, attempt to use the information
+from \fBpkg\-config\fP
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set(Foo_VERSION ${PC_Foo_VERSION})
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Now we can use \fBFindPackageHandleStandardArgs\fP to do most of the
+rest of the work for us
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Foo
+  FOUND_VAR Foo_FOUND
+  REQUIRED_VARS
+    Foo_LIBRARY
+    Foo_INCLUDE_DIR
+  VERSION_VAR Foo_VERSION
+)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This will check that the \fBREQUIRED_VARS\fP contain values (that do not
+end in \fB\-NOTFOUND\fP) and set \fBFoo_FOUND\fP appropriately.  It will also
+cache those values.  If \fBFoo_VERSION\fP is set, and a required version
+was passed to \fBfind_package()\fP, it will check the requested version
+against the one in \fBFoo_VERSION\fP\&.  It will also print messages as
+appropriate; note that if the package was found, it will print the
+contents of the first required variable to indicate where it was found.
+.sp
+At this point, we have to provide a way for users of the find module to
+link to the library or libraries that were found.  There are two
+approaches, as discussed in the \fI\%Find Modules\fP section above.  The
+traditional variable approach looks like
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+if(Foo_FOUND)
+  set(Foo_LIBRARIES ${Foo_LIBRARY})
+  set(Foo_INCLUDE_DIRS ${Foo_INCLUDE_DIR})
+  set(Foo_DEFINITIONS ${PC_Foo_CFLAGS_OTHER})
+endif()
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If more than one library was found, all of them should be included in
+these variables (see the \fI\%Standard Variable Names\fP section for more
+information).
+.sp
+When providing imported targets, these should be namespaced (hence the
+\fBFoo::\fP prefix); CMake will recognize that values passed to
+\fBtarget_link_libraries()\fP that contain \fB::\fP in their name are
+supposed to be imported targets (rather than just library names), and
+will produce appropriate diagnostic messages if that target does not
+exist (see policy \fBCMP0028\fP).
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+if(Foo_FOUND AND NOT TARGET Foo::Foo)
+  add_library(Foo::Foo UNKNOWN IMPORTED)
+  set_target_properties(Foo::Foo PROPERTIES
+    IMPORTED_LOCATION "${Foo_LIBRARY}"
+    INTERFACE_COMPILE_OPTIONS "${PC_Foo_CFLAGS_OTHER}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Foo_INCLUDE_DIR}"
+  )
+endif()
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+One thing to note about this is that the \fBINTERFACE_INCLUDE_DIRECTORIES\fP and
+similar properties should only contain information about the target itself, and
+not any of its dependencies.  Instead, those dependencies should also be
+targets, and CMake should be told that they are dependencies of this target.
+CMake will then combine all the necessary information automatically.
+.sp
+The type of the \fBIMPORTED\fP target created in the
+\fBadd_library()\fP command can always be specified as \fBUNKNOWN\fP
+type.  This simplifies the code in cases where static or shared variants may
+be found, and CMake will determine the type by inspecting the files.
+.sp
+If the library is available with multiple configurations, the
+\fBIMPORTED_CONFIGURATIONS\fP target property should also be
+populated:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+if(Foo_FOUND)
+  if (NOT TARGET Foo::Foo)
+    add_library(Foo::Foo UNKNOWN IMPORTED)
+  endif()
+  if (Foo_LIBRARY_RELEASE)
+    set_property(TARGET Foo::Foo APPEND PROPERTY
+      IMPORTED_CONFIGURATIONS RELEASE
+    )
+    set_target_properties(Foo::Foo PROPERTIES
+      IMPORTED_LOCATION_RELEASE "${Foo_LIBRARY_RELEASE}"
+    )
+  endif()
+  if (Foo_LIBRARY_DEBUG)
+    set_property(TARGET Foo::Foo APPEND PROPERTY
+      IMPORTED_CONFIGURATIONS DEBUG
+    )
+    set_target_properties(Foo::Foo PROPERTIES
+      IMPORTED_LOCATION_DEBUG "${Foo_LIBRARY_DEBUG}"
+    )
+  endif()
+  set_target_properties(Foo::Foo PROPERTIES
+    INTERFACE_COMPILE_OPTIONS "${PC_Foo_CFLAGS_OTHER}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Foo_INCLUDE_DIR}"
+  )
+endif()
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBRELEASE\fP variant should be listed first in the property
+so that that variant is chosen if the user uses a configuration which is
+not an exact match for any listed \fBIMPORTED_CONFIGURATIONS\fP\&.
+.sp
+Most of the cache variables should be hidden in the \fBccmake\fP interface unless
+the user explicitly asks to edit them.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+mark_as_advanced(
+  Foo_INCLUDE_DIR
+  Foo_LIBRARY
+)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+If this module replaces an older version, you should set compatibility variables
+to cause the least disruption possible.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+# compatibility variables
+set(Foo_VERSION_STRING ${Foo_VERSION})
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SH COPYRIGHT
+2000-2017 Kitware, Inc. and Contributors
+.\" Generated by docutils manpage writer.
+.

@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CPackProductBuild &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CPackRPM" href="CPackRPM.html" />
+    <link rel="prev" title="CPackPackageMaker" href="CPackPackageMaker.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CPackRPM.html" title="CPackRPM"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CPackPackageMaker.html" title="CPackPackageMaker"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cpackproductbuild">
+<span id="module:CPackProductBuild"></span><h1>CPackProductBuild<a class="headerlink" href="#cpackproductbuild" title="Permalink to this headline">¶</a></h1>
+<p>productbuild CPack generator (Mac OS X).</p>
+<div class="section" id="variables-specific-to-cpack-productbuild-generator">
+<h2>Variables specific to CPack productbuild generator<a class="headerlink" href="#variables-specific-to-cpack-productbuild-generator" title="Permalink to this headline">¶</a></h2>
+<p>The following variable is specific to installers built on Mac
+OS X using productbuild:</p>
+<dl class="variable">
+<dt id="variable:CPACK_COMMAND_PRODUCTBUILD">
+<code class="descname">CPACK_COMMAND_PRODUCTBUILD</code><a class="headerlink" href="#variable:CPACK_COMMAND_PRODUCTBUILD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the productbuild(1) command used to generate a product archive for
+the OS X Installer or Mac App Store.  This variable can be used to override
+the automatically detected command (or specify its location if the
+auto-detection fails to find it.)</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_PRODUCTBUILD_IDENTITY_NAME">
+<code class="descname">CPACK_PRODUCTBUILD_IDENTITY_NAME</code><a class="headerlink" href="#variable:CPACK_PRODUCTBUILD_IDENTITY_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a digital signature to the resulting package.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_PRODUCTBUILD_KEYCHAIN_PATH">
+<code class="descname">CPACK_PRODUCTBUILD_KEYCHAIN_PATH</code><a class="headerlink" href="#variable:CPACK_PRODUCTBUILD_KEYCHAIN_PATH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify a specific keychain to search for the signing identity.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_COMMAND_PKGBUILD">
+<code class="descname">CPACK_COMMAND_PKGBUILD</code><a class="headerlink" href="#variable:CPACK_COMMAND_PKGBUILD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the pkgbuild(1) command used to generate an OS X component package
+on OS X.  This variable can be used to override the automatically detected
+command (or specify its location if the auto-detection fails to find it.)</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_PKGBUILD_IDENTITY_NAME">
+<code class="descname">CPACK_PKGBUILD_IDENTITY_NAME</code><a class="headerlink" href="#variable:CPACK_PKGBUILD_IDENTITY_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a digital signature to the resulting package.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_PKGBUILD_KEYCHAIN_PATH">
+<code class="descname">CPACK_PKGBUILD_KEYCHAIN_PATH</code><a class="headerlink" href="#variable:CPACK_PKGBUILD_KEYCHAIN_PATH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify a specific keychain to search for the signing identity.</p>
+</dd></dl>
+
+<dl class="variable">
+<dt id="variable:CPACK_PRODUCTBUILD_RESOURCES_DIR">
+<code class="descname">CPACK_PRODUCTBUILD_RESOURCES_DIR</code><a class="headerlink" href="#variable:CPACK_PRODUCTBUILD_RESOURCES_DIR" title="Permalink to this definition">¶</a></dt>
+<dd><p>If specified the productbuild generator copies files from this directory
+(including subdirectories) to the <code class="docutils literal"><span class="pre">Resources</span></code> directory. This is done
+before the <span class="target" id="index-0-variable:CPACK_RESOURCE_FILE_WELCOME"></span><a class="reference internal" href="CPack.html#variable:CPACK_RESOURCE_FILE_WELCOME" title="CPACK_RESOURCE_FILE_WELCOME"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CPACK_RESOURCE_FILE_WELCOME</span></code></a>,
+<span class="target" id="index-0-variable:CPACK_RESOURCE_FILE_README"></span><a class="reference internal" href="CPack.html#variable:CPACK_RESOURCE_FILE_README" title="CPACK_RESOURCE_FILE_README"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CPACK_RESOURCE_FILE_README</span></code></a>, and
+<span class="target" id="index-0-variable:CPACK_RESOURCE_FILE_LICENSE"></span><a class="reference internal" href="CPack.html#variable:CPACK_RESOURCE_FILE_LICENSE" title="CPACK_RESOURCE_FILE_LICENSE"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CPACK_RESOURCE_FILE_LICENSE</span></code></a> files are copied.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CPackProductBuild</a><ul>
+<li><a class="reference internal" href="#variables-specific-to-cpack-productbuild-generator">Variables specific to CPack productbuild generator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CPackPackageMaker.html"
+                        title="previous chapter">CPackPackageMaker</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CPackRPM.html"
+                        title="next chapter">CPackRPM</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CPackProductBuild.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CPackRPM.html" title="CPackRPM"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CPackPackageMaker.html" title="CPackPackageMaker"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

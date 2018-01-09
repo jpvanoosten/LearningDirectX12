@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>separate_arguments &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="set_directory_properties" href="set_directory_properties.html" />
+    <link rel="prev" title="return" href="return.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="set_directory_properties.html" title="set_directory_properties"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="return.html" title="return"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="separate-arguments">
+<span id="command:separate_arguments"></span><h1>separate_arguments<a class="headerlink" href="#separate-arguments" title="Permalink to this headline">¶</a></h1>
+<p>Parse space-separated arguments into a semicolon-separated list.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">separate_arguments</span><span class="p">(</span><span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">NATIVE</span><span class="o">|</span><span class="n">UNIX</span><span class="o">|</span><span class="n">WINDOWS</span><span class="o">&gt;</span><span class="n">_COMMAND</span> <span class="s2">&quot;&lt;args&gt;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Parses a UNIX- or Windows-style command-line string &#8220;&lt;args&gt;&#8221; and
+stores a semicolon-separated list of the arguments in <code class="docutils literal"><span class="pre">&lt;var&gt;</span></code>.  The
+entire command line must be given in one &#8220;&lt;args&gt;&#8221; argument.</p>
+<p>The <code class="docutils literal"><span class="pre">UNIX_COMMAND</span></code> mode separates arguments by unquoted whitespace.  It
+recognizes both single-quote and double-quote pairs.  A backslash
+escapes the next literal character (<code class="docutils literal"><span class="pre">\&quot;</span></code> is <code class="docutils literal"><span class="pre">&quot;</span></code>); there are no special
+escapes (<code class="docutils literal"><span class="pre">\n</span></code> is just <code class="docutils literal"><span class="pre">n</span></code>).</p>
+<p>The <code class="docutils literal"><span class="pre">WINDOWS_COMMAND</span></code> mode parses a Windows command-line using the same
+syntax the runtime library uses to construct argv at startup.  It
+separates arguments by whitespace that is not double-quoted.
+Backslashes are literal unless they precede double-quotes.  See the
+MSDN article <a class="reference external" href="https://msdn.microsoft.com/library/a1y7w461.aspx">Parsing C Command-Line Arguments</a> for details.</p>
+<p>The <code class="docutils literal"><span class="pre">NATIVE_COMMAND</span></code> mode parses a Windows command-line if the host
+system is Windows, and a UNIX command-line otherwise.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">separate_arguments</span><span class="p">(</span><span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Convert the value of <code class="docutils literal"><span class="pre">&lt;var&gt;</span></code> to a semi-colon separated list.  All
+spaces are replaced with &#8216;;&#8217;.  This helps with generating command
+lines.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="return.html"
+                        title="previous chapter">return</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="set_directory_properties.html"
+                        title="next chapter">set_directory_properties</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/separate_arguments.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="set_directory_properties.html" title="set_directory_properties"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="return.html" title="return"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

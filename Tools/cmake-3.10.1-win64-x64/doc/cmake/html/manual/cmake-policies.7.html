@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>cmake-policies(7) &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CMP0071" href="../policy/CMP0071.html" />
+    <link rel="prev" title="cmake-packages(7)" href="cmake-packages.7.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../policy/CMP0071.html" title="CMP0071"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cmake-packages.7.html" title="cmake-packages(7)"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="manual:cmake-policies(7)"></span><div class="section" id="cmake-policies-7">
+<h1><a class="toc-backref" href="#id1">cmake-policies(7)</a><a class="headerlink" href="#cmake-policies-7" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#cmake-policies-7" id="id1">cmake-policies(7)</a><ul>
+<li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-10" id="id3">Policies Introduced by CMake 3.10</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-9" id="id4">Policies Introduced by CMake 3.9</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-8" id="id5">Policies Introduced by CMake 3.8</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-7" id="id6">Policies Introduced by CMake 3.7</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-4" id="id7">Policies Introduced by CMake 3.4</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-3" id="id8">Policies Introduced by CMake 3.3</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-2" id="id9">Policies Introduced by CMake 3.2</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-1" id="id10">Policies Introduced by CMake 3.1</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-0" id="id11">Policies Introduced by CMake 3.0</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-2-8" id="id12">Policies Introduced by CMake 2.8</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-2-6" id="id13">Policies Introduced by CMake 2.6</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Policies in CMake are used to preserve backward compatible behavior
+across multiple releases.  When a new policy is introduced, newer CMake
+versions will begin to warn about the backward compatible behavior.  It
+is possible to disable the warning by explicitly requesting the OLD, or
+backward compatible behavior using the <span class="target" id="index-0-command:cmake_policy"></span><a class="reference internal" href="../command/cmake_policy.html#command:cmake_policy" title="cmake_policy"><code class="xref cmake cmake-command docutils literal"><span class="pre">cmake_policy()</span></code></a> command.
+It is also possible to request <code class="docutils literal"><span class="pre">NEW</span></code>, or non-backward compatible behavior
+for a policy, also avoiding the warning.  Each policy can also be set to
+either <code class="docutils literal"><span class="pre">NEW</span></code> or <code class="docutils literal"><span class="pre">OLD</span></code> behavior explicitly on the command line with the
+<span class="target" id="index-0-variable:CMAKE_POLICY_DEFAULT_CMP&lt;NNNN&gt;"></span><a class="reference internal" href="../variable/CMAKE_POLICY_DEFAULT_CMPNNNN.html#variable:CMAKE_POLICY_DEFAULT_CMP&lt;NNNN&gt;" title="CMAKE_POLICY_DEFAULT_CMP&lt;NNNN&gt;"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_POLICY_DEFAULT_CMP&lt;NNNN&gt;</span></code></a> variable.</p>
+<p>A policy is a deprecation mechanism and not a reliable feature toggle.
+A policy should almost never be set to <code class="docutils literal"><span class="pre">OLD</span></code>, except to silence warnings
+in an otherwise frozen or stable codebase, or temporarily as part of a
+larger migration path. The <code class="docutils literal"><span class="pre">OLD</span></code> behavior of each policy is undesirable
+and will be replaced with an error condition in a future release.</p>
+<p>The <span class="target" id="index-0-command:cmake_minimum_required"></span><a class="reference internal" href="../command/cmake_minimum_required.html#command:cmake_minimum_required" title="cmake_minimum_required"><code class="xref cmake cmake-command docutils literal"><span class="pre">cmake_minimum_required()</span></code></a> command does more than report an
+error if a too-old version of CMake is used to build a project.  It
+also sets all policies introduced in that CMake version or earlier to
+<code class="docutils literal"><span class="pre">NEW</span></code> behavior.  To manage policies without increasing the minimum required
+CMake version, the <span class="target" id="index-0-command:if"></span><a class="reference internal" href="../command/if.html#command:if" title="if"><code class="xref cmake cmake-command docutils literal"><span class="pre">if(POLICY)</span></code></a> command may be used:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">if</span><span class="p">(</span><span class="s">POLICY</span> <span class="s">CMP0990</span><span class="p">)</span>
+  <span class="nb">cmake_policy</span><span class="p">(</span><span class="s">SET</span> <span class="s">CMP0990</span> <span class="s">NEW</span><span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This has the effect of using the <code class="docutils literal"><span class="pre">NEW</span></code> behavior with newer CMake releases which
+users may be using and not issuing a compatibility warning.</p>
+<p>The setting of a policy is confined in some cases to not propagate to the
+parent scope.  For example, if the files read by the <span class="target" id="index-0-command:include"></span><a class="reference internal" href="../command/include.html#command:include" title="include"><code class="xref cmake cmake-command docutils literal"><span class="pre">include()</span></code></a> command
+or the <span class="target" id="index-0-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a> command contain a use of <span class="target" id="index-1-command:cmake_policy"></span><a class="reference internal" href="../command/cmake_policy.html#command:cmake_policy" title="cmake_policy"><code class="xref cmake cmake-command docutils literal"><span class="pre">cmake_policy()</span></code></a>,
+that policy setting will not affect the caller by default.  Both commands accept
+an optional <code class="docutils literal"><span class="pre">NO_POLICY_SCOPE</span></code> keyword to control this behavior.</p>
+<p>The <span class="target" id="index-0-variable:CMAKE_MINIMUM_REQUIRED_VERSION"></span><a class="reference internal" href="../variable/CMAKE_MINIMUM_REQUIRED_VERSION.html#variable:CMAKE_MINIMUM_REQUIRED_VERSION" title="CMAKE_MINIMUM_REQUIRED_VERSION"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_MINIMUM_REQUIRED_VERSION</span></code></a> variable may also be used
+to determine whether to report an error on use of deprecated macros or
+functions.</p>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-10">
+<h2><a class="toc-backref" href="#id3">Policies Introduced by CMake 3.10</a><a class="headerlink" href="#policies-introduced-by-cmake-3-10" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0071.html">CMP0071: Let AUTOMOC and AUTOUIC process GENERATED files.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0070.html">CMP0070: Define file(GENERATE) behavior for relative paths.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-9">
+<h2><a class="toc-backref" href="#id4">Policies Introduced by CMake 3.9</a><a class="headerlink" href="#policies-introduced-by-cmake-3-9" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0069.html">CMP0069: INTERPROCEDURAL_OPTIMIZATION is enforced when enabled.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0068.html">CMP0068: RPATH settings on macOS do not affect install_name.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-8">
+<h2><a class="toc-backref" href="#id5">Policies Introduced by CMake 3.8</a><a class="headerlink" href="#policies-introduced-by-cmake-3-8" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0067.html">CMP0067: Honor language standard in try_compile() source-file signature.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-7">
+<h2><a class="toc-backref" href="#id6">Policies Introduced by CMake 3.7</a><a class="headerlink" href="#policies-introduced-by-cmake-3-7" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0066.html">CMP0066: Honor per-config flags in try_compile() source-file signature.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-4">
+<h2><a class="toc-backref" href="#id7">Policies Introduced by CMake 3.4</a><a class="headerlink" href="#policies-introduced-by-cmake-3-4" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0065.html">CMP0065: Do not add flags to export symbols from executables without the ENABLE_EXPORTS target property.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0064.html">CMP0064: Support new TEST if() operator.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-3">
+<h2><a class="toc-backref" href="#id8">Policies Introduced by CMake 3.3</a><a class="headerlink" href="#policies-introduced-by-cmake-3-3" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0063.html">CMP0063: Honor visibility properties for all target types.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0062.html">CMP0062: Disallow install() of export() result.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0061.html">CMP0061: CTest does not by default tell make to ignore errors (-i).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0060.html">CMP0060: Link libraries by full path even in implicit directories.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0059.html">CMP0059: Do not treat DEFINITIONS as a built-in directory property.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0058.html">CMP0058: Ninja requires custom command byproducts to be explicit.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0057.html">CMP0057: Support new IN_LIST if() operator.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-2">
+<h2><a class="toc-backref" href="#id9">Policies Introduced by CMake 3.2</a><a class="headerlink" href="#policies-introduced-by-cmake-3-2" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0056.html">CMP0056: Honor link flags in try_compile() source-file signature.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0055.html">CMP0055: Strict checking for break() command.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-1">
+<h2><a class="toc-backref" href="#id10">Policies Introduced by CMake 3.1</a><a class="headerlink" href="#policies-introduced-by-cmake-3-1" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0054.html">CMP0054: Only interpret if() arguments as variables or keywords when unquoted.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0053.html">CMP0053: Simplify variable reference and escape sequence evaluation.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0052.html">CMP0052: Reject source and build dirs in installed INTERFACE_INCLUDE_DIRECTORIES.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0051.html">CMP0051: List TARGET_OBJECTS in SOURCES target property.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-3-0">
+<h2><a class="toc-backref" href="#id11">Policies Introduced by CMake 3.0</a><a class="headerlink" href="#policies-introduced-by-cmake-3-0" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0050.html">CMP0050: Disallow add_custom_command SOURCE signatures.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0049.html">CMP0049: Do not expand variables in target source entries.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0048.html">CMP0048: project() command manages VERSION variables.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0047.html">CMP0047: Use QCC compiler id for the qcc drivers on QNX.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0046.html">CMP0046: Error on non-existent dependency in add_dependencies.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0045.html">CMP0045: Error on non-existent target in get_target_property.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0044.html">CMP0044: Case sensitive Lang_COMPILER_ID generator expressions.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0043.html">CMP0043: Ignore COMPILE_DEFINITIONS_Config properties.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0042.html">CMP0042: MACOSX_RPATH is enabled by default.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0041.html">CMP0041: Error on relative include with generator expression.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0040.html">CMP0040: The target in the TARGET signature of add_custom_command() must exist.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0039.html">CMP0039: Utility targets may not have link dependencies.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0038.html">CMP0038: Targets may not link directly to themselves.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0037.html">CMP0037: Target names should not be reserved and should match a validity pattern.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0036.html">CMP0036: The build_name command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0035.html">CMP0035: The variable_requires command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0034.html">CMP0034: The utility_source command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0033.html">CMP0033: The export_library_dependencies command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0032.html">CMP0032: The output_required_files command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0031.html">CMP0031: The load_command command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0030.html">CMP0030: The use_mangled_mesa command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0029.html">CMP0029: The subdir_depends command should not be called.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0028.html">CMP0028: Double colon in target name means ALIAS or IMPORTED target.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0027.html">CMP0027: Conditionally linked imported targets with missing include directories.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0026.html">CMP0026: Disallow use of the LOCATION target property.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0025.html">CMP0025: Compiler id for Apple Clang is now AppleClang.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0024.html">CMP0024: Disallow include export result.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-2-8">
+<h2><a class="toc-backref" href="#id12">Policies Introduced by CMake 2.8</a><a class="headerlink" href="#policies-introduced-by-cmake-2-8" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0023.html">CMP0023: Plain and keyword target_link_libraries signatures cannot be mixed.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0022.html">CMP0022: INTERFACE_LINK_LIBRARIES defines the link interface.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0021.html">CMP0021: Fatal error on relative paths in INCLUDE_DIRECTORIES target property.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0020.html">CMP0020: Automatically link Qt executables to qtmain target on Windows.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0019.html">CMP0019: Do not re-expand variables in include and link information.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0018.html">CMP0018: Ignore CMAKE_SHARED_LIBRARY_Lang_FLAGS variable.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0017.html">CMP0017: Prefer files from the CMake module directory when including from there.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0016.html">CMP0016: target_link_libraries() reports error if its only argument is not a target.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0015.html">CMP0015: link_directories() treats paths relative to the source dir.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0014.html">CMP0014: Input directories must have CMakeLists.txt.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0013.html">CMP0013: Duplicate binary directories are not allowed.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0012.html">CMP0012: if() recognizes numbers and boolean constants.</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="policies-introduced-by-cmake-2-6">
+<h2><a class="toc-backref" href="#id13">Policies Introduced by CMake 2.6</a><a class="headerlink" href="#policies-introduced-by-cmake-2-6" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0011.html">CMP0011: Included scripts do automatic cmake_policy PUSH and POP.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0010.html">CMP0010: Bad variable reference syntax is an error.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0009.html">CMP0009: FILE GLOB_RECURSE calls should not follow symlinks by default.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0008.html">CMP0008: Libraries linked by full-path must have a valid library file name.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0007.html">CMP0007: list command no longer ignores empty elements.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0006.html">CMP0006: Installing MACOSX_BUNDLE targets requires a BUNDLE DESTINATION.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0005.html">CMP0005: Preprocessor definition values are now escaped automatically.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0004.html">CMP0004: Libraries linked may not have leading or trailing whitespace.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0003.html">CMP0003: Libraries linked via full path no longer produce linker search paths.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0002.html">CMP0002: Logical target names must be globally unique.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0001.html">CMP0001: CMAKE_BACKWARDS_COMPATIBILITY should no longer be used.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../policy/CMP0000.html">CMP0000: A minimum required CMake version must be specified.</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">cmake-policies(7)</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-10">Policies Introduced by CMake 3.10</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-9">Policies Introduced by CMake 3.9</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-8">Policies Introduced by CMake 3.8</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-7">Policies Introduced by CMake 3.7</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-4">Policies Introduced by CMake 3.4</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-3">Policies Introduced by CMake 3.3</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-2">Policies Introduced by CMake 3.2</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-1">Policies Introduced by CMake 3.1</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-3-0">Policies Introduced by CMake 3.0</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-2-8">Policies Introduced by CMake 2.8</a></li>
+<li><a class="reference internal" href="#policies-introduced-by-cmake-2-6">Policies Introduced by CMake 2.6</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cmake-packages.7.html"
+                        title="previous chapter">cmake-packages(7)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../policy/CMP0071.html"
+                        title="next chapter">CMP0071</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/manual/cmake-policies.7.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../policy/CMP0071.html" title="CMP0071"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cmake-packages.7.html" title="cmake-packages(7)"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+ 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindPerlLibs &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindPerl" href="FindPerl.html" />
+    <link rel="prev" title="FindPatch" href="FindPatch.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindPerl.html" title="FindPerl"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindPatch.html" title="FindPatch"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findperllibs">
+<span id="module:FindPerlLibs"></span><h1>FindPerlLibs<a class="headerlink" href="#findperllibs" title="Permalink to this headline">¶</a></h1>
+<p>Find Perl libraries</p>
+<p>This module finds if PERL is installed and determines where the
+include files and libraries are.  It also determines what the name of
+the library is.  This code sets the following variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">PERLLIBS_FOUND</span>    <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">perl</span><span class="o">.</span><span class="n">h</span> <span class="o">&amp;</span> <span class="n">libperl</span> <span class="n">were</span> <span class="n">found</span>
+<span class="n">PERL_INCLUDE_PATH</span> <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">where</span> <span class="n">perl</span><span class="o">.</span><span class="n">h</span> <span class="ow">is</span> <span class="n">found</span>
+<span class="n">PERL_LIBRARY</span>      <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">libperl</span>
+<span class="n">PERL_EXECUTABLE</span>   <span class="o">=</span> <span class="n">full</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">perl</span> <span class="n">binary</span>
+</pre></div>
+</div>
+<p>The minimum required version of Perl can be specified using the
+standard syntax, e.g.  find_package(PerlLibs 6.0)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">following</span> <span class="n">variables</span> <span class="n">are</span> <span class="n">also</span> <span class="n">available</span> <span class="k">if</span> <span class="n">needed</span>
+<span class="p">(</span><span class="n">introduced</span> <span class="n">after</span> <span class="n">CMake</span> <span class="mf">2.6</span><span class="o">.</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">PERL_SITESEARCH</span>    <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">sitesearch</span> <span class="n">install</span> <span class="nb">dir</span>
+<span class="n">PERL_SITELIB</span>       <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">sitelib</span> <span class="n">install</span> <span class="n">directory</span>
+<span class="n">PERL_VENDORARCH</span>    <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">vendor</span> <span class="n">arch</span> <span class="n">install</span> <span class="n">directory</span>
+<span class="n">PERL_VENDORLIB</span>     <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">vendor</span> <span class="n">lib</span> <span class="n">install</span> <span class="n">directory</span>
+<span class="n">PERL_ARCHLIB</span>       <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">arch</span> <span class="n">lib</span> <span class="n">install</span> <span class="n">directory</span>
+<span class="n">PERL_PRIVLIB</span>       <span class="o">=</span> <span class="n">path</span> <span class="n">to</span> <span class="n">the</span> <span class="n">priv</span> <span class="n">lib</span> <span class="n">install</span> <span class="n">directory</span>
+<span class="n">PERL_EXTRA_C_FLAGS</span> <span class="o">=</span> <span class="n">Compilation</span> <span class="n">flags</span> <span class="n">used</span> <span class="n">to</span> <span class="n">build</span> <span class="n">perl</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindPatch.html"
+                        title="previous chapter">FindPatch</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindPerl.html"
+                        title="next chapter">FindPerl</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindPerlLibs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindPerl.html" title="FindPerl"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindPatch.html" title="FindPatch"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindIce &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindIcotool" href="FindIcotool.html" />
+    <link rel="prev" title="FindHTMLHelp" href="FindHTMLHelp.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindIcotool.html" title="FindIcotool"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindHTMLHelp.html" title="FindHTMLHelp"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findice">
+<span id="module:FindIce"></span><h1>FindIce<a class="headerlink" href="#findice" title="Permalink to this headline">¶</a></h1>
+<p>Find the ZeroC Internet Communication Engine (ICE) programs,
+libraries and datafiles.</p>
+<p>This module supports multiple components.
+Components can include any of: <code class="docutils literal"><span class="pre">Freeze</span></code>, <code class="docutils literal"><span class="pre">Glacier2</span></code>, <code class="docutils literal"><span class="pre">Ice</span></code>,
+<code class="docutils literal"><span class="pre">IceBox</span></code>, <code class="docutils literal"><span class="pre">IceDB</span></code>, <code class="docutils literal"><span class="pre">IceDiscovery</span></code>, <code class="docutils literal"><span class="pre">IceGrid</span></code>,
+<code class="docutils literal"><span class="pre">IceLocatorDiscovery</span></code>, <code class="docutils literal"><span class="pre">IcePatch</span></code>, <code class="docutils literal"><span class="pre">IceSSL</span></code>, <code class="docutils literal"><span class="pre">IceStorm</span></code>,
+<code class="docutils literal"><span class="pre">IceUtil</span></code>, <code class="docutils literal"><span class="pre">IceXML</span></code>, or <code class="docutils literal"><span class="pre">Slice</span></code>.</p>
+<p>Ice 3.7 and later also include C++11-specific components:
+<code class="docutils literal"><span class="pre">Glacier2++11</span></code>, <code class="docutils literal"><span class="pre">Ice++11</span></code>, <code class="docutils literal"><span class="pre">IceBox++11</span></code>, <code class="docutils literal"><span class="pre">IceDiscovery++11</span></code>
+<code class="docutils literal"><span class="pre">IceGrid</span></code>, <code class="docutils literal"><span class="pre">IceLocatorDiscovery++11</span></code>, <code class="docutils literal"><span class="pre">IceSSL++11</span></code>,
+<code class="docutils literal"><span class="pre">IceStorm++11</span></code></p>
+<p>Note that the set of supported components is Ice version-specific.</p>
+<p>This module reports information about the Ice installation in
+several variables.  General variables:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_VERSION</span> <span class="o">-</span> <span class="n">Ice</span> <span class="n">release</span> <span class="n">version</span>
+<span class="n">Ice_FOUND</span> <span class="o">-</span> <span class="n">true</span> <span class="k">if</span> <span class="n">the</span> <span class="n">main</span> <span class="n">programs</span> <span class="ow">and</span> <span class="n">libraries</span> <span class="n">were</span> <span class="n">found</span>
+<span class="n">Ice_LIBRARIES</span> <span class="o">-</span> <span class="n">component</span> <span class="n">libraries</span> <span class="n">to</span> <span class="n">be</span> <span class="n">linked</span>
+<span class="n">Ice_INCLUDE_DIRS</span> <span class="o">-</span> <span class="n">the</span> <span class="n">directories</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">Ice</span> <span class="n">headers</span>
+<span class="n">Ice_SLICE_DIRS</span> <span class="o">-</span> <span class="n">the</span> <span class="n">directories</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">Ice</span> <span class="nb">slice</span> <span class="n">interface</span>
+                 <span class="n">definitions</span>
+</pre></div>
+</div>
+<p>Imported targets:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice</span><span class="p">::</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal"><span class="pre">&lt;C&gt;</span></code> is the name of an Ice component, for example
+<code class="docutils literal"><span class="pre">Ice::Glacier2</span></code> or <code class="docutils literal"><span class="pre">Ice++11</span></code>.</p>
+<p>Ice slice programs are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_SLICE2CPP_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2cpp</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2CS_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2cs</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2FREEZEJ_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2freezej</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2FREEZE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2freeze</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2HTML_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2html</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2JAVA_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2java</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2JS_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2js</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2OBJC_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2objc</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2PHP_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2php</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2PY_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2py</span> <span class="n">executable</span>
+<span class="n">Ice_SLICE2RB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">slice2rb</span> <span class="n">executable</span>
+</pre></div>
+</div>
+<p>Ice programs are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_GLACIER2ROUTER_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">glacier2router</span> <span class="n">executable</span>
+<span class="n">Ice_ICEBOX_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icebox</span> <span class="n">executable</span>
+<span class="n">Ice_ICEBOXXX11_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icebox</span><span class="o">++</span><span class="mi">11</span> <span class="n">executable</span>
+<span class="n">Ice_ICEBOXADMIN_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">iceboxadmin</span> <span class="n">executable</span>
+<span class="n">Ice_ICEBOXD_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">iceboxd</span> <span class="n">executable</span>
+<span class="n">Ice_ICEBOXNET_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">iceboxnet</span> <span class="n">executable</span>
+<span class="n">Ice_ICEBRIDGE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icebridge</span> <span class="n">executable</span>
+<span class="n">Ice_ICEGRIDADMIN_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icegridadmin</span> <span class="n">executable</span>
+<span class="n">Ice_ICEGRIDDB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icegriddb</span> <span class="n">executable</span>
+<span class="n">Ice_ICEGRIDNODE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icegridnode</span> <span class="n">executable</span>
+<span class="n">Ice_ICEGRIDNODED_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icegridnoded</span> <span class="n">executable</span>
+<span class="n">Ice_ICEGRIDREGISTRY_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icegridregistry</span> <span class="n">executable</span>
+<span class="n">Ice_ICEGRIDREGISTRYD_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icegridregistryd</span> <span class="n">executable</span>
+<span class="n">Ice_ICEPATCH2CALC_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icepatch2calc</span> <span class="n">executable</span>
+<span class="n">Ice_ICEPATCH2CLIENT_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icepatch2client</span> <span class="n">executable</span>
+<span class="n">Ice_ICEPATCH2SERVER_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icepatch2server</span> <span class="n">executable</span>
+<span class="n">Ice_ICESERVICEINSTALL_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">iceserviceinstall</span> <span class="n">executable</span>
+<span class="n">Ice_ICESTORMADMIN_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icestormadmin</span> <span class="n">executable</span>
+<span class="n">Ice_ICESTORMDB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icestormdb</span> <span class="n">executable</span>
+<span class="n">Ice_ICESTORMMIGRATE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">icestormmigrate</span> <span class="n">executable</span>
+</pre></div>
+</div>
+<p>Ice db programs (Windows only; standard system versions on all other
+platforms) are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_DB_ARCHIVE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_archive</span> <span class="n">executable</span>
+<span class="n">Ice_DB_CHECKPOINT_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_checkpoint</span> <span class="n">executable</span>
+<span class="n">Ice_DB_DEADLOCK_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_deadlock</span> <span class="n">executable</span>
+<span class="n">Ice_DB_DUMP_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_dump</span> <span class="n">executable</span>
+<span class="n">Ice_DB_HOTBACKUP_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_hotbackup</span> <span class="n">executable</span>
+<span class="n">Ice_DB_LOAD_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_load</span> <span class="n">executable</span>
+<span class="n">Ice_DB_LOG_VERIFY_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_log_verify</span> <span class="n">executable</span>
+<span class="n">Ice_DB_PRINTLOG_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_printlog</span> <span class="n">executable</span>
+<span class="n">Ice_DB_RECOVER_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_recover</span> <span class="n">executable</span>
+<span class="n">Ice_DB_STAT_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_stat</span> <span class="n">executable</span>
+<span class="n">Ice_DB_TUNER_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_tuner</span> <span class="n">executable</span>
+<span class="n">Ice_DB_UPGRADE_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_upgrade</span> <span class="n">executable</span>
+<span class="n">Ice_DB_VERIFY_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">db_verify</span> <span class="n">executable</span>
+<span class="n">Ice_DUMPDB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">dumpdb</span> <span class="n">executable</span>
+<span class="n">Ice_TRANSFORMDB_EXECUTABLE</span> <span class="o">-</span> <span class="n">path</span> <span class="n">to</span> <span class="n">transformdb</span> <span class="n">executable</span>
+</pre></div>
+</div>
+<p>Ice component libraries are reported in:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_FOUND</span> <span class="o">-</span> <span class="n">ON</span> <span class="k">if</span> <span class="n">component</span> <span class="n">was</span> <span class="n">found</span>
+<span class="n">Ice_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARIES</span> <span class="o">-</span> <span class="n">libraries</span> <span class="k">for</span> <span class="n">component</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal"><span class="pre">&lt;C&gt;</span></code> is the uppercased name of the component.</p>
+<p>This module reads hints about search results from:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_HOME</span> <span class="o">-</span> <span class="n">the</span> <span class="n">root</span> <span class="n">of</span> <span class="n">the</span> <span class="n">Ice</span> <span class="n">installation</span>
+</pre></div>
+</div>
+<p>The environment variable <code class="docutils literal"><span class="pre">ICE_HOME</span></code> may also be used; the
+Ice_HOME variable takes precedence.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">On Windows, Ice 3.7.0 and later provide libraries via the NuGet
+package manager.  Appropriate NuGet packages will be searched for
+using <code class="docutils literal"><span class="pre">CMAKE_PREFIX_PATH</span></code>, or alternatively <code class="docutils literal"><span class="pre">Ice_HOME</span></code> may be
+set to the location of a specific NuGet package to restrict the
+search.</p>
+</div>
+<p>The following cache variables may also be set:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_</span><span class="o">&lt;</span><span class="n">P</span><span class="o">&gt;</span><span class="n">_EXECUTABLE</span> <span class="o">-</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">executable</span> <span class="o">&lt;</span><span class="n">P</span><span class="o">&gt;</span>
+<span class="n">Ice_INCLUDE_DIR</span> <span class="o">-</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">Ice</span> <span class="n">headers</span>
+<span class="n">Ice_SLICE_DIR</span> <span class="o">-</span> <span class="n">the</span> <span class="n">directory</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">Ice</span> <span class="nb">slice</span> <span class="n">interface</span>
+                <span class="n">definitions</span>
+<span class="n">Ice_</span><span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span><span class="n">_LIBRARY</span> <span class="o">-</span> <span class="n">the</span> <span class="n">library</span> <span class="k">for</span> <span class="n">component</span> <span class="o">&lt;</span><span class="n">C</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In most cases none of the above variables will require setting,
+unless multiple Ice versions are available and a specific version
+is required.  On Windows, the most recent version of Ice will be
+found through the registry.  On Unix, the programs, headers and
+libraries will usually be in standard locations, but Ice_SLICE_DIRS
+might not be automatically detected (commonly known locations are
+searched).  All the other variables are defaulted using Ice_HOME,
+if set.  It&#8217;s possible to set Ice_HOME and selectively specify
+alternative locations for the other components; this might be
+required for e.g. newer versions of Visual Studio if the
+heuristics are not sufficient to identify the correct programs and
+libraries for the specific Visual Studio version.</p>
+</div>
+<p>Other variables one may set to control this module are:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Ice_DEBUG</span> <span class="o">-</span> <span class="n">Set</span> <span class="n">to</span> <span class="n">ON</span> <span class="n">to</span> <span class="n">enable</span> <span class="n">debug</span> <span class="n">output</span> <span class="kn">from</span> <span class="nn">FindIce.</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindHTMLHelp.html"
+                        title="previous chapter">FindHTMLHelp</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindIcotool.html"
+                        title="next chapter">FindIcotool</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindIce.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindIcotool.html" title="FindIcotool"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindHTMLHelp.html" title="FindHTMLHelp"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

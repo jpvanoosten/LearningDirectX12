@@ -1,0 +1,446 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "CMAKE-GENERATOR-EXPRESSIONS" "7" "Dec 13, 2017" "3.10.1" "CMake"
+.SH NAME
+cmake-generator-expressions \- CMake Generator Expressions
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH INTRODUCTION
+.sp
+Generator expressions are evaluated during build system generation to produce
+information specific to each build configuration.
+.sp
+Generator expressions are allowed in the context of many target properties,
+such as \fBLINK_LIBRARIES\fP, \fBINCLUDE_DIRECTORIES\fP,
+\fBCOMPILE_DEFINITIONS\fP and others.  They may also be used when using
+commands to populate those properties, such as \fBtarget_link_libraries()\fP,
+\fBtarget_include_directories()\fP, \fBtarget_compile_definitions()\fP
+and others.
+.sp
+This means that they enable conditional linking, conditional
+definitions used when compiling, and conditional include directories and
+more.  The conditions may be based on the build configuration, target
+properties, platform information or any other queryable information.
+.SH LOGICAL EXPRESSIONS
+.sp
+Logical expressions are used to create conditional output.  The basic
+expressions are the \fB0\fP and \fB1\fP expressions.  Because other logical
+expressions evaluate to either \fB0\fP or \fB1\fP, they can be composed to
+create conditional output:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+$<$<CONFIG:Debug>:DEBUG_MODE>
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+expands to \fBDEBUG_MODE\fP when the \fBDebug\fP configuration is used, and
+otherwise expands to nothing.
+.sp
+Available logical expressions are:
+.INDENT 0.0
+.TP
+.B \fB$<BOOL:...>\fP
+\fB1\fP if the \fB\&...\fP is true, else \fB0\fP
+.TP
+.B \fB$<AND:?[,?]...>\fP
+\fB1\fP if all \fB?\fP are \fB1\fP, else \fB0\fP
+.sp
+The \fB?\fP must always be either \fB0\fP or \fB1\fP in boolean expressions.
+.TP
+.B \fB$<OR:?[,?]...>\fP
+\fB0\fP if all \fB?\fP are \fB0\fP, else \fB1\fP
+.TP
+.B \fB$<NOT:?>\fP
+\fB0\fP if \fB?\fP is \fB1\fP, else \fB1\fP
+.TP
+.B \fB$<IF:?,true\-value...,false\-value...>\(ga\fP
+\fBtrue\-value...\fP if \fB?\fP is \fB1\fP, \fBfalse\-value...\fP if \fB?\fP is \fB0\fP
+.TP
+.B \fB$<STREQUAL:a,b>\fP
+\fB1\fP if \fBa\fP is STREQUAL \fBb\fP, else \fB0\fP
+.TP
+.B \fB$<EQUAL:a,b>\fP
+\fB1\fP if \fBa\fP is EQUAL \fBb\fP in a numeric comparison, else \fB0\fP
+.TP
+.B \fB$<CONFIG:cfg>\fP
+\fB1\fP if config is \fBcfg\fP, else \fB0\fP\&. This is a case\-insensitive comparison.
+The mapping in \fBMAP_IMPORTED_CONFIG_<CONFIG>\fP is also considered by
+this expression when it is evaluated on a property on an \fBIMPORTED\fP
+target.
+.TP
+.B \fB$<PLATFORM_ID:comp>\fP
+\fB1\fP if the CMake\-id of the platform matches \fBcomp\fP, otherwise \fB0\fP\&.
+.TP
+.B \fB$<C_COMPILER_ID:comp>\fP
+\fB1\fP if the CMake\-id of the C compiler matches \fBcomp\fP, otherwise \fB0\fP\&.
+.TP
+.B \fB$<CXX_COMPILER_ID:comp>\fP
+\fB1\fP if the CMake\-id of the CXX compiler matches \fBcomp\fP, otherwise \fB0\fP\&.
+.TP
+.B \fB$<VERSION_LESS:v1,v2>\fP
+\fB1\fP if \fBv1\fP is a version less than \fBv2\fP, else \fB0\fP\&.
+.TP
+.B \fB$<VERSION_GREATER:v1,v2>\fP
+\fB1\fP if \fBv1\fP is a version greater than \fBv2\fP, else \fB0\fP\&.
+.TP
+.B \fB$<VERSION_EQUAL:v1,v2>\fP
+\fB1\fP if \fBv1\fP is the same version as \fBv2\fP, else \fB0\fP\&.
+.TP
+.B \fB$<VERSION_LESS_EQUAL:v1,v2>\fP
+\fB1\fP if \fBv1\fP is a version less than or equal to \fBv2\fP, else \fB0\fP\&.
+.TP
+.B \fB$<VERSION_GREATER_EQUAL:v1,v2>\fP
+\fB1\fP if \fBv1\fP is a version greater than or equal to \fBv2\fP, else \fB0\fP\&.
+.TP
+.B \fB$<C_COMPILER_VERSION:ver>\fP
+\fB1\fP if the version of the C compiler matches \fBver\fP, otherwise \fB0\fP\&.
+.TP
+.B \fB$<CXX_COMPILER_VERSION:ver>\fP
+\fB1\fP if the version of the CXX compiler matches \fBver\fP, otherwise \fB0\fP\&.
+.TP
+.B \fB$<TARGET_POLICY:pol>\fP
+\fB1\fP if the policy \fBpol\fP was NEW when the \(aqhead\(aq target was created,
+else \fB0\fP\&.  If the policy was not set, the warning message for the policy
+will be emitted. This generator expression only works for a subset of
+policies.
+.TP
+.B \fB$<COMPILE_FEATURES:feature[,feature]...>\fP
+\fB1\fP if all of the \fBfeature\fP features are available for the \(aqhead\(aq
+target, and \fB0\fP otherwise. If this expression is used while evaluating
+the link implementation of a target and if any dependency transitively
+increases the required \fBC_STANDARD\fP or \fBCXX_STANDARD\fP
+for the \(aqhead\(aq target, an error is reported.  See the
+\fBcmake\-compile\-features(7)\fP manual for information on
+compile features and a list of supported compilers.
+.TP
+.B \fB$<COMPILE_LANGUAGE:lang>\fP
+\fB1\fP when the language used for compilation unit matches \fBlang\fP,
+otherwise \fB0\fP\&.  This expression used to specify compile options for
+source files of a particular language in a target. For example, to specify
+the use of the \fB\-fno\-exceptions\fP compile option (compiler id checks
+elided):
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_executable(myapp main.cpp foo.c bar.cpp)
+target_compile_options(myapp
+  PRIVATE $<$<COMPILE_LANGUAGE:CXX>:\-fno\-exceptions>
+)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This generator expression has limited use because it is not possible to
+use it with the Visual Studio generators.  Portable buildsystems would
+not use this expression, and would create separate libraries for each
+source file language instead:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_library(myapp_c foo.c)
+add_library(myapp_cxx bar.cpp)
+target_compile_options(myapp_cxx PUBLIC \-fno\-exceptions)
+add_executable(myapp main.cpp)
+target_link_libraries(myapp myapp_c myapp_cxx)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fBMakefile\fP and \fBNinja\fP based generators can also use this
+expression to specify compile\-language specific compile definitions
+and include directories:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+add_executable(myapp main.cpp foo.c bar.cpp)
+target_compile_definitions(myapp
+  PRIVATE $<$<COMPILE_LANGUAGE:CXX>:COMPILING_CXX>
+)
+target_include_directories(myapp
+  PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/opt/foo/cxx_headers>
+)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.SH INFORMATIONAL EXPRESSIONS
+.sp
+These expressions expand to some information. The information may be used
+directly, eg:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+include_directories(/usr/include/$<CXX_COMPILER_ID>/)
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+expands to \fB/usr/include/GNU/\fP or \fB/usr/include/Clang/\fP etc, depending on
+the Id of the compiler.
+.sp
+These expressions may also may be combined with logical expressions:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+$<$<VERSION_LESS:$<CXX_COMPILER_VERSION>,4.2.0>:OLD_COMPILER>
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+expands to \fBOLD_COMPILER\fP if the
+\fBCMAKE_CXX_COMPILER_VERSION\fP is less
+than 4.2.0.
+.sp
+Available informational expressions are:
+.INDENT 0.0
+.TP
+.B \fB$<CONFIGURATION>\fP
+Configuration name. Deprecated. Use \fBCONFIG\fP instead.
+.TP
+.B \fB$<CONFIG>\fP
+Configuration name
+.TP
+.B \fB$<PLATFORM_ID>\fP
+The CMake\-id of the platform.
+See also the \fBCMAKE_SYSTEM_NAME\fP variable.
+.TP
+.B \fB$<C_COMPILER_ID>\fP
+The CMake\-id of the C compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
+.TP
+.B \fB$<CXX_COMPILER_ID>\fP
+The CMake\-id of the CXX compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_ID\fP variable.
+.TP
+.B \fB$<C_COMPILER_VERSION>\fP
+The version of the C compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
+.TP
+.B \fB$<CXX_COMPILER_VERSION>\fP
+The version of the CXX compiler used.
+See also the \fBCMAKE_<LANG>_COMPILER_VERSION\fP variable.
+.TP
+.B \fB$<TARGET_FILE:tgt>\fP
+Full path to main file (.exe, .so.1.2, .a) where \fBtgt\fP is the name of a target.
+.TP
+.B \fB$<TARGET_FILE_NAME:tgt>\fP
+Name of main file (.exe, .so.1.2, .a).
+.TP
+.B \fB$<TARGET_FILE_DIR:tgt>\fP
+Directory of main file (.exe, .so.1.2, .a).
+.TP
+.B \fB$<TARGET_LINKER_FILE:tgt>\fP
+File used to link (.a, .lib, .so) where \fBtgt\fP is the name of a target.
+.TP
+.B \fB$<TARGET_LINKER_FILE_NAME:tgt>\fP
+Name of file used to link (.a, .lib, .so).
+.TP
+.B \fB$<TARGET_LINKER_FILE_DIR:tgt>\fP
+Directory of file used to link (.a, .lib, .so).
+.TP
+.B \fB$<TARGET_SONAME_FILE:tgt>\fP
+File with soname (.so.3) where \fBtgt\fP is the name of a target.
+.TP
+.B \fB$<TARGET_SONAME_FILE_NAME:tgt>\fP
+Name of file with soname (.so.3).
+.TP
+.B \fB$<TARGET_SONAME_FILE_DIR:tgt>\fP
+Directory of with soname (.so.3).
+.TP
+.B \fB$<TARGET_PDB_FILE:tgt>\fP
+Full path to the linker generated program database file (.pdb)
+where \fBtgt\fP is the name of a target.
+.sp
+See also the \fBPDB_NAME\fP and \fBPDB_OUTPUT_DIRECTORY\fP
+target properties and their configuration specific variants
+\fBPDB_NAME_<CONFIG>\fP and \fBPDB_OUTPUT_DIRECTORY_<CONFIG>\fP\&.
+.TP
+.B \fB$<TARGET_PDB_FILE_NAME:tgt>\fP
+Name of the linker generated program database file (.pdb).
+.TP
+.B \fB$<TARGET_PDB_FILE_DIR:tgt>\fP
+Directory of the linker generated program database file (.pdb).
+.TP
+.B \fB$<TARGET_BUNDLE_DIR:tgt>\fP
+Full path to the bundle directory (\fBmy.app\fP, \fBmy.framework\fP, or
+\fBmy.bundle\fP) where \fBtgt\fP is the name of a target.
+.TP
+.B \fB$<TARGET_BUNDLE_CONTENT_DIR:tgt>\fP
+Full path to the bundle content directory where \fBtgt\fP is the name of a
+target. For the macOS SDK it leads to \fBmy.app/Contents\fP, \fBmy.framework\fP,
+or \fBmy.bundle/Contents\fP\&. For all other SDKs (e.g. iOS) it leads to
+\fBmy.app\fP, \fBmy.framework\fP, or \fBmy.bundle\fP due to the flat bundle
+structure.
+.TP
+.B \fB$<TARGET_PROPERTY:tgt,prop>\fP
+Value of the property \fBprop\fP on the target \fBtgt\fP\&.
+.sp
+Note that \fBtgt\fP is not added as a dependency of the target this
+expression is evaluated on.
+.TP
+.B \fB$<TARGET_PROPERTY:prop>\fP
+Value of the property \fBprop\fP on the target on which the generator
+expression is evaluated.
+.TP
+.B \fB$<INSTALL_PREFIX>\fP
+Content of the install prefix when the target is exported via
+\fBinstall(EXPORT)\fP and empty otherwise.
+.TP
+.B \fB$<COMPILE_LANGUAGE>\fP
+The compile language of source files when evaluating compile options. See
+the unary version for notes about portability of this generator
+expression.
+.UNINDENT
+.SH OUTPUT EXPRESSIONS
+.sp
+These expressions generate output, in some cases depending on an input. These
+expressions may be combined with other expressions for information or logical
+comparison:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+\-I$<JOIN:$<TARGET_PROPERTY:INCLUDE_DIRECTORIES>, \-I>
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+generates a string of the entries in the \fBINCLUDE_DIRECTORIES\fP target
+property with each entry preceded by \fB\-I\fP\&. Note that a more\-complete use
+in this situation would require first checking if the INCLUDE_DIRECTORIES
+property is non\-empty:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+$<$<BOOL:${prop}>:\-I$<JOIN:${prop}, \-I>>
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+where \fB${prop}\fP refers to a helper variable:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+set(prop "$<TARGET_PROPERTY:INCLUDE_DIRECTORIES>")
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Available output expressions are:
+.INDENT 0.0
+.TP
+.B \fB$<0:...>\fP
+Empty string (ignores \fB\&...\fP)
+.TP
+.B \fB$<1:...>\fP
+Content of \fB\&...\fP
+.TP
+.B \fB$<JOIN:list,...>\fP
+Joins the list with the content of \fB\&...\fP
+.TP
+.B \fB$<ANGLE\-R>\fP
+A literal \fB>\fP\&. Used to compare strings which contain a \fB>\fP for example.
+.TP
+.B \fB$<COMMA>\fP
+A literal \fB,\fP\&. Used to compare strings which contain a \fB,\fP for example.
+.TP
+.B \fB$<SEMICOLON>\fP
+A literal \fB;\fP\&. Used to prevent list expansion on an argument with \fB;\fP\&.
+.TP
+.B \fB$<TARGET_NAME:...>\fP
+Marks \fB\&...\fP as being the name of a target.  This is required if exporting
+targets to multiple dependent export sets.  The \fB\&...\fP must be a literal
+name of a target\- it may not contain generator expressions.
+.TP
+.B \fB$<LINK_ONLY:...>\fP
+Content of \fB\&...\fP except when evaluated in a link interface while
+propagating Target Usage Requirements, in which case it is the
+empty string.
+Intended for use only in an \fBINTERFACE_LINK_LIBRARIES\fP target
+property, perhaps via the \fBtarget_link_libraries()\fP command,
+to specify private link dependencies without other usage requirements.
+.TP
+.B \fB$<INSTALL_INTERFACE:...>\fP
+Content of \fB\&...\fP when the property is exported using \fBinstall(EXPORT)\fP,
+and empty otherwise.
+.TP
+.B \fB$<BUILD_INTERFACE:...>\fP
+Content of \fB\&...\fP when the property is exported using \fBexport()\fP, or
+when the target is used by another target in the same buildsystem. Expands to
+the empty string otherwise.
+.TP
+.B \fB$<LOWER_CASE:...>\fP
+Content of \fB\&...\fP converted to lower case.
+.TP
+.B \fB$<UPPER_CASE:...>\fP
+Content of \fB\&...\fP converted to upper case.
+.TP
+.B \fB$<MAKE_C_IDENTIFIER:...>\fP
+Content of \fB\&...\fP converted to a C identifier.
+.TP
+.B \fB$<TARGET_OBJECTS:objLib>\fP
+List of objects resulting from build of \fBobjLib\fP\&. \fBobjLib\fP must be an
+object of type \fBOBJECT_LIBRARY\fP\&.
+.TP
+.B \fB$<SHELL_PATH:...>\fP
+Content of \fB\&...\fP converted to shell path style. For example, slashes are
+converted to backslashes in Windows shells and drive letters are converted
+to posix paths in MSYS shells. The \fB\&...\fP must be an absolute path.
+.UNINDENT
+.SH COPYRIGHT
+2000-2017 Kitware, Inc. and Contributors
+.\" Generated by docutils manpage writer.
+.

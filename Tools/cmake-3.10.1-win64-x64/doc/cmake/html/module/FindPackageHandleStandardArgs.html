@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindPackageHandleStandardArgs &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindPackageMessage" href="FindPackageMessage.html" />
+    <link rel="prev" title="FindosgWidget" href="FindosgWidget.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindPackageMessage.html" title="FindPackageMessage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindosgWidget.html" title="FindosgWidget"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findpackagehandlestandardargs">
+<span id="module:FindPackageHandleStandardArgs"></span><h1>FindPackageHandleStandardArgs<a class="headerlink" href="#findpackagehandlestandardargs" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a function intended to be used in <a class="reference internal" href="../manual/cmake-developer.7.html#find-modules"><span class="std std-ref">Find Modules</span></a>
+implementing <span class="target" id="index-0-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package(&lt;PackageName&gt;)</span></code></a> calls.  It handles the
+<code class="docutils literal"><span class="pre">REQUIRED</span></code>, <code class="docutils literal"><span class="pre">QUIET</span></code> and version-related arguments of <code class="docutils literal"><span class="pre">find_package</span></code>.
+It also sets the <code class="docutils literal"><span class="pre">&lt;PackageName&gt;_FOUND</span></code> variable.  The package is
+considered found if all variables listed contain valid results, e.g.
+valid filepaths.</p>
+<dl class="command">
+<dt id="command:find_package_handle_standard_args">
+<code class="descname">find_package_handle_standard_args</code><a class="headerlink" href="#command:find_package_handle_standard_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>There are two signatures:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">find_package_handle_standard_args</span><span class="p">(</span><span class="o">&lt;</span><span class="n">PackageName</span><span class="o">&gt;</span>
+  <span class="p">(</span><span class="n">DEFAULT_MSG</span><span class="o">|&lt;</span><span class="n">custom</span><span class="o">-</span><span class="n">failure</span><span class="o">-</span><span class="n">message</span><span class="o">&gt;</span><span class="p">)</span>
+  <span class="o">&lt;</span><span class="n">required</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;...</span>
+  <span class="p">)</span>
+
+<span class="n">find_package_handle_standard_args</span><span class="p">(</span><span class="o">&lt;</span><span class="n">PackageName</span><span class="o">&gt;</span>
+  <span class="p">[</span><span class="n">FOUND_VAR</span> <span class="o">&lt;</span><span class="n">result</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+  <span class="p">[</span><span class="n">REQUIRED_VARS</span> <span class="o">&lt;</span><span class="n">required</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;...</span><span class="p">]</span>
+  <span class="p">[</span><span class="n">VERSION_VAR</span> <span class="o">&lt;</span><span class="n">version</span><span class="o">-</span><span class="n">var</span><span class="o">&gt;</span><span class="p">]</span>
+  <span class="p">[</span><span class="n">HANDLE_COMPONENTS</span><span class="p">]</span>
+  <span class="p">[</span><span class="n">CONFIG_MODE</span><span class="p">]</span>
+  <span class="p">[</span><span class="n">FAIL_MESSAGE</span> <span class="o">&lt;</span><span class="n">custom</span><span class="o">-</span><span class="n">failure</span><span class="o">-</span><span class="n">message</span><span class="o">&gt;</span><span class="p">]</span>
+  <span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">&lt;PackageName&gt;_FOUND</span></code> variable will be set to <code class="docutils literal"><span class="pre">TRUE</span></code> if all
+the variables <code class="docutils literal"><span class="pre">&lt;required-var&gt;...</span></code> are valid and any optional
+constraints are satisfied, and <code class="docutils literal"><span class="pre">FALSE</span></code> otherwise.  A success or
+failure message may be displayed based on the results and on
+whether the <code class="docutils literal"><span class="pre">REQUIRED</span></code> and/or <code class="docutils literal"><span class="pre">QUIET</span></code> option was given to
+the <span class="target" id="index-1-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a> call.</p>
+<p>The options are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">(DEFAULT_MSG|&lt;custom-failure-message&gt;)</span></code></dt>
+<dd>In the simple signature this specifies the failure message.
+Use <code class="docutils literal"><span class="pre">DEFAULT_MSG</span></code> to ask for a default message to be computed
+(recommended).  Not valid in the full signature.</dd>
+<dt><code class="docutils literal"><span class="pre">FOUND_VAR</span> <span class="pre">&lt;result-var&gt;</span></code></dt>
+<dd>Obsolete.  Specifies either <code class="docutils literal"><span class="pre">&lt;PackageName&gt;_FOUND</span></code> or
+<code class="docutils literal"><span class="pre">&lt;PACKAGENAME&gt;_FOUND</span></code> as the result variable.  This exists only
+for compatibility with older versions of CMake and is now ignored.
+Result variables of both names are always set for compatibility.</dd>
+<dt><code class="docutils literal"><span class="pre">REQUIRED_VARS</span> <span class="pre">&lt;required-var&gt;...</span></code></dt>
+<dd>Specify the variables which are required for this package.
+These may be named in the generated failure message asking the
+user to set the missing variable values.  Therefore these should
+typically be cache entries such as <code class="docutils literal"><span class="pre">FOO_LIBRARY</span></code> and not output
+variables like <code class="docutils literal"><span class="pre">FOO_LIBRARIES</span></code>.</dd>
+<dt><code class="docutils literal"><span class="pre">VERSION_VAR</span> <span class="pre">&lt;version-var&gt;</span></code></dt>
+<dd>Specify the name of a variable that holds the version of the package
+that has been found.  This version will be checked against the
+(potentially) specified required version given to the
+<span class="target" id="index-2-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a> call, including its <code class="docutils literal"><span class="pre">EXACT</span></code> option.
+The default messages include information about the required
+version and the version which has been actually found, both
+if the version is ok or not.</dd>
+<dt><code class="docutils literal"><span class="pre">HANDLE_COMPONENTS</span></code></dt>
+<dd>Enable handling of package components.  In this case, the command
+will report which components have been found and which are missing,
+and the <code class="docutils literal"><span class="pre">&lt;PackageName&gt;_FOUND</span></code> variable will be set to <code class="docutils literal"><span class="pre">FALSE</span></code>
+if any of the required components (i.e. not the ones listed after
+the <code class="docutils literal"><span class="pre">OPTIONAL_COMPONENTS</span></code> option of <span class="target" id="index-3-command:find_package"></span><a class="reference internal" href="../command/find_package.html#command:find_package" title="find_package"><code class="xref cmake cmake-command docutils literal"><span class="pre">find_package()</span></code></a>) are
+missing.</dd>
+<dt><code class="docutils literal"><span class="pre">CONFIG_MODE</span></code></dt>
+<dd>Specify that the calling find module is a wrapper around a
+call to <code class="docutils literal"><span class="pre">find_package(&lt;PackageName&gt;</span> <span class="pre">NO_MODULE)</span></code>.  This implies
+a <code class="docutils literal"><span class="pre">VERSION_VAR</span></code> value of <code class="docutils literal"><span class="pre">&lt;PackageName&gt;_VERSION</span></code>.  The command
+will automatically check whether the package configuration file
+was found.</dd>
+<dt><code class="docutils literal"><span class="pre">FAIL_MESSAGE</span> <span class="pre">&lt;custom-failure-message&gt;</span></code></dt>
+<dd>Specify a custom failure message instead of using the default
+generated message.  Not recommended.</dd>
+</dl>
+</dd></dl>
+
+<p>Example for the simple signature:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">find_package_handle_standard_args</span><span class="p">(</span><span class="s">LibXml2</span> <span class="s">DEFAULT_MSG</span>
+  <span class="s">LIBXML2_LIBRARY</span> <span class="s">LIBXML2_INCLUDE_DIR</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">LibXml2</span></code> package is considered to be found if both
+<code class="docutils literal"><span class="pre">LIBXML2_LIBRARY</span></code> and <code class="docutils literal"><span class="pre">LIBXML2_INCLUDE_DIR</span></code> are valid.
+Then also <code class="docutils literal"><span class="pre">LibXml2_FOUND</span></code> is set to <code class="docutils literal"><span class="pre">TRUE</span></code>.  If it is not found
+and <code class="docutils literal"><span class="pre">REQUIRED</span></code> was used, it fails with a
+<span class="target" id="index-0-command:message"></span><a class="reference internal" href="../command/message.html#command:message" title="message"><code class="xref cmake cmake-command docutils literal"><span class="pre">message(FATAL_ERROR)</span></code></a>, independent whether <code class="docutils literal"><span class="pre">QUIET</span></code> was
+used or not.  If it is found, success will be reported, including
+the content of the first <code class="docutils literal"><span class="pre">&lt;required-var&gt;</span></code>.  On repeated CMake runs,
+the same message will not be printed again.</p>
+<p>Example for the full signature:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">find_package_handle_standard_args</span><span class="p">(</span><span class="s">LibArchive</span>
+  <span class="s">REQUIRED_VARS</span> <span class="s">LibArchive_LIBRARY</span> <span class="s">LibArchive_INCLUDE_DIR</span>
+  <span class="s">VERSION_VAR</span> <span class="s">LibArchive_VERSION</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, the <code class="docutils literal"><span class="pre">LibArchive</span></code> package is considered to be found if
+both <code class="docutils literal"><span class="pre">LibArchive_LIBRARY</span></code> and <code class="docutils literal"><span class="pre">LibArchive_INCLUDE_DIR</span></code> are valid.
+Also the version of <code class="docutils literal"><span class="pre">LibArchive</span></code> will be checked by using the version
+contained in <code class="docutils literal"><span class="pre">LibArchive_VERSION</span></code>.  Since no <code class="docutils literal"><span class="pre">FAIL_MESSAGE</span></code> is given,
+the default messages will be printed.</p>
+<p>Another example for the full signature:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">find_package</span><span class="p">(</span><span class="s">Automoc4</span> <span class="s">QUIET</span> <span class="s">NO_MODULE</span> <span class="s">HINTS</span> <span class="s">/opt/automoc4</span><span class="p">)</span>
+<span class="nb">find_package_handle_standard_args</span><span class="p">(</span><span class="s">Automoc4</span>  <span class="s">CONFIG_MODE</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, a <code class="docutils literal"><span class="pre">FindAutmoc4.cmake</span></code> module wraps a call to
+<code class="docutils literal"><span class="pre">find_package(Automoc4</span> <span class="pre">NO_MODULE)</span></code> and adds an additional search
+directory for <code class="docutils literal"><span class="pre">automoc4</span></code>.  Then the call to
+<code class="docutils literal"><span class="pre">find_package_handle_standard_args</span></code> produces a proper success/failure
+message.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindosgWidget.html"
+                        title="previous chapter">FindosgWidget</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindPackageMessage.html"
+                        title="next chapter">FindPackageMessage</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindPackageHandleStandardArgs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindPackageMessage.html" title="FindPackageMessage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindosgWidget.html" title="FindosgWidget"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

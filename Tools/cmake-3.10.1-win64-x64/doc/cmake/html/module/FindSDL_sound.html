@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindSDL_sound &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindSDL_ttf" href="FindSDL_ttf.html" />
+    <link rel="prev" title="FindSDL" href="FindSDL.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindSDL_ttf.html" title="FindSDL_ttf"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindSDL.html" title="FindSDL"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findsdl-sound">
+<span id="module:FindSDL_sound"></span><h1>FindSDL_sound<a class="headerlink" href="#findsdl-sound" title="Permalink to this headline">¶</a></h1>
+<p>Locates the SDL_sound library</p>
+<p>This module depends on SDL being found and must be called AFTER
+FindSDL.cmake is called.</p>
+<p>This module defines</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SDL_SOUND_INCLUDE_DIR</span><span class="p">,</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="n">SDL_sound</span><span class="o">.</span><span class="n">h</span>
+<span class="n">SDL_SOUND_FOUND</span><span class="p">,</span> <span class="k">if</span> <span class="n">false</span><span class="p">,</span> <span class="n">do</span> <span class="ow">not</span> <span class="k">try</span> <span class="n">to</span> <span class="n">link</span> <span class="n">to</span> <span class="n">SDL_sound</span>
+<span class="n">SDL_SOUND_LIBRARIES</span><span class="p">,</span> <span class="n">this</span> <span class="n">contains</span> <span class="n">the</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">libraries</span> <span class="n">that</span> <span class="n">you</span> <span class="n">need</span>
+  <span class="n">to</span> <span class="n">link</span> <span class="n">against</span><span class="o">.</span>
+<span class="n">SDL_SOUND_EXTRAS</span><span class="p">,</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">optional</span> <span class="n">variable</span> <span class="k">for</span> <span class="n">you</span> <span class="n">to</span> <span class="n">add</span> <span class="n">your</span> <span class="n">own</span>
+  <span class="n">flags</span> <span class="n">to</span> <span class="n">SDL_SOUND_LIBRARIES</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">prepended</span> <span class="n">to</span> <span class="n">SDL_SOUND_LIBRARIES</span><span class="o">.</span>
+  <span class="n">This</span> <span class="ow">is</span> <span class="n">available</span> <span class="n">mostly</span> <span class="k">for</span> <span class="n">cases</span> <span class="n">this</span> <span class="n">module</span> <span class="n">failed</span> <span class="n">to</span> <span class="n">anticipate</span> <span class="k">for</span>
+  <span class="ow">and</span> <span class="n">you</span> <span class="n">must</span> <span class="n">add</span> <span class="n">additional</span> <span class="n">flags</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">marked</span> <span class="k">as</span> <span class="n">ADVANCED</span><span class="o">.</span>
+<span class="n">SDL_SOUND_VERSION_STRING</span><span class="p">,</span> <span class="n">human</span><span class="o">-</span><span class="n">readable</span> <span class="n">string</span> <span class="n">containing</span> <span class="n">the</span>
+  <span class="n">version</span> <span class="n">of</span> <span class="n">SDL_sound</span>
+</pre></div>
+</div>
+<p>This module also defines (but you shouldn&#8217;t need to use directly)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SDL_SOUND_LIBRARY</span><span class="p">,</span> <span class="n">the</span> <span class="n">name</span> <span class="n">of</span> <span class="n">just</span> <span class="n">the</span> <span class="n">SDL_sound</span> <span class="n">library</span> <span class="n">you</span> <span class="n">would</span> <span class="n">link</span>
+<span class="n">against</span><span class="o">.</span> <span class="n">Use</span> <span class="n">SDL_SOUND_LIBRARIES</span> <span class="k">for</span> <span class="n">you</span> <span class="n">link</span> <span class="n">instructions</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">this</span> <span class="n">one</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>And might define the following as needed</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">MIKMOD_LIBRARY</span>
+<span class="n">MODPLUG_LIBRARY</span>
+<span class="n">OGG_LIBRARY</span>
+<span class="n">VORBIS_LIBRARY</span>
+<span class="n">SMPEG_LIBRARY</span>
+<span class="n">FLAC_LIBRARY</span>
+<span class="n">SPEEX_LIBRARY</span>
+</pre></div>
+</div>
+<p>Typically, you should not use these variables directly, and you should
+use SDL_SOUND_LIBRARIES which contains SDL_SOUND_LIBRARY and the other
+audio libraries (if needed) to successfully compile on your system.</p>
+<p>Created by Eric Wing.  This module is a bit more complicated than the
+other FindSDL* family modules.  The reason is that SDL_sound can be
+compiled in a large variety of different ways which are independent of
+platform.  SDL_sound may dynamically link against other 3rd party
+libraries to get additional codec support, such as Ogg Vorbis, SMPEG,
+ModPlug, MikMod, FLAC, Speex, and potentially others.  Under some
+circumstances which I don&#8217;t fully understand, there seems to be a
+requirement that dependent libraries of libraries you use must also be
+explicitly linked against in order to successfully compile.  SDL_sound
+does not currently have any system in place to know how it was
+compiled.  So this CMake module does the hard work in trying to
+discover which 3rd party libraries are required for building (if any).
+This module uses a brute force approach to create a test program that
+uses SDL_sound, and then tries to build it.  If the build fails, it
+parses the error output for known symbol names to figure out which
+libraries are needed.</p>
+<p>Responds to the $SDLDIR and $SDLSOUNDDIR environmental variable that
+would correspond to the ./configure &#8211;prefix=$SDLDIR used in building
+SDL.</p>
+<p>On OSX, this will prefer the Framework version (if found) over others.
+People will have to manually change the cache values of SDL_LIBRARY to
+override this selectionor set the CMake environment CMAKE_INCLUDE_PATH
+to modify the search paths.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindSDL.html"
+                        title="previous chapter">FindSDL</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindSDL_ttf.html"
+                        title="next chapter">FindSDL_ttf</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindSDL_sound.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindSDL_ttf.html" title="FindSDL_ttf"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindSDL.html" title="FindSDL"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>CheckCXXSymbolExists &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CheckFortranCompilerFlag" href="CheckFortranCompilerFlag.html" />
+    <link rel="prev" title="CheckCXXSourceRuns" href="CheckCXXSourceRuns.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="CheckFortranCompilerFlag.html" title="CheckFortranCompilerFlag"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="CheckCXXSourceRuns.html" title="CheckCXXSourceRuns"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="checkcxxsymbolexists">
+<span id="module:CheckCXXSymbolExists"></span><h1>CheckCXXSymbolExists<a class="headerlink" href="#checkcxxsymbolexists" title="Permalink to this headline">¶</a></h1>
+<p>Check if a symbol exists as a function, variable, or macro in C++</p>
+<p>CHECK_CXX_SYMBOL_EXISTS(&lt;symbol&gt; &lt;files&gt; &lt;variable&gt;)</p>
+<p>Check that the &lt;symbol&gt; is available after including given header
+&lt;files&gt; and store the result in a &lt;variable&gt;.  Specify the list of
+files in one argument as a semicolon-separated list.
+CHECK_CXX_SYMBOL_EXISTS() can be used to check in C++ files, as
+opposed to CHECK_SYMBOL_EXISTS(), which works only for C.</p>
+<p>If the header files define the symbol as a macro it is considered
+available and assumed to work.  If the header files declare the symbol
+as a function or variable then the symbol must also be available for
+linking.  If the symbol is a type or enum value it will not be
+recognized (consider using CheckTypeSize or CheckCSourceCompiles).</p>
+<p>The following variables may be set before calling this macro to modify
+the way the check is run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">CMAKE_REQUIRED_FLAGS</span> <span class="o">=</span> <span class="n">string</span> <span class="n">of</span> <span class="nb">compile</span> <span class="n">command</span> <span class="n">line</span> <span class="n">flags</span>
+<span class="n">CMAKE_REQUIRED_DEFINITIONS</span> <span class="o">=</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">macros</span> <span class="n">to</span> <span class="n">define</span> <span class="p">(</span><span class="o">-</span><span class="n">DFOO</span><span class="o">=</span><span class="n">bar</span><span class="p">)</span>
+<span class="n">CMAKE_REQUIRED_INCLUDES</span> <span class="o">=</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">include</span> <span class="n">directories</span>
+<span class="n">CMAKE_REQUIRED_LIBRARIES</span> <span class="o">=</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">libraries</span> <span class="n">to</span> <span class="n">link</span>
+<span class="n">CMAKE_REQUIRED_QUIET</span> <span class="o">=</span> <span class="n">execute</span> <span class="n">quietly</span> <span class="n">without</span> <span class="n">messages</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="CheckCXXSourceRuns.html"
+                        title="previous chapter">CheckCXXSourceRuns</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="CheckFortranCompilerFlag.html"
+                        title="next chapter">CheckFortranCompilerFlag</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/CheckCXXSymbolExists.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="CheckFortranCompilerFlag.html" title="CheckFortranCompilerFlag"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="CheckCXXSourceRuns.html" title="CheckCXXSourceRuns"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

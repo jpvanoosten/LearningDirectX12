@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindKDE3 &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindKDE4" href="FindKDE4.html" />
+    <link rel="prev" title="FindJPEG" href="FindJPEG.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindKDE4.html" title="FindKDE4"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindJPEG.html" title="FindJPEG"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findkde3">
+<span id="module:FindKDE3"></span><h1>FindKDE3<a class="headerlink" href="#findkde3" title="Permalink to this headline">¶</a></h1>
+<p>Find the KDE3 include and library dirs, KDE preprocessors and define a some macros</p>
+<p>This module defines the following variables:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">KDE3_DEFINITIONS</span></code></dt>
+<dd>compiler definitions required for compiling KDE software</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_INCLUDE_DIR</span></code></dt>
+<dd>the KDE include directory</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_INCLUDE_DIRS</span></code></dt>
+<dd>the KDE and the Qt include directory, for use with include_directories()</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_LIB_DIR</span></code></dt>
+<dd>the directory where the KDE libraries are installed, for use with link_directories()</dd>
+<dt><code class="docutils literal"><span class="pre">QT_AND_KDECORE_LIBS</span></code></dt>
+<dd>this contains both the Qt and the kdecore library</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_DCOPIDL_EXECUTABLE</span></code></dt>
+<dd>the dcopidl executable</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_DCOPIDL2CPP_EXECUTABLE</span></code></dt>
+<dd>the dcopidl2cpp executable</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_KCFGC_EXECUTABLE</span></code></dt>
+<dd>the kconfig_compiler executable</dd>
+<dt><code class="docutils literal"><span class="pre">KDE3_FOUND</span></code></dt>
+<dd>set to TRUE if all of the above has been found</dd>
+</dl>
+<p>The following user adjustable options are provided:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">KDE3_BUILD_TESTS</span></code></dt>
+<dd>enable this to build KDE testcases</dd>
+</dl>
+<p>It also adds the following macros (from KDE3Macros.cmake) SRCS_VAR is
+always the variable which contains the list of source files for your
+application or library.</p>
+<p>KDE3_AUTOMOC(file1 ...  fileN)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">this</span> <span class="k">if</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">have</span> <span class="n">automatic</span> <span class="n">moc</span> <span class="n">file</span> <span class="n">handling</span><span class="o">.</span>
+<span class="n">This</span> <span class="n">means</span> <span class="k">if</span> <span class="n">you</span> <span class="n">include</span> <span class="s2">&quot;foo.moc&quot;</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">source</span> <span class="n">file</span> <span class="n">foo</span><span class="o">.</span><span class="n">cpp</span>
+<span class="n">a</span> <span class="n">moc</span> <span class="n">file</span> <span class="k">for</span> <span class="n">the</span> <span class="n">header</span> <span class="n">foo</span><span class="o">.</span><span class="n">h</span> <span class="n">will</span> <span class="n">be</span> <span class="n">created</span> <span class="n">automatically</span><span class="o">.</span>
+<span class="n">You</span> <span class="n">can</span> <span class="nb">set</span> <span class="n">the</span> <span class="nb">property</span> <span class="n">SKIP_AUTOMAKE</span> <span class="n">using</span> <span class="n">set_source_files_properties</span><span class="p">()</span>
+<span class="n">to</span> <span class="n">exclude</span> <span class="n">some</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">the</span> <span class="nb">list</span> <span class="kn">from</span> <span class="nn">being</span> <span class="n">processed</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_MOC_FILES(SRCS_VAR file1 ...  fileN )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">If</span> <span class="n">you</span> <span class="n">don</span><span class="s1">&#39;t use the KDE3_AUTOMOC() macro, for the files</span>
+<span class="n">listed</span> <span class="n">here</span> <span class="n">moc</span> <span class="n">files</span> <span class="n">will</span> <span class="n">be</span> <span class="n">created</span> <span class="p">(</span><span class="n">named</span> <span class="s2">&quot;foo.moc.cpp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_DCOP_SKELS(SRCS_VAR header1.h ...  headerN.h )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">this</span> <span class="n">to</span> <span class="n">generate</span> <span class="n">DCOP</span> <span class="n">skeletions</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">listed</span> <span class="n">headers</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_DCOP_STUBS(SRCS_VAR header1.h ...  headerN.h )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">this</span> <span class="n">to</span> <span class="n">generate</span> <span class="n">DCOP</span> <span class="n">stubs</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">listed</span> <span class="n">headers</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_UI_FILES(SRCS_VAR file1.ui ...  fileN.ui )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">this</span> <span class="n">to</span> <span class="n">add</span> <span class="n">the</span> <span class="n">Qt</span> <span class="n">designer</span> <span class="n">ui</span> <span class="n">files</span> <span class="n">to</span> <span class="n">your</span> <span class="n">application</span><span class="o">/</span><span class="n">library</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_KCFG_FILES(SRCS_VAR file1.kcfgc ...  fileN.kcfgc )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">this</span> <span class="n">to</span> <span class="n">add</span> <span class="n">KDE</span> <span class="n">kconfig</span> <span class="n">compiler</span> <span class="n">files</span> <span class="n">to</span> <span class="n">your</span> <span class="n">application</span><span class="o">/</span><span class="n">library</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_INSTALL_LIBTOOL_FILE(target)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">will</span> <span class="n">create</span> <span class="ow">and</span> <span class="n">install</span> <span class="n">a</span> <span class="n">simple</span> <span class="n">libtool</span> <span class="n">file</span> <span class="k">for</span> <span class="n">the</span> <span class="n">given</span> <span class="n">target</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_EXECUTABLE(name file1 ...  fileN )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Currently</span> <span class="n">identical</span> <span class="n">to</span> <span class="n">add_executable</span><span class="p">(),</span> <span class="n">may</span> <span class="n">provide</span> <span class="n">some</span> <span class="n">advanced</span>
+<span class="n">features</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">future</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_KPART(name [WITH_PREFIX] file1 ...  fileN )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Create</span> <span class="n">a</span> <span class="n">KDE</span> <span class="n">plugin</span> <span class="p">(</span><span class="n">KPart</span><span class="p">,</span> <span class="n">kioslave</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">given</span> <span class="n">source</span> <span class="n">files</span><span class="o">.</span>
+<span class="n">If</span> <span class="n">WITH_PREFIX</span> <span class="ow">is</span> <span class="n">given</span><span class="p">,</span> <span class="n">the</span> <span class="n">resulting</span> <span class="n">plugin</span> <span class="n">will</span> <span class="n">have</span> <span class="n">the</span> <span class="n">prefix</span> <span class="s2">&quot;lib&quot;</span><span class="p">,</span>
+<span class="n">otherwise</span> <span class="n">it</span> <span class="n">won</span><span class="s1">&#39;t.</span>
+<span class="n">It</span> <span class="n">creates</span> <span class="ow">and</span> <span class="n">installs</span> <span class="n">an</span> <span class="n">appropriate</span> <span class="n">libtool</span> <span class="n">la</span><span class="o">-</span><span class="n">file</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>KDE3_ADD_KDEINIT_EXECUTABLE(name file1 ...  fileN )</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Create</span> <span class="n">a</span> <span class="n">KDE</span> <span class="n">application</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">form</span> <span class="n">of</span> <span class="n">a</span> <span class="n">module</span> <span class="n">loadable</span> <span class="n">via</span> <span class="n">kdeinit</span><span class="o">.</span>
+<span class="n">A</span> <span class="n">library</span> <span class="n">named</span> <span class="n">kdeinit_</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">will</span> <span class="n">be</span> <span class="n">created</span> <span class="ow">and</span> <span class="n">a</span> <span class="n">small</span> <span class="n">executable</span>
+<span class="n">which</span> <span class="n">links</span> <span class="n">to</span> <span class="n">it</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>The option KDE3_ENABLE_FINAL to enable all-in-one compilation is no
+longer supported.</p>
+<p>Author: Alexander Neundorf &lt;<a class="reference external" href="mailto:neundorf&#37;&#52;&#48;kde&#46;org">neundorf<span>&#64;</span>kde<span>&#46;</span>org</a>&gt;</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindJPEG.html"
+                        title="previous chapter">FindJPEG</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindKDE4.html"
+                        title="next chapter">FindKDE4</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindKDE3.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindKDE4.html" title="FindKDE4"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindJPEG.html" title="FindJPEG"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>FindSquish &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FindSubversion" href="FindSubversion.html" />
+    <link rel="prev" title="FindSelfPackers" href="FindSelfPackers.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="FindSubversion.html" title="FindSubversion"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="FindSelfPackers.html" title="FindSelfPackers"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="findsquish">
+<span id="module:FindSquish"></span><h1>FindSquish<a class="headerlink" href="#findsquish" title="Permalink to this headline">¶</a></h1>
+<p>&#8211; Typical Use</p>
+<p>This module can be used to find Squish.  Currently Squish versions 3
+and 4 are supported.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SQUISH_FOUND</span>                    <span class="n">If</span> <span class="n">false</span><span class="p">,</span> <span class="n">don</span><span class="s1">&#39;t try to use Squish</span>
+<span class="n">SQUISH_VERSION</span>                  <span class="n">The</span> <span class="n">full</span> <span class="n">version</span> <span class="n">of</span> <span class="n">Squish</span> <span class="n">found</span>
+<span class="n">SQUISH_VERSION_MAJOR</span>            <span class="n">The</span> <span class="n">major</span> <span class="n">version</span> <span class="n">of</span> <span class="n">Squish</span> <span class="n">found</span>
+<span class="n">SQUISH_VERSION_MINOR</span>            <span class="n">The</span> <span class="n">minor</span> <span class="n">version</span> <span class="n">of</span> <span class="n">Squish</span> <span class="n">found</span>
+<span class="n">SQUISH_VERSION_PATCH</span>            <span class="n">The</span> <span class="n">patch</span> <span class="n">version</span> <span class="n">of</span> <span class="n">Squish</span> <span class="n">found</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SQUISH_INSTALL_DIR</span>              <span class="n">The</span> <span class="n">Squish</span> <span class="n">installation</span> <span class="n">directory</span>
+                                <span class="p">(</span><span class="n">containing</span> <span class="nb">bin</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">etc</span><span class="p">)</span>
+<span class="n">SQUISH_SERVER_EXECUTABLE</span>        <span class="n">The</span> <span class="n">squishserver</span> <span class="n">executable</span>
+<span class="n">SQUISH_CLIENT_EXECUTABLE</span>        <span class="n">The</span> <span class="n">squishrunner</span> <span class="n">executable</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>SQUISH_INSTALL_DIR_FOUND        Was the install directory found?
+SQUISH_SERVER_EXECUTABLE_FOUND  Was the server executable found?
+SQUISH_CLIENT_EXECUTABLE_FOUND  Was the client executable found?
+</pre></div>
+</div>
+<p>It provides the function squish_v4_add_test() for adding a squish test
+to cmake using Squish 4.x:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">squish_v4_add_test</span><span class="p">(</span><span class="n">cmakeTestName</span>
+  <span class="n">AUT</span> <span class="n">targetName</span> <span class="n">SUITE</span> <span class="n">suiteName</span> <span class="n">TEST</span> <span class="n">squishTestName</span>
+  <span class="p">[</span><span class="n">SETTINGSGROUP</span> <span class="n">group</span><span class="p">]</span> <span class="p">[</span><span class="n">PRE_COMMAND</span> <span class="n">command</span><span class="p">]</span> <span class="p">[</span><span class="n">POST_COMMAND</span> <span class="n">command</span><span class="p">]</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>The arguments have the following meaning:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">cmakeTestName</span></code></dt>
+<dd>this will be used as the first argument for add_test()</dd>
+<dt><code class="docutils literal"><span class="pre">AUT</span> <span class="pre">targetName</span></code></dt>
+<dd>the name of the cmake target which will be used as AUT, i.e. the
+executable which will be tested.</dd>
+<dt><code class="docutils literal"><span class="pre">SUITE</span> <span class="pre">suiteName</span></code></dt>
+<dd>this is either the full path to the squish suite, or just the
+last directory of the suite, i.e. the suite name. In this case
+the CMakeLists.txt which calls squish_add_test() must be located
+in the parent directory of the suite directory.</dd>
+<dt><code class="docutils literal"><span class="pre">TEST</span> <span class="pre">squishTestName</span></code></dt>
+<dd>the name of the squish test, i.e. the name of the subdirectory
+of the test inside the suite directory.</dd>
+<dt><code class="docutils literal"><span class="pre">SETTINGSGROUP</span> <span class="pre">group</span></code></dt>
+<dd>if specified, the given settings group will be used for executing the test.
+If not specified, the groupname will be &#8220;CTest_&lt;username&gt;&#8221;</dd>
+<dt><code class="docutils literal"><span class="pre">PRE_COMMAND</span> <span class="pre">command</span></code></dt>
+<dd>if specified, the given command will be executed before starting the squish test.</dd>
+<dt><code class="docutils literal"><span class="pre">POST_COMMAND</span> <span class="pre">command</span></code></dt>
+<dd>same as PRE_COMMAND, but after the squish test has been executed.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span>enable_testing()
+find_package(Squish 4.0)
+if (SQUISH_FOUND)
+   squish_v4_add_test(myTestName
+     AUT myApp
+     SUITE ${CMAKE_SOURCE_DIR}/tests/mySuite
+     TEST someSquishTest
+     SETTINGSGROUP myGroup
+     )
+endif ()
+</pre></div>
+</div>
+<p>For users of Squish version 3.x the macro squish_v3_add_test() is
+provided:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">squish_v3_add_test</span><span class="p">(</span><span class="n">testName</span> <span class="n">applicationUnderTest</span> <span class="n">testCase</span> <span class="n">envVars</span> <span class="n">testWrapper</span><span class="p">)</span>
+<span class="n">Use</span> <span class="n">this</span> <span class="n">macro</span> <span class="n">to</span> <span class="n">add</span> <span class="n">a</span> <span class="n">test</span> <span class="n">using</span> <span class="n">Squish</span> <span class="mf">3.</span><span class="n">x</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">enable_testing</span><span class="p">()</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">Squish</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">SQUISH_FOUND</span><span class="p">)</span>
+  <span class="n">squish_v3_add_test</span><span class="p">(</span><span class="n">myTestName</span> <span class="n">myApplication</span> <span class="n">testCase</span> <span class="n">envVars</span> <span class="n">testWrapper</span><span class="p">)</span>
+<span class="n">endif</span> <span class="p">()</span>
+</pre></div>
+</div>
+<p>macro SQUISH_ADD_TEST(testName applicationUnderTest testCase envVars
+testWrapper)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="ow">is</span> <span class="n">deprecated</span><span class="o">.</span> <span class="n">Use</span> <span class="n">SQUISH_V3_ADD_TEST</span><span class="p">()</span> <span class="k">if</span> <span class="n">you</span> <span class="n">are</span> <span class="n">using</span> <span class="n">Squish</span> <span class="mf">3.</span><span class="n">x</span> <span class="n">instead</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="FindSelfPackers.html"
+                        title="previous chapter">FindSelfPackers</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="FindSubversion.html"
+                        title="next chapter">FindSubversion</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/FindSquish.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="FindSubversion.html" title="FindSubversion"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="FindSelfPackers.html" title="FindSelfPackers"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

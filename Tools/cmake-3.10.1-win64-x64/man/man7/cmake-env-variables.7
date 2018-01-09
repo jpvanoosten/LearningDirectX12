@@ -1,0 +1,211 @@
+.\" Man page generated from reStructuredText.
+.
+.TH "CMAKE-ENV-VARIABLES" "7" "Dec 13, 2017" "3.10.1" "CMake"
+.SH NAME
+cmake-env-variables \- CMake Environment Variables Reference
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH ENVIRONMENT VARIABLES THAT CONTROL THE BUILD
+.SS CMAKE_CONFIG_TYPE
+.sp
+The default build configuration for Build Tool Mode and
+\fBctest\fP build handler when there is no explicit configuration given.
+.SS CMAKE_MSVCIDE_RUN_PATH
+.sp
+Extra PATH locations for custom commands when using
+\fBVisual Studio 9 2008\fP (or above) generators.
+.sp
+The \fBCMAKE_MSVCIDE_RUN_PATH\fP environment variable sets the default value for
+the \fBCMAKE_MSVCIDE_RUN_PATH\fP variable if not already explicitly set.
+.SS CMAKE_OSX_ARCHITECTURES
+.sp
+Target specific architectures for OS X.
+.sp
+The \fBCMAKE_OSX_ARCHITECTURES\fP environment variable sets the default value for
+the \fBCMAKE_OSX_ARCHITECTURES\fP variable. See
+\fBOSX_ARCHITECTURES\fP for more information.
+.SS LDFLAGS
+.sp
+Will only be used by CMake on the first configuration to determine the default
+linker flags, after which the value for \fBLDFLAGS\fP is stored in the cache
+as \fBCMAKE_EXE_LINKER_FLAGS_INIT\fP,
+\fBCMAKE_SHARED_LINKER_FLAGS_INIT\fP, and
+\fBCMAKE_MODULE_LINKER_FLAGS_INIT\fP\&. For any configuration run
+(including the first), the environment variable will be ignored if the
+equivalent  \fBCMAKE_<TYPE>_LINKER_FLAGS_INIT\fP variable is defined.
+.SS MACOSX_DEPLOYMENT_TARGET
+.sp
+Specify the minimum version of OS X on which the target binaries are
+to be deployed.
+.sp
+The \fBMACOSX_DEPLOYMENT_TARGET\fP environment variable sets the default value for
+the \fBCMAKE_OSX_DEPLOYMENT_TARGET\fP variable.
+.SH ENVIRONMENT VARIABLES FOR LANGUAGES
+.SS ASM<DIALECT>
+.sp
+Preferred executable for compiling a specific dialect of assembly language
+files. \fBASM<DIALECT>\fP can be \fBASM\fP, \fBASM_NASM\fP, \fBASM_MASM\fP or
+\fBASM\-ATT\fP\&. Will only be used by CMake on the first configuration to determine
+\fBASM<DIALECT>\fP compiler, after which the value for \fBASM<DIALECT>\fP is stored
+in the cache as
+\fBCMAKE_ASM<DIALECT>_COMPILER\fP\&. For subsequent
+configuration runs, the environment variable will be ignored in favor of
+\fBCMAKE_ASM<DIALECT>_COMPILER\fP\&.
+.SS ASM<DIALECT>FLAGS
+.sp
+Default compilation flags to be used when compiling a specific dialect of an
+assembly language. \fBASM<DIALECT>FLAGS\fP can be \fBASMFLAGS\fP, \fBASM_NASMFLAGS\fP,
+\fBASM_MASMFLAGS\fP or \fBASM\-ATTFLAGS\fP\&. Will only be used by CMake on the
+first configuration to determine \fBASM<DIALECT>\fP default compilation flags, after
+which the value for \fBASM<DIALECT>FLAGS\fP is stored in the cache as
+\fBCMAKE_ASM<DIALECT>_FLAGS\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if the
+\fBCMAKE_ASM<DIALECT>_FLAGS\fP variable is defined.
+.SS CC
+.sp
+Preferred executable for compiling \fBC\fP language files. Will only be used by
+CMake on the first configuration to determine \fBC\fP compiler, after which the
+value for \fBCC\fP is stored in the cache as
+\fBCMAKE_C_COMPILER\fP\&. For any configuration run
+(including the first), the environment variable will be ignored if the
+\fBCMAKE_C_COMPILER\fP variable is defined.
+.SS CFLAGS
+.sp
+Default compilation flags to be used when compiling \fBC\fP files. Will only be
+used by CMake on the first configuration to determine \fBCC\fP default compilation
+flags, after which the value for \fBCFLAGS\fP is stored in the cache
+as \fBCMAKE_C_FLAGS\fP\&. For any configuration run
+(including the first), the environment variable will be ignored if the
+\fBCMAKE_C_FLAGS\fP variable is defined.
+.SS CSFLAGS
+.sp
+Preferred executable for compiling \fBCSharp\fP language files. Will only be
+used by CMake on the first configuration to determine \fBCSharp\fP default
+compilation flags, after which the value for \fBCSFLAGS\fP is stored in the cache
+as \fBCMAKE_CSharp_FLAGS\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if the
+\fBCMAKE_CSharp_FLAGS\fP variable is defined.
+.SS CUDACXX
+.sp
+Preferred executable for compiling \fBCUDA\fP language files. Will only be used by
+CMake on the first configuration to determine \fBCUDA\fP compiler, after which the
+value for \fBCUDA\fP is stored in the cache as
+\fBCMAKE_CUDA_COMPILER\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if the
+\fBCMAKE_CUDA_COMPILER\fP variable is defined.
+.SS CUDAFLAGS
+.sp
+Default compilation flags to be used when compiling \fBCUDA\fP files. Will only be
+used by CMake on the first configuration to determine \fBCUDA\fP default
+compilation flags, after which the value for \fBCUDAFLAGS\fP is stored in the
+cache as \fBCMAKE_CUDA_FLAGS\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if
+the \fBCMAKE_CUDA_FLAGS\fP variable is defined.
+.SS CUDAHOSTCXX
+.sp
+Preferred executable for compiling host code when compiling \fBCUDA\fP
+language files. Will only be used by CMake on the first configuration to
+determine \fBCUDA\fP host compiler, after which the value for \fBCUDAHOSTCXX\fP is
+stored in the cache as \fBCMAKE_CUDA_HOST_COMPILER\fP\&. For any
+configuration run (including the first), the environment variable will be
+ignored if the \fBCMAKE_CUDA_HOST_COMPILER\fP variable is defined.
+.SS CXX
+.sp
+Preferred executable for compiling \fBCXX\fP language files. Will only be used by
+CMake on the first configuration to determine \fBCXX\fP compiler, after which the
+value for \fBCXX\fP is stored in the cache as
+\fBCMAKE_CXX_COMPILER\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if the
+\fBCMAKE_CXX_COMPILER\fP variable is defined.
+.SS CXXFLAGS
+.sp
+Default compilation flags to be used when compiling \fBCXX\fP (C++) files. Will
+only be used by CMake on the first configuration to determine \fBCXX\fP default
+compilation flags, after which the value for \fBCXXFLAGS\fP is stored in the cache
+as \fBCMAKE_CXX_FLAGS\fP\&. For any configuration run (
+including the first), the environment variable will be ignored if
+the \fBCMAKE_CXX_FLAGS\fP variable is defined.
+.SS FC
+.sp
+Preferred executable for compiling \fBFortran\fP language files. Will only be used
+by CMake on the first configuration to determine \fBFortran\fP compiler, after
+which the value for \fBFortran\fP is stored in the cache as
+\fBCMAKE_Fortran_COMPILER\fP\&. For any
+configuration run (including the first), the environment variable will be
+ignored if the \fBCMAKE_Fortran_COMPILER\fP
+variable is defined.
+.SS FFLAGS
+.sp
+Default compilation flags to be used when compiling \fBFortran\fP files. Will only
+be used by CMake on the first configuration to determine \fBFortran\fP default
+compilation flags, after which the value for \fBFFLAGS\fP is stored in the cache
+as \fBCMAKE_Fortran_FLAGS\fP\&. For any configuration
+run (including the first), the environment variable will be ignored if
+the \fBCMAKE_Fortran_FLAGS\fP variable is defined.
+.SS RC
+.sp
+Preferred executable for compiling \fBresource\fP files. Will only be used by CMake
+on the first configuration to determine \fBresource\fP compiler, after which the
+value for \fBRC\fP is stored in the cache as
+\fBCMAKE_RC_COMPILER\fP\&. For any configuration run
+(including the first), the environment variable will be ignored if the
+\fBCMAKE_RC_COMPILER\fP variable is defined.
+.SS RCFLAGS
+.sp
+Default compilation flags to be used when compiling \fBresource\fP files. Will
+only be used by CMake on the first configuration to determine \fBresource\fP
+default compilation flags, after which the value for \fBRCFLAGS\fP is stored in
+the cache as \fBCMAKE_RC_FLAGS\fP\&. For any
+configuration run (including the first), the environment variable will be ignored
+if the \fBCMAKE_RC_FLAGS\fP variable is defined.
+.SH ENVIRONMENT VARIABLES FOR CTEST
+.SS CTEST_INTERACTIVE_DEBUG_MODE
+.sp
+Environment variable that will exist and be set to \fB1\fP when a test executed
+by CTest is run in interactive mode.
+.SS CTEST_OUTPUT_ON_FAILURE
+.sp
+Boolean environment variable that controls if the output should be logged for
+failed tests. Set the value to 1, True, or ON to enable output on failure.
+See \fBctest(1)\fP for more information on controlling output of failed
+tests.
+.SS CTEST_PARALLEL_LEVEL
+.sp
+Specify the number of tests for CTest to run in parallel. See \fBctest(1)\fP
+for more information on parallel test execution.
+.SS CTEST_USE_LAUNCHERS_DEFAULT
+.sp
+Initializes the \fBCTEST_USE_LAUNCHERS\fP variable if not already defined.
+.SS DASHBOARD_TEST_FROM_CTEST
+.sp
+Environment variable that will exist when a test executed by CTest is run
+in non\-interactive mode. The value will be equal to \fBCMAKE_VERSION\fP\&.
+.SH COPYRIGHT
+2000-2017 Kitware, Inc. and Contributors
+.\" Generated by docutils manpage writer.
+.

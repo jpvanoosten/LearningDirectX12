@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>Ninja &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Visual Studio 6" href="Visual Studio 6.html" />
+    <link rel="prev" title="Watcom WMake" href="Watcom WMake.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Visual Studio 6.html" title="Visual Studio 6"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Watcom WMake.html" title="Watcom WMake"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-generators.7.html" accesskey="U">cmake-generators(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ninja">
+<span id="generator:Ninja"></span><h1>Ninja<a class="headerlink" href="#ninja" title="Permalink to this headline">¶</a></h1>
+<p>Generates build.ninja files.</p>
+<p>A build.ninja file is generated into the build tree.  Recent versions
+of the ninja program can build the project through the &#8220;all&#8221; target.
+An &#8220;install&#8221; target is also provided.</p>
+<p>For each subdirectory <code class="docutils literal"><span class="pre">sub/dir</span></code> of the project, additional targets
+are generated:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">sub/dir/all</span></code></dt>
+<dd>Depends on all targets required by the subdirectory.</dd>
+<dt><code class="docutils literal"><span class="pre">sub/dir/install</span></code></dt>
+<dd>Runs the install step in the subdirectory, if any.</dd>
+<dt><code class="docutils literal"><span class="pre">sub/dir/test</span></code></dt>
+<dd>Runs the test step in the subdirectory, if any.</dd>
+<dt><code class="docutils literal"><span class="pre">sub/dir/package</span></code></dt>
+<dd>Runs the package step in the subdirectory, if any.</dd>
+</dl>
+<div class="section" id="fortran-support">
+<h2>Fortran Support<a class="headerlink" href="#fortran-support" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">Ninja</span></code> generator conditionally supports Fortran when the <code class="docutils literal"><span class="pre">ninja</span></code>
+tool has the required features.  As of this version of CMake the needed
+features have not been integrated into upstream Ninja.  Kitware maintains
+a branch of Ninja with the required features on <a class="reference external" href="https://github.com/Kitware/ninja/tree/features-for-fortran#readme">github.com/Kitware/ninja</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ninja</a><ul>
+<li><a class="reference internal" href="#fortran-support">Fortran Support</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Watcom WMake.html"
+                        title="previous chapter">Watcom WMake</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Visual Studio 6.html"
+                        title="next chapter">Visual Studio 6</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/generator/Ninja.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Visual Studio 6.html" title="Visual Studio 6"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Watcom WMake.html" title="Watcom WMake"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-generators.7.html" >cmake-generators(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

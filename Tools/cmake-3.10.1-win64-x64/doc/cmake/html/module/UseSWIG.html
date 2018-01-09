@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>UseSWIG &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="UsewxWidgets" href="UsewxWidgets.html" />
+    <link rel="prev" title="UsePkgConfig" href="UsePkgConfig.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="UsewxWidgets.html" title="UsewxWidgets"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="UsePkgConfig.html" title="UsePkgConfig"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" accesskey="U">cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="useswig">
+<span id="module:UseSWIG"></span><h1>UseSWIG<a class="headerlink" href="#useswig" title="Permalink to this headline">¶</a></h1>
+<p>Defines the following macros for use with SWIG:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SWIG_ADD_LIBRARY</span><span class="p">(</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span>
+                 <span class="p">[</span><span class="n">TYPE</span> <span class="o">&lt;</span><span class="n">SHARED</span><span class="o">|</span><span class="n">MODULE</span><span class="o">|</span><span class="n">STATIC</span><span class="o">|</span><span class="n">USE_BUILD_SHARED_LIBS</span><span class="o">&gt;</span><span class="p">]</span>
+                 <span class="n">LANGUAGE</span> <span class="o">&lt;</span><span class="n">language</span><span class="o">&gt;</span>
+                 <span class="n">SOURCES</span> <span class="o">&lt;</span><span class="n">file</span><span class="o">&gt;...</span>
+                 <span class="p">)</span>
+  <span class="o">-</span> <span class="n">Define</span> <span class="n">swig</span> <span class="n">module</span> <span class="k">with</span> <span class="n">given</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">specified</span> <span class="n">language</span>
+<span class="n">SWIG_LINK_LIBRARIES</span><span class="p">(</span><span class="n">name</span> <span class="p">[</span> <span class="n">libraries</span> <span class="p">])</span>
+  <span class="o">-</span> <span class="n">Link</span> <span class="n">libraries</span> <span class="n">to</span> <span class="n">swig</span> <span class="n">module</span>
+</pre></div>
+</div>
+<p>Source files properties on module files can be set before the invocation
+of the SWIG_ADD_LIBRARY macro to specify special behavior of SWIG.</p>
+<p>The source file property CPLUSPLUS calls SWIG in c++ mode, e.g.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">set_property</span><span class="p">(</span><span class="n">SOURCE</span> <span class="n">mymod</span><span class="o">.</span><span class="n">i</span> <span class="n">PROPERTY</span> <span class="n">CPLUSPLUS</span> <span class="n">ON</span><span class="p">)</span>
+<span class="n">swig_add_library</span><span class="p">(</span><span class="n">mymod</span> <span class="n">LANGUAGE</span> <span class="n">python</span> <span class="n">SOURCES</span> <span class="n">mymod</span><span class="o">.</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The source file property SWIG_FLAGS adds custom flags to the SWIG executable.</p>
+<p>The source-file property SWIG_MODULE_NAME have to be provided to specify the actual
+import name of the module in the target language if it cannot be scanned automatically
+from source or different from the module file basename.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">set_property</span><span class="p">(</span><span class="n">SOURCE</span> <span class="n">mymod</span><span class="o">.</span><span class="n">i</span> <span class="n">PROPERTY</span> <span class="n">SWIG_MODULE_NAME</span> <span class="n">mymod_realname</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To get the name of the swig module target library, use: ${SWIG_MODULE_${name}_REAL_NAME}.</p>
+<p>Also some variables can be set to specify special behavior of SWIG.</p>
+<p>CMAKE_SWIG_FLAGS can be used to add special flags to all swig calls.</p>
+<p>CMAKE_SWIG_OUTDIR allows one to specify where to write
+the language specific files (swig -outdir option).</p>
+<p>SWIG_OUTFILE_DIR allows one to specify where to write the output file
+(swig -o option).  If not specified, CMAKE_SWIG_OUTDIR is used.</p>
+<p>The name-specific variable SWIG_MODULE_&lt;name&gt;_EXTRA_DEPS may be used to specify extra
+dependencies for the generated modules.</p>
+<p>If the source file generated by swig need some special flag you can use:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>set_source_files_properties( ${swig_generated_file_fullname}
+                             PROPERTIES COMPILE_FLAGS &quot;-bla&quot;)
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="UsePkgConfig.html"
+                        title="previous chapter">UsePkgConfig</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="UsewxWidgets.html"
+                        title="next chapter">UsewxWidgets</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/module/UseSWIG.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="UsewxWidgets.html" title="UsewxWidgets"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="UsePkgConfig.html" title="UsePkgConfig"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-modules.7.html" >cmake-modules(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>

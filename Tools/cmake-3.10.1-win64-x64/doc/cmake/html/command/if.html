@@ -1,0 +1,337 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+  <title>if &mdash; CMake 3.10.1 Documentation</title>
+
+    
+    <link rel="stylesheet" href="../_static/cmake.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.10.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/cmake-favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="include" href="include.html" />
+    <link rel="prev" title="get_property" href="get_property.html" />
+  
+ 
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="include.html" title="include"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="get_property.html" title="get_property"
+             accesskey="P">previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" accesskey="U">cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="if">
+<span id="command:if"></span><h1>if<a class="headerlink" href="#if" title="Permalink to this headline">¶</a></h1>
+<p>Conditionally execute a group of commands.</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">if</span><span class="p">(</span><span class="s">expression</span><span class="p">)</span>
+  <span class="c"># then section.</span>
+  <span class="nb">COMMAND1</span><span class="p">(</span><span class="s">ARGS</span> <span class="s">...</span><span class="p">)</span>
+  <span class="nb">COMMAND2</span><span class="p">(</span><span class="s">ARGS</span> <span class="s">...</span><span class="p">)</span>
+  <span class="c">#...</span>
+<span class="nb">elseif</span><span class="p">(</span><span class="s">expression2</span><span class="p">)</span>
+  <span class="c"># elseif section.</span>
+  <span class="nb">COMMAND1</span><span class="p">(</span><span class="s">ARGS</span> <span class="s">...</span><span class="p">)</span>
+  <span class="nb">COMMAND2</span><span class="p">(</span><span class="s">ARGS</span> <span class="s">...</span><span class="p">)</span>
+  <span class="c">#...</span>
+<span class="nb">else</span><span class="p">(</span><span class="s">expression</span><span class="p">)</span>
+  <span class="c"># else section.</span>
+  <span class="nb">COMMAND1</span><span class="p">(</span><span class="s">ARGS</span> <span class="s">...</span><span class="p">)</span>
+  <span class="nb">COMMAND2</span><span class="p">(</span><span class="s">ARGS</span> <span class="s">...</span><span class="p">)</span>
+  <span class="c">#...</span>
+<span class="nb">endif</span><span class="p">(</span><span class="s">expression</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Evaluates the given expression.  If the result is true, the commands
+in the THEN section are invoked.  Otherwise, the commands in the else
+section are invoked.  The elseif and else sections are optional.  You
+may have multiple elseif clauses.  Note that the expression in the
+else and endif clause is optional.  Long expressions can be used and
+there is a traditional order of precedence.  Parenthetical expressions
+are evaluated first followed by unary tests such as <code class="docutils literal"><span class="pre">EXISTS</span></code>,
+<code class="docutils literal"><span class="pre">COMMAND</span></code>, and <code class="docutils literal"><span class="pre">DEFINED</span></code>.  Then any binary tests such as
+<code class="docutils literal"><span class="pre">EQUAL</span></code>, <code class="docutils literal"><span class="pre">LESS</span></code>, <code class="docutils literal"><span class="pre">LESS_EQUAL</span></code>, <code class="docutils literal"><span class="pre">GREATER</span></code>, <code class="docutils literal"><span class="pre">GREATER_EQUAL</span></code>,
+<code class="docutils literal"><span class="pre">STREQUAL</span></code>, <code class="docutils literal"><span class="pre">STRLESS</span></code>, <code class="docutils literal"><span class="pre">STRLESS_EQUAL</span></code>, <code class="docutils literal"><span class="pre">STRGREATER</span></code>,
+<code class="docutils literal"><span class="pre">STRGREATER_EQUAL</span></code>, <code class="docutils literal"><span class="pre">VERSION_EQUAL</span></code>, <code class="docutils literal"><span class="pre">VERSION_LESS</span></code>,
+<code class="docutils literal"><span class="pre">VERSION_LESS_EQUAL</span></code>, <code class="docutils literal"><span class="pre">VERSION_GREATER</span></code>, <code class="docutils literal"><span class="pre">VERSION_GREATER_EQUAL</span></code>,
+and <code class="docutils literal"><span class="pre">MATCHES</span></code> will be evaluated.  Then boolean <code class="docutils literal"><span class="pre">NOT</span></code> operators and
+finally boolean <code class="docutils literal"><span class="pre">AND</span></code> and then <code class="docutils literal"><span class="pre">OR</span></code> operators will be evaluated.</p>
+<p>Possible expressions are:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">if(&lt;constant&gt;)</span></code></dt>
+<dd>True if the constant is <code class="docutils literal"><span class="pre">1</span></code>, <code class="docutils literal"><span class="pre">ON</span></code>, <code class="docutils literal"><span class="pre">YES</span></code>, <code class="docutils literal"><span class="pre">TRUE</span></code>, <code class="docutils literal"><span class="pre">Y</span></code>,
+or a non-zero number.  False if the constant is <code class="docutils literal"><span class="pre">0</span></code>, <code class="docutils literal"><span class="pre">OFF</span></code>,
+<code class="docutils literal"><span class="pre">NO</span></code>, <code class="docutils literal"><span class="pre">FALSE</span></code>, <code class="docutils literal"><span class="pre">N</span></code>, <code class="docutils literal"><span class="pre">IGNORE</span></code>, <code class="docutils literal"><span class="pre">NOTFOUND</span></code>, the empty string,
+or ends in the suffix <code class="docutils literal"><span class="pre">-NOTFOUND</span></code>.  Named boolean constants are
+case-insensitive.  If the argument is not one of these specific
+constants, it is treated as a variable or string and the following
+signature is used.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;)</span></code></dt>
+<dd>True if given a variable that is defined to a value that is not a false
+constant.  False otherwise.  (Note macro arguments are not variables.)</dd>
+<dt><code class="docutils literal"><span class="pre">if(NOT</span> <span class="pre">&lt;expression&gt;)</span></code></dt>
+<dd>True if the expression is not true.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;expr1&gt;</span> <span class="pre">AND</span> <span class="pre">&lt;expr2&gt;)</span></code></dt>
+<dd>True if both expressions would be considered true individually.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;expr1&gt;</span> <span class="pre">OR</span> <span class="pre">&lt;expr2&gt;)</span></code></dt>
+<dd>True if either expression would be considered true individually.</dd>
+<dt><code class="docutils literal"><span class="pre">if(COMMAND</span> <span class="pre">command-name)</span></code></dt>
+<dd>True if the given name is a command, macro or function that can be
+invoked.</dd>
+<dt><code class="docutils literal"><span class="pre">if(POLICY</span> <span class="pre">policy-id)</span></code></dt>
+<dd>True if the given name is an existing policy (of the form <code class="docutils literal"><span class="pre">CMP&lt;NNNN&gt;</span></code>).</dd>
+<dt><code class="docutils literal"><span class="pre">if(TARGET</span> <span class="pre">target-name)</span></code></dt>
+<dd>True if the given name is an existing logical target name created
+by a call to the <span class="target" id="index-0-command:add_executable"></span><a class="reference internal" href="add_executable.html#command:add_executable" title="add_executable"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_executable()</span></code></a>, <span class="target" id="index-0-command:add_library"></span><a class="reference internal" href="add_library.html#command:add_library" title="add_library"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_library()</span></code></a>,
+or <span class="target" id="index-0-command:add_custom_target"></span><a class="reference internal" href="add_custom_target.html#command:add_custom_target" title="add_custom_target"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_custom_target()</span></code></a> command that has already been invoked
+(in any directory).</dd>
+<dt><code class="docutils literal"><span class="pre">if(TEST</span> <span class="pre">test-name)</span></code></dt>
+<dd>True if the given name is an existing test name created by the
+<span class="target" id="index-0-command:add_test"></span><a class="reference internal" href="add_test.html#command:add_test" title="add_test"><code class="xref cmake cmake-command docutils literal"><span class="pre">add_test()</span></code></a> command.</dd>
+<dt><code class="docutils literal"><span class="pre">if(EXISTS</span> <span class="pre">path-to-file-or-directory)</span></code></dt>
+<dd>True if the named file or directory exists.  Behavior is well-defined
+only for full paths.</dd>
+<dt><code class="docutils literal"><span class="pre">if(file1</span> <span class="pre">IS_NEWER_THAN</span> <span class="pre">file2)</span></code></dt>
+<dd>True if <code class="docutils literal"><span class="pre">file1</span></code> is newer than <code class="docutils literal"><span class="pre">file2</span></code> or if one of the two files doesn&#8217;t
+exist.  Behavior is well-defined only for full paths.  If the file
+time stamps are exactly the same, an <code class="docutils literal"><span class="pre">IS_NEWER_THAN</span></code> comparison returns
+true, so that any dependent build operations will occur in the event
+of a tie.  This includes the case of passing the same file name for
+both file1 and file2.</dd>
+<dt><code class="docutils literal"><span class="pre">if(IS_DIRECTORY</span> <span class="pre">path-to-directory)</span></code></dt>
+<dd>True if the given name is a directory.  Behavior is well-defined only
+for full paths.</dd>
+<dt><code class="docutils literal"><span class="pre">if(IS_SYMLINK</span> <span class="pre">file-name)</span></code></dt>
+<dd>True if the given name is a symbolic link.  Behavior is well-defined
+only for full paths.</dd>
+<dt><code class="docutils literal"><span class="pre">if(IS_ABSOLUTE</span> <span class="pre">path)</span></code></dt>
+<dd>True if the given path is an absolute path.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">MATCHES</span> <span class="pre">regex)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value matches the given regular
+expression.  See <a class="reference internal" href="string.html#regex-specification"><span class="std std-ref">Regex Specification</span></a> for regex format.
+<code class="docutils literal"><span class="pre">()</span></code> groups are captured in <span class="target" id="index-0-variable:CMAKE_MATCH_&lt;n&gt;"></span><a class="reference internal" href="../variable/CMAKE_MATCH_n.html#variable:CMAKE_MATCH_&lt;n&gt;" title="CMAKE_MATCH_&lt;n&gt;"><code class="xref cmake cmake-variable docutils literal"><span class="pre">CMAKE_MATCH_&lt;n&gt;</span></code></a> variables.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">LESS</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is a valid number and less
+than that on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">GREATER</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is a valid number and greater
+than that on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is a valid number and equal
+to that on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">LESS_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is a valid number and less
+than or equal to that on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">GREATER_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is a valid number and greater
+than or equal to that on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">STRLESS</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is lexicographically less
+than the string or variable on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">STRGREATER</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is lexicographically greater
+than the string or variable on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">STREQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is lexicographically equal
+to the string or variable on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">STRLESS_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is lexicographically less
+than or equal to the string or variable on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">STRGREATER_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>True if the given string or variable&#8217;s value is lexicographically greater
+than or equal to the string or variable on the right.</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">VERSION_LESS</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>Component-wise integer version number comparison (version format is
+<code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">VERSION_GREATER</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>Component-wise integer version number comparison (version format is
+<code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">VERSION_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>Component-wise integer version number comparison (version format is
+<code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">VERSION_LESS_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>Component-wise integer version number comparison (version format is
+<code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">VERSION_GREATER_EQUAL</span> <span class="pre">&lt;variable|string&gt;)</span></code></dt>
+<dd>Component-wise integer version number comparison (version format is
+<code class="docutils literal"><span class="pre">major[.minor[.patch[.tweak]]]</span></code>).</dd>
+<dt><code class="docutils literal"><span class="pre">if(&lt;variable|string&gt;</span> <span class="pre">IN_LIST</span> <span class="pre">&lt;variable&gt;)</span></code></dt>
+<dd>True if the given element is contained in the named list variable.</dd>
+<dt><code class="docutils literal"><span class="pre">if(DEFINED</span> <span class="pre">&lt;variable&gt;)</span></code></dt>
+<dd>True if the given variable is defined.  It does not matter if the
+variable is true or false just if it has been set.  (Note macro
+arguments are not variables.)</dd>
+<dt><code class="docutils literal"><span class="pre">if((expression)</span> <span class="pre">AND</span> <span class="pre">(expression</span> <span class="pre">OR</span> <span class="pre">(expression)))</span></code></dt>
+<dd>The expressions inside the parenthesis are evaluated first and then
+the remaining expression is evaluated as in the previous examples.
+Where there are nested parenthesis the innermost are evaluated as part
+of evaluating the expression that contains them.</dd>
+</dl>
+<p>The if command was written very early in CMake&#8217;s history, predating
+the <code class="docutils literal"><span class="pre">${}</span></code> variable evaluation syntax, and for convenience evaluates
+variables named by its arguments as shown in the above signatures.
+Note that normal variable evaluation with <code class="docutils literal"><span class="pre">${}</span></code> applies before the if
+command even receives the arguments.  Therefore code like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>set(var1 OFF)
+set(var2 &quot;var1&quot;)
+if(${var2})
+</pre></div>
+</div>
+<p>appears to the if command as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span><span class="p">(</span><span class="n">var1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and is evaluated according to the <code class="docutils literal"><span class="pre">if(&lt;variable&gt;)</span></code> case documented
+above.  The result is <code class="docutils literal"><span class="pre">OFF</span></code> which is false.  However, if we remove the
+<code class="docutils literal"><span class="pre">${}</span></code> from the example then the command sees:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">if</span><span class="p">(</span><span class="n">var2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which is true because <code class="docutils literal"><span class="pre">var2</span></code> is defined to &#8220;var1&#8221; which is not a false
+constant.</p>
+<p>Automatic evaluation applies in the other cases whenever the
+above-documented signature accepts <code class="docutils literal"><span class="pre">&lt;variable|string&gt;</span></code>:</p>
+<ul class="simple">
+<li>The left hand argument to <code class="docutils literal"><span class="pre">MATCHES</span></code> is first checked to see if it is
+a defined variable, if so the variable&#8217;s value is used, otherwise the
+original value is used.</li>
+<li>If the left hand argument to <code class="docutils literal"><span class="pre">MATCHES</span></code> is missing it returns false
+without error</li>
+<li>Both left and right hand arguments to <code class="docutils literal"><span class="pre">LESS</span></code>, <code class="docutils literal"><span class="pre">GREATER</span></code>, <code class="docutils literal"><span class="pre">EQUAL</span></code>,
+<code class="docutils literal"><span class="pre">LESS_EQUAL</span></code>, and <code class="docutils literal"><span class="pre">GREATER_EQUAL</span></code>, are independently tested to see if
+they are defined variables, if so their defined values are used otherwise
+the original value is used.</li>
+<li>Both left and right hand arguments to <code class="docutils literal"><span class="pre">STRLESS</span></code>, <code class="docutils literal"><span class="pre">STRGREATER</span></code>,
+<code class="docutils literal"><span class="pre">STREQUAL</span></code>, <code class="docutils literal"><span class="pre">STRLESS_EQUAL</span></code>, and <code class="docutils literal"><span class="pre">STRGREATER_EQUAL</span></code> are independently
+tested to see if they are defined variables, if so their defined values are
+used otherwise the original value is used.</li>
+<li>Both left and right hand arguments to <code class="docutils literal"><span class="pre">VERSION_LESS</span></code>,
+<code class="docutils literal"><span class="pre">VERSION_GREATER</span></code>, <code class="docutils literal"><span class="pre">VERSION_EQUAL</span></code>, <code class="docutils literal"><span class="pre">VERSION_LESS_EQUAL</span></code>, and
+<code class="docutils literal"><span class="pre">VERSION_GREATER_EQUAL</span></code> are independently tested to see if they are defined
+variables, if so their defined values are used otherwise the original value
+is used.</li>
+<li>The right hand argument to <code class="docutils literal"><span class="pre">NOT</span></code> is tested to see if it is a boolean
+constant, if so the value is used, otherwise it is assumed to be a
+variable and it is dereferenced.</li>
+<li>The left and right hand arguments to <code class="docutils literal"><span class="pre">AND</span></code> and <code class="docutils literal"><span class="pre">OR</span></code> are independently
+tested to see if they are boolean constants, if so they are used as
+such, otherwise they are assumed to be variables and are dereferenced.</li>
+</ul>
+<p>To prevent ambiguity, potential variable or keyword names can be
+specified in a <a class="reference internal" href="../manual/cmake-language.7.html#quoted-argument"><span class="std std-ref">Quoted Argument</span></a> or a <a class="reference internal" href="../manual/cmake-language.7.html#bracket-argument"><span class="std std-ref">Bracket Argument</span></a>.
+A quoted or bracketed variable or keyword will be interpreted as a
+string and not dereferenced or interpreted.
+See policy <span class="target" id="index-0-policy:CMP0054"></span><a class="reference internal" href="../policy/CMP0054.html#policy:CMP0054" title="CMP0054"><code class="xref cmake cmake-policy docutils literal"><span class="pre">CMP0054</span></code></a>.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="get_property.html"
+                        title="previous chapter">get_property</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="include.html"
+                        title="next chapter">include</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/command/if.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="include.html" title="include"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="get_property.html" title="get_property"
+             >previous</a> |</li>
+  <li>
+    <img src="../_static/cmake-logo-16.png" alt=""
+         style="vertical-align: middle; margin-top: -2px" />
+  </li>
+  <li>
+    <a href="https://cmake.org/">CMake</a> &#187;
+  </li>
+  <li>
+    <a href="../index.html">3.10.1 Documentation</a> &#187;
+  </li>
+
+          <li class="nav-item nav-item-1"><a href="../manual/cmake-commands.7.html" >cmake-commands(7)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2000-2017 Kitware, Inc. and Contributors.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>
