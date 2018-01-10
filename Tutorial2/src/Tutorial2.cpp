@@ -72,7 +72,7 @@ void Tutorial2::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsComman
     size_t numElements, size_t elementSize, const void* bufferData, 
     D3D12_RESOURCE_FLAGS flags )
 {
-    ComPtr<ID3D12Device2> device = Application::Get().GetDevice();
+    auto device = Application::Get().GetDevice();
 
     size_t bufferSize = numElements * elementSize;
 
