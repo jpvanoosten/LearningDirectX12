@@ -63,7 +63,6 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::CreateCommandLi
 {
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList;
     ThrowIfFailed(m_d3d12Device->CreateCommandList(0, m_CommandListType, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)));
-    ThrowIfFailed(commandList->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), allocator.Get()));
 
     return commandList;
 }
@@ -91,12 +90,15 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::GetCommandList(
         m_CommandListQueue.pop();
 
         ThrowIfFailed(commandList->Reset(commandAllocator.Get(), nullptr));
-        ThrowIfFailed(commandList->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), commandAllocator.Get()));
     }
     else
     {
         commandList = CreateCommandList(commandAllocator);
     }
+
+    // Associate the command allocator with the command list so that it can be
+    // retrieved when the command list is executed.
+    ThrowIfFailed(commandList->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), commandAllocator.Get()));
 
     return commandList;
 }
@@ -121,6 +123,9 @@ uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsC
     m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{ fenceValue, commandAllocator });
     m_CommandListQueue.push(commandList);
 
+    // The ownership of the command allocator has been transferred to the ComPtr
+    // in the command allocator queue. It is safe to release the reference 
+    // in this temporary COM pointer here.
     commandAllocator->Release();
 
     return fenceValue;
