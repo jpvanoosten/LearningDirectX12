@@ -1,6 +1,6 @@
 /**
-*   @brief The Game class is the abstract base class for DirecX 11 demos.
-*/
+ *   @brief The Game class is the abstract base class for DirecX 12 demos.
+ */
 #pragma once
 
 #include <Events.h>
@@ -14,8 +14,8 @@ class Game : public std::enable_shared_from_this<Game>
 {
 public:
     /**
-    * Create the DirectX demo in the specified window.
-    */
+     * Create the DirectX demo using the specified window dimensions.
+     */
     Game(const std::wstring& name, int width, int height, bool vSync);
     virtual ~Game();
 
@@ -30,8 +30,8 @@ public:
     }
 
     /**
-    *  Initialize the DirectX Runtime.
-    */
+     *  Initialize the DirectX Runtime.
+     */
     virtual bool Initialize();
 
     /**
@@ -52,43 +52,40 @@ public:
 protected:
     friend class Window;
 
-    // The window associated with this demo.
-    std::shared_ptr<Window> m_Window;
-
     /**
-    *  Update the game logic.
-    */
+     *  Update the game logic.
+     */
     virtual void OnUpdate(UpdateEventArgs& e);
 
     /**
-    *  Render stuff.
-    */
+     *  Render stuff.
+     */
     virtual void OnRender(RenderEventArgs& e);
 
     /**
-    * Invoked by the registered window when a key is pressed
-    * while the window has focus.
-    */
+     * Invoked by the registered window when a key is pressed
+     * while the window has focus.
+     */
     virtual void OnKeyPressed(KeyEventArgs& e);
 
     /**
-    * Invoked when a key on the keyboard is released.
-    */
+     * Invoked when a key on the keyboard is released.
+     */
     virtual void OnKeyReleased(KeyEventArgs& e);
 
     /**
-    * Invoked when the mouse is moved over the registered window.
-    */
+     * Invoked when the mouse is moved over the registered window.
+     */
     virtual void OnMouseMoved(MouseMotionEventArgs& e);
 
     /**
-    * Invoked when a mouse button is pressed over the registered window.
-    */
+     * Invoked when a mouse button is pressed over the registered window.
+     */
     virtual void OnMouseButtonPressed(MouseButtonEventArgs& e);
 
     /**
-    * Invoked when a mouse button is released over the registered window.
-    */
+     * Invoked when a mouse button is released over the registered window.
+     */
     virtual void OnMouseButtonReleased(MouseButtonEventArgs& e);
 
     /**
@@ -97,13 +94,13 @@ protected:
     virtual void OnMouseWheel(MouseWheelEventArgs& e);
 
     /**
-    * Invoked when the attached window is resized.
-    */
+     * Invoked when the attached window is resized.
+     */
     virtual void OnResize(ResizeEventArgs& e);
 
     /**
-    * Invoked when the registered window instance is destroyed.
-    */
+     * Invoked when the registered window instance is destroyed.
+     */
     virtual void OnWindowDestroy();
 
     std::shared_ptr<Window> m_pWindow;

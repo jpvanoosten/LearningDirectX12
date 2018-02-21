@@ -11,7 +11,7 @@ using namespace Microsoft::WRL;
 #include <d3dx12.h>
 #include <d3dcompiler.h>
 
-#include <algorithm> // For std::min and sdt::max.
+#include <algorithm> // For std::min and std::max.
 #if defined(min)
     #undef min
 #endif
