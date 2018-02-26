@@ -5,10 +5,6 @@
 
 #include <DirectXMath.h>
 
-#include <memory>
-#include <string>
-
-
 class Tutorial2 : public Game
 {
 public:
