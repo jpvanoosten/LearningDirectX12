@@ -116,7 +116,7 @@ bool Tutorial2::LoadContent()
 
     // Upload vertex buffer data.
     ComPtr<ID3D12Resource> intermediateVertexBuffer;
-    UpdateBufferResource(commandList.Get(),
+    UpdateBufferResource(commandList,
         &m_VertexBuffer, &intermediateVertexBuffer,
         _countof(g_Vertices), sizeof(VertexPosColor), g_Vertices);
 
@@ -127,7 +127,7 @@ bool Tutorial2::LoadContent()
 
     // Upload index buffer data.
     ComPtr<ID3D12Resource> intermediateIndexBuffer;
-    UpdateBufferResource(commandList.Get(),
+    UpdateBufferResource(commandList,
         &m_IndexBuffer, &intermediateIndexBuffer,
         _countof(g_Indicies), sizeof(WORD), g_Indicies);
 
