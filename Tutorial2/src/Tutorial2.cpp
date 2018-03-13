@@ -248,7 +248,7 @@ void Tutorial2::OnUpdate(UpdateEventArgs& e)
     }
 
     // Update the model matrix.
-    float angle = 0.0f; // static_cast<float>(e.TotalTime * 90.0);
+    float angle = static_cast<float>(e.TotalTime * 90.0);
     const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
     m_ModelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle) );
 
