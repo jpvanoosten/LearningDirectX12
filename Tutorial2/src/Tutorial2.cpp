@@ -67,8 +67,10 @@ Tutorial2::Tutorial2( const std::wstring& name, int width, int height, bool vSyn
 {
 }
 
-void Tutorial2::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-    ID3D12Resource** pDestinationResource, ID3D12Resource** pIntermediateResource,
+void Tutorial2::UpdateBufferResource(
+    ComPtr<ID3D12GraphicsCommandList2> commandList,
+    ID3D12Resource** pDestinationResource, 
+    ID3D12Resource** pIntermediateResource,
     size_t numElements, size_t elementSize, const void* bufferData, 
     D3D12_RESOURCE_FLAGS flags )
 {
@@ -246,7 +248,7 @@ void Tutorial2::OnUpdate(UpdateEventArgs& e)
     }
 
     // Update the model matrix.
-    float angle = static_cast<float>(e.TotalTime * 90.0);
+    float angle = 0.0f; // static_cast<float>(e.TotalTime * 90.0);
     const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
     m_ModelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle) );
 
