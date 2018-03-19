@@ -175,7 +175,7 @@ bool Tutorial2::LoadContent()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 
-    // A single root parameter that 
+    // A single 32-bit constant root parameter that is used by the vertex shader.
     CD3DX12_ROOT_PARAMETER1 rootParameters[1];
     rootParameters[0].InitAsConstants(sizeof(XMMATRIX) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
