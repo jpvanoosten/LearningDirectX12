@@ -230,6 +230,59 @@ bool Tutorial2::LoadContent()
     return true;
 }
 
+void Tutorial2::ResizeDepthBuffer(int width, int height)
+{
+	if (m_ContentLoaded)
+	{
+		// Flush any GPU commands that might be referencing the depth buffer.
+		Application::Get().Flush();
+
+		width = std::max(1, width);
+		height = std::max(1, height);
+
+		auto device = Application::Get().GetDevice();
+
+		// Resize screen dependent resources.
+		// Create a depth buffer.
+		D3D12_CLEAR_VALUE optimizedClearValue = {};
+		optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+		optimizedClearValue.DepthStencil = { 1.0f, 0 };
+
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height,
+				1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			&optimizedClearValue,
+			IID_PPV_ARGS(&m_DepthBuffer)
+		));
+
+		// Update the depth-stencil view.
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
+		dsv.Format = DXGI_FORMAT_D32_FLOAT;
+		dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsv.Texture2D.MipSlice = 0;
+		dsv.Flags = D3D12_DSV_FLAG_NONE;
+
+		device->CreateDepthStencilView(m_DepthBuffer.Get(), &dsv,
+			m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
+	}
+}
+
+void Tutorial2::OnResize(ResizeEventArgs& e)
+{
+	if (e.Width != GetClientWidth() || e.Height != GetClientHeight())
+	{
+		super::OnResize(e);
+
+		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f,
+			static_cast<float>(e.Width), static_cast<float>(e.Height));
+
+		ResizeDepthBuffer(e.Width, e.Height);
+	}
+}
+
 void Tutorial2::UnloadContent()
 {
     m_ContentLoaded = false;
@@ -383,57 +436,4 @@ void Tutorial2::OnMouseWheel(MouseWheelEventArgs& e)
     char buffer[256];
     sprintf_s(buffer, "FoV: %f\n", m_FoV);
     OutputDebugStringA(buffer);
-}
-
-void Tutorial2::ResizeDepthBuffer(int width, int height)
-{
-    if ( m_ContentLoaded )
-    {
-        // Flush any GPU commands that might be referencing the depth buffer.
-        Application::Get().Flush();
-
-        width = std::max(1, width);
-        height = std::max(1, height);
-
-        auto device = Application::Get().GetDevice();
-
-        // Resize screen dependent resources.
-        // Create a depth buffer.
-        D3D12_CLEAR_VALUE optimizedClearValue = {};
-        optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-        optimizedClearValue.DepthStencil = { 1.0f, 0 };
-
-        ThrowIfFailed(device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-            D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height,
-                1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            &optimizedClearValue,
-            IID_PPV_ARGS(&m_DepthBuffer)
-        ));
-
-        // Update the depth-stencil view.
-        D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
-        dsv.Format = DXGI_FORMAT_D32_FLOAT;
-        dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-        dsv.Texture2D.MipSlice = 0;
-        dsv.Flags = D3D12_DSV_FLAG_NONE;
-
-        device->CreateDepthStencilView(m_DepthBuffer.Get(), &dsv,
-            m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
-    }
-}
-
-void Tutorial2::OnResize(ResizeEventArgs& e)
-{
-    if ( e.Width != GetClientWidth() || e.Height != GetClientHeight() )
-    {
-        super::OnResize(e);
-
-        m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, 
-            static_cast<float>(e.Width), static_cast<float>(e.Height));
-
-        ResizeDepthBuffer(e.Width, e.Height);
-    }
 }
