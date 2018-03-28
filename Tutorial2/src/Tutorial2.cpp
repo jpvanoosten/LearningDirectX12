@@ -363,7 +363,7 @@ void Tutorial2::OnRender(RenderEventArgs& e)
     auto rtv = m_pWindow->GetCurrentRenderTargetView();
     auto dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
 
-    // Clear the render target.
+    // Clear the render targets.
     {
         TransitionResource(commandList, backBuffer,
             D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
