@@ -7,6 +7,7 @@ set( HEADER_FILES
     inc/Game.h
     inc/Helpers.h
     inc/HighResolutionClock.h
+    inc/Mesh.h
     resource.h
     inc/Window.h
     inc/d3dx12.h
@@ -19,6 +20,7 @@ set( SOURCE_FILES
     src/CommandQueue.cpp
     src/Game.cpp
     src/HighResolutionClock.cpp
+    src/Mesh.cpp
     src/Window.cpp
 )
 

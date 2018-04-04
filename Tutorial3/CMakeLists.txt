@@ -30,6 +30,7 @@ add_executable( Tutorial3 WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
     ${SHADER_FILES}
+    packages.config
 )
 
 target_include_directories( Tutorial3

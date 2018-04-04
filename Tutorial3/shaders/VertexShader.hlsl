@@ -5,15 +5,15 @@ struct ModelViewProjection
 
 ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
 
-struct VertexPosColor
+struct VertexPosTexCoord
 {
     float3 Position : POSITION;
-    float3 Color    : COLOR;
+    float3 Color    : TEXCOORD;
 };
 
 struct VertexShaderOutput
 {
-	float4 Color    : COLOR;
+    float2 TexCoord : TEXCOORD;
     float4 Position : SV_Position;
 };
 

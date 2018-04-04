@@ -30,11 +30,11 @@ constexpr const T& clamp(const T& val, const T& min, const T& max)
     return val < min ? min : val > max ? max : val;
 }
 
-// Vertex data for a colored cube.
-struct VertexPosColor
+// Vertex data for a textured cube.
+struct VertexPosTexCoord
 {
     XMFLOAT3 Position;
-    XMFLOAT3 Color;
+    XMFLOAT2 TexCoord;
 };
 
 static VertexPosColor g_Vertices[8] = {
