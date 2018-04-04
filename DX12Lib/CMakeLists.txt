@@ -3,12 +3,13 @@ cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this fil
 set( HEADER_FILES 
     inc/DX12LibPCH.h
     inc/Application.h
+    inc/CommandList.h
     inc/CommandQueue.h
     inc/Game.h
     inc/Helpers.h
     inc/HighResolutionClock.h
     inc/Mesh.h
-    resource.h
+    inc/UploadBuffer.h
     inc/Window.h
     inc/d3dx12.h
 )
@@ -21,10 +22,12 @@ set( SOURCE_FILES
     src/Game.cpp
     src/HighResolutionClock.cpp
     src/Mesh.cpp
+    src/UploadBuffer.cpp
     src/Window.cpp
 )
 
 set( RESOURCE_FILES 
+    resource.h
     DX12Lib.rc
     Resources/Icon/app_icon.ico
 )
