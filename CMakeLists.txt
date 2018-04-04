@@ -13,8 +13,9 @@ project( LearningDirectX12 LANGUAGES CXX )
 add_subdirectory( DX12Lib )
 add_subdirectory( Tutorial1 )
 add_subdirectory( Tutorial2 )
+add_subdirectory( Tutorial3 )
 
 # Set the startup project.
 set_directory_properties( PROPERTIES 
-    VS_STARTUP_PROJECT Tutorial2
+    VS_STARTUP_PROJECT Tutorial3
 )
