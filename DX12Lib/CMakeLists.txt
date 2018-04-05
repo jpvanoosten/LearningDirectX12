@@ -5,6 +5,7 @@ set( HEADER_FILES
     inc/Application.h
     inc/CommandList.h
     inc/CommandQueue.h
+    inc/DescriptorAllocator.h
     inc/Game.h
     inc/Helpers.h
     inc/HighResolutionClock.h
@@ -19,6 +20,7 @@ set( SOURCE_FILES
     src/DX12LibPCH.cpp
     src/Application.cpp
     src/CommandQueue.cpp
+    src/DescriptorAllocator.cpp
     src/Game.cpp
     src/HighResolutionClock.cpp
     src/Mesh.cpp
