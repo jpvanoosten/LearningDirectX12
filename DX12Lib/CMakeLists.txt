@@ -6,10 +6,12 @@ set( HEADER_FILES
     inc/CommandList.h
     inc/CommandQueue.h
     inc/DescriptorAllocator.h
+    inc/DynamicDescriptorHeap.h
     inc/Game.h
     inc/Helpers.h
     inc/HighResolutionClock.h
     inc/Mesh.h
+    inc/RootSignature.h
     inc/UploadBuffer.h
     inc/Window.h
     inc/d3dx12.h
@@ -21,9 +23,11 @@ set( SOURCE_FILES
     src/Application.cpp
     src/CommandQueue.cpp
     src/DescriptorAllocator.cpp
+    src/DynamicDescriptorHeap.cpp
     src/Game.cpp
     src/HighResolutionClock.cpp
     src/Mesh.cpp
+    src/RootSignature.cpp
     src/UploadBuffer.cpp
     src/Window.cpp
 )
