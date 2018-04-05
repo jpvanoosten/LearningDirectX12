@@ -88,13 +88,13 @@ std::unique_ptr<Mesh> Mesh::CreateSphere(ID3D12GraphicsCommandList* commandList,
             size_t nextI = i + 1;
             size_t nextJ = (j + 1) % stride;
 
-            indices.push_back(i * stride + j);
-            indices.push_back(nextI * stride + j);
-            indices.push_back(i * stride + nextJ);
+            indices.push_back(static_cast<uint16_t>( i * stride + j ));
+            indices.push_back(static_cast<uint16_t>(nextI * stride + j));
+            indices.push_back(static_cast<uint16_t>(i * stride + nextJ));
 
-            indices.push_back(i * stride + nextJ);
-            indices.push_back(nextI * stride + j);
-            indices.push_back(nextI * stride + nextJ);
+            indices.push_back(static_cast<uint16_t>(i * stride + nextJ));
+            indices.push_back(static_cast<uint16_t>(nextI * stride + j));
+            indices.push_back(static_cast<uint16_t>(nextI * stride + nextJ));
         }
     }
 
@@ -147,13 +147,13 @@ std::unique_ptr<Mesh> Mesh::CreateCube(ID3D12GraphicsCommandList* commandList, f
 
         // Six indices (two triangles) per face.
         size_t vbase = vertices.size();
-        indices.push_back(vbase + 0);
-        indices.push_back(vbase + 1);
-        indices.push_back(vbase + 2);
+        indices.push_back(static_cast<uint16_t>(vbase + 0));
+        indices.push_back(static_cast<uint16_t>(vbase + 1));
+        indices.push_back(static_cast<uint16_t>(vbase + 2));
 
-        indices.push_back(vbase + 0);
-        indices.push_back(vbase + 2);
-        indices.push_back(vbase + 3);
+        indices.push_back(static_cast<uint16_t>(vbase + 0));
+        indices.push_back(static_cast<uint16_t>(vbase + 2));
+        indices.push_back(static_cast<uint16_t>(vbase + 3));
 
         // Four vertices per face.
         vertices.push_back(VertexPositionNormalTexture((normal - side1 - side2) * size, normal, textureCoordinates[0]));
@@ -208,9 +208,9 @@ static void CreateCylinderCap(VertexCollection& vertices, IndexCollection& indic
         }
 
         size_t vbase = vertices.size();
-        indices.push_back(vbase);
-        indices.push_back(vbase + i1);
-        indices.push_back(vbase + i2);
+        indices.push_back(static_cast<uint16_t>(vbase));
+        indices.push_back(static_cast<uint16_t>(vbase + i1));
+        indices.push_back(static_cast<uint16_t>(vbase + i2));
     }
 
     // Which end of the cylinder is this?
@@ -271,9 +271,9 @@ std::unique_ptr<Mesh> Mesh::CreateCone(ID3D12GraphicsCommandList* commandList, f
         vertices.push_back(VertexPositionNormalTexture(topOffset, normal, g_XMZero));
         vertices.push_back(VertexPositionNormalTexture(pt, normal, textureCoordinate + g_XMIdentityR1));
 
-        indices.push_back(i * 2);
-        indices.push_back((i * 2 + 3) % (stride * 2));
-        indices.push_back((i * 2 + 1) % (stride * 2));
+        indices.push_back(static_cast<uint16_t>(i * 2));
+        indices.push_back(static_cast<uint16_t>((i * 2 + 3) % (stride * 2)));
+        indices.push_back(static_cast<uint16_t>((i * 2 + 1) % (stride * 2)));
     }
 
     // Create flat triangle fan caps to seal the bottom.
@@ -332,13 +332,13 @@ std::unique_ptr<Mesh> Mesh::CreateTorus(ID3D12GraphicsCommandList* commandList, 
             size_t nextI = (i + 1) % stride;
             size_t nextJ = (j + 1) % stride;
 
-            indices.push_back(i * stride + j);
-            indices.push_back(i * stride + nextJ);
-            indices.push_back(nextI * stride + j);
+            indices.push_back(static_cast<uint16_t>(i * stride + j));
+            indices.push_back(static_cast<uint16_t>(i * stride + nextJ));
+            indices.push_back(static_cast<uint16_t>(nextI * stride + j));
 
-            indices.push_back(i * stride + nextJ);
-            indices.push_back(nextI * stride + nextJ);
-            indices.push_back(nextI * stride + j);
+            indices.push_back(static_cast<uint16_t>(i * stride + nextJ));
+            indices.push_back(static_cast<uint16_t>(nextI * stride + nextJ));
+            indices.push_back(static_cast<uint16_t>(nextI * stride + j));
         }
     }
 
@@ -416,14 +416,14 @@ void Mesh::Initialize(ID3D12GraphicsCommandList* commandList, VertexCollection& 
     CreateBuffer(commandList, &m_VertexBuffer, &m_VertexBufferUpload, vertices);
 
     m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-    m_VertexBufferView.SizeInBytes = vertices.size() * sizeof(VertexCollection::value_type);
+    m_VertexBufferView.SizeInBytes = static_cast<UINT>(vertices.size() * sizeof(VertexCollection::value_type));
     m_VertexBufferView.StrideInBytes = sizeof(VertexCollection::value_type);
 
     CreateBuffer(commandList, &m_IndexBuffer, &m_IndexBufferUpload, indices );
 
     m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
     m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
-    m_IndexBufferView.SizeInBytes = indices.size() * sizeof(IndexCollection::value_type);
+    m_IndexBufferView.SizeInBytes = static_cast<UINT>(indices.size() * sizeof(IndexCollection::value_type));
 
     m_IndexCount = static_cast<UINT>(indices.size());
 }
