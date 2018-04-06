@@ -87,7 +87,7 @@ void Tutorial2::UpdateBufferResource(
         nullptr,
         IID_PPV_ARGS(pDestinationResource)));
 
-    // Create an committed resource for the upload.
+    // Create a committed resource for the upload.
     if (bufferData)
     {
         ThrowIfFailed(device->CreateCommittedResource(

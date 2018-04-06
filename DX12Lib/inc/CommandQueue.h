@@ -13,7 +13,7 @@
 class CommandQueue
 {
 public:
-    CommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type);
+    CommandQueue(D3D12_COMMAND_LIST_TYPE type);
     virtual ~CommandQueue();
 
     // Get an available command list from the command queue.
@@ -46,7 +46,6 @@ private:
     using CommandListQueue = std::queue< Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> >;
 
     D3D12_COMMAND_LIST_TYPE                     m_CommandListType;
-    Microsoft::WRL::ComPtr<ID3D12Device2>       m_d3d12Device;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue>  m_d3d12CommandQueue;
     Microsoft::WRL::ComPtr<ID3D12Fence>         m_d3d12Fence;
     HANDLE                                      m_FenceEvent;

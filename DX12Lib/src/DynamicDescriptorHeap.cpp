@@ -54,6 +54,8 @@ void DynamicDescriptorHeap::StageDescriptors(uint32_t rootParameterIndex, uint32
     m_StaleDescriptorTableBitMask |= (1 << rootParameterIndex);
 }
 
+
+
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DynamicDescriptorHeap::RequestDescriptorHeap()
 {
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
@@ -86,7 +88,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DynamicDescriptorHeap::CreateDescri
     return descriptorHeap;
 }
 
-void DynamicDescriptorHeap::Free()
+void DynamicDescriptorHeap::Reset()
 {
     m_AvailableDescriptorHeaps = m_DescriptorHeapPool;
     m_CurrentDescriptorHeap.Reset();

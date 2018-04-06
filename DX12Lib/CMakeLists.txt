@@ -11,7 +11,9 @@ set( HEADER_FILES
     inc/Helpers.h
     inc/HighResolutionClock.h
     inc/Mesh.h
+    inc/ResourceStateTracker.h
     inc/RootSignature.h
+    inc/ResourceStateTracker.h
     inc/UploadBuffer.h
     inc/Window.h
     inc/d3dx12.h
@@ -22,12 +24,14 @@ set( SOURCE_FILES
     src/DX12LibPCH.cpp
     src/Application.cpp
     src/CommandQueue.cpp
+    src/CommandList.cpp
     src/DescriptorAllocator.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp
     src/HighResolutionClock.cpp
     src/Mesh.cpp
     src/RootSignature.cpp
+    src/ResourceStateTracker.cpp
     src/UploadBuffer.cpp
     src/Window.cpp
 )

@@ -42,25 +42,34 @@ public:
      * methods which which require both a CPU and GPU visible descriptors for a 
      * UAV resource.
      * 
+     * @param commandList The command list is required in case the GPU visible
+     * descriptor needs to be updated on the command list.
      * @param cpuDescriptor The CPU descriptor to copy into a GPU visible 
      * descriptor heap.
      * 
      * @return The GPU visible descriptor.
      */
-    D3D12_GPU_DESCRIPTOR_HANDLE CopyDescriptor(D3D12_CPU_DESCRIPTOR_HANDLE cpuDescriptor);
+    D3D12_GPU_DESCRIPTOR_HANDLE CopyDescriptor( CommandList& comandList, D3D12_CPU_DESCRIPTOR_HANDLE cpuDescriptor);
 
     /**
      * Copy all of the staged descriptors to the GPU visible descriptor heap and
      * bind the descriptor heap and the descriptor tables to the command list.
      */
-    void CopyAndBindStagedDescriptors(std::shared_ptr<CommandList> commandList);
+    void CommitStagedDescriptors( CommandList& commandList);
+
+    /**
+     * Parse the root signature to determine which root parameters contain
+     * descriptor tables and determine the number of descriptors needed for
+     * each table.
+     */
+    void ParseRootSignature( const RootSignature& rootSignature);
 
     /**
      * Reset used descriptors. This should only be done if any descriptors
      * that are being referenced by a command list has finished executing on the 
      * command queue.
      */
-    void Free();
+    void Reset();
 
 protected:
 
@@ -69,11 +78,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RequestDescriptorHeap();
     // Create a new descriptor heap of no descriptor heap is available.
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap();
-
-    // Parse the root signature to determine which root parameters contain
-    // descriptor tables and determine the number of descriptors needed for
-    // each table.
-    void ParseRootSignature(std::shared_ptr<RootSignature> rootSignature);
 
     // Compute the number of stale descriptors that need to be copied
     // to GPU visible descriptor heaps.
