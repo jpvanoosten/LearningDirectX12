@@ -39,6 +39,9 @@ using namespace Microsoft::WRL;
 #include <chrono>
 #include <map>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
 
 // Helper functions
 #include <Helpers.h>

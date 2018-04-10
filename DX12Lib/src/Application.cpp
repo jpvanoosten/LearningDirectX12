@@ -32,6 +32,9 @@ struct MakeWindow : public Window
 Application::Application(HINSTANCE hInst)
     : m_hInstance(hInst)
     , m_TearingSupported(false)
+{}
+
+void Application::Initialize()
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
@@ -71,14 +74,12 @@ Application::Application(HINSTANCE hInst)
     {
         m_d3d12Device = CreateDevice(dxgiAdapter);
     }
-    if (m_d3d12Device)
-    {
-        m_DirectCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
-        m_ComputeCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
-        m_CopyCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
+    
+    m_DirectCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);
+    m_ComputeCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+    m_CopyCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
 
-        m_TearingSupported = CheckTearingSupport();
-    }
+    m_TearingSupported = CheckTearingSupport();
 
     // Create descriptor allocators
     for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
@@ -92,6 +93,7 @@ void Application::Create(HINSTANCE hInst)
     if (!gs_pSingelton)
     {
         gs_pSingelton = new Application(hInst);
+        gs_pSingelton->Initialize();
     }
 }
 

@@ -109,6 +109,9 @@ protected:
     // Destroy the application instance and all windows associated with this application.
     virtual ~Application();
 
+    // Initialize the application instance.
+    void Initialize();
+
     Microsoft::WRL::ComPtr<IDXGIAdapter4> GetAdapter(bool bUseWarp);
     Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice(Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter);
     bool CheckTearingSupport();

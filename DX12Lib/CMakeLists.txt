@@ -3,6 +3,7 @@ cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this fil
 set( HEADER_FILES 
     inc/DX12LibPCH.h
     inc/Application.h
+    inc/Buffer.h
     inc/CommandList.h
     inc/CommandQueue.h
     inc/DescriptorAllocator.h
@@ -10,11 +11,13 @@ set( HEADER_FILES
     inc/Game.h
     inc/Helpers.h
     inc/HighResolutionClock.h
+    inc/IndexBuffer.h
     inc/Mesh.h
+    inc/Resource.h
     inc/ResourceStateTracker.h
     inc/RootSignature.h
-    inc/ResourceStateTracker.h
     inc/UploadBuffer.h
+    inc/VertexBuffer.h
     inc/Window.h
     inc/d3dx12.h
 )
@@ -23,26 +26,29 @@ set( HEADER_FILES
 set( SOURCE_FILES
     src/DX12LibPCH.cpp
     src/Application.cpp
+    src/Buffer.cpp
     src/CommandQueue.cpp
     src/CommandList.cpp
     src/DescriptorAllocator.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp
     src/HighResolutionClock.cpp
+    src/IndexBuffer.cpp
     src/Mesh.cpp
-    src/RootSignature.cpp
+    src/Resource.cpp
     src/ResourceStateTracker.cpp
+    src/RootSignature.cpp
     src/UploadBuffer.cpp
+    src/VertexBuffer.cpp
     src/Window.cpp
 )
 
 set( RESOURCE_FILES 
-    resource.h
     DX12Lib.rc
     Resources/Icon/app_icon.ico
 )
 
-source_group( "Resources" FILES DX12Lib.rc )
+source_group( "Resources" FILES DX12Lib.rc resource.h )
 source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 
 add_library( DX12Lib STATIC

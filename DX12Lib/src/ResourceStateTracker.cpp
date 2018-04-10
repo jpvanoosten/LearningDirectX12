@@ -111,12 +111,18 @@ void ResourceStateTracker::Reset()
 
 void ResourceStateTracker::AddGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state)
 {
-    std::lock_guard<std::mutex> lock(ms_GlobalMutex);
-    ms_GlobalResourceState[resource][D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES] = state;
+    if ( resource != nullptr )
+    {
+        std::lock_guard<std::mutex> lock(ms_GlobalMutex);
+        ms_GlobalResourceState[resource][D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES] = state;
+    }
 }
 
 void ResourceStateTracker::RemoveGlobalResourceState(ID3D12Resource* resource)
 {
-    std::lock_guard<std::mutex> lock(ms_GlobalMutex);
-    ms_GlobalResourceState.erase(resource);
+    if ( resource != nullptr )
+    {
+        std::lock_guard<std::mutex> lock(ms_GlobalMutex);
+        ms_GlobalResourceState.erase(resource);
+    }
 }
