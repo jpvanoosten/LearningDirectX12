@@ -2,8 +2,9 @@
 #include <Application.h>
 #include "..\resource.h"
 
-#include <Game.h>
 #include <CommandQueue.h>
+#include <Game.h>
+#include <DescriptorAllocator.h>
 #include <Window.h>
 
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
@@ -19,6 +20,8 @@ static WindowNameMap gs_WindowByName;
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 // A wrapper struct to allow shared pointers for the window class.
+// This is needed because the constructor and destructor for the Window
+// class are protected and not accessible by the std::make_shared method.
 struct MakeWindow : public Window 
 {
     MakeWindow(HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync)
@@ -63,10 +66,10 @@ Application::Application(HINSTANCE hInst)
         MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
     }
 
-    m_dxgiAdapter = GetAdapter(false);
-    if ( m_dxgiAdapter )
+    auto dxgiAdapter = GetAdapter(false);
+    if (dxgiAdapter)
     {
-        m_d3d12Device = CreateDevice(m_dxgiAdapter);
+        m_d3d12Device = CreateDevice(dxgiAdapter);
     }
     if (m_d3d12Device)
     {
@@ -75,6 +78,12 @@ Application::Application(HINSTANCE hInst)
         m_CopyCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_COPY);
 
         m_TearingSupported = CheckTearingSupport();
+    }
+
+    // Create descriptor allocators
+    for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+    {
+        m_DescriptorAllocators[i] = std::make_unique<DescriptorAllocator>(static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(i));
     }
 }
 
@@ -343,6 +352,11 @@ void Application::Flush()
     m_DirectCommandQueue->Flush();
     m_ComputeCommandQueue->Flush();
     m_CopyCommandQueue->Flush();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE Application::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+{
+    return m_DescriptorAllocators[type]->Allocate(numDescriptors);
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Application::CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type)

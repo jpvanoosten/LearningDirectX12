@@ -10,9 +10,10 @@
 #include <memory>
 #include <string>
 
-class Window;
-class Game;
 class CommandQueue;
+class DescriptorAllocator;
+class Game;
+class Window;
 
 class Application
 {
@@ -88,8 +89,15 @@ public:
      */
     std::shared_ptr<CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
 
-    // Flush all command queues.
+    /**
+     * Flush all command queues.
+     */
     void Flush();
+
+    /**
+     * Allocate a number of CPU visible descriptors.
+     */
+    D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors = 1);
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type);
     UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
@@ -112,12 +120,14 @@ private:
     // The application instance handle that this application was created with.
     HINSTANCE m_hInstance;
 
-    Microsoft::WRL::ComPtr<IDXGIAdapter4> m_dxgiAdapter;
     Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;
 
     std::shared_ptr<CommandQueue> m_DirectCommandQueue;
     std::shared_ptr<CommandQueue> m_ComputeCommandQueue;
     std::shared_ptr<CommandQueue> m_CopyCommandQueue;
+
+    std::unique_ptr<DescriptorAllocator> m_DescriptorAllocators[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
 
     bool m_TearingSupported;
 

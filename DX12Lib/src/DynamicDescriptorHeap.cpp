@@ -6,9 +6,8 @@
 
 #include <new> // For std::bad_alloc
 
-DynamicDescriptorHeap::DynamicDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, D3D12_COMMAND_LIST_TYPE commandListType, uint32_t numDescriptorsPerHeap)
-    : m_CommandListType(commandListType)
-    , m_DescriptorHeapType(heapType)
+DynamicDescriptorHeap::DynamicDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptorsPerHeap)
+    : m_DescriptorHeapType(heapType)
     , m_NumDescriptorsPerHeap(numDescriptorsPerHeap)
     , m_DescriptorTableBitMask(0)
     , m_StaleDescriptorTableBitMask(0)
@@ -40,7 +39,7 @@ void DynamicDescriptorHeap::StageDescriptors(uint32_t rootParameterIndex, uint32
     // of descriptors expected in the descriptor table.
     if ( (offset + numDescriptors) > descriptorTableCache.NumDescriptors)
     {
-        throw std::length_error("Number of descriptors to stage exceeds the size of the descriptor table.");
+        throw std::length_error("Number of descriptors to stage exceeds the number of descriptors per heap.");
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE* dstDescriptor = (descriptorTableCache.BaseDescriptor + offset);
@@ -53,8 +52,6 @@ void DynamicDescriptorHeap::StageDescriptors(uint32_t rootParameterIndex, uint32
     // at that index is bound to the command list.
     m_StaleDescriptorTableBitMask |= (1 << rootParameterIndex);
 }
-
-
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DynamicDescriptorHeap::RequestDescriptorHeap()
 {

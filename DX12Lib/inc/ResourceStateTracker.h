@@ -42,12 +42,11 @@ public:
     void PushResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
 
     /**
-     * Retrieve all of the pending resource barriers. This is used by the command
-     * list to 
+     * Check to see if there are any pending resource barriers.
      */
-    const ResourceBarriers& GetPendingResourceBarriers() const
+    const bool HasPendingResourceBarriers() const
     {
-        return m_PendingResourceBarriers;
+        return !m_PendingResourceBarriers.empty();
     }
 
     /**

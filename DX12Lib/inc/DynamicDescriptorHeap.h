@@ -22,7 +22,6 @@ class DynamicDescriptorHeap
 public:
     DynamicDescriptorHeap(
         D3D12_DESCRIPTOR_HEAP_TYPE heapType,
-        D3D12_COMMAND_LIST_TYPE commandListType,
         uint32_t numDescriptorsPerHeap = 1024);
 
     virtual ~DynamicDescriptorHeap();
