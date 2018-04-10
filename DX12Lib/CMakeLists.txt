@@ -61,3 +61,14 @@ target_link_libraries( DX12Lib
     PUBLIC dxguid.lib
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/DX12Lib.dir/${CMAKE_CFG_INTDIR}/DX12Lib.res # This is the only way I could figure out how to link the compiled resource file.
 )
+
+# Enable precompiled header files.
+set_target_properties( DX12Lib 
+    PROPERTIES 
+        COMPILE_FLAGS /Yu"DX12LibPCH.h"
+)
+
+set_source_files_properties( src/DX12LibPCH.cpp
+    PROPERTIES
+        COMPILE_FLAGS /Yc"DX12LibPCH.h"
+)
