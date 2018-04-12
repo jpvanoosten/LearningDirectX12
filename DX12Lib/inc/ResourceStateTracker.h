@@ -21,9 +21,6 @@
 #include <unordered_map>
 #include <vector>
 
-// An array (vector) of resource barriers.
-using ResourceBarriers = std::vector<D3D12_RESOURCE_BARRIER>;
-
 class CommandList;
 
 class ResourceStateTracker
@@ -86,13 +83,8 @@ public:
 protected:
 
 private:
-    // Pending resource transitions are committed before a command list
-    // is executed on the command queue. This guarantees that resources will
-    // be in the expected state at the beginning of a command list.
-    ResourceBarriers m_PendingResourceBarriers;
-
-    // Resource barriers that need to be committed to the command list.
-    ResourceBarriers m_ResourceBarriers;
+    // An array (vector) of resource barriers.
+    using ResourceBarriers = std::vector<D3D12_RESOURCE_BARRIER>;
 
     // Tracks the state of a particular resource and all of its subresources.
     struct ResourceState
@@ -129,7 +121,8 @@ private:
         {
             if (subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
             {
-                SetState(state);
+                State = state;
+                SubresourceState.clear();
             }
             else
             {
@@ -137,36 +130,19 @@ private:
             }
         }
 
-        // Provide array-like access to subresource states.
-        // If subresource is D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES then the 
-        // state of the resource is returned.
-        D3D12_RESOURCE_STATES& operator[](UINT subresource)
-        {
-            if (subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
-            {
-                SubresourceState.clear();
-                return State;
-            }
-            else
-            {
-                return SubresourceState[subresource];
-            }
-        }
-
-        // Set all subresources within a resource to the same state.
-        void SetState(D3D12_RESOURCE_STATES state)
-        {
-            State = state;
-            // Clear the subresource array (map) to indicate that all subresources
-            // have the same state.
-            SubresourceState.clear();
-        }
-
         // If the SubresourceState array (map) is empty, then the State variable defines 
         // the state of all of the subresources.
         D3D12_RESOURCE_STATES State;
         std::map<UINT, D3D12_RESOURCE_STATES> SubresourceState;
     };
+
+    // Pending resource transitions are committed before a command list
+    // is executed on the command queue. This guarantees that resources will
+    // be in the expected state at the beginning of a command list.
+    ResourceBarriers m_PendingResourceBarriers;
+
+    // Resource barriers that need to be committed to the command list.
+    ResourceBarriers m_ResourceBarriers;
 
     using ResourceStateMap = std::unordered_map<ID3D12Resource*, ResourceState>;
 

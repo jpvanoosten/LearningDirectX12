@@ -27,62 +27,83 @@ void ResourceStateTracker::PushResourceBarrier(const D3D12_RESOURCE_BARRIER& bar
         if (iter != m_FinalResourceState.end())
         {
             // If the known final state of the resource is different...
-            auto& finalState = iter->second;
-            if (finalState[transitionBarrier.Subresource] != transitionBarrier.StateAfter )
+            auto finalState = (iter->second).GetSubresourceState(transitionBarrier.Subresource);
+            if (transitionBarrier.StateAfter != finalState)
             {
                 // Push a new transition barrier with the correct before state.
                 D3D12_RESOURCE_BARRIER newBarrier = barrier;
-                newBarrier.Transition.StateBefore = finalState[transitionBarrier.Subresource];
+                newBarrier.Transition.StateBefore = finalState;
                 m_ResourceBarriers.push_back(newBarrier);
             }
         }
-        else // In this case, the resource is being used on the command list for the first time...
+        else // In this case, the resource is being used on the command list for the first time. 
         {
-            // Check to see if there is a known global state for the resource.
-            std::lock_guard<std::mutex> lock(ms_GlobalMutex);
-            const auto iter = ms_GlobalResourceState.find(transitionBarrier.pResource);
-            if (iter != ms_GlobalResourceState.end())
-            {
-                // If the global state of the (sub) resource is different...
-                auto& globalState = iter->second;
-                if (globalState[transitionBarrier.Subresource] != transitionBarrier.StateAfter)
-                {
-                    // Create a pending barrier to begin the transition.
-                    D3D12_RESOURCE_BARRIER pendingBarrier = barrier;
-                    pendingBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY;
-                    pendingBarrier.Transition.StateBefore = globalState[transitionBarrier.Subresource];
-                    m_PendingResourceBarriers.push_back(pendingBarrier);
-                    pendingBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
-                    m_ResourceBarriers.push_back(pendingBarrier);
-                }
-            }
-            else
-            {
-                // This shouldn't happen. Resource must be added to the global resource state
-                // on resource creation. Resources should only be removed from the global resource state
-                // array on resource destruction.
-                throw std::invalid_argument("Resources must be registered using the ResourceStateTracker::AddGlobalResourceState method. Are you using the CommandList class to create and bind resources?");
-            }
+            // Add a pending barrier. The pending barriers will be resolved
+            // before the command list is executed on the command queue.
+            m_PendingResourceBarriers.push_back(barrier);
         }
 
-        // Push the final known state (possibly replacing the previously known state).
-        m_FinalResourceState[transitionBarrier.pResource][transitionBarrier.Subresource] = transitionBarrier.StateAfter;
+        // Push the final known state (possibly replacing the previously known state for the subresource).
+        m_FinalResourceState[transitionBarrier.pResource].SetSubresourceState(transitionBarrier.Subresource, transitionBarrier.StateAfter);
     }
     else
     {
-        // Just push the barrier to the resource barriers array.
+        // Just push non-transition barriers to the resource barriers array.
         m_ResourceBarriers.push_back(barrier);
     }
 }
 
 void ResourceStateTracker::FlushResourceBarriers(CommandList& commandList)
 {
-    // TODO: Call ID3D12GraphicsCommandList::ResourceBarrier method with m_ResourceBarriers
+    UINT numBarriers = static_cast<UINT>(m_ResourceBarriers.size());
+    if (numBarriers > 0 )
+    {
+        auto d3d12CommandList = commandList.GetGraphicsCommandList();
+        d3d12CommandList->ResourceBarrier(numBarriers, m_ResourceBarriers.data());
+        m_ResourceBarriers.clear();
+    }
 }
 
 void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList)
 {
-    // TODO: Call ID3D12GraphicsCommandList::ResourceBarrier method with m_PendingResourceBarriers
+    // Resolve the pending resource barriers by checking the global state of the 
+    // (sub)resources. Add barriers if the pending state and the global state do
+    //  not match.
+    ResourceBarriers resourceBarriers;
+    // Reserve enough space (worst-case, all pending barriers).
+    resourceBarriers.reserve(m_PendingResourceBarriers.size());
+
+    ms_GlobalMutex.lock();
+
+    for (auto pendingBarrier : m_PendingResourceBarriers)
+    {
+        if (pendingBarrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)  // Only transition barriers should be pending...
+        {
+            auto pendingTransition = pendingBarrier.Transition;
+            
+            const auto& iter = ms_GlobalResourceState.find(pendingTransition.pResource);
+            if (iter != ms_GlobalResourceState.end())
+            {
+                auto globalState = (iter->second).GetSubresourceState(pendingTransition.Subresource);
+                if (pendingTransition.StateAfter != globalState)
+                {
+                    // Fix-up the before state based on current global state of the resource.
+                    pendingBarrier.Transition.StateBefore = globalState;
+                    resourceBarriers.push_back(pendingBarrier);
+                }
+            }
+        }
+    }
+
+    ms_GlobalMutex.unlock();
+
+    UINT numBarriers = static_cast<UINT>(resourceBarriers.size());
+    if (numBarriers > 0 )
+    {
+        auto d3d12CommandList = commandList.GetGraphicsCommandList();
+        d3d12CommandList->ResourceBarrier(numBarriers, resourceBarriers.data());
+    }
+    m_PendingResourceBarriers.clear();
 }
 
 void ResourceStateTracker::CommitFinalResourceStates()
@@ -96,9 +117,11 @@ void ResourceStateTracker::CommitFinalResourceStates()
         {
             UINT subresource = subresourceState.first;
             D3D12_RESOURCE_STATES state = subresourceState.second;
-            ms_GlobalResourceState[resource][subresource] = state;
+            ms_GlobalResourceState[resource].SetSubresourceState(subresource, state);
         }
     }
+
+    m_FinalResourceState.clear();
 }
 
 void ResourceStateTracker::Reset()
@@ -114,7 +137,7 @@ void ResourceStateTracker::AddGlobalResourceState(ID3D12Resource* resource, D3D1
     if ( resource != nullptr )
     {
         std::lock_guard<std::mutex> lock(ms_GlobalMutex);
-        ms_GlobalResourceState[resource][D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES] = state;
+        ms_GlobalResourceState[resource].SetSubresourceState(D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, state);
     }
 }
 
