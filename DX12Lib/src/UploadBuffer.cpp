@@ -25,7 +25,7 @@ UploadBuffer::Allocation UploadBuffer::Allocate(size_t sizeInBytes, size_t align
 
     // If there is no current page, or the requested allocation exceeds the
     // remaining space in the current page, request a new page.
-    if (!m_CurrentPage || m_CurrentPage->HasSpace(sizeInBytes, alignment))
+    if (!m_CurrentPage || !m_CurrentPage->HasSpace(sizeInBytes, alignment))
     {
         m_CurrentPage = RequestPage();
     }
@@ -33,7 +33,7 @@ UploadBuffer::Allocation UploadBuffer::Allocate(size_t sizeInBytes, size_t align
     return m_CurrentPage->Allocate(sizeInBytes, alignment);
 }
 
-void UploadBuffer::Free()
+void UploadBuffer::Reset()
 {
     // Reset all available pages.
     m_AvailablePages = m_PagePool;
@@ -41,7 +41,7 @@ void UploadBuffer::Free()
     for (auto page : m_AvailablePages)
     {
         // Reset the page for new allocations.
-        page->Free();
+        page->Reset();
     }
 }
 
@@ -119,7 +119,7 @@ UploadBuffer::Allocation UploadBuffer::Page::Allocate(size_t sizeInBytes, size_t
     return allocation;
 }
 
-void UploadBuffer::Page::Free()
+void UploadBuffer::Page::Reset()
 {
     m_Offset = 0;
 }

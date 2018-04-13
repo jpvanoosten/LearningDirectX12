@@ -1,6 +1,7 @@
 /**
  * Index buffer resource.
  */
+#pragma once
 
 #include "Buffer.h"
 
@@ -8,7 +9,6 @@ class IndexBuffer : public Buffer
 {
 public:
     IndexBuffer( const std::wstring& name = L"");
-    IndexBuffer(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES initialResourceState);
     virtual ~IndexBuffer();
 
     // Inherited from Buffer

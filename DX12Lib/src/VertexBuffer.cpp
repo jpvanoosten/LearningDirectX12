@@ -9,13 +9,6 @@ VertexBuffer::VertexBuffer(const std::wstring& name)
     , m_VertexBufferView({})
 {}
 
-VertexBuffer::VertexBuffer(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES initialResourceState)
-    : Buffer(resource, initialResourceState)
-    , m_NumVertices(0)
-    , m_VertexStride(0)
-    , m_VertexBufferView({})
-{}
-
 VertexBuffer::~VertexBuffer()
 {}
 

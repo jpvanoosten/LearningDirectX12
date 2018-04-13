@@ -4,6 +4,7 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 
 #include <wrl.h>
@@ -12,6 +13,9 @@
 
 #include <Events.h>
 #include <HighResolutionClock.h>
+
+#include <string>
+#include <memory>
 
 // Forward-declare the DirectXTemplate class.
 class Game;

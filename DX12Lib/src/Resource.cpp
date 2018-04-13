@@ -9,12 +9,6 @@ Resource::Resource(const std::wstring& name)
     : m_ResourceName(name)
 {}
 
-Resource::Resource(Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource, D3D12_RESOURCE_STATES InitialResourceState)
-    : m_d3d12Resource(d3d12Resource)
-{
-    ResourceStateTracker::AddGlobalResourceState(m_d3d12Resource.Get(), InitialResourceState);
-}
-
 Resource::~Resource()
 {
     ResourceStateTracker::RemoveGlobalResourceState(m_d3d12Resource.Get());

@@ -1,6 +1,7 @@
 /**
  * A mesh class encapsulates the index and vertex buffers for a geometric primitive.
  */
+#pragma once
 
 #include <memory> // For std::unique_ptr
 #include <vector>

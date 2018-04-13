@@ -1,11 +1,16 @@
-#include <DX12LibPCH.h>
-
 #include <Window.h>
 
 #include <Application.h>
 #include <CommandQueue.h>
 #include <Game.h>
-#include <ResourceStateTracker.h>
+#include <Helpers.h>
+
+#include <d3dx12.h>
+
+#include <algorithm>
+#include <cassert>
+
+using namespace Microsoft::WRL;
 
 Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
     : m_hWnd(hWnd)
@@ -69,7 +74,6 @@ void Window::Destroy()
     for (int i = 0; i < BufferCount; ++i)
     {
         auto resource = m_d3d12BackBuffers[i].Get();
-        ResourceStateTracker::RemoveGlobalResourceState(resource);
         m_d3d12BackBuffers[i].Reset();
     }
 
@@ -264,8 +268,6 @@ void Window::OnResize(ResizeEventArgs& e)
 
         for (int i = 0; i < BufferCount; ++i)
         {
-            auto resource = m_d3d12BackBuffers[i].Get();
-            ResourceStateTracker::RemoveGlobalResourceState(resource);
             m_d3d12BackBuffers[i].Reset();
         }
 
@@ -347,7 +349,6 @@ void Window::UpdateRenderTargetViews()
 
         device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
 
-        ResourceStateTracker::AddGlobalResourceState(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT);
         m_d3d12BackBuffers[i] = backBuffer;
 
         rtvHandle.Offset(m_RTVDescriptorSize);

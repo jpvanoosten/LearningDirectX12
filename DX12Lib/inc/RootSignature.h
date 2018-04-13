@@ -4,6 +4,7 @@
  * necessary for the DynamicDescriptorHeap to determine the layout of the root 
  * signature at runtime.
  */
+#pragma once
 
 #include "d3dx12.h"
 

@@ -1,6 +1,7 @@
 /**
- * Abstract base class for buffer resource.
+ * Abstract base class for buffer resources.
  */
+#pragma once
 
 #include "Resource.h"
 
@@ -8,7 +9,6 @@ class Buffer : public Resource
 {
 public:
     Buffer(const std::wstring& name = L"");
-    Buffer(Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource, D3D12_RESOURCE_STATES initialResourceState);
     
     /**
      * Create the views for the buffer resource.

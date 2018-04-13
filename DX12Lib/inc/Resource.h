@@ -2,6 +2,7 @@
  * A wrapper for a DX12 resource.
  * This provides a base class for all other resource types (Buffers & Textures).
  */
+#pragma once
 
 #include <d3d12.h>
 #include <wrl.h>
@@ -12,7 +13,6 @@ class Resource
 {
 public:
     Resource( const std::wstring& name = L"" );
-    Resource(Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource, D3D12_RESOURCE_STATES initialResourceState );
     virtual ~Resource();
 
     // Get access to the underlying D3D12 resource

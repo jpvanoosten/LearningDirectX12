@@ -6,6 +6,7 @@ set( HEADER_FILES
     inc/Buffer.h
     inc/CommandList.h
     inc/CommandQueue.h
+    inc/ConstantBuffer.h
     inc/DescriptorAllocator.h
     inc/DynamicDescriptorHeap.h
     inc/Game.h
@@ -29,6 +30,7 @@ set( SOURCE_FILES
     src/Buffer.cpp
     src/CommandQueue.cpp
     src/CommandList.cpp
+    src/ConstantBuffer.cpp
     src/DescriptorAllocator.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp

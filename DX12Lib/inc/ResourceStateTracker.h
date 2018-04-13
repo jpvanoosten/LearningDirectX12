@@ -13,6 +13,7 @@
  * See: https://youtu.be/nmB2XMasz2o
  * See: https://msdn.microsoft.com/en-us/library/dn899226(v=vs.85).aspx#implicit_state_transitions
  */
+#pragma once
 
 #include "d3dx12.h"
 
@@ -22,6 +23,7 @@
 #include <vector>
 
 class CommandList;
+class Resource;
 
 class ResourceStateTracker
 {
@@ -36,7 +38,37 @@ public:
      * @param flushImmediately Force flush any resource barriers that have been pushed
      * to the command list.
      */
-    void PushResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
+    void ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
+
+    /**
+     * Push a transition resource barrier to the resource state tracker.
+     * 
+     * @param resource The resource to transition.
+     * @param stateAfter The state to transition the resource to.
+     * @param subResource The subresource to transition. By default, this is D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES
+     * which indicates that all subresources should be transitioned to the same state.
+     */
+    void TransitionResource(const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subResource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+    /**
+     * Push a UAV resource barrier for the given resource.
+     * 
+     * @param resource The resource to add a UAV barrier for. Can be NULL which 
+     * indicates that UAV access could require the barrier.
+     */
+    void UAVBarrier(const Resource* resource = nullptr);
+
+    /**
+     * Push an aliasing barrier for the given resource.
+     * 
+     * @param beforeResource The resource currently occupying the space in the heap.
+     * @param afterResource The resource that will be occupying the space in the heap.
+     * 
+     * Either the beforeResource or the afterResource parameters can be NULL which 
+     * indicates that any placed or reserved resource could cause aliasing.
+     */
+    void AliasBarrier(const Resource* resourceBefore = nullptr, const Resource* resourceAfter = nullptr);
+
 
     /**
      * Check to see if there are any pending resource barriers.

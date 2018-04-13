@@ -3,6 +3,7 @@
 #include <ResourceStateTracker.h>
 
 #include <CommandList.h>
+#include <Resource.h>
 
 // Static definitions.
 std::mutex ResourceStateTracker::ms_GlobalMutex;
@@ -14,7 +15,7 @@ ResourceStateTracker::ResourceStateTracker()
 ResourceStateTracker::~ResourceStateTracker()
 {}
 
-void ResourceStateTracker::PushResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier)
+void ResourceStateTracker::ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier)
 {
     if (barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
     {
@@ -51,6 +52,34 @@ void ResourceStateTracker::PushResourceBarrier(const D3D12_RESOURCE_BARRIER& bar
         // Just push non-transition barriers to the resource barriers array.
         m_ResourceBarriers.push_back(barrier);
     }
+}
+
+void ResourceStateTracker::TransitionResource(const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subResource )
+{
+    auto pResource = resource.GetD3D12Resource().Get();
+    if ( pResource)
+    {
+        ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Transition(pResource, D3D12_RESOURCE_STATE_COMMON, stateAfter, subResource));
+    }
+}
+
+void ResourceStateTracker::UAVBarrier(const Resource* resource )
+{
+    ID3D12Resource* pResource = resource != nullptr ? resource->GetD3D12Resource().Get() : nullptr;
+    if (resource)
+    {
+        pResource = resource->GetD3D12Resource().Get();
+    }
+
+    ResourceBarrier(CD3DX12_RESOURCE_BARRIER::UAV(pResource));
+}
+
+void ResourceStateTracker::AliasBarrier(const Resource* resourceBefore, const Resource* resourceAfter)
+{
+    ID3D12Resource* pResourceBefore = resourceBefore != nullptr ? resourceBefore->GetD3D12Resource().Get() : nullptr;
+    ID3D12Resource* pResourceAfter = resourceAfter != nullptr ? resourceAfter->GetD3D12Resource().Get() : nullptr;
+
+    ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Aliasing(pResourceBefore, pResourceAfter));
 }
 
 void ResourceStateTracker::FlushResourceBarriers(CommandList& commandList)
@@ -103,6 +132,7 @@ void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList
         auto d3d12CommandList = commandList.GetGraphicsCommandList();
         d3d12CommandList->ResourceBarrier(numBarriers, resourceBarriers.data());
     }
+
     m_PendingResourceBarriers.clear();
 }
 

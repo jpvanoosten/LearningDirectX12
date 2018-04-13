@@ -4,6 +4,7 @@
  * being used in a shader. The DynamicDescriptorHeap class is used to upload
  * CPU visible descriptors to a GPU visible descriptor heap.
  */
+#pragma once
 
 #include "d3dx12.h"
 

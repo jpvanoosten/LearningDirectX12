@@ -1,6 +1,7 @@
 /**
  * Vertex buffer resource.
  */
+#pragma once
 
 #include "Buffer.h"
 
@@ -8,7 +9,6 @@ class VertexBuffer : public Buffer
 {
 public:
     VertexBuffer(const std::wstring& name = L"");
-    VertexBuffer(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES initialResourceState);
     virtual ~VertexBuffer();
 
     // Inherited from Buffer
@@ -17,7 +17,7 @@ public:
     /**
      * Get the vertex buffer view for binding to the Input Assembler stage.
      */
-    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()
+    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const
     {
         return m_VertexBufferView;
     }

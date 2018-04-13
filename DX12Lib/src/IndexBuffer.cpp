@@ -11,10 +11,6 @@ IndexBuffer::IndexBuffer(const std::wstring& name)
     , m_IndexBufferView({})
 {}
 
-IndexBuffer::IndexBuffer(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES initialResourceState)
-    : Buffer(resource, initialResourceState)
-{}
-
 IndexBuffer::~IndexBuffer()
 {}
 

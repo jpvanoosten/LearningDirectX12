@@ -1,12 +1,25 @@
 cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES
+    inc/Application.h
+    inc/CommandQueue.h
+    inc/Events.h
+    inc/Game.h
+    inc/Helpers.h
+    inc/HighResolutionClock.h
+    inc/KeyCodes.h
     inc/Tutorial2.h
+    inc/Window.h
 )
 
 set( SRC_FILES
+    src/Application.cpp
+    src/CommandQueue.cpp
+    src/Game.cpp
+    src/HighResolutionClock.cpp
     src/main.cpp
     src/Tutorial2.cpp
+    src/Window.cpp
 )
 
 set( SHADER_FILES
@@ -14,6 +27,12 @@ set( SHADER_FILES
     shaders/PixelShader.hlsl
 )
 
+set( RESOURCE_FILES
+    Resources/Icon/app_icon.ico
+)
+
+source_group( "Resources" FILES Tutorial2.rc resource.h )
+source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
 set_source_files_properties( shaders/VertexShader.hlsl PROPERTIES 
@@ -30,6 +49,8 @@ add_executable( Tutorial2 WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
     ${SHADER_FILES}
+    ${RESOURCE_FILES}
+	Tutorial2.rc
 )
 
 target_include_directories( Tutorial2
@@ -37,7 +58,9 @@ target_include_directories( Tutorial2
 )
 
 target_link_libraries( Tutorial2
-    DX12Lib
+    d3d12.lib
+    dxgi.lib
+    dxguid.lib
     D3DCompiler.lib
     Shlwapi.lib
 )

@@ -1,6 +1,7 @@
 /**
  * An UploadBuffer provides a convenient method to upload resources to the GPU.
  */
+#pragma once
 
 #include <Defines.h>
 
@@ -45,7 +46,7 @@ public:
      * Release all allocated pages. This should only be done when the command list
      * is finished executing on the CommandQueue.
      */
-    void Free();
+    void Reset();
 
 private:
     // A single page for the allocator.
@@ -65,7 +66,7 @@ private:
         Allocation Allocate(size_t sizeInBytes, size_t alignment);
 
         // Reset the page for reuse.
-        void Free();
+        void Reset();
 
     private:
 
