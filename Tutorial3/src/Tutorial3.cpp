@@ -2,6 +2,7 @@
 
 #include <Application.h>
 #include <CommandQueue.h>
+#include <CommandLIst.h>
 #include <Helpers.h>
 #include <Window.h>
 
@@ -117,26 +118,10 @@ bool Tutorial3::LoadContent()
     auto commandList = commandQueue->GetCommandList();
 
     // Upload vertex buffer data.
-    ComPtr<ID3D12Resource> intermediateVertexBuffer;
-    UpdateBufferResource(commandList,
-        &m_VertexBuffer, &intermediateVertexBuffer,
-        _countof(g_Vertices), sizeof(VertexPosColor), g_Vertices);
-
-    // Create the vertex buffer view.
-    m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-    m_VertexBufferView.SizeInBytes = sizeof(g_Vertices);
-    m_VertexBufferView.StrideInBytes = sizeof(VertexPosColor);
+    commandList->SetVertexBuffer(m_VertexBuffer, _countof(g_Vertices), sizeof(VertexPosColor), g_Vertices);
 
     // Upload index buffer data.
-    ComPtr<ID3D12Resource> intermediateIndexBuffer;
-    UpdateBufferResource(commandList,
-        &m_IndexBuffer, &intermediateIndexBuffer,
-        _countof(g_Indicies), sizeof(WORD), g_Indicies);
-
-    // Create index buffer view.
-    m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-    m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
-    m_IndexBufferView.SizeInBytes = sizeof(g_Indicies);
+    commandList->SetIndexBuffer(m_IndexBuffer, _countof(g_Indicies), DXGI_FORMAT_R16_UINT, g_Indicies);
 
     // Create the descriptor heap for the depth-stencil view.
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};

@@ -198,6 +198,19 @@ void CommandList::BindDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFo
     m_d3d12CommandList->IASetIndexBuffer(&indexBufferView);
 }
 
+void CommandList::Close(CommandList& pendingCommandList)
+{
+    // Flush any remaining barriers.
+    FlushResourceBarriers();
+
+    m_d3d12CommandList->Close();
+
+    // Flush pending resource barriers.
+    m_ResourceStateTracker->FlushPendingResourceBarriers(pendingCommandList);
+    // Commit the final resource state to the global state.
+    m_ResourceStateTracker->CommitFinalResourceStates();
+}
+
 void CommandList::Reset()
 {
     ThrowIfFailed(m_d3d12CommandAllocator->Reset());

@@ -7,6 +7,7 @@
 
 // Static definitions.
 std::mutex ResourceStateTracker::ms_GlobalMutex;
+bool ResourceStateTracker::ms_IsLocked = false;
 ResourceStateTracker::ResourceStateMap ResourceStateTracker::ms_GlobalResourceState;
 
 ResourceStateTracker::ResourceStateTracker()
@@ -95,14 +96,14 @@ void ResourceStateTracker::FlushResourceBarriers(CommandList& commandList)
 
 void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList)
 {
+    assert(ms_IsLocked);
+
     // Resolve the pending resource barriers by checking the global state of the 
     // (sub)resources. Add barriers if the pending state and the global state do
     //  not match.
     ResourceBarriers resourceBarriers;
     // Reserve enough space (worst-case, all pending barriers).
     resourceBarriers.reserve(m_PendingResourceBarriers.size());
-
-    ms_GlobalMutex.lock();
 
     for (auto pendingBarrier : m_PendingResourceBarriers)
     {
@@ -124,8 +125,6 @@ void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList
         }
     }
 
-    ms_GlobalMutex.unlock();
-
     UINT numBarriers = static_cast<UINT>(resourceBarriers.size());
     if (numBarriers > 0 )
     {
@@ -138,8 +137,9 @@ void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList
 
 void ResourceStateTracker::CommitFinalResourceStates()
 {
+    assert(ms_IsLocked);
+
     // Commit final resource states to the global resource state array (map).
-    std::lock_guard<std::mutex> lock(ms_GlobalMutex);
     for (const auto& resourceState : m_FinalResourceState)
     {
         ID3D12Resource* resource = resourceState.first;
@@ -160,6 +160,22 @@ void ResourceStateTracker::Reset()
     m_PendingResourceBarriers.clear();
     m_ResourceBarriers.clear();
     m_FinalResourceState.clear();
+}
+
+void ResourceStateTracker::Lock()
+{
+    assert(!ms_IsLocked);
+
+    ms_GlobalMutex.lock();
+    ms_IsLocked = true;
+}
+
+void ResourceStateTracker::Unlock()
+{
+    assert(ms_IsLocked);
+
+    ms_IsLocked = false;
+    ms_GlobalMutex.unlock();
 }
 
 void ResourceStateTracker::AddGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state)

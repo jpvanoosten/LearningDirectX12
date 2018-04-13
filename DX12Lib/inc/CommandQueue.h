@@ -1,7 +1,6 @@
 /**
  * Wrapper class for a ID3D12CommandQueue.
  */
-
 #pragma once
 
 #include <d3d12.h>  // For ID3D12CommandQueue, ID3D12Device2, and ID3D12Fence
@@ -10,6 +9,8 @@
 #include <cstdint>  // For uint64_t
 #include <queue>    // For std::queue
 
+class CommandList;
+
 class CommandQueue
 {
 public:
@@ -17,11 +18,12 @@ public:
     virtual ~CommandQueue();
 
     // Get an available command list from the command queue.
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetCommandList();
+    std::shared_ptr<CommandList> GetCommandList();
 
     // Execute a command list.
     // Returns the fence value to wait for for this command list.
-    uint64_t ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList);
+    uint64_t ExecuteCommandList(std::shared_ptr<CommandList> commandList);
+    uint64_t ExecuteCommandLists( const std::vector<std::shared_ptr<CommandList> >& commandLists );
 
     uint64_t Signal();
     bool IsFenceComplete(uint64_t fenceValue);
@@ -29,21 +31,16 @@ public:
     void Flush();
 
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetD3D12CommandQueue() const;
-protected:
-
-    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator();
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> allocator);
 
 private:
     // Keep track of command allocators that are "in-flight"
-    struct CommandAllocatorEntry
+    struct CommandListEntry
     {
         uint64_t fenceValue;
-        Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+        std::shared_ptr<CommandList> commandList;
     };
 
-    using CommandAllocatorQueue = std::queue<CommandAllocatorEntry>;
-    using CommandListQueue = std::queue< Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> >;
+    using CommandListQueue = std::queue<CommandListEntry>;
 
     D3D12_COMMAND_LIST_TYPE                     m_CommandListType;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue>  m_d3d12CommandQueue;
@@ -51,6 +48,5 @@ private:
     HANDLE                                      m_FenceEvent;
     uint64_t                                    m_FenceValue;
 
-    CommandAllocatorQueue                       m_CommandAllocatorQueue;
     CommandListQueue                            m_CommandListQueue;
 };

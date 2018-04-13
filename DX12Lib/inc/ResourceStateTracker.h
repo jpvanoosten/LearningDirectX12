@@ -69,22 +69,13 @@ public:
      */
     void AliasBarrier(const Resource* resourceBefore = nullptr, const Resource* resourceAfter = nullptr);
 
-
     /**
-     * Check to see if there are any pending resource barriers.
-     */
-    const bool HasPendingResourceBarriers() const
-    {
-        return !m_PendingResourceBarriers.empty();
-    }
-
-    /**
-     * Flush any pending split resource barriers to the command list.
+     * Flush any pending resource barriers to the command list.
      */
     void FlushPendingResourceBarriers(CommandList& commandList);
 
     /**
-     * Flush any resource barriers that have been pushed to the resource state
+     * Flush any (non-pending) resource barriers that have been pushed to the resource state
      * tracker.
      */
     void FlushResourceBarriers(CommandList& commandList);
@@ -99,6 +90,20 @@ public:
      * Reset state tracking. This must be done when the command list is reset.
      */
     void Reset();
+
+    /**
+     * The global state must be locked before flushing pending resource barriers
+     * and committing the final resource state to the global resource state.
+     * This ensures consistency of the global resource state between command list
+     * executions.
+     */
+    static void Lock();
+
+    /**
+     * Unlocks the global resource state after the final states have been comitted
+     * to the global resource state array.
+     */
+    static void Unlock();
 
     /**
      * Add a resource with a given state to the global resource state array (map).
@@ -125,13 +130,6 @@ private:
         ResourceState(D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON)
             : State(state)
         {}
-
-        // Returns true if any subresource defines a state.
-        // If false, then all (sub)resources have the same state.
-        bool HasSubresourceState() const
-        {
-            return !SubresourceState.empty();
-        }
 
         // Get the state of a (sub)resource within the resource.
         // If the specified subresource is not found in the SubresourceState array (map)
@@ -185,6 +183,7 @@ private:
 
     // The mutex protects shared access to the GlobalResourceState map.
     static std::mutex ms_GlobalMutex;
+    static bool ms_IsLocked;
     // The global resource state array (map) stores the state of a resource
     // between command list execution.
     static ResourceStateTracker::ResourceStateMap ms_GlobalResourceState;

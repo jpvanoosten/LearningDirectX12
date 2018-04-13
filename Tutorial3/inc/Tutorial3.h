@@ -1,7 +1,9 @@
 #pragma once
 
 #include <Game.h>
+#include <IndexBuffer.h>
 #include <Window.h>
+#include <VertexBuffer.h>
 
 #include <DirectXMath.h>
 
@@ -72,11 +74,8 @@ private:
     uint64_t m_FenceValues[Window::BufferCount] = {};
 
     // Vertex buffer for the cube.
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBuffer;
-    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-    // Index buffer for the cube.
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
-    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+    VertexBuffer m_VertexBuffer;
+    IndexBuffer m_IndexBuffer;
 
     // Depth buffer.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthBuffer;

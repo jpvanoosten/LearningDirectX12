@@ -148,6 +148,15 @@ public:
     }
 
     /**
+     * Close the command list.
+     * Used by the command queue.
+     * 
+     * @param pendingCommandList The command list that is used to execute pending
+     * resource barriers (if any) for this command list.
+     */
+    void Close( CommandList& pendingCommandList );
+
+    /**
      * Reset the command list. This should only be called by the CommandQueue
      * before the command list is returned from CommandQueue::GetCommandList.
      */
