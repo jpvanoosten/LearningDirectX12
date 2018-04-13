@@ -211,6 +211,13 @@ void CommandList::Close(CommandList& pendingCommandList)
     m_ResourceStateTracker->CommitFinalResourceStates();
 }
 
+void CommandList::Close()
+{
+    FlushResourceBarriers();
+    m_d3d12CommandList->Close();
+}
+
+
 void CommandList::Reset()
 {
     ThrowIfFailed(m_d3d12CommandAllocator->Reset());

@@ -68,49 +68,6 @@ Tutorial3::Tutorial3(const std::wstring& name, int width, int height, bool vSync
 {
 }
 
-void Tutorial3::UpdateBufferResource(
-    ComPtr<ID3D12GraphicsCommandList2> commandList,
-    ID3D12Resource** pDestinationResource,
-    ID3D12Resource** pIntermediateResource,
-    size_t numElements, size_t elementSize, const void* bufferData,
-    D3D12_RESOURCE_FLAGS flags)
-{
-    auto device = Application::Get().GetDevice();
-
-    size_t bufferSize = numElements * elementSize;
-
-    // Create a committed resource for the GPU resource in a default heap.
-    ThrowIfFailed(device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-        D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        IID_PPV_ARGS(pDestinationResource)));
-
-    // Create an committed resource for the upload.
-    if (bufferData)
-    {
-        ThrowIfFailed(device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-            D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-            D3D12_RESOURCE_STATE_GENERIC_READ,
-            nullptr,
-            IID_PPV_ARGS(pIntermediateResource)));
-
-        D3D12_SUBRESOURCE_DATA subresourceData = {};
-        subresourceData.pData = bufferData;
-        subresourceData.RowPitch = bufferSize;
-        subresourceData.SlicePitch = subresourceData.RowPitch;
-
-        UpdateSubresources(commandList.Get(),
-            *pDestinationResource, *pIntermediateResource,
-            0, 0, 1, &subresourceData);
-    }
-}
-
-
 bool Tutorial3::LoadContent()
 {
     auto device = Application::Get().GetDevice();
@@ -342,6 +299,7 @@ void Tutorial3::OnRender(RenderEventArgs& e)
 
     auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
     auto commandList = commandQueue->GetCommandList();
+    auto d3d12CommandList = commandList->GetGraphicsCommandList();
 
     UINT currentBackBufferIndex = m_pWindow->GetCurrentBackBufferIndex();
     auto backBuffer = m_pWindow->GetCurrentBackBuffer();
@@ -350,37 +308,37 @@ void Tutorial3::OnRender(RenderEventArgs& e)
 
     // Clear the render targets.
     {
-        TransitionResource(commandList, backBuffer,
+        TransitionResource(d3d12CommandList, backBuffer,
             D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
-        ClearRTV(commandList, rtv, clearColor);
-        ClearDepth(commandList, dsv);
+        ClearRTV(d3d12CommandList, rtv, clearColor);
+        ClearDepth(d3d12CommandList, dsv);
     }
 
-    commandList->SetPipelineState(m_PipelineState.Get());
-    commandList->SetGraphicsRootSignature(m_RootSignature.Get());
+    d3d12CommandList->SetPipelineState(m_PipelineState.Get());
+    d3d12CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    d3d12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList->BindVertexBuffer(0, m_VertexBuffer);
     commandList->BindIndexBuffer(m_IndexBuffer);
 
-    commandList->RSSetViewports(1, &m_Viewport);
-    commandList->RSSetScissorRects(1, &m_ScissorRect);
+    d3d12CommandList->RSSetViewports(1, &m_Viewport);
+    d3d12CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-    commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+    d3d12CommandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
 
     // Update the MVP matrix
     XMMATRIX mvpMatrix = XMMatrixMultiply(m_ModelMatrix, m_ViewMatrix);
     mvpMatrix = XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
-    commandList->SetGraphicsRoot32BitConstants(0, sizeof(XMMATRIX) / 4, &mvpMatrix, 0);
+    commandList->BindGraphics32BitConstants(0, mvpMatrix);
 
-    commandList->DrawIndexedInstanced(_countof(g_Indicies), 1, 0, 0, 0);
+    d3d12CommandList->DrawIndexedInstanced(_countof(g_Indicies), 1, 0, 0, 0);
 
     // Present
     {
-        TransitionResource(commandList, backBuffer,
+        TransitionResource(d3d12CommandList, backBuffer,
             D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
         m_FenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);

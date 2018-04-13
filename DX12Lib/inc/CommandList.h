@@ -155,6 +155,8 @@ public:
      * resource barriers (if any) for this command list.
      */
     void Close( CommandList& pendingCommandList );
+    // Just close the command list. This is useful for pending command lists.
+    void Close();
 
     /**
      * Reset the command list. This should only be called by the CommandQueue

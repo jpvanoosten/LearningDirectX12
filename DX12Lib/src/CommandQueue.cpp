@@ -86,6 +86,7 @@ uint64_t CommandQueue::ExecuteCommandList(std::shared_ptr<CommandList> commandLi
 
     // Close the command list, flushing any pending resource barriers.
     commandList->Close(*pendingCommandList);
+    pendingCommandList->Close();
 
     ID3D12CommandList* const ppCommandLists[] = {
         pendingCommandList->GetGraphicsCommandList().Get(),
@@ -119,6 +120,7 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     {
         auto pendingCommandList = GetCommandList();
         commandList->Close(*pendingCommandList);
+        pendingCommandList->Close();
 
         d3d12CommandLists.push_back(pendingCommandList->GetGraphicsCommandList().Get());
         d3d12CommandLists.push_back(commandList->GetGraphicsCommandList().Get());
