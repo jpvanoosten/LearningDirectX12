@@ -363,8 +363,8 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     commandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList->IASetVertexBuffers(0, 1, &m_VertexBufferView);
-    commandList->IASetIndexBuffer(&m_IndexBufferView);
+    commandList->BindVertexBuffer(0, m_VertexBuffer);
+    commandList->BindIndexBuffer(m_IndexBuffer);
 
     commandList->RSSetViewports(1, &m_Viewport);
     commandList->RSSetScissorRects(1, &m_ScissorRect);
