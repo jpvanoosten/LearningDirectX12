@@ -30,6 +30,7 @@ CommandList::CommandList(D3D12_COMMAND_LIST_TYPE type)
     for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
     {
         m_DynamicDescriptorHeap[i] = std::make_unique<DynamicDescriptorHeap>(static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(i));
+        m_DescriptorHeaps[i] = nullptr;
     }
 }
 
@@ -230,10 +231,37 @@ void CommandList::Reset()
     for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
     {
         m_DynamicDescriptorHeap[i]->Reset();
+        m_DescriptorHeaps[i] = nullptr;
     }
 
     m_CurrentGraphicsRootSignature = nullptr;
     m_CurrentComputeRootSignature = nullptr;
 }
 
+
+void CommandList::SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap)
+{
+    if (m_DescriptorHeaps[heapType] != heap)
+    {
+        m_DescriptorHeaps[heapType] = heap;
+        BindDescriptorHeaps();
+    }
+}
+
+void CommandList::BindDescriptorHeaps()
+{
+    UINT numDescriptorHeaps = 0;
+    ID3D12DescriptorHeap* descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES] = {};
+
+    for (uint32_t i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+    {
+        ID3D12DescriptorHeap* descriptorHeap = m_DescriptorHeaps[i];
+        if (descriptorHeap)
+        {
+            descriptorHeaps[numDescriptorHeaps++] = descriptorHeap;
+        }
+    }
+
+    m_d3d12CommandList->SetDescriptorHeaps(numDescriptorHeaps, descriptorHeaps);
+}
 

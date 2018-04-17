@@ -7,6 +7,9 @@
 RootSignature::RootSignature(
     const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
     : m_RootSignatureVersion(rootSignatureVersion)
+    , m_NumDescriptorsPerTable{ 0 } // TODO: Is this valid syntax?
+    , m_SamplerTableBitMask(0)
+    , m_DescriptorTableBitMask(0)
 {
     auto device = Application::Get().GetDevice();
 
@@ -28,6 +31,28 @@ RootSignature::RootSignature(
 
             pParameters[i].DescriptorTable.NumDescriptorRanges = numDescriptorRanges;
             pParameters[i].DescriptorTable.pDescriptorRanges = pDescriptorRanges;
+
+            // Set the bit mask depending on the type of descriptor table.
+            if (numDescriptorRanges > 0)
+            {
+                switch (pDescriptorRanges[0].RangeType)
+                {
+                case D3D12_DESCRIPTOR_RANGE_TYPE_CBV:
+                case D3D12_DESCRIPTOR_RANGE_TYPE_SRV:
+                case D3D12_DESCRIPTOR_RANGE_TYPE_UAV:
+                    m_DescriptorTableBitMask |= (1 << i);
+                    break;
+                case D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER:
+                    m_SamplerTableBitMask |= (1 << i);
+                    break;
+                }
+            }
+
+            // Count the number of descriptors in the descriptor table.
+            for (UINT j = 0; j < numDescriptorRanges; ++j)
+            {
+                m_NumDescriptorsPerTable[i] += pDescriptorRanges[j].NumDescriptors;
+            }
         }
     }
 
@@ -75,3 +100,26 @@ RootSignature::~RootSignature()
     delete[] m_RootSignatureDesc.pStaticSamplers;
 }
 
+uint32_t RootSignature::GetDescriptorTableBitMask(D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType) const
+{
+    uint32_t descriptorTableBitMask = 0;
+    switch (descriptorHeapType)
+    {
+    case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+        descriptorTableBitMask = m_DescriptorTableBitMask;
+        break;
+    case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+        descriptorTableBitMask = m_SamplerTableBitMask;
+        break;
+    default:
+        throw std::invalid_argument("Invalid descriptor heap type.");
+    }
+
+    return descriptorTableBitMask;
+}
+
+uint32_t RootSignature::GetNumDescriptors(uint32_t rootIndex) const
+{
+    assert(rootIndex < 32);
+    return m_NumDescriptorsPerTable[rootIndex];
+}

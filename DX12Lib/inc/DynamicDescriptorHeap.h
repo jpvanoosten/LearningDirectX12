@@ -35,6 +35,21 @@ public:
     void StageDescriptors(uint32_t rootParameterIndex, uint32_t offset, uint32_t numDescriptors, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors[]);
 
     /**
+     * Copy all of the staged descriptors to the GPU visible descriptor heap and
+     * bind the descriptor heap and the descriptor tables to the command list.
+     * The passed-in function object is used to set the GPU visible descriptors
+     * on the command list. Two possible functions are:
+     *   * Before a draw    : ID3D12GraphicsCommandList::SetGraphicsRootDescriptorTable
+     *   * Before a dispatch: ID3D12GraphicsCommandList::SetComputeRootDescriptorTable
+     * 
+     * Since the DynamicDescriptorHeap can't know which function will be used, it must
+     * be passed as an argument to the function.
+     */
+    void CommitStagedDescriptors( CommandList& commandList, std::function<void(ID3D12GraphicsCommandList*, UINT, D3D12_GPU_DESCRIPTOR_HANDLE)> setFunc );
+    void CommitStagedDescriptorsForDraw(CommandList& commandList);
+    void CommitStagedDescriptorsForDispatch(CommandList& commandList);
+
+    /**
      * Copies a single CPU visible descriptor to a GPU visible descriptor heap.
      * This is useful for the
      *   * ID3D12GraphicsCommandList::ClearUnorderedAccessViewFloat
@@ -50,12 +65,6 @@ public:
      * @return The GPU visible descriptor.
      */
     D3D12_GPU_DESCRIPTOR_HANDLE CopyDescriptor( CommandList& comandList, D3D12_CPU_DESCRIPTOR_HANDLE cpuDescriptor);
-
-    /**
-     * Copy all of the staged descriptors to the GPU visible descriptor heap and
-     * bind the descriptor heap and the descriptor tables to the command list.
-     */
-    void CommitStagedDescriptors( CommandList& commandList);
 
     /**
      * Parse the root signature to determine which root parameters contain
@@ -81,7 +90,7 @@ private:
 
     // Compute the number of stale descriptors that need to be copied
     // to GPU visible descriptor heaps.
-    void ComputeStaleDescriptorCount() const;
+    uint32_t ComputeStaleDescriptorCount() const;
 
     /**
      * The maximum number of descriptor tables per root signature.
@@ -99,6 +108,13 @@ private:
             : NumDescriptors(0)
             , BaseDescriptor(nullptr)
         {}
+
+        // Reset the table cache.
+        void Reset()
+        {
+            NumDescriptors = 0;
+            BaseDescriptor = nullptr;
+        }
 
         // The number of descriptors in this descriptor table.
         uint32_t NumDescriptors;
@@ -125,17 +141,13 @@ private:
     uint32_t m_NumDescriptorsPerHeap;
 
     // The increment size of a descriptor.
-    uint32_t m_DescriptorSize;
+    uint32_t m_DescriptorHandleIncrementSize;
 
     // The descriptor handle cache.
     std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> m_DescriptorHandleCache;
 
     // Descriptor handle cache per descriptor table.
     DescriptorTableCache m_DescriptorTableCache[MaxDescriptorTables];
-
-    // A bitmask that represents the indices of the root signature
-    // that contains descriptor tables.
-    uint32_t m_DescriptorTableBitMask;
 
     // Each bit set in the bit mask represents a descriptor table
     // in the root signature that needs to be bound to the command list

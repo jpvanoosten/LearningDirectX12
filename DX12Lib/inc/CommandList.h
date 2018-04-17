@@ -164,11 +164,20 @@ public:
      */
     void Reset();
 
+    /**
+    * Set the currently bound descriptor heap.
+    * Should only be called by the DynamicDescriptorHeap class.
+    */
+    void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap);
+
 protected:
 
 private:
     // Set the contents of a buffer (possibly replacing the previous buffer contents.
     void SetBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+
+    // Binds the current descriptor heaps to the command list.
+    void BindDescriptorHeaps();
 
     using TrackedObjects = std::vector < Microsoft::WRL::ComPtr<ID3D12Object> >;
 
@@ -195,7 +204,10 @@ private:
     // committed before a Draw or Dispatch.
     std::unique_ptr<DynamicDescriptorHeap> m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-
+    // Keep track of the currently bound descriptor heaps. Only change descriptor 
+    // heaps if they are different than the currently bound descriptor heaps.
+    ID3D12DescriptorHeap* m_DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+    
     // Objects that are being tracked by a command list that is "in-flight" on 
     // the command-queue and cannot be deleted. To ensure objects are not deleted 
     // until the command list is finished executing, a reference to the object
