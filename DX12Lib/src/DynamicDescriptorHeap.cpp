@@ -178,7 +178,7 @@ void DynamicDescriptorHeap::ParseRootSignature(const RootSignature& rootSignatur
         currentOffset += numDescriptors;
     }
 
-    // Make sure the maximum number of descriptors has not been exceeded.
+    // Make sure the maximum number of descriptors per descriptor heap has not been exceeded.
     assert(currentOffset <= m_NumDescriptorsPerHeap && "The root signature requires more than the maximum number of descriptors per descriptor heap. Consider increasing the maximum number of descriptors per descriptor heap.");
 }
 

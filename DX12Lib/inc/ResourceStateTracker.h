@@ -186,5 +186,5 @@ private:
     static bool ms_IsLocked;
     // The global resource state array (map) stores the state of a resource
     // between command list execution.
-    static ResourceStateTracker::ResourceStateMap ms_GlobalResourceState;
+    static ResourceStateMap ms_GlobalResourceState;
 };

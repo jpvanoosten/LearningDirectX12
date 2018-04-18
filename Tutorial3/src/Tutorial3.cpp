@@ -75,10 +75,10 @@ bool Tutorial3::LoadContent()
     auto commandList = commandQueue->GetCommandList();
 
     // Upload vertex buffer data.
-    commandList->SetVertexBuffer(m_VertexBuffer, _countof(g_Vertices), sizeof(VertexPosColor), g_Vertices);
+    commandList->CopyVertexBuffer(m_VertexBuffer, _countof(g_Vertices), sizeof(VertexPosColor), g_Vertices);
 
     // Upload index buffer data.
-    commandList->SetIndexBuffer(m_IndexBuffer, _countof(g_Indicies), DXGI_FORMAT_R16_UINT, g_Indicies);
+    commandList->CopyIndexBuffer(m_IndexBuffer, _countof(g_Indicies), DXGI_FORMAT_R16_UINT, g_Indicies);
 
     // Create the descriptor heap for the depth-stencil view.
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -119,7 +119,7 @@ bool Tutorial3::LoadContent()
 
     // A single 32-bit constant root parameter that is used by the vertex shader.
     CD3DX12_ROOT_PARAMETER1 rootParameters[1];
-    rootParameters[0].InitAsConstants(sizeof(XMMATRIX) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+    rootParameters[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
     rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
@@ -321,8 +321,8 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     d3d12CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
     d3d12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList->BindVertexBuffer(0, m_VertexBuffer);
-    commandList->BindIndexBuffer(m_IndexBuffer);
+    commandList->SetVertexBuffer(0, m_VertexBuffer);
+    commandList->SetIndexBuffer(m_IndexBuffer);
 
     d3d12CommandList->RSSetViewports(1, &m_Viewport);
     d3d12CommandList->RSSetScissorRects(1, &m_ScissorRect);
@@ -332,7 +332,7 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     // Update the MVP matrix
     XMMATRIX mvpMatrix = XMMatrixMultiply(m_ModelMatrix, m_ViewMatrix);
     mvpMatrix = XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
-    commandList->BindGraphics32BitConstants(0, mvpMatrix);
+    commandList->SetGraphicsDynamicConstantBuffer(0, mvpMatrix);
 
     d3d12CommandList->DrawIndexedInstanced(_countof(g_Indicies), 1, 0, 0, 0);
 

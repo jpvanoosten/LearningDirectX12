@@ -69,83 +69,87 @@ public:
     void FlushResourceBarriers();
 
     /**
-     * Set the contents of a vertex buffer.
+     * Copy the contents to a vertex buffer in GPU memory.
      */
-    void SetVertexBuffer(VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride, const void* vertexBufferData);
+    void CopyVertexBuffer(VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride, const void* vertexBufferData);
     template<typename T>
-    void SetVertexBuffer(VertexBuffer& vertexBuffer, const std::vector<T>& vertexBufferData)
+    void CopyVertexBuffer(VertexBuffer& vertexBuffer, const std::vector<T>& vertexBufferData)
     {
-        SetVertexBuffer(vertexBuffer, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
+        CopyVertexBuffer(vertexBuffer, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
     }
 
     /**
-     * Set the contents of an index buffer.
+     * Copy the contents to a index buffer in GPU memory.
      */
-    void SetIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData);
+    void CopyIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData);
     template<typename T>
-    void SetIndexBuffer(IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData)
+    void CopyIndexBuffer(IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData)
     {
         static_assert(sizeof(T) == 2 || sizeof(T) == 4);
 
         DXGI_FORMAT indexFormat = ( sizeof(T) == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-        SetIndexBuffer(indexBuffer, indexBufferData.size(), indexFormat, indexBufferData.data());
+        CopyIndexBuffer(indexBuffer, indexBufferData.size(), indexFormat, indexBufferData.data());
     }
 
     /**
-     * Bind a dynamic constant buffer data to an inline descriptor in the root
+     * Set a dynamic constant buffer data to an inline descriptor in the root
      * signature.
      */
-    void BindGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData);
+    void SetGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData);
     template<typename T>
-    void BindGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, const T& data )
+    void SetGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, const T& data )
     {
-        BindGraphicsDynamicConstantBuffer(rootParameterIndex, sizeof(T), &data);
+        SetGraphicsDynamicConstantBuffer(rootParameterIndex, sizeof(T), &data);
     }
 
     /**
-     * Bind a set of 32-bit constants to the graphics pipeline.
+     * Set a set of 32-bit constants to the graphics pipeline.
      */
-    void BindGraphics32BitConstants(uint32_t rootParameterIndex, uint32_t numConstants, const void* constants);
+    void SetGraphics32BitConstants(uint32_t rootParameterIndex, uint32_t numConstants, const void* constants);
     template<typename T>
-    void BindGraphics32BitConstants(uint32_t rootParameterIndex, const T& constants)
+    void SetGraphics32BitConstants(uint32_t rootParameterIndex, const T& constants)
     {
         static_assert(sizeof(T) % sizeof(uint32_t) == 0, "Size of type must be a multiple of 4 bytes");
-        BindGraphics32BitConstants(rootParameterIndex, sizeof(T) / sizeof(uint32_t), &constants);
+        SetGraphics32BitConstants(rootParameterIndex, sizeof(T) / sizeof(uint32_t), &constants);
     }
 
     /**
-     * Bind the vertex buffer to the rendering pipeline.
+     * Set the vertex buffer to the rendering pipeline.
      */
-    void BindVertexBuffer(uint32_t slot, const VertexBuffer& vertexBuffer);
+    void SetVertexBuffer(uint32_t slot, const VertexBuffer& vertexBuffer);
 
     /**
-     * Bind dynamic vertex buffer data to the rendering pipeline.
+     * Set dynamic vertex buffer data to the rendering pipeline.
      */
-    void BindDynamicVertexBuffer(uint32_t slot, size_t numVertices, size_t vertexSize, const void* vertexBufferData);
+    void SetDynamicVertexBuffer(uint32_t slot, size_t numVertices, size_t vertexSize, const void* vertexBufferData);
     template<typename T>
-    void BindDynamicVertexBuffer(uint32_t slot, const std::vector<T>& vertexBufferData)
+    void SetDynamicVertexBuffer(uint32_t slot, const std::vector<T>& vertexBufferData)
     {
-        BindDynamicVertexBuffer(slot, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
+        SetDynamicVertexBuffer(slot, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
     }
 
 
     /**
      * Bind the index buffer to the rendering pipeline.
      */
-    void BindIndexBuffer(const IndexBuffer& indexBuffer);
+    void SetIndexBuffer(const IndexBuffer& indexBuffer);
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
      */
-    void BindDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData);
+    void SetDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData);
     template<typename T>
-    void BindDynamicIndexBuffer(const std::vector<T>& indexBufferData)
+    void SetDynamicIndexBuffer(const std::vector<T>& indexBufferData)
     {
         static_assert(sizeof(T) == 2 || sizeof(T) == 4);
 
         DXGI_FORMAT indexFormat = (sizeof(T) == 2) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-        BindDynamicIndexBuffer(indexBufferData.size(), indexFormat, indexBufferData.data());
+        SetDynamicIndexBuffer(indexBufferData.size(), indexFormat, indexBufferData.data());
     }
+
+    /***************************************************************************
+     * Methods defined below are only intended to be used by internal classes. *
+     ***************************************************************************/
 
     /**
      * Close the command list.
@@ -165,16 +169,16 @@ public:
     void Reset();
 
     /**
-    * Set the currently bound descriptor heap.
-    * Should only be called by the DynamicDescriptorHeap class.
-    */
+     * Set the currently bound descriptor heap.
+     * Should only be called by the DynamicDescriptorHeap class.
+     */
     void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap);
 
 protected:
 
 private:
-    // Set the contents of a buffer (possibly replacing the previous buffer contents.
-    void SetBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+    // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
+    void CopyBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
 
     // Binds the current descriptor heaps to the command list.
     void BindDescriptorHeaps();

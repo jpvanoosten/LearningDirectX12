@@ -35,6 +35,7 @@ UploadBuffer::Allocation UploadBuffer::Allocate(size_t sizeInBytes, size_t align
 
 void UploadBuffer::Reset()
 {
+    m_CurrentPage = nullptr;
     // Reset all available pages.
     m_AvailablePages = m_PagePool;
 

@@ -74,7 +74,7 @@ void CommandList::FlushResourceBarriers()
     m_ResourceStateTracker->FlushResourceBarriers(*this);
 }
 
-void CommandList::SetBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags)
+void CommandList::CopyBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags)
 {
     auto device = Application::Get().GetDevice();
 
@@ -122,18 +122,18 @@ void CommandList::SetBuffer(Buffer& buffer, size_t numElements, size_t elementSi
     buffer.CreateViews(numElements, elementSize);
 }
 
-void CommandList::SetVertexBuffer(VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride, const void* vertexBufferData)
+void CommandList::CopyVertexBuffer(VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride, const void* vertexBufferData)
 {
-    SetBuffer(vertexBuffer, numVertices, vertexStride, vertexBufferData);
+    CopyBuffer(vertexBuffer, numVertices, vertexStride, vertexBufferData);
 }
 
-void CommandList::SetIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData)
+void CommandList::CopyIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData)
 {
     size_t indexSizeInBytes = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
-    SetBuffer(indexBuffer, numIndicies, indexSizeInBytes, indexBufferData);
+    CopyBuffer(indexBuffer, numIndicies, indexSizeInBytes, indexBufferData);
 }
 
-void CommandList::BindGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData)
+void CommandList::SetGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData)
 {
     // Constant buffers must be 256-byte aligned.
     auto heapAllococation = m_UploadBuffer->Allocate(sizeInBytes, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
@@ -141,12 +141,12 @@ void CommandList::BindGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex,
     m_d3d12CommandList->SetGraphicsRootConstantBufferView(rootParameterIndex, heapAllococation.GPU);
 }
 
-void CommandList::BindGraphics32BitConstants(uint32_t rootParameterIndex, uint32_t numConstants, const void* constants)
+void CommandList::SetGraphics32BitConstants(uint32_t rootParameterIndex, uint32_t numConstants, const void* constants)
 {
     m_d3d12CommandList->SetGraphicsRoot32BitConstants(rootParameterIndex, numConstants, constants, 0);
 }
 
-void CommandList::BindVertexBuffer(uint32_t slot, const VertexBuffer& vertexBuffer)
+void CommandList::SetVertexBuffer(uint32_t slot, const VertexBuffer& vertexBuffer)
 {
     m_ResourceStateTracker->TransitionResource(vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
@@ -157,7 +157,7 @@ void CommandList::BindVertexBuffer(uint32_t slot, const VertexBuffer& vertexBuff
     m_TrackedObjects.push_back(vertexBuffer.GetD3D12Resource());
 }
 
-void CommandList::BindDynamicVertexBuffer(uint32_t slot, size_t numVertices, size_t vertexSize, const void* vertexBufferData)
+void CommandList::SetDynamicVertexBuffer(uint32_t slot, size_t numVertices, size_t vertexSize, const void* vertexBufferData)
 {
     size_t bufferSize = numVertices * vertexSize;
 
@@ -172,7 +172,7 @@ void CommandList::BindDynamicVertexBuffer(uint32_t slot, size_t numVertices, siz
     m_d3d12CommandList->IASetVertexBuffers(slot, 1, &vertexBufferView);
 }
 
-void CommandList::BindIndexBuffer(const IndexBuffer& indexBuffer)
+void CommandList::SetIndexBuffer(const IndexBuffer& indexBuffer)
 {
     m_ResourceStateTracker->TransitionResource(indexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 
@@ -183,7 +183,7 @@ void CommandList::BindIndexBuffer(const IndexBuffer& indexBuffer)
     m_TrackedObjects.push_back(indexBuffer.GetD3D12Resource());
 }
 
-void CommandList::BindDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData)
+void CommandList::SetDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData)
 {
     size_t indexSizeInBytes = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
     size_t bufferSize = numIndicies * indexSizeInBytes;

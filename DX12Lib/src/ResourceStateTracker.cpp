@@ -142,13 +142,7 @@ void ResourceStateTracker::CommitFinalResourceStates()
     // Commit final resource states to the global resource state array (map).
     for (const auto& resourceState : m_FinalResourceState)
     {
-        ID3D12Resource* resource = resourceState.first;
-        for (const auto& subresourceState : resourceState.second.SubresourceState)
-        {
-            UINT subresource = subresourceState.first;
-            D3D12_RESOURCE_STATES state = subresourceState.second;
-            ms_GlobalResourceState[resource].SetSubresourceState(subresource, state);
-        }
+        ms_GlobalResourceState[resourceState.first] = resourceState.second;
     }
 
     m_FinalResourceState.clear();
