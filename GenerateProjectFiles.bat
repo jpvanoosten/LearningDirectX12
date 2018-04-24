@@ -3,7 +3,8 @@
 PUSHD %~dp0
 
 REM Update these lines if the currently installed version of Visual Studio is not 2017.
-SET CMAKE="%~dp0\Tools\cmake-3.10.1-win64-x64\bin\cmake.exe"
+REM SET CMAKE="%~dp0\Tools\cmake-3.10.1-win64-x64\bin\cmake.exe"
+SET CMAKE="D:\Projects\cmake_build\bin\Debug\cmake.exe"
 SET CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
 SET CMAKE_BINARY_DIR=build_vs2017
 

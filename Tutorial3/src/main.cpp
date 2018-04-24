@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <shellapi.h>
 #include <Shlwapi.h>
 
 #include <Application.h>
@@ -20,13 +21,22 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 {
     int retCode = 0;
 
-    // Set the working directory to the path of the executable.
     WCHAR path[MAX_PATH];
-    HMODULE hModule = GetModuleHandleW(NULL);
-    if ( GetModuleFileNameW(hModule, path, MAX_PATH) > 0 )
+
+    int argc = 0;
+    LPWSTR* argv = CommandLineToArgvW(lpCmdLine, &argc);
+    if (argv)
     {
-        PathRemoveFileSpecW(path);
-        SetCurrentDirectoryW(path);
+        for (int i = 0; i < argc; ++i)
+        {
+            // -wd Specify the working directory.
+            if (wcscmp(argv[i], L"-wd") == 0)
+            {
+                wcscpy_s(path, argv[++i]);
+                SetCurrentDirectoryW(path);
+            }
+        }
+        LocalFree(argv);
     }
 
     Application::Create(hInstance);

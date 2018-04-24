@@ -10,27 +10,32 @@ set( SRC_FILES
 )
 
 set( SHADER_FILES
-    shaders/VertexShader.hlsl
-    shaders/PixelShader.hlsl
+    ${CMAKE_SOURCE_DIR}/Assets/Shaders/VertexShader.hlsl
+    ${CMAKE_SOURCE_DIR}/Assets/Shaders/PixelShader.hlsl
 )
 
 source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
-set_source_files_properties( shaders/VertexShader.hlsl PROPERTIES 
-    VS_SHADER_TYPE Vertex
-    VS_SHADER_MODEL 5.1
+set_source_files_properties( ${SHADER_FILES} 
+    PROPERTIES
+        VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/%(Filename).cso"
+        VS_SHADER_MODEL 5.1
+        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( shaders/PixelShader.hlsl PROPERTIES 
+set_source_files_properties( ${CMAKE_SOURCE_DIR}/Assets/Shaders/VertexShader.hlsl PROPERTIES 
+    VS_SHADER_TYPE Vertex
+)
+
+set_source_files_properties( ${CMAKE_SOURCE_DIR}/Assets/Shaders/PixelShader.hlsl PROPERTIES 
     VS_SHADER_TYPE Pixel
-    VS_SHADER_MODEL 5.1
 )
 
 add_executable( Tutorial3 WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
     ${SHADER_FILES}
-    packages.config
 )
 
 target_include_directories( Tutorial3
@@ -42,3 +47,7 @@ target_link_libraries( Tutorial3
     D3DCompiler.lib
     Shlwapi.lib
 )
+
+# Set Local Debugger Settings (Command Arguments and Environment Variables)
+set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
+configure_file( Tutorial3.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/Tutorial3.vcxproj.user @ONLY )
