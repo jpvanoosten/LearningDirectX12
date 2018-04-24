@@ -250,6 +250,6 @@ private:
     TrackedObjects m_TrackedObjects;
 
     // Keep track of loaded textures to avoid loading the same texture multiple times.
-    static std::map<std::wstring, Microsoft::WRL::ComPtr<ID3D12Resource> > ms_TextureCache;
+    static std::map<std::wstring, ID3D12Resource* > ms_TextureCache;
     static std::mutex ms_TextureCacheMutex;
 };

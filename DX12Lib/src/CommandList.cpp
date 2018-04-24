@@ -25,7 +25,7 @@
 namespace fs = std::experimental::filesystem;
 using namespace DirectX;
 
-std::map<std::wstring, Microsoft::WRL::ComPtr<ID3D12Resource> > CommandList::ms_TextureCache;
+std::map<std::wstring, ID3D12Resource* > CommandList::ms_TextureCache;
 std::mutex CommandList::ms_TextureCacheMutex;
 
 CommandList::CommandList(D3D12_COMMAND_LIST_TYPE type)
@@ -198,7 +198,7 @@ void CommandList::LoadTextureFromFile(Texture& texture, const std::wstring& file
 
         // Add the texture resource to the texture cache.
         std::lock_guard<std::mutex> lock(ms_TextureCacheMutex);
-        ms_TextureCache[fileName] = textureResource;
+        ms_TextureCache[fileName] = textureResource.Get();
     }
 }
 
