@@ -89,11 +89,16 @@ public:
     template<typename T>
     void CopyIndexBuffer(IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData)
     {
-        static_assert(sizeof(T) == 2 || sizeof(T) == 4);
+        assert(sizeof(T) == 2 || sizeof(T) == 4);
 
         DXGI_FORMAT indexFormat = ( sizeof(T) == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
         CopyIndexBuffer(indexBuffer, indexBufferData.size(), indexFormat, indexBufferData.data());
     }
+
+    /**
+     * Set the current primitive topology for the rendering pipeline.
+     */
+    void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology);
 
     /**
      * Load a texture by a filename.

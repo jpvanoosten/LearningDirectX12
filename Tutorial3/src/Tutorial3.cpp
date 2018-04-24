@@ -32,34 +32,6 @@ constexpr const T& clamp(const T& val, const T& min, const T& max)
     return val < min ? min : val > max ? max : val;
 }
 
-// Vertex data for a colored cube.
-struct VertexPosColor
-{
-    XMFLOAT3 Position;
-    XMFLOAT2 TexCoord;
-};
-
-static VertexPosColor g_Vertices[8] = {
-    { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) }, // 0
-    { XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) }, // 1
-    { XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) }, // 2
-    { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) }, // 3
-    { XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f, 0.0f) }, // 4
-    { XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f, 1.0f) }, // 5
-    { XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT2(1.0f, 1.0f) }, // 6
-    { XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT2(1.0f, 0.0f) }  // 7
-};
-
-static WORD g_Indicies[36] =
-{
-    0, 1, 2, 0, 2, 3,
-    4, 6, 5, 4, 7, 6,
-    4, 5, 1, 4, 1, 0,
-    3, 2, 6, 3, 6, 7,
-    1, 5, 6, 1, 6, 2,
-    4, 0, 3, 4, 3, 7
-};
-
 Tutorial3::Tutorial3(const std::wstring& name, int width, int height, bool vSync)
     : super(name, width, height, vSync)
     , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
@@ -75,20 +47,13 @@ bool Tutorial3::LoadContent()
     auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
     auto commandList = commandQueue->GetCommandList();
 
-    // Upload vertex buffer data.
-    commandList->CopyVertexBuffer(m_VertexBuffer, _countof(g_Vertices), sizeof(VertexPosColor), g_Vertices);
-
-    // Upload index buffer data.
-    commandList->CopyIndexBuffer(m_IndexBuffer, _countof(g_Indicies), DXGI_FORMAT_R16_UINT, g_Indicies);
+    // Create a Cube mesh
+    m_CubeMesh = Mesh::CreateCube( *commandList, 2.0f );
 
     // Load some textures
     commandList->LoadTextureFromFile(m_DirectXTexture, L"Assets/Textures/Directx9.png");
     commandList->LoadTextureFromFile(m_EarthTexture, L"Assets/Textures/earth.dds");
     commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.dds");
-
-    m_DirectXTexture.SetName(L"Directx9.png");
-    m_EarthTexture.SetName(L"earth.dds");
-    m_MonaLisaTexture.SetName(L"Mona_Lisa.dds");
 
     // Create the descriptor heap for the depth-stencil view.
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -104,12 +69,6 @@ bool Tutorial3::LoadContent()
     // Load the pixel shader.
     ComPtr<ID3DBlob> pixelShaderBlob;
     ThrowIfFailed(D3DReadFileToBlob(L"data/shaders/PixelShader.cso", &pixelShaderBlob));
-
-    // Create the vertex input layout
-    D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    };
 
     // Create a root signature.
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -158,7 +117,7 @@ bool Tutorial3::LoadContent()
     rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
     pipelineStateStream.pRootSignature = m_RootSignature->GetRootSignature().Get();
-    pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
+    pipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements, VertexPositionNormalTexture::InputElementCount };
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
     pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
@@ -330,10 +289,6 @@ void Tutorial3::OnRender(RenderEventArgs& e)
 //    d3d12CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
     commandList->SetGraphicsRootSignature(*m_RootSignature);
 
-    d3d12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList->SetVertexBuffer(0, m_VertexBuffer);
-    commandList->SetIndexBuffer(m_IndexBuffer);
-
     d3d12CommandList->RSSetViewports(1, &m_Viewport);
     d3d12CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
@@ -346,7 +301,7 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     mvpMatrix = XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
     commandList->SetGraphicsDynamicConstantBuffer(0, mvpMatrix);
 
-    commandList->DrawIndexed(_countof(g_Indicies));
+    m_CubeMesh->Draw(*commandList);
 
     // Present
     {

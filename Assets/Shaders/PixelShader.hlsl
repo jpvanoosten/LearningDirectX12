@@ -1,6 +1,7 @@
 struct PixelShaderInput
 {
-	float2 TexCoord : TEXCOORD;
+    float4 Normal   : NORMAL;
+    float2 TexCoord : TEXCOORD;
 };
 
 Texture2D DiffuseTexture            : register(t0);

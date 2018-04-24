@@ -29,7 +29,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
     {
         for (int i = 0; i < argc; ++i)
         {
-            // -wd Specify the working directory.
+            // -wd Specify the Working Directory.
             if (wcscmp(argv[i], L"-wd") == 0)
             {
                 wcscpy_s(path, argv[++i]);

@@ -23,20 +23,18 @@ Mesh::~Mesh()
     // Allocated resources will be cleaned automatically when the pointers go out of scope.
 }
 
-void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
+void Mesh::Draw(CommandList& commandList)
 {
-    assert(commandList);
-
     const UINT strides[] = { sizeof(VertexPositionNormalTexture) };
     const UINT offsets[] = { 0 };
 
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    commandList->IASetVertexBuffers(0, 1, &m_VertexBufferView);
-    commandList->IASetIndexBuffer(&m_IndexBufferView);
-    commandList->DrawIndexedInstanced(m_IndexCount, 1, 0, 0, 0);
+    commandList.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    commandList.SetVertexBuffer(0, m_VertexBuffer);
+    commandList.SetIndexBuffer(m_IndexBuffer);
+    commandList.DrawIndexed(m_IndexCount);
 }
 
-std::unique_ptr<Mesh> Mesh::CreateSphere(ID3D12GraphicsCommandList* commandList, float diameter, size_t tessellation, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diameter, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
     IndexCollection indices;
@@ -106,7 +104,7 @@ std::unique_ptr<Mesh> Mesh::CreateSphere(ID3D12GraphicsCommandList* commandList,
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCube(ID3D12GraphicsCommandList* commandList, float size, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateCube(CommandList& commandList, float size, bool rhcoords)
 {
     // A cube has six faces, each one pointing in a different direction.
     const int FaceCount = 6;
@@ -236,7 +234,7 @@ static void CreateCylinderCap(VertexCollection& vertices, IndexCollection& indic
     }
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCone(ID3D12GraphicsCommandList* commandList, float diameter, float height, size_t tessellation, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateCone(CommandList& commandList, float diameter, float height, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
     IndexCollection indices;
@@ -287,7 +285,7 @@ std::unique_ptr<Mesh> Mesh::CreateCone(ID3D12GraphicsCommandList* commandList, f
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateTorus(ID3D12GraphicsCommandList* commandList, float diameter, float thickness, size_t tessellation, bool rhcoords)
+std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter, float thickness, size_t tessellation, bool rhcoords)
 {
     VertexCollection vertices;
     IndexCollection indices;
@@ -350,46 +348,6 @@ std::unique_ptr<Mesh> Mesh::CreateTorus(ID3D12GraphicsCommandList* commandList, 
     return mesh;
 }
 
-// Helper for creating a D3D vertex or index buffer.
-template<typename T>
-static void CreateBuffer(ID3D12GraphicsCommandList* commandList, 
-    ID3D12Resource** pDestinationResource, 
-    ID3D12Resource** pIntermediateResource, 
-    T const& data, 
-    D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE)
-{
-    auto device = Application::Get().GetDevice();
-
-    size_t bufferSize = data.size() * sizeof(T::value_type);
-
-    ThrowIfFailed(device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-        D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        IID_PPV_ARGS(pDestinationResource)
-    ));
-
-    ThrowIfFailed(device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-        D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
-        D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        IID_PPV_ARGS(pIntermediateResource)
-    ));
-
-    D3D12_SUBRESOURCE_DATA subresourceData = {};
-    subresourceData.pData = data.data();
-    subresourceData.RowPitch = bufferSize;
-
-    UpdateSubresources(commandList,
-        *pDestinationResource, *pIntermediateResource,
-        0, 0, 1, &subresourceData);
-
-}
-
 // Helper for flipping winding of geometric primitives for LH vs. RH coords
 static void ReverseWinding(IndexCollection& indices, VertexCollection& vertices)
 {
@@ -405,7 +363,7 @@ static void ReverseWinding(IndexCollection& indices, VertexCollection& vertices)
     }
 }
 
-void Mesh::Initialize(ID3D12GraphicsCommandList* commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords)
+void Mesh::Initialize(CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords)
 {
     if (vertices.size() >= USHRT_MAX)
         throw std::exception("Too many vertices for 16-bit index buffer");
@@ -413,18 +371,8 @@ void Mesh::Initialize(ID3D12GraphicsCommandList* commandList, VertexCollection& 
     if (!rhcoords)
         ReverseWinding(indices, vertices);
 
-    CreateBuffer(commandList, &m_VertexBuffer, &m_VertexBufferUpload, vertices);
-
-    m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-    m_VertexBufferView.SizeInBytes = static_cast<UINT>(vertices.size() * sizeof(VertexCollection::value_type));
-    m_VertexBufferView.StrideInBytes = sizeof(VertexCollection::value_type);
-
-    CreateBuffer(commandList, &m_IndexBuffer, &m_IndexBufferUpload, indices );
-
-    m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-    m_IndexBufferView.Format = DXGI_FORMAT_R16_UINT;
-    m_IndexBufferView.SizeInBytes = static_cast<UINT>(indices.size() * sizeof(IndexCollection::value_type));
+    commandList.CopyVertexBuffer(m_VertexBuffer, vertices);
+    commandList.CopyIndexBuffer(m_IndexBuffer, indices);
 
     m_IndexCount = static_cast<UINT>(indices.size());
 }
-

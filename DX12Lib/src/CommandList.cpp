@@ -150,6 +150,11 @@ void CommandList::CopyIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, 
     CopyBuffer(indexBuffer, numIndicies, indexSizeInBytes, indexBufferData);
 }
 
+void CommandList::SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology)
+{
+    m_d3d12CommandList->IASetPrimitiveTopology(primitiveTopology);
+}
+
 void CommandList::LoadTextureFromFile(Texture& texture, const std::wstring& fileName)
 {
     auto device = Application::Get().GetDevice();

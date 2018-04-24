@@ -3,6 +3,7 @@
 #include <Game.h>
 #include <IndexBuffer.h>
 #include <Window.h>
+#include <Mesh.h>
 #include <Texture.h>
 #include <VertexBuffer.h>
 
@@ -70,9 +71,8 @@ private:
     
     uint64_t m_FenceValues[Window::BufferCount] = {};
 
-    // Vertex buffer for the cube.
-    VertexBuffer m_VertexBuffer;
-    IndexBuffer m_IndexBuffer;
+    // A cube mesh
+    std::unique_ptr<Mesh> m_CubeMesh;
 
     Texture m_DirectXTexture;
     Texture m_EarthTexture;
