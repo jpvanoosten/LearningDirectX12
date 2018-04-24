@@ -2,8 +2,9 @@
 
 #include <Application.h>
 #include <CommandQueue.h>
-#include <CommandLIst.h>
+#include <CommandList.h>
 #include <Helpers.h>
+#include <RootSignature.h>
 #include <Window.h>
 
 #include <wrl.h>
@@ -35,18 +36,18 @@ constexpr const T& clamp(const T& val, const T& min, const T& max)
 struct VertexPosColor
 {
     XMFLOAT3 Position;
-    XMFLOAT3 Color;
+    XMFLOAT2 TexCoord;
 };
 
 static VertexPosColor g_Vertices[8] = {
-    { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f) }, // 0
-    { XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // 1
-    { XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f) }, // 2
-    { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) }, // 3
-    { XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) }, // 4
-    { XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f) }, // 5
-    { XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) }, // 6
-    { XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f) }  // 7
+    { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) }, // 0
+    { XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) }, // 1
+    { XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT2(1.0f, 1.0f) }, // 2
+    { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(1.0f, 0.0f) }, // 3
+    { XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f, 0.0f) }, // 4
+    { XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f, 1.0f) }, // 5
+    { XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT2(1.0f, 1.0f) }, // 6
+    { XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT2(1.0f, 0.0f) }  // 7
 };
 
 static WORD g_Indicies[36] =
@@ -80,6 +81,15 @@ bool Tutorial3::LoadContent()
     // Upload index buffer data.
     commandList->CopyIndexBuffer(m_IndexBuffer, _countof(g_Indicies), DXGI_FORMAT_R16_UINT, g_Indicies);
 
+    // Load some textures
+    commandList->LoadTextureFromFile(m_DirectXTexture, L"Assets/Textures/Directx9.png");
+    commandList->LoadTextureFromFile(m_EarthTexture, L"Assets/Textures/earth.dds");
+    commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.dds");
+
+    m_DirectXTexture.SetName(L"Directx9.png");
+    m_EarthTexture.SetName(L"earth.dds");
+    m_MonaLisaTexture.SetName(L"Mona_Lisa.dds");
+
     // Create the descriptor heap for the depth-stencil view.
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
     dsvHeapDesc.NumDescriptors = 1;
@@ -98,7 +108,7 @@ bool Tutorial3::LoadContent()
     // Create the vertex input layout
     D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
 
     // Create a root signature.
@@ -114,24 +124,23 @@ bool Tutorial3::LoadContent()
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
     // A single 32-bit constant root parameter that is used by the vertex shader.
-    CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+    CD3DX12_ROOT_PARAMETER1 rootParameters[2];
     rootParameters[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
 
-    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
-    rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 0, nullptr, rootSignatureFlags);
+    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage;
+    descriptorRage.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+    rootParameters[1].InitAsDescriptorTable(1,&descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL);
 
-    // Serialize the root signature.
-    ComPtr<ID3DBlob> rootSignatureBlob;
-    ComPtr<ID3DBlob> errorBlob;
-    ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootSignatureDescription,
-        featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
-    // Create the root signature.
-    ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(),
-        rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler;
+    linearRepeatSampler.Init(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
+    rootSignatureDescription.Init_1_1(_countof(rootParameters), rootParameters, 1, &linearRepeatSampler, rootSignatureFlags);
+
+    m_RootSignature = std::make_unique<RootSignature>( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
     struct PipelineStateStream
     {
@@ -148,7 +157,7 @@ bool Tutorial3::LoadContent()
     rtvFormats.NumRenderTargets = 1;
     rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    pipelineStateStream.pRootSignature = m_RootSignature.Get();
+    pipelineStateStream.pRootSignature = m_RootSignature->GetRootSignature().Get();
     pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
@@ -318,7 +327,8 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     }
 
     d3d12CommandList->SetPipelineState(m_PipelineState.Get());
-    d3d12CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
+//    d3d12CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
+    commandList->SetGraphicsRootSignature(*m_RootSignature);
 
     d3d12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList->SetVertexBuffer(0, m_VertexBuffer);
@@ -329,12 +339,14 @@ void Tutorial3::OnRender(RenderEventArgs& e)
 
     d3d12CommandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
 
+    commandList->SetShaderResourceView(1, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
     // Update the MVP matrix
     XMMATRIX mvpMatrix = XMMatrixMultiply(m_ModelMatrix, m_ViewMatrix);
     mvpMatrix = XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
     commandList->SetGraphicsDynamicConstantBuffer(0, mvpMatrix);
 
-    d3d12CommandList->DrawIndexedInstanced(_countof(g_Indicies), 1, 0, 0, 0);
+    commandList->DrawIndexed(_countof(g_Indicies));
 
     // Present
     {

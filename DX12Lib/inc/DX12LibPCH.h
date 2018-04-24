@@ -37,11 +37,14 @@ using namespace Microsoft::WRL;
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
+
+namespace fs = std::experimental::filesystem;
 
 // Helper functions
 #include <Helpers.h>

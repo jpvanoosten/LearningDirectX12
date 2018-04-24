@@ -8,10 +8,25 @@
 #include <IndexBuffer.h>
 #include <Resource.h>
 #include <ResourceStateTracker.h>
+#include <RootSignature.h>
+#include <Texture.h>
 #include <UploadBuffer.h>
 #include <VertexBuffer.h>
 
-#include "d3dx12.h"
+#include <DirectXTex/DDSTextureLoader12.h>
+#include <DirectXTex/WICTextureLoader12.h>
+
+#include <d3dx12.h>
+
+#include <filesystem>
+#include <memory> // For std::unique_ptr
+#include <vector> // For std::vector
+
+namespace fs = std::experimental::filesystem;
+using namespace DirectX;
+
+std::map<std::wstring, Microsoft::WRL::ComPtr<ID3D12Resource> > CommandList::ms_TextureCache;
+std::mutex CommandList::ms_TextureCacheMutex;
 
 CommandList::CommandList(D3D12_COMMAND_LIST_TYPE type)
     : m_d3d12CommandListType(type)
@@ -68,7 +83,6 @@ void CommandList::UAVBarrier(const Resource& resource, bool flushBarriers)
     }
 }
 
-
 void CommandList::FlushResourceBarriers()
 {
     m_ResourceStateTracker->FlushResourceBarriers(*this);
@@ -94,6 +108,9 @@ void CommandList::CopyBuffer(Buffer& buffer, size_t numElements, size_t elementS
             nullptr,
             IID_PPV_ARGS(&d3d12Resource)));
 
+        // Add the resource to the global resource state tracker.
+        ResourceStateTracker::AddGlobalResourceState(d3d12Resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST );
+
         if (bufferData != nullptr)
         {
             // Create an upload resource to use as an intermediate buffer to copy the buffer resource 
@@ -118,7 +135,7 @@ void CommandList::CopyBuffer(Buffer& buffer, size_t numElements, size_t elementS
         m_TrackedObjects.push_back(d3d12Resource);
     }
 
-    buffer.SetD3D12Resource(d3d12Resource, D3D12_RESOURCE_STATE_COPY_DEST);
+    buffer.SetD3D12Resource(d3d12Resource);
     buffer.CreateViews(numElements, elementSize);
 }
 
@@ -131,6 +148,87 @@ void CommandList::CopyIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, 
 {
     size_t indexSizeInBytes = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
     CopyBuffer(indexBuffer, numIndicies, indexSizeInBytes, indexBufferData);
+}
+
+void CommandList::LoadTextureFromFile(Texture& texture, const std::wstring& fileName)
+{
+    auto device = Application::Get().GetDevice();
+
+    fs::path filePath(fileName);
+    if (!fs::exists(filePath))
+    {
+        throw std::invalid_argument("Invalid filename specified.");
+    }
+    auto iter = ms_TextureCache.find(fileName);
+    if (iter != ms_TextureCache.end())
+    {
+        texture.SetD3D12Resource(iter->second);
+    }
+    else
+    {
+        Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
+        std::unique_ptr<uint8_t[]> textureData;
+        std::vector<D3D12_SUBRESOURCE_DATA> subresourceData;
+
+        if (filePath.extension() == ".dds")
+        {
+            // Use DDS texture loader.
+            ThrowIfFailed(LoadDDSTextureFromFile(device.Get(),
+                fileName.c_str(), &textureResource, textureData, subresourceData 
+            ));
+        }
+        else
+        {
+            D3D12_SUBRESOURCE_DATA resourceData;
+            // Use WIC texture loader.
+            ThrowIfFailed(LoadWICTextureFromFile(device.Get(),
+                fileName.c_str(), &textureResource, textureData, resourceData
+            ));
+
+            subresourceData.push_back(resourceData);
+        }
+
+        // Update the global state tracker.
+        ResourceStateTracker::AddGlobalResourceState(textureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+
+        texture.SetD3D12Resource(textureResource);
+        texture.CreateViews();
+
+        CopyTextureSubresource(texture, 0, static_cast<uint32_t>(subresourceData.size()), subresourceData.data());
+
+        // Add the texture resource to the texture cache.
+        std::lock_guard<std::mutex> lock(ms_TextureCacheMutex);
+        ms_TextureCache[fileName] = textureResource;
+    }
+}
+
+void CommandList::CopyTextureSubresource(Texture& texture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData)
+{
+    auto device = Application::Get().GetDevice();
+    auto destinationResource = texture.GetD3D12Resource();
+    if ( destinationResource )
+    {
+        // Resource must be in the copy-destination state.
+        TransitionBarrier(texture, D3D12_RESOURCE_STATE_COPY_DEST, true);
+
+        UINT64 requiredSize = GetRequiredIntermediateSize(destinationResource.Get(), firstSubresource, numSubresources);
+
+        // Create a temporary (intermediate) resource for uploading the subresources
+        ComPtr<ID3D12Resource> intermediateResource;
+        ThrowIfFailed(device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+            D3D12_HEAP_FLAG_NONE,
+            &CD3DX12_RESOURCE_DESC::Buffer(requiredSize),
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(&intermediateResource)
+        ));
+
+        UpdateSubresources(m_d3d12CommandList.Get(), destinationResource.Get(), intermediateResource.Get(), 0, firstSubresource, numSubresources, subresourceData );
+
+        m_TrackedObjects.push_back(intermediateResource);
+        m_TrackedObjects.push_back(destinationResource);
+    }
 }
 
 void CommandList::SetGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData)
@@ -199,6 +297,89 @@ void CommandList::SetDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFor
     m_d3d12CommandList->IASetIndexBuffer(&indexBufferView);
 }
 
+void CommandList::SetGraphicsRootSignature(const RootSignature& rootSignature)
+{
+    auto d3d12RootSignature = rootSignature.GetRootSignature().Get();
+    if (m_CurrentRootSignature != d3d12RootSignature)
+    {
+        m_CurrentRootSignature = d3d12RootSignature;
+
+        for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+        {
+            m_DynamicDescriptorHeap[i]->ParseRootSignature(rootSignature);
+        }
+
+        m_d3d12CommandList->SetGraphicsRootSignature(d3d12RootSignature);
+
+        m_TrackedObjects.push_back(m_CurrentRootSignature);
+    }
+}
+
+void CommandList::SetComputeRootSignature(const RootSignature& rootSignature)
+{
+    auto d3d12RootSignature = rootSignature.GetRootSignature().Get();
+    if (m_CurrentRootSignature != d3d12RootSignature)
+    {
+        m_CurrentRootSignature = d3d12RootSignature;
+
+        for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+        {
+            m_DynamicDescriptorHeap[i]->ParseRootSignature(rootSignature);
+        }
+
+        m_d3d12CommandList->SetComputeRootSignature(d3d12RootSignature);
+
+        m_TrackedObjects.push_back(m_CurrentRootSignature);
+    }
+}
+
+
+void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, D3D12_RESOURCE_STATES stateAfter )
+{
+    TransitionBarrier(resource, stateAfter );
+
+    D3D12_CPU_DESCRIPTOR_HANDLE srv[] =
+    {
+        resource.GetShaderResourceView()
+    };
+
+    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(rootParameterIndex, descriptorOffset, 1, srv );
+}
+
+void CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance)
+{
+    FlushResourceBarriers();
+
+    if (m_PreviousRootSignature != m_CurrentRootSignature)
+    {
+        m_d3d12CommandList->SetGraphicsRootSignature(m_CurrentRootSignature);
+        m_PreviousRootSignature = m_CurrentRootSignature;
+    }
+    for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+    {
+        m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw(*this);
+    }
+
+    m_d3d12CommandList->DrawInstanced(vertexCount, instanceCount, startVertex, startInstance);
+}
+
+void CommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, int32_t baseVertex, uint32_t startInstance )
+{
+    FlushResourceBarriers();
+
+    if (m_PreviousRootSignature != m_CurrentRootSignature)
+    {
+        m_d3d12CommandList->SetGraphicsRootSignature(m_CurrentRootSignature);
+        m_PreviousRootSignature = m_CurrentRootSignature;
+    }
+    for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+    {
+        m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw(*this);
+    }
+
+    m_d3d12CommandList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance );
+}
+
 void CommandList::Close(CommandList& pendingCommandList)
 {
     // Flush any remaining barriers.
@@ -234,8 +415,7 @@ void CommandList::Reset()
         m_DescriptorHeaps[i] = nullptr;
     }
 
-    m_CurrentGraphicsRootSignature = nullptr;
-    m_CurrentComputeRootSignature = nullptr;
+    m_CurrentRootSignature = nullptr;
 }
 
 

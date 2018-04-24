@@ -22,7 +22,18 @@ public:
     }
 
     // Replace the D3D12 resource
-    void SetD3D12Resource(Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource, D3D12_RESOURCE_STATES initialResourceState);
+    // Should only be called by the CommandList.
+    virtual void SetD3D12Resource(Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource);
+
+    /**
+     * Get the SRV for a resource.
+     */
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView() const = 0;
+
+    /**
+     * Get the UAV for a (sub)resource.
+     */
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t subresource = 0 ) const = 0;
 
     /**
      * Set the name of the resource. Useful for debugging purposes.

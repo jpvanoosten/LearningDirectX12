@@ -28,3 +28,13 @@ void ConstantBuffer::CreateViews(size_t numElements, size_t elementSize)
 
     device->CreateConstantBufferView(&d3d12ConstantBufferViewDesc, m_ConstantBufferView);
 }
+
+D3D12_CPU_DESCRIPTOR_HANDLE ConstantBuffer::GetShaderResourceView() const
+{
+    throw std::exception("ConstantBuffer::GetShaderResourceView should not be called.");
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE ConstantBuffer::GetUnorderedAccessView(uint32_t subresource) const
+{
+    throw std::exception("ConstantBuffer::GetUnorderedAccessView should not be called.");
+}

@@ -3,9 +3,12 @@
 #include <Game.h>
 #include <IndexBuffer.h>
 #include <Window.h>
+#include <Texture.h>
 #include <VertexBuffer.h>
 
 #include <DirectXMath.h>
+
+class RootSignature;
 
 class Tutorial3 : public Game
 {
@@ -71,13 +74,18 @@ private:
     VertexBuffer m_VertexBuffer;
     IndexBuffer m_IndexBuffer;
 
+    Texture m_DirectXTexture;
+    Texture m_EarthTexture;
+    Texture m_MonaLisaTexture;
+
     // Depth buffer.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthBuffer;
     // Descriptor heap for depth buffer.
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap;
 
     // Root signature
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
+//    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
+    std::unique_ptr<RootSignature> m_RootSignature;
 
     // Pipeline state object.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;

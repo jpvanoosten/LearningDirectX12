@@ -8,7 +8,9 @@
 #include <d3d12.h>
 #include <wrl.h>
 
+#include <map> // for std::map
 #include <memory> // for std::unique_ptr
+#include <mutex> // for std::mutex
 #include <vector> // for std::vector
 
 class Buffer;
@@ -17,6 +19,8 @@ class DynamicDescriptorHeap;
 class IndexBuffer;
 class Resource;
 class ResourceStateTracker;
+class RootSignature;
+class Texture;
 class UploadBuffer;
 class VertexBuffer;
 
@@ -92,6 +96,16 @@ public:
     }
 
     /**
+     * Load a texture by a filename.
+     */
+    void LoadTextureFromFile( Texture& texture, const std::wstring& fileName );
+
+    /**
+     * Copy subresource data to a texture.
+     */
+    void CopyTextureSubresource( Texture& texture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData );
+
+    /**
      * Set a dynamic constant buffer data to an inline descriptor in the root
      * signature.
      */
@@ -128,7 +142,6 @@ public:
         SetDynamicVertexBuffer(slot, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
     }
 
-
     /**
      * Bind the index buffer to the rendering pipeline.
      */
@@ -146,6 +159,23 @@ public:
         DXGI_FORMAT indexFormat = (sizeof(T) == 2) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
         SetDynamicIndexBuffer(indexBufferData.size(), indexFormat, indexBufferData.data());
     }
+
+    /**
+     * Set the current root signature on the command list.
+     */
+    void SetGraphicsRootSignature(const RootSignature& rootSignature);
+    void SetComputeRootSignature(const RootSignature& rootSignature);
+
+    /**
+     * Set the SRV on the graphics pipeline.
+     */
+    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+
+    /**
+     * Draw geometry.
+     */
+    void Draw( uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t startVertex = 0, uint32_t startInstance = 0 );
+    void DrawIndexed( uint32_t indexCount, uint32_t instanceCount = 1, uint32_t startIndex = 0, int32_t baseVertex = 0, uint32_t startInstance = 0 );
 
     /***************************************************************************
      * Methods defined below are only intended to be used by internal classes. *
@@ -191,8 +221,8 @@ private:
 
     // Keep track of the currently bound root signatures to minimize root
     // signature changes.
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_CurrentGraphicsRootSignature;
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_CurrentComputeRootSignature;
+    ID3D12RootSignature* m_CurrentRootSignature;
+    ID3D12RootSignature* m_PreviousRootSignature;
 
     // Resource created in an upload heap. Useful for drawing of dynamic geometry
     // or for uploading constant buffer data that changes every draw call.
@@ -218,4 +248,8 @@ private:
     // is stored. The referenced objects are released when the command list is 
     // reset.
     TrackedObjects m_TrackedObjects;
+
+    // Keep track of loaded textures to avoid loading the same texture multiple times.
+    static std::map<std::wstring, Microsoft::WRL::ComPtr<ID3D12Resource> > ms_TextureCache;
+    static std::mutex ms_TextureCacheMutex;
 };

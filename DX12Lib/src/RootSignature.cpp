@@ -111,8 +111,6 @@ uint32_t RootSignature::GetDescriptorTableBitMask(D3D12_DESCRIPTOR_HEAP_TYPE des
     case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
         descriptorTableBitMask = m_SamplerTableBitMask;
         break;
-    default:
-        throw std::invalid_argument("Invalid descriptor heap type.");
     }
 
     return descriptorTableBitMask;

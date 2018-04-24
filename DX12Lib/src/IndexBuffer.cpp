@@ -25,3 +25,14 @@ void IndexBuffer::CreateViews(size_t numElements, size_t elementSize)
     m_IndexBufferView.SizeInBytes = static_cast<UINT>(numElements * elementSize);
     m_IndexBufferView.Format = m_IndexFormat;
 }
+
+D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetShaderResourceView() const
+{
+    throw std::exception("IndexBuffer::GetShaderResourceView should not be called.");
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetUnorderedAccessView(uint32_t subresource) const
+{
+    throw std::exception("IndexBuffer::GetUnorderedAccessView should not be called.");
+}
+

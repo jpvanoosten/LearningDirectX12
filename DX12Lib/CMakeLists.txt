@@ -17,12 +17,12 @@ set( HEADER_FILES
     inc/Resource.h
     inc/ResourceStateTracker.h
     inc/RootSignature.h
+    inc/Texture.h
     inc/UploadBuffer.h
     inc/VertexBuffer.h
     inc/Window.h
     inc/d3dx12.h
 )
-
 
 set( SOURCE_FILES
     src/DX12LibPCH.cpp
@@ -40,10 +40,25 @@ set( SOURCE_FILES
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp
+    src/Texture.cpp
     src/UploadBuffer.cpp
     src/VertexBuffer.cpp
     src/Window.cpp
 )
+
+set( DIRECTXTEX_HEADERS
+    inc/DirectXTex/DDSTextureLoader12.h
+    inc/DirectXTex/WICTextureLoader12.h
+)
+
+source_group( "Header Files\\DirectXTex" FILES ${DIRECTXTEX_HEADERS} )
+
+set( DIRECTXTEX_SOURCE 
+    src/DirectXTex/DDSTextureLoader12.cpp
+    src/DirectXTex/WICTextureLoader12.cpp
+)
+
+source_group( "Source Files\\DirectXTex" FILES ${DIRECTXTEX_SOURCE} )
 
 set( RESOURCE_FILES 
     DX12Lib.rc
@@ -57,6 +72,7 @@ add_library( DX12Lib STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
+    ${DIRECTXTEX_HEADERS} ${DIRECTXTEX_SOURCE}
 )
 
 target_include_directories( DX12Lib
