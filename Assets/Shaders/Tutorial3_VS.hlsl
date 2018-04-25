@@ -1,9 +1,11 @@
-struct ModelViewProjection
+struct Matrices
 {
-    matrix MVP;
+    matrix ModelMatrix;
+    matrix InverseTransposeModelMatrix;
+    matrix ModelViewProjectionMatrix;
 };
 
-ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
+ConstantBuffer<Matrices> MatricesCB : register(b0);
 
 struct VertexPositionNormalTexture
 {
@@ -14,17 +16,19 @@ struct VertexPositionNormalTexture
 
 struct VertexShaderOutput
 {
-    float4 Normal   : NORMAL;
-    float2 TexCoord : TEXCOORD;
-    float4 Position : SV_Position;
+    float4 PositionWS : POSITION;
+    float3 NormalWS   : NORMAL;
+    float2 TexCoord   : TEXCOORD;
+    float4 Position   : SV_Position;
 };
 
 VertexShaderOutput main(VertexPositionNormalTexture IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
-    OUT.Normal = mul(ModelViewProjectionCB.MVP, float4(IN.Normal, 0.0f));
+    OUT.Position = mul(MatricesCB.ModelViewProjectionMatrix, float4(IN.Position, 1.0f));
+    OUT.PositionWS = mul(MatricesCB.ModelMatrix, float4(IN.Position, 1.0f));
+    OUT.NormalWS = mul((float3x3)MatricesCB.InverseTransposeModelMatrix, IN.Normal);
     OUT.TexCoord = IN.TexCoord;
 
     return OUT;

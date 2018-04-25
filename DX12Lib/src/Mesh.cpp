@@ -25,9 +25,6 @@ Mesh::~Mesh()
 
 void Mesh::Draw(CommandList& commandList)
 {
-    const UINT strides[] = { sizeof(VertexPositionNormalTexture) };
-    const UINT offsets[] = { 0 };
-
     commandList.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList.SetVertexBuffer(0, m_VertexBuffer);
     commandList.SetIndexBuffer(m_IndexBuffer);
@@ -347,6 +344,29 @@ std::unique_ptr<Mesh> Mesh::CreateTorus(CommandList& commandList, float diameter
 
     return mesh;
 }
+
+std::unique_ptr<Mesh> Mesh::CreatePlane(CommandList& commandList, float width, float height, bool rhcoords)
+{
+    VertexCollection vertices = 
+    {
+        { XMFLOAT3(-0.5f * width, 0.0f,  0.5f * height), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) }, // 0
+        { XMFLOAT3( 0.5f * width, 0.0f,  0.5f * height), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) }, // 1
+        { XMFLOAT3( 0.5f * width, 0.0f, -0.5f * height), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) }, // 2
+        { XMFLOAT3(-0.5f * width, 0.0f, -0.5f * height), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) }  // 3
+    };
+    
+    IndexCollection indices = 
+    {
+        0, 3, 1, 1, 3, 2
+    };
+
+    std::unique_ptr<Mesh> mesh(new Mesh());
+
+    mesh->Initialize(commandList, vertices, indices, rhcoords);
+
+    return mesh;
+}
+
 
 // Helper for flipping winding of geometric primitives for LH vs. RH coords
 static void ReverseWinding(IndexCollection& indices, VertexCollection& vertices)

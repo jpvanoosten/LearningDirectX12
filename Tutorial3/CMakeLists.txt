@@ -10,8 +10,8 @@ set( SRC_FILES
 )
 
 set( SHADER_FILES
-    ${CMAKE_SOURCE_DIR}/Assets/Shaders/VertexShader.hlsl
-    ${CMAKE_SOURCE_DIR}/Assets/Shaders/PixelShader.hlsl
+    ${CMAKE_SOURCE_DIR}/Assets/Shaders/Tutorial3_VS.hlsl
+    ${CMAKE_SOURCE_DIR}/Assets/Shaders/Tutorial3_PS.hlsl
 )
 
 source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
@@ -24,11 +24,11 @@ set_source_files_properties( ${SHADER_FILES}
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( ${CMAKE_SOURCE_DIR}/Assets/Shaders/VertexShader.hlsl PROPERTIES 
+set_source_files_properties( ${CMAKE_SOURCE_DIR}/Assets/Shaders/Tutorial3_VS.hlsl PROPERTIES 
     VS_SHADER_TYPE Vertex
 )
 
-set_source_files_properties( ${CMAKE_SOURCE_DIR}/Assets/Shaders/PixelShader.hlsl PROPERTIES 
+set_source_files_properties( ${CMAKE_SOURCE_DIR}/Assets/Shaders/Tutorial3_PS.hlsl PROPERTIES 
     VS_SHADER_TYPE Pixel
 )
 

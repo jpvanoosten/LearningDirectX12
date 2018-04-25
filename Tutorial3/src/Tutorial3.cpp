@@ -24,6 +24,13 @@ using namespace Microsoft::WRL;
 
 using namespace DirectX;
 
+struct Matrices
+{
+    XMMATRIX ModelMatrix;
+    XMMATRIX InverseTransposeModelMatrix;
+    XMMATRIX ModelViewProjectionMatrix;
+};
+
 
 // Clamp a value between a min and max range.
 template<typename T>
@@ -48,19 +55,20 @@ bool Tutorial3::LoadContent()
     auto commandList = commandQueue->GetCommandList();
 
     // Create a Cube mesh
-    m_CubeMesh = Mesh::CreateCube( *commandList, 2.0f );
+    m_CubeMesh = Mesh::CreateCube(*commandList);
+    m_SphereMesh = Mesh::CreateSphere(*commandList);
+    m_ConeMesh = Mesh::CreateCone(*commandList);
+    m_TorusMesh = Mesh::CreateTorus(*commandList);
+    m_PlaneMesh = Mesh::CreatePlane(*commandList);
 
     // Load some textures
     commandList->LoadTextureFromFile(m_DirectXTexture, L"Assets/Textures/Directx9.png");
     commandList->LoadTextureFromFile(m_EarthTexture, L"Assets/Textures/earth.dds");
-    commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.dds");
+    commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg");
+    commandList->LoadTextureFromFile(m_MonaLisaTexture512x512, L"Assets/Textures/Mona_Lisa.dds");
 
-    // Create the descriptor heap for the depth-stencil view.
-    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 1;
-    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap)));
+    // Create the descriptor handle for the depth-stencil view.
+    m_hDSV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
     // Load the vertex shader.
     ComPtr<ID3DBlob> vertexShaderBlob;
@@ -85,7 +93,6 @@ bool Tutorial3::LoadContent()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    // A single 32-bit constant root parameter that is used by the vertex shader.
     CD3DX12_ROOT_PARAMETER1 rootParameters[2];
     rootParameters[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX);
 
@@ -175,8 +182,7 @@ void Tutorial3::ResizeDepthBuffer(int width, int height)
         dsv.Texture2D.MipSlice = 0;
         dsv.Flags = D3D12_DSV_FLAG_NONE;
 
-        device->CreateDepthStencilView(m_DepthBuffer.Get(), &dsv,
-            m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
+        device->CreateDepthStencilView(m_DepthBuffer.Get(), nullptr, m_hDSV);
     }
 }
 
@@ -226,8 +232,8 @@ void Tutorial3::OnUpdate(UpdateEventArgs& e)
     m_ModelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
 
     // Update the view matrix.
-    const XMVECTOR eyePosition = XMVectorSet(0, 0, -10, 1);
-    const XMVECTOR focusPoint = XMVectorSet(0, 0, 0, 1);
+    const XMVECTOR eyePosition = XMVectorSet(0, 5, -20, 1);
+    const XMVECTOR focusPoint = XMVectorSet(0, 5, 0, 1);
     const XMVECTOR upDirection = XMVectorSet(0, 1, 0, 0);
     m_ViewMatrix = XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
 
@@ -272,7 +278,6 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     UINT currentBackBufferIndex = m_pWindow->GetCurrentBackBufferIndex();
     auto backBuffer = m_pWindow->GetCurrentBackBuffer();
     auto rtv = m_pWindow->GetCurrentRenderTargetView();
-    auto dsv = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
 
     // Clear the render targets.
     {
@@ -282,7 +287,7 @@ void Tutorial3::OnRender(RenderEventArgs& e)
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
         ClearRTV(d3d12CommandList, rtv, clearColor);
-        ClearDepth(d3d12CommandList, dsv);
+        ClearDepth(d3d12CommandList, m_hDSV);
     }
 
     d3d12CommandList->SetPipelineState(m_PipelineState.Get());
@@ -292,16 +297,138 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     d3d12CommandList->RSSetViewports(1, &m_Viewport);
     d3d12CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-    d3d12CommandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+    d3d12CommandList->OMSetRenderTargets(1, &rtv, FALSE, &m_hDSV);
 
-    commandList->SetShaderResourceView(1, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    // Draw the earth sphere
+    XMMATRIX translationMatrix = XMMatrixTranslation(-4.0f, 2.0f, -4.0f);
+    XMMATRIX rotationMatrix = XMMatrixIdentity();
+    XMMATRIX scaleMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
+    XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+    XMMATRIX viewProjectionMatrix = m_ViewMatrix * m_ProjectionMatrix;
 
-    // Update the MVP matrix
-    XMMATRIX mvpMatrix = XMMatrixMultiply(m_ModelMatrix, m_ViewMatrix);
-    mvpMatrix = XMMatrixMultiply(mvpMatrix, m_ProjectionMatrix);
-    commandList->SetGraphicsDynamicConstantBuffer(0, mvpMatrix);
+    Matrices matrices;
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+    commandList->SetShaderResourceView(1, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    m_SphereMesh->Draw(*commandList);
+
+    // Draw a cube
+    translationMatrix = XMMatrixTranslation(4.0f, 4.0f, 4.0f);
+    rotationMatrix = XMMatrixRotationY(XMConvertToRadians(45.0f));
+    scaleMatrix = XMMatrixScaling(4.0f, 8.0f, 4.0f);
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+    commandList->SetShaderResourceView(1, 0, m_MonaLisaTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
     m_CubeMesh->Draw(*commandList);
+
+    // Draw a torus
+    translationMatrix = XMMatrixTranslation(4.0f, 0.5f, -4.0f);
+    rotationMatrix = XMMatrixRotationY(XMConvertToRadians(45.0f));
+    scaleMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+    commandList->SetShaderResourceView(1, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    m_TorusMesh->Draw(*commandList);
+
+    // Floor plane.
+    float scalePlane = 20.0f;
+    float translateOffset = scalePlane / 2.0f;
+
+    translationMatrix = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+    rotationMatrix = XMMatrixIdentity();
+    scaleMatrix = XMMatrixScaling(scalePlane, 1.0f, scalePlane);
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+    commandList->SetShaderResourceView(1, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    m_PlaneMesh->Draw(*commandList);
+
+    // Back wall
+    translationMatrix = XMMatrixTranslation(0, translateOffset, translateOffset);
+    rotationMatrix = XMMatrixRotationX(XMConvertToRadians(-90));
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+
+    m_PlaneMesh->Draw(*commandList);
+
+    // Ceiling plane
+    translationMatrix = XMMatrixTranslation(0, translateOffset * 2.0f, 0);
+    rotationMatrix = XMMatrixRotationX(XMConvertToRadians(180));
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+
+    m_PlaneMesh->Draw(*commandList);
+
+    // Front wall
+    translationMatrix = XMMatrixTranslation(0, translateOffset, -translateOffset);
+    rotationMatrix = XMMatrixRotationX(XMConvertToRadians(90));
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+
+    m_PlaneMesh->Draw(*commandList);
+
+    // Left wall
+    translationMatrix = XMMatrixTranslation(-translateOffset, translateOffset, 0);
+    rotationMatrix = XMMatrixRotationX(XMConvertToRadians(-90)) * XMMatrixRotationY(XMConvertToRadians(-90));
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+
+    m_PlaneMesh->Draw(*commandList);
+
+    // Right wall
+    translationMatrix = XMMatrixTranslation(translateOffset, translateOffset, 0);
+    rotationMatrix = XMMatrixRotationX(XMConvertToRadians(-90)) * XMMatrixRotationY(XMConvertToRadians(90));
+    worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    matrices.ModelMatrix = worldMatrix;
+    matrices.InverseTransposeModelMatrix = XMMatrixTranspose(XMMatrixInverse(nullptr, worldMatrix));
+    matrices.ModelViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+
+    commandList->SetGraphicsDynamicConstantBuffer(0, matrices);
+
+    m_PlaneMesh->Draw(*commandList);
+
 
     // Present
     {

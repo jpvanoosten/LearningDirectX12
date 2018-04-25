@@ -71,17 +71,22 @@ private:
     
     uint64_t m_FenceValues[Window::BufferCount] = {};
 
-    // A cube mesh
+    // Some geometry to render.
     std::unique_ptr<Mesh> m_CubeMesh;
+    std::unique_ptr<Mesh> m_SphereMesh;
+    std::unique_ptr<Mesh> m_ConeMesh;
+    std::unique_ptr<Mesh> m_TorusMesh;
+    std::unique_ptr<Mesh> m_PlaneMesh;
 
     Texture m_DirectXTexture;
     Texture m_EarthTexture;
     Texture m_MonaLisaTexture;
+    Texture m_MonaLisaTexture512x512;
 
     // Depth buffer.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthBuffer;
-    // Descriptor heap for depth buffer.
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap;
+    // A descriptor handle for the depth buffer.
+    D3D12_CPU_DESCRIPTOR_HANDLE m_hDSV;
 
     // Root signature
 //    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
