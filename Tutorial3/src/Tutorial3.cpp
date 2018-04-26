@@ -83,7 +83,6 @@ bool Tutorial3::LoadContent()
     commandList->LoadTextureFromFile(m_DirectXTexture, L"Assets/Textures/Directx9.png");
     commandList->LoadTextureFromFile(m_EarthTexture, L"Assets/Textures/earth.dds");
     commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg");
-    commandList->LoadTextureFromFile(m_MonaLisaTexture512x512, L"Assets/Textures/Mona_Lisa.dds");
 
     // Load the vertex shader.
     ComPtr<ID3DBlob> vertexShaderBlob;
