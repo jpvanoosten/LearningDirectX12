@@ -43,9 +43,27 @@ Tutorial3::Tutorial3(const std::wstring& name, int width, int height, bool vSync
     : super(name, width, height, vSync)
     , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
     , m_Viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
-    , m_FoV(45.0)
-    , m_ContentLoaded(false)
+    , m_Forward(0)
+    , m_Backward(0)
+    , m_Left(0)
+    , m_Right(0)
+    , m_Up(0)
+    , m_Down(0)
+    , m_Pitch(0)
+    , m_Yaw(0)
+    , m_AnimateLights(false)
+    , m_Shift(false)
+    , m_Width(0)
+    , m_Height(0)
 {
+    // Create the descriptor handle for the depth-stencil view.
+    m_hDSV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+    XMVECTOR cameraPos = XMVectorSet(0, 5, -20, 1);
+    XMVECTOR cameraTarget = XMVectorSet(0, 5, 0, 1);
+    XMVECTOR cameraUp = XMVectorSet(0, 1, 0, 0);
+
+    m_Camera.set_LookAt(cameraPos, cameraTarget, cameraUp);
 }
 
 bool Tutorial3::LoadContent()
@@ -66,9 +84,6 @@ bool Tutorial3::LoadContent()
     commandList->LoadTextureFromFile(m_EarthTexture, L"Assets/Textures/earth.dds");
     commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg");
     commandList->LoadTextureFromFile(m_MonaLisaTexture512x512, L"Assets/Textures/Mona_Lisa.dds");
-
-    // Create the descriptor handle for the depth-stencil view.
-    m_hDSV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
     // Load the vertex shader.
     ComPtr<ID3DBlob> vertexShaderBlob;
@@ -139,58 +154,56 @@ bool Tutorial3::LoadContent()
     auto fenceValue = commandQueue->ExecuteCommandList(commandList);
     commandQueue->WaitForFenceValue(fenceValue);
 
-    m_ContentLoaded = true;
-
-    // Resize/Create the depth buffer.
-    ResizeDepthBuffer(GetClientWidth(), GetClientHeight());
-
     return true;
 }
 
 void Tutorial3::ResizeDepthBuffer(int width, int height)
 {
-    if (m_ContentLoaded)
-    {
-        // Flush any GPU commands that might be referencing the depth buffer.
-        Application::Get().Flush();
+    // Flush any GPU commands that might be referencing the depth buffer.
+    Application::Get().Flush();
 
-        width = std::max(1, width);
-        height = std::max(1, height);
+    width = std::max(1, width);
+    height = std::max(1, height);
 
-        auto device = Application::Get().GetDevice();
+    auto device = Application::Get().GetDevice();
 
-        // Resize screen dependent resources.
-        // Create a depth buffer.
-        D3D12_CLEAR_VALUE optimizedClearValue = {};
-        optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-        optimizedClearValue.DepthStencil = { 1.0f, 0 };
+    // Resize screen dependent resources.
+    // Create a depth buffer.
+    D3D12_CLEAR_VALUE optimizedClearValue = {};
+    optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+    optimizedClearValue.DepthStencil = { 1.0f, 0 };
 
-        ThrowIfFailed(device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-            D3D12_HEAP_FLAG_NONE,
-            &CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height,
-                1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            &optimizedClearValue,
-            IID_PPV_ARGS(&m_DepthBuffer)
-        ));
+    ThrowIfFailed(device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height,
+            1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        &optimizedClearValue,
+        IID_PPV_ARGS(&m_DepthBuffer)
+    ));
 
-        // Update the depth-stencil view.
-        D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
-        dsv.Format = DXGI_FORMAT_D32_FLOAT;
-        dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-        dsv.Texture2D.MipSlice = 0;
-        dsv.Flags = D3D12_DSV_FLAG_NONE;
+    // Update the depth-stencil view.
+    D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
+    dsv.Format = DXGI_FORMAT_D32_FLOAT;
+    dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    dsv.Texture2D.MipSlice = 0;
+    dsv.Flags = D3D12_DSV_FLAG_NONE;
 
-        device->CreateDepthStencilView(m_DepthBuffer.Get(), nullptr, m_hDSV);
-    }
+    device->CreateDepthStencilView(m_DepthBuffer.Get(), nullptr, m_hDSV);
 }
 
 void Tutorial3::OnResize(ResizeEventArgs& e)
 {
-    if (e.Width != GetClientWidth() || e.Height != GetClientHeight())
+    super::OnResize(e);
+
+    if ( m_Width != e.Width || m_Height != e.Height )
     {
-        super::OnResize(e);
+        m_Width = e.Width;
+        m_Height = e.Height;
+
+        float aspectRatio = e.Width / (float)e.Height;
+        m_Camera.set_Projection(45.0f, aspectRatio, 0.1f, 100.0f);
 
         m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f,
             static_cast<float>(e.Width), static_cast<float>(e.Height));
@@ -201,7 +214,6 @@ void Tutorial3::OnResize(ResizeEventArgs& e)
 
 void Tutorial3::UnloadContent()
 {
-    m_ContentLoaded = false;
 }
 
 void Tutorial3::OnUpdate(UpdateEventArgs& e)
@@ -226,20 +238,16 @@ void Tutorial3::OnUpdate(UpdateEventArgs& e)
         totalTime = 0.0;
     }
 
-    // Update the model matrix.
-    float angle = static_cast<float>(e.TotalTime * 90.0);
-    const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
-    m_ModelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
+    // Update the camera.
+    float speedMultipler = (m_Shift ? 16.0f : 4.0f);
 
-    // Update the view matrix.
-    const XMVECTOR eyePosition = XMVectorSet(0, 5, -20, 1);
-    const XMVECTOR focusPoint = XMVectorSet(0, 5, 0, 1);
-    const XMVECTOR upDirection = XMVectorSet(0, 1, 0, 0);
-    m_ViewMatrix = XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
+    XMVECTOR cameraTranslate = XMVectorSet(m_Right - m_Left, 0.0f, m_Forward - m_Backward, 1.0f) * speedMultipler * static_cast<float>(e.ElapsedTime);
+    XMVECTOR cameraPan = XMVectorSet(0.0f, m_Up - m_Down, 0.0f, 1.0f) * speedMultipler * static_cast<float>(e.ElapsedTime);
+    m_Camera.Translate(cameraTranslate, Space::Local);
+    m_Camera.Translate(cameraPan, Space::World);
 
-    // Update the projection matrix.
-    float aspectRatio = GetClientWidth() / static_cast<float>(GetClientHeight());
-    m_ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_FoV), aspectRatio, 0.1f, 100.0f);
+    XMVECTOR cameraRotation = XMQuaternionRotationRollPitchYaw(XMConvertToRadians(m_Pitch), XMConvertToRadians(m_Yaw), 0.0f);
+    m_Camera.set_Rotation(cameraRotation);
 }
 
 // Transition a resource
@@ -304,7 +312,7 @@ void Tutorial3::OnRender(RenderEventArgs& e)
     XMMATRIX rotationMatrix = XMMatrixIdentity();
     XMMATRIX scaleMatrix = XMMatrixScaling(4.0f, 4.0f, 4.0f);
     XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
-    XMMATRIX viewProjectionMatrix = m_ViewMatrix * m_ProjectionMatrix;
+    XMMATRIX viewProjectionMatrix = m_Camera.get_ViewMatrix() * m_Camera.get_ProjectionMatrix();
 
     Matrices matrices;
     matrices.ModelMatrix = worldMatrix;
@@ -462,15 +470,96 @@ void Tutorial3::OnKeyPressed(KeyEventArgs& e)
     case KeyCode::V:
         m_pWindow->ToggleVSync();
         break;
+    case KeyCode::Up:
+    case KeyCode::W:
+        m_Forward = 1.0f;
+        break;
+    case KeyCode::Left:
+    case KeyCode::A:
+        m_Left = 1.0f;
+        break;
+    case KeyCode::Down:
+    case KeyCode::S:
+        m_Backward = 1.0f;
+        break;
+    case KeyCode::Right:
+    case KeyCode::D:
+        m_Right = 1.0f;
+        break;
+    case KeyCode::Q:
+        m_Down = 1.0f;
+        break;
+    case KeyCode::E:
+        m_Up = 1.0f;
+        break;
+    case KeyCode::Space:
+        m_AnimateLights = !m_AnimateLights;
+        break;
+    case KeyCode::ShiftKey:
+        m_Shift = true;
+        break;
+
     }
 }
 
+void Tutorial3::OnKeyReleased(KeyEventArgs& e)
+{
+    super::OnKeyReleased(e);
+
+    switch (e.Key)
+    {
+    case KeyCode::Up:
+    case KeyCode::W:
+        m_Forward = 0.0f;
+        break;
+    case KeyCode::Left:
+    case KeyCode::A:
+        m_Left = 0.0f;
+        break;
+    case KeyCode::Down:
+    case KeyCode::S:
+        m_Backward = 0.0f;
+        break;
+    case KeyCode::Right:
+    case KeyCode::D:
+        m_Right = 0.0f;
+        break;
+    case KeyCode::Q:
+        m_Down = 0.0f;
+        break;
+    case KeyCode::E:
+        m_Up = 0.0f;
+        break;
+    case KeyCode::ShiftKey:
+        m_Shift = false;
+        break;
+    }
+}
+
+void Tutorial3::OnMouseMoved(MouseMotionEventArgs& e)
+{
+    super::OnMouseMoved(e);
+
+    const float mouseSpeed = 0.1f;
+
+    if (e.LeftButton)
+    {
+        m_Pitch -= e.RelY * mouseSpeed;
+        m_Yaw -= e.RelX * mouseSpeed;
+    }
+}
+
+
 void Tutorial3::OnMouseWheel(MouseWheelEventArgs& e)
 {
-    m_FoV -= e.WheelDelta;
-    m_FoV = clamp(m_FoV, 12.0f, 90.0f);
+    auto fov = m_Camera.get_FoV();
+
+    fov -= e.WheelDelta;
+    fov = clamp(fov, 12.0f, 90.0f);
+
+    m_Camera.set_FoV(fov);
 
     char buffer[256];
-    sprintf_s(buffer, "FoV: %f\n", m_FoV);
+    sprintf_s(buffer, "FoV: %f\n", fov );
     OutputDebugStringA(buffer);
 }

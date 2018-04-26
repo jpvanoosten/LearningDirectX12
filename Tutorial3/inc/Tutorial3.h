@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Camera.h>
 #include <Game.h>
 #include <IndexBuffer.h>
 #include <Window.h>
@@ -42,6 +43,16 @@ protected:
      * while the window has focus.
      */
     virtual void OnKeyPressed(KeyEventArgs& e) override;
+
+    /**
+     * Invoked when a key on the keyboard is released.
+     */
+    virtual void OnKeyReleased(KeyEventArgs& e);
+
+    /**
+     * Invoked when the mouse is moved over the registered window.
+     */
+    virtual void OnMouseMoved(MouseMotionEventArgs& e);
 
     /**
      * Invoked when the mouse wheel is scrolled while the registered window has focus.
@@ -98,11 +109,27 @@ private:
     D3D12_VIEWPORT m_Viewport;
     D3D12_RECT m_ScissorRect;
 
-    float m_FoV;
+    Camera m_Camera;
 
-    DirectX::XMMATRIX m_ModelMatrix;
-    DirectX::XMMATRIX m_ViewMatrix;
-    DirectX::XMMATRIX m_ProjectionMatrix;
+    // Camera controller
+    float m_Forward;
+    float m_Backward;
+    float m_Left;
+    float m_Right;
+    float m_Up;
+    float m_Down;
 
-    bool m_ContentLoaded;
+    float m_Pitch;
+    float m_Yaw;
+
+    // Need to track the previous mouse position in order to track deltas.
+    DirectX::XMINT2 m_PreviousMousePosition;
+
+    // Rotate the lights in a circle.
+    bool m_AnimateLights;
+    // Set to true if the Shift key is pressed.
+    bool m_Shift;
+
+    int m_Width;
+    int m_Height;
 };

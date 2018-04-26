@@ -219,6 +219,12 @@ void Window::OnKeyReleased(KeyEventArgs& e)
 // The mouse was moved
 void Window::OnMouseMoved(MouseMotionEventArgs& e)
 {
+    e.RelX = e.X - m_PreviousMouseX;
+    e.RelY = e.Y - m_PreviousMouseY;
+
+    m_PreviousMouseX = e.X;
+    m_PreviousMouseY = e.Y;
+
     if (auto pGame = m_pGame.lock())
     {
         pGame->OnMouseMoved(e);
@@ -228,6 +234,9 @@ void Window::OnMouseMoved(MouseMotionEventArgs& e)
 // A button on the mouse was pressed
 void Window::OnMouseButtonPressed(MouseButtonEventArgs& e)
 {
+    m_PreviousMouseX = e.X;
+    m_PreviousMouseY = e.Y;
+
     if (auto pGame = m_pGame.lock())
     {
         pGame->OnMouseButtonPressed(e);
