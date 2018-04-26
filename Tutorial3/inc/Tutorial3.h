@@ -89,7 +89,6 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE m_hDSV;
 
     // Root signature
-//    Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
     std::unique_ptr<RootSignature> m_RootSignature;
 
     // Pipeline state object.
