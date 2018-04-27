@@ -2,12 +2,14 @@ cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this fil
 
 set( HEADER_FILES
     inc/Camera.h
+    inc/Material.h
     inc/Tutorial3.h
 )
 
 set( SRC_FILES
     src/Camera.cpp
     src/main.cpp
+    src/Material.cpp
     src/Tutorial3.cpp
 )
 

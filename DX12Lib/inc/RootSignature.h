@@ -15,16 +15,25 @@
 class RootSignature
 {
 public:
+    RootSignature();
     RootSignature(
-        const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion
+        const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc, 
+        D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion
     );
 
     virtual ~RootSignature();
+
+    void Destroy();
 
     Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature() const
     {
         return m_RootSignature;
     }
+
+    void SetRootSignatureDesc(
+        const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+        D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion
+    );
 
     const D3D12_ROOT_SIGNATURE_DESC1& GetRootSignatureDesc() const
     {
@@ -38,8 +47,6 @@ protected:
 
 private:
     D3D12_ROOT_SIGNATURE_DESC1 m_RootSignatureDesc;
-    D3D_ROOT_SIGNATURE_VERSION m_RootSignatureVersion;
-
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
 
     // Need to know the number of descriptors per descriptor table.

@@ -5,12 +5,11 @@
 #include <IndexBuffer.h>
 #include <Window.h>
 #include <Mesh.h>
+#include <RootSignature.h>
 #include <Texture.h>
 #include <VertexBuffer.h>
 
 #include <DirectXMath.h>
-
-class RootSignature;
 
 class Tutorial3 : public Game
 {
@@ -18,6 +17,8 @@ public:
     using super = Game;
 
     Tutorial3(const std::wstring& name, int width, int height, bool vSync = false);
+    virtual ~Tutorial3();
+
     /**
      *  Load content required for the demo.
      */
@@ -89,10 +90,10 @@ private:
     std::unique_ptr<Mesh> m_TorusMesh;
     std::unique_ptr<Mesh> m_PlaneMesh;
 
+    Texture m_DefaultTexture;
     Texture m_DirectXTexture;
     Texture m_EarthTexture;
     Texture m_MonaLisaTexture;
-    Texture m_MonaLisaTexture512x512;
 
     // Depth buffer.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthBuffer;
@@ -100,7 +101,7 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE m_hDSV;
 
     // Root signature
-    std::unique_ptr<RootSignature> m_RootSignature;
+    RootSignature m_RootSignature;
 
     // Pipeline state object.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
@@ -109,6 +110,12 @@ private:
     D3D12_RECT m_ScissorRect;
 
     Camera m_Camera;
+    struct alignas( 16 ) CameraData
+    {
+        DirectX::XMVECTOR m_InitialCamPos;
+        DirectX::XMVECTOR m_InitialCamRot;
+    };
+    CameraData* m_pAlignedCameraData;
 
     // Camera controller
     float m_Forward;
@@ -120,9 +127,6 @@ private:
 
     float m_Pitch;
     float m_Yaw;
-
-    // Need to track the previous mouse position in order to track deltas.
-    DirectX::XMINT2 m_PreviousMousePosition;
 
     // Rotate the lights in a circle.
     bool m_AnimateLights;
