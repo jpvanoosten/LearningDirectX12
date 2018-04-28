@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 3.10.1 ) # Latest version of CMake when this fil
 
 set( HEADER_FILES
     inc/Camera.h
+    inc/Light.h
     inc/Material.h
     inc/Tutorial3.h
 )
@@ -9,6 +10,7 @@ set( HEADER_FILES
 set( SRC_FILES
     src/Camera.cpp
     src/main.cpp
+    src/Light.cpp
     src/Material.cpp
     src/Tutorial3.cpp
 )

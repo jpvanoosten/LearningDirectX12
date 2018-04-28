@@ -3,12 +3,14 @@
 #include <CommandList.h>
 
 #include <Application.h>
+#include <ByteAddressBuffer.h>
 #include <ConstantBuffer.h>
 #include <DynamicDescriptorHeap.h>
 #include <IndexBuffer.h>
 #include <Resource.h>
 #include <ResourceStateTracker.h>
 #include <RootSignature.h>
+#include <StructuredBuffer.h>
 #include <Texture.h>
 #include <UploadBuffer.h>
 #include <VertexBuffer.h>
@@ -148,6 +150,16 @@ void CommandList::CopyIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, 
 {
     size_t indexSizeInBytes = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
     CopyBuffer(indexBuffer, numIndicies, indexSizeInBytes, indexBufferData);
+}
+
+void CommandList::CopyByteAddressBuffer( ByteAddressBuffer& byteAddressBuffer, size_t bufferSize, const void* bufferData )
+{
+    CopyBuffer( byteAddressBuffer, 1, bufferSize, bufferData, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS );
+}
+
+void CommandList::CopyStructuredBuffer( StructuredBuffer& structuredBuffer, size_t numElements, size_t elementSize, const void* bufferData )
+{
+    CopyBuffer( structuredBuffer, numElements, elementSize, bufferData, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS );
 }
 
 void CommandList::SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology)
@@ -300,6 +312,17 @@ void CommandList::SetDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFor
     indexBufferView.Format = indexFormat;
 
     m_d3d12CommandList->IASetIndexBuffer(&indexBufferView);
+}
+
+void CommandList::SetGraphicsDynamicStructuredBuffer( uint32_t slot, size_t numElements, size_t elementSize, const void* bufferData )
+{
+    size_t bufferSize = numElements * elementSize;
+
+    auto heapAllocation = m_UploadBuffer->Allocate( bufferSize, elementSize );
+
+    memcpy( heapAllocation.CPU, bufferData, bufferSize );
+
+    m_d3d12CommandList->SetGraphicsRootShaderResourceView( slot, heapAllocation.GPU );
 }
 
 void CommandList::SetGraphicsRootSignature(const RootSignature& rootSignature)

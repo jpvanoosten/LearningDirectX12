@@ -3,6 +3,7 @@
 #include <Camera.h>
 #include <Game.h>
 #include <IndexBuffer.h>
+#include <Light.h>
 #include <Window.h>
 #include <Mesh.h>
 #include <RootSignature.h>
@@ -135,4 +136,8 @@ private:
 
     int m_Width;
     int m_Height;
+
+    // Define some lights.
+    std::vector<PointLight> m_PointLights;
+    std::vector<SpotLight> m_SpotLights;
 };

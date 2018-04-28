@@ -1,6 +1,6 @@
 /**
  * CommandList class encapsulates a ID3D12GraphicsCommandList2 interface.
- * The CommandList class provides additional functionality that makes working with 
+ * The CommandList class provides additional functionality that makes working with
  * DirectX 12 applications easier.
  */
 #pragma once
@@ -14,11 +14,13 @@
 #include <vector> // for std::vector
 
 class Buffer;
+class ByteAddressBuffer;
 class ConstantBuffer;
 class DynamicDescriptorHeap;
 class IndexBuffer;
 class Resource;
 class ResourceStateTracker;
+class StructuredBuffer;
 class RootSignature;
 class Texture;
 class UploadBuffer;
@@ -27,11 +29,11 @@ class VertexBuffer;
 class CommandList
 {
 public:
-    CommandList(D3D12_COMMAND_LIST_TYPE type);
+    CommandList( D3D12_COMMAND_LIST_TYPE type );
     virtual ~CommandList();
 
     /**
-     * Get the type of command list. 
+     * Get the type of command list.
      */
     D3D12_COMMAND_LIST_TYPE GetCommandListType() const
     {
@@ -48,24 +50,24 @@ public:
 
     /**
      * Transition a resource to a particular state.
-     * 
+     *
      * @param resource The resource to transition.
      * @param stateAfter The state to transition the resource to. The before state is resolved by the resource state tracker.
      * @param subresource The subresource to transition. By default, this is D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES which indicates that all subresources are transitioned to the same state.
      * @param flushBarriers Force flush any barriers. Resource barriers need to be flushed before a command (draw, dispatch, or copy) that expects the resource to be in a particular state can run.
      */
-    void TransitionBarrier(const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false);
+    void TransitionBarrier( const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false );
 
     /**
      * Add a UAV barrier to ensure that any writes to a resource have completed
      * before reading from the resource.
-     * 
+     *
      * @param resource The resource to add a UAV barrier for.
      * @param flushBarriers Force flush any barriers. Resource barriers need to be
      * flushed before a command (draw, dispatch, or copy) that expects the resource
      * to be in a particular state can run.
      */
-    void UAVBarrier(const Resource& resource, bool flushBarriers = false);
+    void UAVBarrier( const Resource& resource, bool flushBarriers = false );
 
     /**
      * Flush any barriers that have been pushed to the command list.
@@ -75,30 +77,50 @@ public:
     /**
      * Copy the contents to a vertex buffer in GPU memory.
      */
-    void CopyVertexBuffer(VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride, const void* vertexBufferData);
+    void CopyVertexBuffer( VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride, const void* vertexBufferData );
     template<typename T>
-    void CopyVertexBuffer(VertexBuffer& vertexBuffer, const std::vector<T>& vertexBufferData)
+    void CopyVertexBuffer( VertexBuffer& vertexBuffer, const std::vector<T>& vertexBufferData )
     {
-        CopyVertexBuffer(vertexBuffer, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
+        CopyVertexBuffer( vertexBuffer, vertexBufferData.size(), sizeof( T ), vertexBufferData.data() );
     }
 
     /**
      * Copy the contents to a index buffer in GPU memory.
      */
-    void CopyIndexBuffer(IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData);
+    void CopyIndexBuffer( IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData );
     template<typename T>
-    void CopyIndexBuffer(IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData)
+    void CopyIndexBuffer( IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData )
     {
-        assert(sizeof(T) == 2 || sizeof(T) == 4);
+        assert( sizeof( T ) == 2 || sizeof( T ) == 4 );
 
-        DXGI_FORMAT indexFormat = ( sizeof(T) == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-        CopyIndexBuffer(indexBuffer, indexBufferData.size(), indexFormat, indexBufferData.data());
+        DXGI_FORMAT indexFormat = ( sizeof( T ) == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+        CopyIndexBuffer( indexBuffer, indexBufferData.size(), indexFormat, indexBufferData.data() );
+    }
+
+    /**
+     * Copy the contents to a byte address buffer in GPU memory.
+     */
+    void CopyByteAddressBuffer( ByteAddressBuffer& byteAddressBuffer, size_t bufferSize, const void* bufferData );
+    template<typename T>
+    void CopyByteAddressBuffer( ByteAddressBuffer& byteAddressBuffer, const T& data )
+    {
+        CopyByteAddressBuffer( byteAddressBuffer, sizeof( T ), &data );
+    }
+
+    /**
+     * Copy the contents to a structured buffer in GPU memory.
+     */
+    void CopyStructuredBuffer( StructuredBuffer& structuredBuffer, size_t numElements, size_t elementSize, const void* bufferData );
+    template<typename T>
+    void CopyStructuredBuffer( StructuredBuffer& structuredBuffer, const std::vector<T>& bufferData )
+    {
+        CopyStructuredBuffer( structuredBuffer, bufferData.size(), sizeof( T ), bufferData.data() );
     }
 
     /**
      * Set the current primitive topology for the rendering pipeline.
      */
-    void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology);
+    void SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY primitiveTopology );
 
     /**
      * Load a texture by a filename.
@@ -114,67 +136,77 @@ public:
      * Set a dynamic constant buffer data to an inline descriptor in the root
      * signature.
      */
-    void SetGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData);
+    void SetGraphicsDynamicConstantBuffer( uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData );
     template<typename T>
-    void SetGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, const T& data )
+    void SetGraphicsDynamicConstantBuffer( uint32_t rootParameterIndex, const T& data )
     {
-        SetGraphicsDynamicConstantBuffer(rootParameterIndex, sizeof(T), &data);
+        SetGraphicsDynamicConstantBuffer( rootParameterIndex, sizeof( T ), &data );
     }
 
     /**
      * Set a set of 32-bit constants to the graphics pipeline.
      */
-    void SetGraphics32BitConstants(uint32_t rootParameterIndex, uint32_t numConstants, const void* constants);
+    void SetGraphics32BitConstants( uint32_t rootParameterIndex, uint32_t numConstants, const void* constants );
     template<typename T>
-    void SetGraphics32BitConstants(uint32_t rootParameterIndex, const T& constants)
+    void SetGraphics32BitConstants( uint32_t rootParameterIndex, const T& constants )
     {
-        static_assert(sizeof(T) % sizeof(uint32_t) == 0, "Size of type must be a multiple of 4 bytes");
-        SetGraphics32BitConstants(rootParameterIndex, sizeof(T) / sizeof(uint32_t), &constants);
+        static_assert( sizeof( T ) % sizeof( uint32_t ) == 0, "Size of type must be a multiple of 4 bytes" );
+        SetGraphics32BitConstants( rootParameterIndex, sizeof( T ) / sizeof( uint32_t ), &constants );
     }
 
     /**
      * Set the vertex buffer to the rendering pipeline.
      */
-    void SetVertexBuffer(uint32_t slot, const VertexBuffer& vertexBuffer);
+    void SetVertexBuffer( uint32_t slot, const VertexBuffer& vertexBuffer );
 
     /**
      * Set dynamic vertex buffer data to the rendering pipeline.
      */
-    void SetDynamicVertexBuffer(uint32_t slot, size_t numVertices, size_t vertexSize, const void* vertexBufferData);
+    void SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, size_t vertexSize, const void* vertexBufferData );
     template<typename T>
-    void SetDynamicVertexBuffer(uint32_t slot, const std::vector<T>& vertexBufferData)
+    void SetDynamicVertexBuffer( uint32_t slot, const std::vector<T>& vertexBufferData )
     {
-        SetDynamicVertexBuffer(slot, vertexBufferData.size(), sizeof(T), vertexBufferData.data());
+        SetDynamicVertexBuffer( slot, vertexBufferData.size(), sizeof( T ), vertexBufferData.data() );
     }
 
     /**
      * Bind the index buffer to the rendering pipeline.
      */
-    void SetIndexBuffer(const IndexBuffer& indexBuffer);
+    void SetIndexBuffer( const IndexBuffer& indexBuffer );
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
      */
-    void SetDynamicIndexBuffer(size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData);
+    void SetDynamicIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData );
     template<typename T>
-    void SetDynamicIndexBuffer(const std::vector<T>& indexBufferData)
+    void SetDynamicIndexBuffer( const std::vector<T>& indexBufferData )
     {
-        static_assert(sizeof(T) == 2 || sizeof(T) == 4);
+        static_assert( sizeof( T ) == 2 || sizeof( T ) == 4 );
 
-        DXGI_FORMAT indexFormat = (sizeof(T) == 2) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-        SetDynamicIndexBuffer(indexBufferData.size(), indexFormat, indexBufferData.data());
+        DXGI_FORMAT indexFormat = ( sizeof( T ) == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+        SetDynamicIndexBuffer( indexBufferData.size(), indexFormat, indexBufferData.data() );
+    }
+
+    /**
+     * Set dynamic structured buffer contents.
+     */
+    void SetGraphicsDynamicStructuredBuffer( uint32_t slot, size_t numElements, size_t elementSize, const void* bufferData );
+    template<typename T>
+    void SetGraphicsDynamicStructuredBuffer( uint32_t slot, const std::vector<T>& bufferData )
+    {
+        SetGraphicsDynamicStructuredBuffer( slot, bufferData.size(), sizeof( T ), bufferData.data() );
     }
 
     /**
      * Set the current root signature on the command list.
      */
-    void SetGraphicsRootSignature(const RootSignature& rootSignature);
-    void SetComputeRootSignature(const RootSignature& rootSignature);
+    void SetGraphicsRootSignature( const RootSignature& rootSignature );
+    void SetComputeRootSignature( const RootSignature& rootSignature );
 
     /**
      * Set the SRV on the graphics pipeline.
      */
-    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
 
     /**
      * Draw geometry.
@@ -186,13 +218,13 @@ public:
      * Methods defined below are only intended to be used by internal classes. *
      ***************************************************************************/
 
-    /**
-     * Close the command list.
-     * Used by the command queue.
-     * 
-     * @param pendingCommandList The command list that is used to execute pending
-     * resource barriers (if any) for this command list.
-     */
+     /**
+      * Close the command list.
+      * Used by the command queue.
+      *
+      * @param pendingCommandList The command list that is used to execute pending
+      * resource barriers (if any) for this command list.
+      */
     void Close( CommandList& pendingCommandList );
     // Just close the command list. This is useful for pending command lists.
     void Close();
@@ -207,13 +239,13 @@ public:
      * Set the currently bound descriptor heap.
      * Should only be called by the DynamicDescriptorHeap class.
      */
-    void SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap);
+    void SetDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap );
 
 protected:
 
 private:
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
-    void CopyBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+    void CopyBuffer( Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
 
     // Binds the current descriptor heaps to the command list.
     void BindDescriptorHeaps();
@@ -246,7 +278,7 @@ private:
     // Keep track of the currently bound descriptor heaps. Only change descriptor 
     // heaps if they are different than the currently bound descriptor heaps.
     ID3D12DescriptorHeap* m_DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-    
+
     // Objects that are being tracked by a command list that is "in-flight" on 
     // the command-queue and cannot be deleted. To ensure objects are not deleted 
     // until the command list is finished executing, a reference to the object

@@ -4,6 +4,7 @@
 #include <CommandQueue.h>
 #include <CommandList.h>
 #include <Helpers.h>
+#include <Light.h>
 #include <Material.h>
 #include <Window.h>
 
@@ -12,6 +13,9 @@ using namespace Microsoft::WRL;
 
 #include <d3dx12.h>
 #include <d3dcompiler.h>
+#include <DirectXColors.h>
+
+using namespace DirectX;
 
 #include <algorithm> // For std::min and std::max.
 #if defined(min)
@@ -22,8 +26,6 @@ using namespace Microsoft::WRL;
 #undef max
 #endif
 
-using namespace DirectX;
-
 struct Mat
 {
     XMMATRIX ModelMatrix;
@@ -32,11 +34,37 @@ struct Mat
     XMMATRIX ModelViewProjectionMatrix;
 };
 
+struct LightProperties
+{
+    uint32_t NumPointLights;
+    uint32_t NumSpotLights;
+};
+
 // Clamp a value between a min and max range.
 template<typename T>
 constexpr const T& clamp( const T& val, const T& min, const T& max )
 {
     return val < min ? min : val > max ? max : val;
+}
+
+// Builds a look-at (world) matrix from a point, up and direction vectors.
+XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMVECTOR Up )
+{
+    assert( !XMVector3Equal( Direction, XMVectorZero() ) );
+    assert( !XMVector3IsInfinite( Direction ) );
+    assert( !XMVector3Equal( Up, XMVectorZero() ) );
+    assert( !XMVector3IsInfinite( Up ) );
+
+    XMVECTOR R2 = XMVector3Normalize( Direction );
+
+    XMVECTOR R0 = XMVector3Cross( Up, R2 );
+    R0 = XMVector3Normalize( R0 );
+
+    XMVECTOR R1 = XMVector3Cross( R2, R0 );
+
+    XMMATRIX M( R0, R1, R2, Position );
+
+    return M;
 }
 
 Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSync )
@@ -118,13 +146,21 @@ bool Tutorial3::LoadContent()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    CD3DX12_ROOT_PARAMETER1 rootParameters[3];
+    CD3DX12_ROOT_PARAMETER1 rootParameters[6];
+    // MatCB
     rootParameters[0].InitAsConstantBufferView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX );
+    // MaterialCB
     rootParameters[1].InitAsConstantBufferView( 0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
-
+    //LightPropertiesCB
+    rootParameters[2].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL );
+    // PointLights
+    rootParameters[3].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
+    // SpotLights
+    rootParameters[4].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
+    // DiffuseTexture
     CD3DX12_DESCRIPTOR_RANGE1 descriptorRage;
-    descriptorRage.Init( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0 );
-    rootParameters[2].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
+    descriptorRage.Init( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
+    rootParameters[5].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler;
     linearRepeatSampler.Init( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
@@ -259,6 +295,75 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
 
     XMVECTOR cameraRotation = XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
     m_Camera.set_Rotation( cameraRotation );
+
+    XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
+
+    const int numPointLights = 4;
+    const int numSpotLights = 4;
+
+    static const XMVECTORF32 LightColors[] =
+    {
+        Colors::White, Colors::Orange, Colors::Yellow, Colors::Green, Colors::Blue, Colors::Indigo, Colors::Violet, Colors::White
+    };
+
+    static float lightAnimTime = 0.0f;
+    if ( m_AnimateLights )
+    {
+        lightAnimTime += static_cast<float>( e.ElapsedTime ) * 0.5f * XM_PI;
+    }
+
+    const float radius = 8.0f;
+    const float offset = 2.0f * XM_PI / numPointLights;
+    const float offset2 = offset + ( offset / 2.0f );
+
+    // Setup the light buffers.
+    m_PointLights.resize(numPointLights);
+    for ( int i = 0; i < numPointLights; ++i )
+    {
+        PointLight& l = m_PointLights[i];
+
+        l.PositionWS = { 
+            static_cast<float>(std::sin( lightAnimTime + offset * i )) * radius,
+            9.0f, 
+            static_cast<float>(std::cos( lightAnimTime + offset * i )) * radius,
+            1.0f 
+        };
+        XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
+        XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
+        XMStoreFloat4( &l.PositionVS, positionVS );
+
+        l.Color = XMFLOAT4( LightColors[i] );
+        l.ConstantAttenuation = 1.0f;
+        l.LinearAttenuation = 0.08f;
+        l.QuadraticAttenuation = 0.0f;
+    }
+
+    m_SpotLights.resize( numSpotLights );
+    for ( int i = 0; i < numSpotLights; ++i )
+    {
+        SpotLight& l = m_SpotLights[i];
+
+        l.PositionWS = {
+            static_cast<float>( std::sin( lightAnimTime + offset * i + offset2) ) * radius,
+            9.0f,
+            static_cast<float>( std::cos( lightAnimTime + offset * i + offset2 ) ) * radius,
+            1.0f
+        };
+        XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
+        XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
+        XMStoreFloat4( &l.PositionVS, positionVS );
+
+        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorNegate( positionWS ), 0) );
+        XMVECTOR directionVS = XMVector3Normalize( XMVector3TransformNormal( directionWS, viewMatrix ) );
+        XMStoreFloat4( &l.DirectionWS, directionWS );
+        XMStoreFloat4( &l.DirectionVS, directionVS );
+
+        l.Color = XMFLOAT4( LightColors[numPointLights+i] );
+        l.SpotAngle = XMConvertToRadians( 45.0f );
+        l.ConstantAttenuation = 1.0f;
+        l.LinearAttenuation = 0.08f;
+        l.QuadraticAttenuation = 0.0f;
+    }
 }
 
 // Transition a resource
@@ -320,6 +425,15 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     d3d12CommandList->SetPipelineState( m_PipelineState.Get() );
     commandList->SetGraphicsRootSignature( m_RootSignature );
 
+    // Upload lights
+    LightProperties lightProps;
+    lightProps.NumPointLights = static_cast<uint32_t>( m_PointLights.size() );
+    lightProps.NumSpotLights = static_cast<uint32_t>( m_SpotLights.size() );
+
+    commandList->SetGraphics32BitConstants( 2, lightProps );
+    commandList->SetGraphicsDynamicStructuredBuffer( 3, m_PointLights );
+    commandList->SetGraphicsDynamicStructuredBuffer( 4, m_SpotLights );
+
     d3d12CommandList->RSSetViewports( 1, &m_Viewport );
     d3d12CommandList->RSSetScissorRects( 1, &m_ScissorRect );
 
@@ -338,7 +452,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( 1, Material::White );
-    commandList->SetShaderResourceView( 2, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetShaderResourceView( 5, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_SphereMesh->Draw( *commandList );
 
@@ -352,7 +466,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( 1, Material::White );
-    commandList->SetShaderResourceView( 2, 0, m_MonaLisaTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetShaderResourceView( 5, 0, m_MonaLisaTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_CubeMesh->Draw( *commandList );
 
@@ -366,7 +480,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Ruby );
-    commandList->SetShaderResourceView( 2, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetShaderResourceView( 5, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_TorusMesh->Draw( *commandList );
 
@@ -382,7 +496,8 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Pearl );
+    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::White );
+    commandList->SetShaderResourceView( 5, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -428,6 +543,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Red );
+    commandList->SetShaderResourceView( 5, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -442,6 +558,41 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Blue );
     m_PlaneMesh->Draw( *commandList );
 
+    // Draw shapes to visualize the position of the lights in the scene.
+    Material lightMaterial;
+    // No specular
+    lightMaterial.Specular = { 0, 0, 0, 1 };
+    for ( const auto& l : m_PointLights )
+    {
+        lightMaterial.Emissive = l.Color;
+        XMVECTOR lightPos = XMLoadFloat4( &l.PositionWS );
+        worldMatrix = XMMatrixTranslationFromVector( lightPos );
+        ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+
+        commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
+        commandList->SetGraphicsDynamicConstantBuffer( 1, lightMaterial );
+
+        m_SphereMesh->Draw( *commandList );
+    }
+
+    for ( const auto& l : m_SpotLights )
+    {
+        lightMaterial.Emissive = l.Color;
+        XMVECTOR lightPos = XMLoadFloat4( &l.PositionWS );
+        XMVECTOR lightDir = XMLoadFloat4( &l.DirectionWS );
+        XMVECTOR up = XMVectorSet( 0, 1, 0, 0 );
+
+        // Rotate the cone so it is facing the Z axis.
+        rotationMatrix = XMMatrixRotationX( XMConvertToRadians(-90.0f) );
+        worldMatrix = rotationMatrix * LookAtMatrix( lightPos, lightDir, up );
+
+        ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+
+        commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
+        commandList->SetGraphicsDynamicConstantBuffer( 1, lightMaterial );
+
+        m_ConeMesh->Draw( *commandList );
+    }
 
     // Present
     {
@@ -476,6 +627,7 @@ void Tutorial3::OnKeyPressed( KeyEventArgs& e )
             m_pWindow->ToggleVSync();
             break;
         case KeyCode::R:
+            // Reset camera transform
             m_Camera.set_Translation( m_pAlignedCameraData->m_InitialCamPos );
             m_Camera.set_Rotation( m_pAlignedCameraData->m_InitialCamRot );
             m_Pitch = 0.0f;

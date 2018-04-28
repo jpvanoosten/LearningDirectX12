@@ -4,6 +4,7 @@ set( HEADER_FILES
     inc/DX12LibPCH.h
     inc/Application.h
     inc/Buffer.h
+    inc/ByteAddressBuffer.h
     inc/CommandList.h
     inc/CommandQueue.h
     inc/ConstantBuffer.h
@@ -17,6 +18,7 @@ set( HEADER_FILES
     inc/Resource.h
     inc/ResourceStateTracker.h
     inc/RootSignature.h
+    inc/StructuredBuffer.h
     inc/Texture.h
     inc/UploadBuffer.h
     inc/VertexBuffer.h
@@ -28,6 +30,7 @@ set( SOURCE_FILES
     src/DX12LibPCH.cpp
     src/Application.cpp
     src/Buffer.cpp
+    src/ByteAddressBuffer.cpp
     src/CommandQueue.cpp
     src/CommandList.cpp
     src/ConstantBuffer.cpp
@@ -40,6 +43,7 @@ set( SOURCE_FILES
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp
+    src/StructuredBuffer.cpp
     src/Texture.cpp
     src/UploadBuffer.cpp
     src/VertexBuffer.cpp
