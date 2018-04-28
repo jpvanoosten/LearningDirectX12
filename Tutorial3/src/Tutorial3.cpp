@@ -471,7 +471,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     m_CubeMesh->Draw( *commandList );
 
     // Draw a torus
-    translationMatrix = XMMatrixTranslation( 4.0f, 0.5f, -4.0f );
+    translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
     rotationMatrix = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
     scaleMatrix = XMMatrixScaling( 4.0f, 4.0f, 4.0f );
     worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
