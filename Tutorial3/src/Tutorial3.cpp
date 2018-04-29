@@ -40,6 +40,18 @@ struct LightProperties
     uint32_t NumSpotLights;
 };
 
+// An enum for root signature parameters.
+enum RootParameters
+{
+    MatricesCB,         // ConstantBuffer<Mat> MatCB : register(b0);
+    MaterialCB,         // ConstantBuffer<Material> MaterialCB : register( b0, space1 );
+    LightPropertiesCB,  // ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
+    PointLights,        // StructuredBuffer<PointLight> PointLights : register( t0 );
+    SpotLights,         // StructuredBuffer<SpotLight> SpotLights : register( t1 );
+    Textures,           // Texture2D DiffuseTexture : register( t2 );
+    NumRootParameters
+};
+
 // Clamp a value between a min and max range.
 template<typename T>
 constexpr const T& clamp( const T& val, const T& min, const T& max )
@@ -146,27 +158,21 @@ bool Tutorial3::LoadContent()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    CD3DX12_ROOT_PARAMETER1 rootParameters[6];
-    // MatCB
-    rootParameters[0].InitAsConstantBufferView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX );
-    // MaterialCB
-    rootParameters[1].InitAsConstantBufferView( 0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
-    //LightPropertiesCB
-    rootParameters[2].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL );
-    // PointLights
-    rootParameters[3].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
-    // SpotLights
-    rootParameters[4].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
-    // DiffuseTexture
-    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage;
-    descriptorRage.Init( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
-    rootParameters[5].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
+    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
+
+    CD3DX12_ROOT_PARAMETER1 rootParameters[RootParameters::NumRootParameters];
+    rootParameters[RootParameters::MatricesCB].InitAsConstantBufferView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX );
+    rootParameters[RootParameters::MaterialCB].InitAsConstantBufferView( 0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::LightPropertiesCB].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::PointLights].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::SpotLights].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler;
     linearRepeatSampler.Init( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
-    rootSignatureDescription.Init_1_1( _countof( rootParameters ), rootParameters, 1, &linearRepeatSampler, rootSignatureFlags );
+    rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler, rootSignatureFlags );
 
     m_RootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
@@ -229,13 +235,6 @@ void Tutorial3::ResizeDepthBuffer( int width, int height )
         &optimizedClearValue,
         IID_PPV_ARGS( &m_DepthBuffer )
     ) );
-
-    // Update the depth-stencil view.
-    D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
-    dsv.Format = DXGI_FORMAT_D32_FLOAT;
-    dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-    dsv.Texture2D.MipSlice = 0;
-    dsv.Flags = D3D12_DSV_FLAG_NONE;
 
     device->CreateDepthStencilView( m_DepthBuffer.Get(), nullptr, m_hDSV );
 }
@@ -430,9 +429,9 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     lightProps.NumPointLights = static_cast<uint32_t>( m_PointLights.size() );
     lightProps.NumSpotLights = static_cast<uint32_t>( m_SpotLights.size() );
 
-    commandList->SetGraphics32BitConstants( 2, lightProps );
-    commandList->SetGraphicsDynamicStructuredBuffer( 3, m_PointLights );
-    commandList->SetGraphicsDynamicStructuredBuffer( 4, m_SpotLights );
+    commandList->SetGraphics32BitConstants( RootParameters::LightPropertiesCB, lightProps );
+    commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::PointLights, m_PointLights );
+    commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
 
     d3d12CommandList->RSSetViewports( 1, &m_Viewport );
     d3d12CommandList->RSSetScissorRects( 1, &m_ScissorRect );
@@ -450,9 +449,9 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     Mat matrices;
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::White );
-    commandList->SetShaderResourceView( 5, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_SphereMesh->Draw( *commandList );
 
@@ -464,9 +463,9 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::White );
-    commandList->SetShaderResourceView( 5, 0, m_MonaLisaTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_CubeMesh->Draw( *commandList );
 
@@ -478,9 +477,9 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Ruby );
-    commandList->SetShaderResourceView( 5, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_TorusMesh->Draw( *commandList );
 
@@ -495,9 +494,9 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::White );
-    commandList->SetShaderResourceView( 5, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -508,7 +507,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -519,7 +518,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -530,7 +529,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -541,9 +540,9 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Red );
-    commandList->SetShaderResourceView( 5, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_PlaneMesh->Draw( *commandList );
 
@@ -554,8 +553,8 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-    commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( 1, Material::Blue );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
     m_PlaneMesh->Draw( *commandList );
 
     // Draw shapes to visualize the position of the lights in the scene.
@@ -569,8 +568,8 @@ void Tutorial3::OnRender( RenderEventArgs& e )
         worldMatrix = XMMatrixTranslationFromVector( lightPos );
         ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-        commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-        commandList->SetGraphicsDynamicConstantBuffer( 1, lightMaterial );
+        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
         m_SphereMesh->Draw( *commandList );
     }
@@ -588,8 +587,8 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
         ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
-        commandList->SetGraphicsDynamicConstantBuffer( 0, matrices );
-        commandList->SetGraphicsDynamicConstantBuffer( 1, lightMaterial );
+        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+        commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
         m_ConeMesh->Draw( *commandList );
     }
