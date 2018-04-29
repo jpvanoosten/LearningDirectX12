@@ -84,8 +84,17 @@ uint64_t CommandQueue::ExecuteCommandList(std::shared_ptr<CommandList> commandLi
 
     auto pendingCommandList = GetCommandList();
 
+    // If there are no pending resource barriers, then only execute a single command list.
+    UINT numCommandLists = 1;
+    UINT firstCommandList = 1;
+
     // Close the command list, flushing any pending resource barriers.
-    commandList->Close(*pendingCommandList);
+    if ( commandList->Close( *pendingCommandList ) )
+    {
+        // There are pending resource barriers. Execute both command lists.
+        numCommandLists = 2;
+        firstCommandList = 0;
+    }
     pendingCommandList->Close();
 
     ID3D12CommandList* const ppCommandLists[] = {
@@ -93,7 +102,7 @@ uint64_t CommandQueue::ExecuteCommandList(std::shared_ptr<CommandList> commandLi
         commandList->GetGraphicsCommandList().Get()
     };
 
-    m_d3d12CommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+    m_d3d12CommandQueue->ExecuteCommandLists(numCommandLists, &ppCommandLists[firstCommandList]);
     uint64_t fenceValue = Signal();
 
     ResourceStateTracker::Unlock();
@@ -142,6 +151,11 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     }
 
     return fenceValue;
+}
+
+void CommandQueue::Wait( const CommandQueue& other )
+{
+    m_d3d12CommandQueue->Wait( other.m_d3d12Fence.Get(), other.m_FenceValue );
 }
 
 Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::GetD3D12CommandQueue() const

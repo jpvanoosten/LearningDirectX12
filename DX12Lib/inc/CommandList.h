@@ -128,6 +128,13 @@ public:
     void LoadTextureFromFile( Texture& texture, const std::wstring& fileName );
 
     /**
+     * Generate mips for the texture.
+     * The first subresource is used to generate the mip chain.
+     * Mips are automatically generated for textures loaded from files.
+     */
+    void GenerateMips( Texture& texture );
+
+    /**
      * Copy subresource data to a texture.
      */
     void CopyTextureSubresource( Texture& texture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData );
@@ -224,8 +231,11 @@ public:
       *
       * @param pendingCommandList The command list that is used to execute pending
       * resource barriers (if any) for this command list.
+      * 
+      * @return true if there are any pending resource barriers that need to be
+      * processed.
       */
-    void Close( CommandList& pendingCommandList );
+    bool Close( CommandList& pendingCommandList );
     // Just close the command list. This is useful for pending command lists.
     void Close();
 
@@ -255,6 +265,12 @@ private:
     D3D12_COMMAND_LIST_TYPE m_d3d12CommandListType;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_d3d12CommandList;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_d3d12CommandAllocator;
+
+    // For copy queues, it may be necessary to generate mips while loading textures.
+    // Mips can't be generated on copy queues but must be generated on compute or
+    // direct queues. In this case, a Compute command list is generated and executed 
+    // after the copy queue is finished uploading the first sub resource.
+    std::shared_ptr<CommandList> m_GenerateMipsCommandList;
 
     // Keep track of the currently bound root signatures to minimize root
     // signature changes.

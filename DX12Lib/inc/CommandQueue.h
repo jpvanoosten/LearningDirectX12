@@ -30,6 +30,9 @@ public:
     void WaitForFenceValue(uint64_t fenceValue);
     void Flush();
 
+    // Wait for another command queue to finish.
+    void Wait( const CommandQueue& other );
+
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetD3D12CommandQueue() const;
 
 private:

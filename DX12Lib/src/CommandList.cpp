@@ -5,6 +5,7 @@
 #include <Application.h>
 #include <ByteAddressBuffer.h>
 #include <ConstantBuffer.h>
+#include <CommandQueue.h>
 #include <DynamicDescriptorHeap.h>
 #include <IndexBuffer.h>
 #include <Resource.h>
@@ -190,16 +191,20 @@ void CommandList::LoadTextureFromFile(Texture& texture, const std::wstring& file
         if (filePath.extension() == ".dds")
         {
             // Use DDS texture loader.
-            ThrowIfFailed(LoadDDSTextureFromFile(device.Get(),
-                fileName.c_str(), &textureResource, textureData, subresourceData 
+            ThrowIfFailed(LoadDDSTextureFromFileEx(device.Get(),
+                fileName.c_str(), 0, D3D12_RESOURCE_FLAG_NONE, 
+                DDS_LOADER_MIP_RESERVE, &textureResource, textureData, 
+                subresourceData
             ));
         }
         else
         {
             D3D12_SUBRESOURCE_DATA resourceData;
             // Use WIC texture loader.
-            ThrowIfFailed(LoadWICTextureFromFile(device.Get(),
-                fileName.c_str(), &textureResource, textureData, resourceData
+            ThrowIfFailed(LoadWICTextureFromFileEx(device.Get(),
+                fileName.c_str(), 0, D3D12_RESOURCE_FLAG_NONE, 
+                WIC_LOADER_MIP_RESERVE, &textureResource, textureData, 
+                resourceData
             ));
 
             subresourceData.push_back(resourceData);
@@ -213,10 +218,26 @@ void CommandList::LoadTextureFromFile(Texture& texture, const std::wstring& file
 
         CopyTextureSubresource(texture, 0, static_cast<uint32_t>(subresourceData.size()), subresourceData.data());
 
+        if ( subresourceData.size() < textureResource->GetDesc().MipLevels )
+        {
+            GenerateMips( texture );
+        }
+
         // Add the texture resource to the texture cache.
         std::lock_guard<std::mutex> lock(ms_TextureCacheMutex);
         ms_TextureCache[fileName] = textureResource.Get();
     }
+}
+
+void CommandList::GenerateMips( Texture& texture )
+{
+    if ( m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY && !m_GenerateMipsCommandList )
+    {
+        m_GenerateMipsCommandList = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE )->GetCommandList();
+    }
+
+    // TODO: Generate mips.
+
 }
 
 void CommandList::CopyTextureSubresource(Texture& texture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData)
@@ -408,7 +429,7 @@ void CommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint3
     m_d3d12CommandList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance );
 }
 
-void CommandList::Close(CommandList& pendingCommandList)
+bool CommandList::Close(CommandList& pendingCommandList)
 {
     // Flush any remaining barriers.
     FlushResourceBarriers();
@@ -416,9 +437,11 @@ void CommandList::Close(CommandList& pendingCommandList)
     m_d3d12CommandList->Close();
 
     // Flush pending resource barriers.
-    m_ResourceStateTracker->FlushPendingResourceBarriers(pendingCommandList);
+    uint32_t numPendingBarriers = m_ResourceStateTracker->FlushPendingResourceBarriers(pendingCommandList);
     // Commit the final resource state to the global state.
     m_ResourceStateTracker->CommitFinalResourceStates();
+
+    return numPendingBarriers > 0;
 }
 
 void CommandList::Close()

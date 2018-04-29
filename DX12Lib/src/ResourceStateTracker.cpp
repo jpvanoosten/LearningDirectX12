@@ -94,7 +94,7 @@ void ResourceStateTracker::FlushResourceBarriers(CommandList& commandList)
     }
 }
 
-void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList)
+uint32_t ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList)
 {
     assert(ms_IsLocked);
 
@@ -133,6 +133,8 @@ void ResourceStateTracker::FlushPendingResourceBarriers(CommandList& commandList
     }
 
     m_PendingResourceBarriers.clear();
+
+    return numBarriers;
 }
 
 void ResourceStateTracker::CommitFinalResourceStates()

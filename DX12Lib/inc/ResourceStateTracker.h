@@ -54,7 +54,7 @@ public:
      * Push a UAV resource barrier for the given resource.
      * 
      * @param resource The resource to add a UAV barrier for. Can be NULL which 
-     * indicates that UAV access could require the barrier.
+     * indicates that any UAV access could require the barrier.
      */
     void UAVBarrier(const Resource* resource = nullptr);
 
@@ -71,8 +71,10 @@ public:
 
     /**
      * Flush any pending resource barriers to the command list.
+     * 
+     * @return The number of resource barriers that were flushed to the command list.
      */
-    void FlushPendingResourceBarriers(CommandList& commandList);
+    uint32_t FlushPendingResourceBarriers(CommandList& commandList);
 
     /**
      * Flush any (non-pending) resource barriers that have been pushed to the resource state
