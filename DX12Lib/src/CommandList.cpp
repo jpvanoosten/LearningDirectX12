@@ -231,12 +231,64 @@ void CommandList::LoadTextureFromFile(Texture& texture, const std::wstring& file
 
 void CommandList::GenerateMips( Texture& texture )
 {
-    if ( m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY && !m_GenerateMipsCommandList )
+    if ( m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY )
     {
-        m_GenerateMipsCommandList = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE )->GetCommandList();
+		if (!m_GenerateMipsCommandList)
+		{
+			m_GenerateMipsCommandList = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+		}
+		m_GenerateMipsCommandList->GenerateMips(texture);
+		return;
     }
 
-    // TODO: Generate mips.
+	auto d3d12Resource = texture.GetD3D12Resource();
+
+	// If the texture doesn't have a valid resource, do nothing.
+	if (!d3d12Resource) return;
+	auto d3d12ResourceDesc = d3d12Resource->GetDesc();
+
+	// If the texture only has a single mip level (level 0)
+	// do nothing.
+	if (d3d12ResourceDesc.MipLevels == 1) return;
+	// Currently, only 2D textures are supported.
+	if ( d3d12ResourceDesc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || d3d12ResourceDesc.DepthOrArraySize != 1)
+	{
+		throw std::exception("Generate Mips only supports 2D Textures.");
+	}
+
+	if (Texture::IsFormatUAVCompatible(d3d12ResourceDesc.Format))
+	{
+		GenerateMips_UAV(texture);
+	}
+	else if (Texture::IsFormatBGR(d3d12ResourceDesc.Format))
+	{
+		GenerateMips_BGR(texture);
+	}
+	else if (Texture::IsFormatSRGB(d3d12ResourceDesc.Format))
+	{
+		GenerateMips_sRGB(texture);
+	}
+	else
+	{
+		throw std::exception("Unsupported texture format for mipmap generation.");
+	}
+}
+
+void CommandList::GenerateMips_UAV(Texture& texture)
+{
+	auto d3d12Resource = texture.GetD3D12Resource();
+	auto d3d12ResourceDesc = d3d12Resource->GetDesc();
+
+
+}
+
+void CommandList::GenerateMips_BGR(Texture& texture)
+{
+
+}
+
+void CommandList::GenerateMips_sRGB(Texture& texture)
+{
 
 }
 

@@ -12,6 +12,9 @@ class Texture : public Resource
 {
 public:
     Texture(const std::wstring& name = L"");
+	Texture(const Texture& copy) = delete;
+	Texture& operator=(const Texture& other) = delete;
+
     virtual ~Texture();
 
     /**
@@ -32,11 +35,14 @@ public:
     */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t subresource = 0) const override;
 
+	static bool IsFormatUAVCompatible(DXGI_FORMAT format);
+	static bool IsFormatSRGB(DXGI_FORMAT format);
+	static bool IsFormatBGR(DXGI_FORMAT format);
+
 protected:
 
 private:
     CD3DX12_CPU_DESCRIPTOR_HANDLE m_ShaderResourceView;
-    // A UAV resource only references a single subresource at time.
-    // UAVs are created when they are requested (if they haven't been created already)
-    std::map<uint32_t, D3D12_CPU_DESCRIPTOR_HANDLE> m_UnorderedAccessViews;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE m_UnorderedAccessViews;
+	UINT m_DescriptorHandleIncrementSize;
 };
