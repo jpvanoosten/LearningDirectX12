@@ -7,6 +7,7 @@
 #include <ConstantBuffer.h>
 #include <CommandQueue.h>
 #include <DynamicDescriptorHeap.h>
+#include <GenerateMipsPSO.h>
 #include <IndexBuffer.h>
 #include <Resource.h>
 #include <ResourceStateTracker.h>
@@ -288,6 +289,11 @@ void CommandList::GenerateMips( Texture& texture )
 
 void CommandList::GenerateMips_UAV(Texture& texture)
 {
+	if (!m_GenerateMipsPSO)
+	{
+		m_GenerateMipsPSO = std::make_unique<GenerateMipsPSO>();
+	}
+
 	auto device = Application::Get().GetDevice();
 
 	auto resource = texture.GetD3D12Resource();
@@ -321,6 +327,9 @@ void CommandList::GenerateMips_UAV(Texture& texture)
 
 		CopyResource(stagingTexture, texture);
 	}
+
+	m_d3d12CommandList->SetPipelineState(m_GenerateMipsPSO->GetPipelineState().Get());
+	SetComputeRootSignature(m_GenerateMipsPSO->GetRootSignature());
 
 	for (uint32_t mip = 0; mip < resourceDesc.MipLevels; ++mip)
 	{

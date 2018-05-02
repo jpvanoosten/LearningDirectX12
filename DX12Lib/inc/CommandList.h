@@ -17,6 +17,7 @@ class Buffer;
 class ByteAddressBuffer;
 class ConstantBuffer;
 class DynamicDescriptorHeap;
+class GenerateMipsPSO;
 class IndexBuffer;
 class Resource;
 class ResourceStateTracker;
@@ -312,6 +313,9 @@ private:
     // Keep track of the currently bound descriptor heaps. Only change descriptor 
     // heaps if they are different than the currently bound descriptor heaps.
     ID3D12DescriptorHeap* m_DescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+	// Pipeline state object for Mip map generation.
+	std::unique_ptr<GenerateMipsPSO> m_GenerateMipsPSO;
 
     // Objects that are being tracked by a command list that is "in-flight" on 
     // the command-queue and cannot be deleted. To ensure objects are not deleted 

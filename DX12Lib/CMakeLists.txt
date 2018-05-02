@@ -11,6 +11,7 @@ set( HEADER_FILES
     inc/DescriptorAllocator.h
     inc/DynamicDescriptorHeap.h
     inc/Game.h
+	inc/GenerateMipsPSO.h
     inc/Helpers.h
     inc/HighResolutionClock.h
     inc/IndexBuffer.h
@@ -37,6 +38,7 @@ set( SOURCE_FILES
     src/DescriptorAllocator.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp
+	src/GenerateMipsPSO.cpp
     src/HighResolutionClock.cpp
     src/IndexBuffer.cpp
     src/Mesh.cpp
@@ -67,10 +69,12 @@ source_group( "Source Files\\DirectXTex" FILES ${DIRECTXTEX_SOURCE} )
 set( RESOURCE_FILES 
     DX12Lib.rc
     Resources/Icon/app_icon.ico
+	Resources/Shaders/GenerateMips_CS.hlsl
 )
 
 source_group( "Resources" FILES DX12Lib.rc resource.h )
 source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
+source_group( "Resources\\Shaders" FILES Resources/Shaders/GenerateMips_CS.hlsl )
 
 add_library( DX12Lib STATIC
     ${HEADER_FILES}
@@ -99,4 +103,15 @@ set_target_properties( DX12Lib
 set_source_files_properties( src/DX12LibPCH.cpp
     PROPERTIES
         COMPILE_FLAGS /Yc"DX12LibPCH.h"
+)
+
+set_source_files_properties( Resources/Shaders/GenerateMips_CS.hlsl
+	PROPERTIES
+		VS_SHADER_TYPE Compute
+		VS_SHADER_MODEL 5.1
+        VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/%(Filename).cso"
+		VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_SOURCE_DIR}/inc/%(Filename).inc"
+		VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
+	    VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
