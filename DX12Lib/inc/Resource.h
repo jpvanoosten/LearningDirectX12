@@ -13,7 +13,9 @@ class Resource
 {
 public:
     Resource( const std::wstring& name = L"" );
-	Resource(ID3D12Resource* resource, const std::wstring& name = L"" );
+	Resource(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"" );
+	Resource(const Resource& copy);
+
     virtual ~Resource();
 
     // Get access to the underlying D3D12 resource

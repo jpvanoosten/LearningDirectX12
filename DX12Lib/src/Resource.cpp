@@ -9,11 +9,17 @@ Resource::Resource(const std::wstring& name)
     : m_ResourceName(name)
 {}
 
-Resource::Resource(ID3D12Resource* resource, const std::wstring& name )
+Resource::Resource(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name )
 	: m_d3d12Resource(resource)
 {
 	SetName(name);
 }
+
+Resource::Resource(const Resource& copy)
+	: m_d3d12Resource(copy.m_d3d12Resource)
+	, m_ResourceName(copy.m_ResourceName)
+{}
+
 
 Resource::~Resource()
 {

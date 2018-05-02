@@ -14,7 +14,7 @@ Texture::Texture(const std::wstring& name)
 	m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
-Texture::Texture(ID3D12Resource* resource, const std::wstring& name)
+Texture::Texture(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name)
 	: Resource(resource, name)
 {
 	m_ShaderResourceView = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -22,8 +22,21 @@ Texture::Texture(ID3D12Resource* resource, const std::wstring& name)
 	m_UnorderedAccessViews = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 15);
 
 	m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	CreateViews();
 }
 
+Texture::Texture(const Texture& copy)
+	: Resource(copy)
+{
+	m_ShaderResourceView = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// Maximum size of a texture in either dimension is 16,384. That means a maximum of 15 mips (0-14).
+	m_UnorderedAccessViews = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 15);
+
+	m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	CreateViews();
+}
 
 Texture::~Texture()
 {}
@@ -221,7 +234,60 @@ DXGI_FORMAT Texture::GetTypelessFormat(DXGI_FORMAT format)
 	case DXGI_FORMAT_R32_SINT:
 		typelessFormat = DXGI_FORMAT_R32_TYPELESS;
 		break;
-
-		// TODO: Thomas is being anoying.
+	case DXGI_FORMAT_R8G8_UNORM:
+	case DXGI_FORMAT_R8G8_UINT:
+	case DXGI_FORMAT_R8G8_SNORM:
+	case DXGI_FORMAT_R8G8_SINT:
+		typelessFormat = DXGI_FORMAT_R8G8_TYPELESS;
+		break;
+	case DXGI_FORMAT_R16_FLOAT:
+	case DXGI_FORMAT_D16_UNORM:
+	case DXGI_FORMAT_R16_UNORM:
+	case DXGI_FORMAT_R16_UINT:
+	case DXGI_FORMAT_R16_SNORM:
+	case DXGI_FORMAT_R16_SINT:
+		typelessFormat = DXGI_FORMAT_R16_TYPELESS;
+	case DXGI_FORMAT_R8_UNORM:
+	case DXGI_FORMAT_R8_UINT:
+	case DXGI_FORMAT_R8_SNORM:
+	case DXGI_FORMAT_R8_SINT:
+		typelessFormat = DXGI_FORMAT_R8_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC1_UNORM:
+	case DXGI_FORMAT_BC1_UNORM_SRGB:
+		typelessFormat = DXGI_FORMAT_BC1_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC2_UNORM:
+	case DXGI_FORMAT_BC2_UNORM_SRGB:
+		typelessFormat = DXGI_FORMAT_BC2_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC3_UNORM:
+	case DXGI_FORMAT_BC3_UNORM_SRGB:
+		typelessFormat = DXGI_FORMAT_BC3_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC4_UNORM:
+	case DXGI_FORMAT_BC4_SNORM:
+		typelessFormat = DXGI_FORMAT_BC4_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC5_UNORM:
+	case DXGI_FORMAT_BC5_SNORM:
+		typelessFormat = DXGI_FORMAT_BC5_TYPELESS;
+		break;
+	case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+		typelessFormat = DXGI_FORMAT_B8G8R8A8_TYPELESS;
+		break;
+	case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+		typelessFormat = DXGI_FORMAT_B8G8R8X8_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC6H_UF16:
+	case DXGI_FORMAT_BC6H_SF16:
+		typelessFormat = DXGI_FORMAT_BC6H_TYPELESS;
+		break;
+	case DXGI_FORMAT_BC7_UNORM:
+	case DXGI_FORMAT_BC7_UNORM_SRGB:
+		typelessFormat = DXGI_FORMAT_BC7_TYPELESS;
+		break;
 	}
+
+	return typelessFormat;
 }

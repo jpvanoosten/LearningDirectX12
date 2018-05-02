@@ -12,9 +12,9 @@ class Texture : public Resource
 {
 public:
     Texture(const std::wstring& name = L"");
-	Texture(ID3D12Resource* resource, const std::wstring& name = L"");
+	Texture(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"");
+	Texture(const Texture& copy);
 
-	Texture(const Texture& copy) = delete;
 	Texture& operator=(const Texture& other) = delete;
 
     virtual ~Texture();

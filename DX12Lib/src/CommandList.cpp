@@ -91,7 +91,7 @@ void CommandList::FlushResourceBarriers()
     m_ResourceStateTracker->FlushResourceBarriers(*this);
 }
 
-void CommandList::CopyResource(Resource& dstRes, Resource& srcRes)
+void CommandList::CopyResource(Resource& dstRes, const Resource& srcRes)
 {
 	TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_COPY_DEST);
 	TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -247,7 +247,7 @@ void CommandList::GenerateMips( Texture& texture )
     {
 		if (!m_GenerateMipsCommandList)
 		{
-			m_GenerateMipsCommandList = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+			m_GenerateMipsCommandList = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE)->GetCommandList();
 		}
 		m_GenerateMipsCommandList->GenerateMips(texture);
 		return;
@@ -288,18 +288,50 @@ void CommandList::GenerateMips( Texture& texture )
 
 void CommandList::GenerateMips_UAV(Texture& texture)
 {
+	auto device = Application::Get().GetDevice();
+
 	auto resource = texture.GetD3D12Resource();
 	auto resourceDesc = resource->GetDesc();
 
-	ComPtr<ID3D12Resource> stagingResource = resource;
+	auto stagingResource = resource;
+	Texture stagingTexture(stagingResource);
 	// If the passed-in resource does not allow for UAV access
-	// then create a staging resource this is used to generate
+	// then create a staging resource that is used to generate
 	// the mip-map chain.
 	if ((resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) == 0)
 	{
-		auto stagingDesc = resourceDesc
+		auto stagingDesc = resourceDesc;
+		stagingDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+//		stagingDesc.Format = Texture::GetTypelessFormat(resourceDesc.Format);
+
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&stagingDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&stagingResource)
+
+		));
+
+		ResourceStateTracker::AddGlobalResourceState(stagingResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+
+		stagingTexture.SetD3D12Resource(stagingResource);
+		stagingTexture.CreateViews();
+
+		CopyResource(stagingTexture, texture);
 	}
 
+	for (uint32_t mip = 0; mip < resourceDesc.MipLevels; ++mip)
+	{
+		uint32_t srcWidth = static_cast<uint32_t>(resourceDesc.Width >> mip);
+		uint32_t srcHeight = resourceDesc.Height >> mip;
+		uint32_t dstWidth = srcWidth >> 1;
+		uint32_t dstHeight = srcHeight >> 1;
+
+
+
+	}
 
 }
 
@@ -500,6 +532,23 @@ void CommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint3
     }
 
     m_d3d12CommandList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance );
+}
+
+void CommandList::Dispatch(uint32_t numGroupsX, uint32_t numGroupsY, uint32_t numGroupsZ)
+{
+	FlushResourceBarriers();
+
+	if (m_PreviousRootSignature != m_CurrentRootSignature)
+	{
+		m_d3d12CommandList->SetComputeRootSignature(m_CurrentRootSignature);
+		m_PreviousRootSignature = m_CurrentRootSignature;
+	}
+	for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+	{
+		m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDispatch(*this);
+	}
+
+	m_d3d12CommandList->Dispatch(numGroupsX, numGroupsY, numGroupsZ);
 }
 
 bool CommandList::Close(CommandList& pendingCommandList)
