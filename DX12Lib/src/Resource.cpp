@@ -9,6 +9,12 @@ Resource::Resource(const std::wstring& name)
     : m_ResourceName(name)
 {}
 
+Resource::Resource(ID3D12Resource* resource, const std::wstring& name )
+	: m_d3d12Resource(resource)
+{
+	SetName(name);
+}
+
 Resource::~Resource()
 {
 }

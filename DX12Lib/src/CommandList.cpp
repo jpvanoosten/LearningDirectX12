@@ -91,6 +91,18 @@ void CommandList::FlushResourceBarriers()
     m_ResourceStateTracker->FlushResourceBarriers(*this);
 }
 
+void CommandList::CopyResource(Resource& dstRes, Resource& srcRes)
+{
+	TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_COPY_DEST);
+	TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	FlushResourceBarriers();
+
+	m_d3d12CommandList->CopyResource(dstRes.GetD3D12Resource().Get(), srcRes.GetD3D12Resource().Get());
+
+	m_TrackedObjects.push_back(dstRes.GetD3D12Resource());
+	m_TrackedObjects.push_back(srcRes.GetD3D12Resource());
+}
+
 void CommandList::CopyBuffer(Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags)
 {
     auto device = Application::Get().GetDevice();
@@ -276,8 +288,17 @@ void CommandList::GenerateMips( Texture& texture )
 
 void CommandList::GenerateMips_UAV(Texture& texture)
 {
-	auto d3d12Resource = texture.GetD3D12Resource();
-	auto d3d12ResourceDesc = d3d12Resource->GetDesc();
+	auto resource = texture.GetD3D12Resource();
+	auto resourceDesc = resource->GetDesc();
+
+	ComPtr<ID3D12Resource> stagingResource = resource;
+	// If the passed-in resource does not allow for UAV access
+	// then create a staging resource this is used to generate
+	// the mip-map chain.
+	if ((resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) == 0)
+	{
+		auto stagingDesc = resourceDesc
+	}
 
 
 }

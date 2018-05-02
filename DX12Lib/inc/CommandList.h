@@ -74,6 +74,11 @@ public:
      */
     void FlushResourceBarriers();
 
+	/**
+	 * Copy resources.
+	 */
+	void CopyResource(Resource& dstRes, Resource& srcRes);
+
     /**
      * Copy the contents to a vertex buffer in GPU memory.
      */

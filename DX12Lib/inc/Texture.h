@@ -12,6 +12,8 @@ class Texture : public Resource
 {
 public:
     Texture(const std::wstring& name = L"");
+	Texture(ID3D12Resource* resource, const std::wstring& name = L"");
+
 	Texture(const Texture& copy) = delete;
 	Texture& operator=(const Texture& other) = delete;
 
@@ -38,6 +40,9 @@ public:
 	static bool IsFormatUAVCompatible(DXGI_FORMAT format);
 	static bool IsFormatSRGB(DXGI_FORMAT format);
 	static bool IsFormatBGR(DXGI_FORMAT format);
+
+	// Return a typeless format from the given format.
+	static DXGI_FORMAT GetTypelessFormat(DXGI_FORMAT format);
 
 protected:
 

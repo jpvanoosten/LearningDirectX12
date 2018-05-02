@@ -14,6 +14,17 @@ Texture::Texture(const std::wstring& name)
 	m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
+Texture::Texture(ID3D12Resource* resource, const std::wstring& name)
+	: Resource(resource, name)
+{
+	m_ShaderResourceView = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	// Maximum size of a texture in either dimension is 16,384. That means a maximum of 15 mips (0-14).
+	m_UnorderedAccessViews = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 15);
+
+	m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
+
 Texture::~Texture()
 {}
 
@@ -153,4 +164,64 @@ bool Texture::IsFormatBGR(DXGI_FORMAT format)
 		return false;
 	}
 
+}
+
+DXGI_FORMAT Texture::GetTypelessFormat(DXGI_FORMAT format)
+{
+	DXGI_FORMAT typelessFormat = format;
+
+	switch (format)
+	{
+	case DXGI_FORMAT_R32G32B32A32_FLOAT:
+	case DXGI_FORMAT_R32G32B32A32_UINT:
+	case DXGI_FORMAT_R32G32B32A32_SINT:
+		typelessFormat = DXGI_FORMAT_R32G32B32A32_TYPELESS;
+		break;
+	case DXGI_FORMAT_R32G32B32_FLOAT:
+	case DXGI_FORMAT_R32G32B32_UINT:
+	case DXGI_FORMAT_R32G32B32_SINT:
+		typelessFormat = DXGI_FORMAT_R32G32B32_TYPELESS;
+		break;
+	case DXGI_FORMAT_R16G16B16A16_FLOAT:
+	case DXGI_FORMAT_R16G16B16A16_UNORM:
+	case DXGI_FORMAT_R16G16B16A16_UINT:
+	case DXGI_FORMAT_R16G16B16A16_SNORM:
+	case DXGI_FORMAT_R16G16B16A16_SINT:
+		typelessFormat = DXGI_FORMAT_R16G16B16A16_TYPELESS;
+		break;
+	case DXGI_FORMAT_R32G32_FLOAT:
+	case DXGI_FORMAT_R32G32_UINT:
+	case DXGI_FORMAT_R32G32_SINT:
+		typelessFormat = DXGI_FORMAT_R32G32_TYPELESS;
+		break;
+	case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		typelessFormat = DXGI_FORMAT_R32G8X24_TYPELESS;
+		break;
+	case DXGI_FORMAT_R10G10B10A2_UNORM:
+	case DXGI_FORMAT_R10G10B10A2_UINT:
+		typelessFormat = DXGI_FORMAT_R10G10B10A2_TYPELESS;
+		break;
+	case DXGI_FORMAT_R8G8B8A8_UNORM:
+	case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+	case DXGI_FORMAT_R8G8B8A8_UINT:
+	case DXGI_FORMAT_R8G8B8A8_SNORM:
+	case DXGI_FORMAT_R8G8B8A8_SINT:
+		typelessFormat = DXGI_FORMAT_R8G8B8A8_TYPELESS;
+		break;
+	case DXGI_FORMAT_R16G16_FLOAT:
+	case DXGI_FORMAT_R16G16_UNORM:
+	case DXGI_FORMAT_R16G16_UINT:
+	case DXGI_FORMAT_R16G16_SNORM:
+	case DXGI_FORMAT_R16G16_SINT:
+		typelessFormat = DXGI_FORMAT_R16G16_TYPELESS;
+		break;
+	case DXGI_FORMAT_D32_FLOAT:
+	case DXGI_FORMAT_R32_FLOAT:
+	case DXGI_FORMAT_R32_UINT:
+	case DXGI_FORMAT_R32_SINT:
+		typelessFormat = DXGI_FORMAT_R32_TYPELESS;
+		break;
+
+		// TODO: Thomas is being anoying.
+	}
 }
