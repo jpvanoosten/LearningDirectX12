@@ -157,7 +157,7 @@ public:
     }
 
     /**
-     * Set a set of 32-bit constants to the graphics pipeline.
+     * Set a set of 32-bit constants on the graphics pipeline.
      */
     void SetGraphics32BitConstants( uint32_t rootParameterIndex, uint32_t numConstants, const void* constants );
     template<typename T>
@@ -166,6 +166,18 @@ public:
         static_assert( sizeof( T ) % sizeof( uint32_t ) == 0, "Size of type must be a multiple of 4 bytes" );
         SetGraphics32BitConstants( rootParameterIndex, sizeof( T ) / sizeof( uint32_t ), &constants );
     }
+
+    /**
+     * Set a set of 32-bit constants on the compute pipeline.
+     */
+    void SetCompute32BitConstants( uint32_t rootParameterIndex, uint32_t numConstants, const void* constants );
+    template<typename T>
+    void SetCompute32BitConstants( uint32_t rootParameterIndex, const T& constants )
+    {
+        static_assert( sizeof( T ) % sizeof( uint32_t ) == 0, "Size of type must be a multiple of 4 bytes" );
+        SetCompute32BitConstants( rootParameterIndex, sizeof( T ) / sizeof( uint32_t ), &constants );
+    }
+
 
     /**
      * Set the vertex buffer to the rendering pipeline.
@@ -219,7 +231,12 @@ public:
     /**
      * Set the SRV on the graphics pipeline.
      */
-    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, uint32_t firstSubresource = 0, uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+
+    /**
+     * Set the UAV on the graphics pipeline.
+     */
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const Resource& resource, uint32_t firstSubresource = 0, uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
 
     /**
      * Draw geometry.
@@ -261,6 +278,11 @@ public:
      * Should only be called by the DynamicDescriptorHeap class.
      */
     void SetDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap );
+
+    std::shared_ptr<CommandList> GetGenerateMipsCommandList() const
+    {
+        return m_GenerateMipsCommandList;
+    }
 
 protected:
 

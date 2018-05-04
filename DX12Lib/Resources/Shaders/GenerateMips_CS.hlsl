@@ -5,13 +5,13 @@
 
 #define BLOCK_SIZE 8
 
-// When reducing the size of a texture, it could be that downscaling the texture 
-// will result in a less than exactly 50% (1/2) of the original texture size.
-// This happens if either the width, or the height (or both) dimensions of the texture
-// are odd. For example, downscaling a 5x3 texture will result in a 2x1 texture which
-// has a 60% reduction in the texture width and 66% reduction in the height.
-// When this happens, we need to take more samples from the source texture to 
-// determine the pixel value in the destination texture.
+ // When reducing the size of a texture, it could be that downscaling the texture 
+ // will result in a less than exactly 50% (1/2) of the original texture size.
+ // This happens if either the width, or the height (or both) dimensions of the texture
+ // are odd. For example, downscaling a 5x3 texture will result in a 2x1 texture which
+ // has a 60% reduction in the texture width and 66% reduction in the height.
+ // When this happens, we need to take more samples from the source texture to 
+ // determine the pixel value in the destination texture.
 
 #define WIDTH_HEIGHT_EVEN 0     // Both the width and the height of the texture are even.
 #define WIDTH_ODD_HEIGHT_EVEN 1 // The texture width is odd and the height is even.
@@ -30,6 +30,8 @@ cbuffer GenerateMipsCB : register( b0 )
 {
     uint SrcMipLevel;	// Texture level of source mip
     uint NumMipLevels;	// Number of OutMips to write: [1-4]
+    uint SrcDimension;  // Width and height of the source texture are even or odd.
+    uint Padding;       // Pad to 16 byte alignment.
     float2 TexelSize;	// 1.0 / OutMip1.Dimensions
 }
 
@@ -99,7 +101,7 @@ float4 PackColor( float4 Linear )
 [numthreads( BLOCK_SIZE, BLOCK_SIZE, 1 )]
 void main( ComputeShaderInput IN )
 {
-	float4 Src1;
+    float4 Src1;
 
     // One bilinear sample is insufficient when scaling down by more than 2x.
     // You will slightly undersample in the case where the source dimension
@@ -107,66 +109,62 @@ void main( ComputeShaderInput IN )
     // power-of-two sized textures.  Trying to handle the undersampling case
     // will force this shader to be slower and more complicated as it will
     // have to take more source texture samples.
-	uint srcWidth, srcHeight, numMipLevels;
-	SrcMip.GetDimensions(SrcMipLevel, srcWidth, srcHeight, numMipLevels);
 
-	// Determine the path to use based on the dimension of the 
-	// source texture.
-	// 0b00(0): Both width and height are even.
-	// 0b01(1): Width is odd, height is even.
-	// 0b10(2): Width is even, height is odd.
-	// 0b11(3): Both width and height are odd.
-	uint srcDimension = (srcHeight & 1) << 1 | (srcWidth & 1);
+    // Determine the path to use based on the dimension of the 
+    // source texture.
+    // 0b00(0): Both width and height are even.
+    // 0b01(1): Width is odd, height is even.
+    // 0b10(2): Width is even, height is odd.
+    // 0b11(3): Both width and height are odd.
+    switch ( SrcDimension )
+    {
+        case WIDTH_HEIGHT_EVEN:
+        {
+            float2 UV = TexelSize * ( IN.DispatchThreadID.xy + 0.5 );
 
-	switch (srcDimension)
-	{
-	case WIDTH_HEIGHT_EVEN:
-	{
-		float2 UV = TexelSize * (IN.DispatchThreadID.xy + 0.5);
-		
-		Src1 = SrcMip.SampleLevel(LinearClampSampler, UV, SrcMipLevel);
-	}
-	break;
-	case WIDTH_ODD_HEIGHT_EVEN:
-	{
-		// > 2:1 in X dimension
-		// Use 2 bilinear samples to guarantee we don't undersample when downsizing by more than 2x
-		// horizontally.
-		float2 UV1 = TexelSize * (IN.DispatchThreadID.xy + float2(0.25, 0.5));
-		float2 Off = TexelSize * float2(0.5, 0.0);
-		
-		Src1 = 0.5 * (SrcMip.SampleLevel(LinearClampSampler, UV1, SrcMipLevel) +
-			SrcMip.SampleLevel(LinearClampSampler, UV1 + Off, SrcMipLevel));
-	}
-	break;
-	case WIDTH_EVEN_HEIGHT_ODD:
-	{
-		// > 2:1 in Y dimension
-		// Use 2 bilinear samples to guarantee we don't undersample when downsizing by more than 2x
-		// vertically.
-		float2 UV1 = TexelSize * (IN.DispatchThreadID.xy + float2(0.5, 0.25));
-		float2 Off = TexelSize * float2(0.0, 0.5);
-		
-		Src1 = 0.5 * (SrcMip.SampleLevel(LinearClampSampler, UV1, SrcMipLevel) +
-			SrcMip.SampleLevel(LinearClampSampler, UV1 + Off, SrcMipLevel));
-	}
-	break;
-	case WIDTH_HEIGHT_ODD:
-	{
-		// > 2:1 in in both dimensions
-		// Use 4 bilinear samples to guarantee we don't undersample when downsizing by more than 2x
-		// in both directions.
-		float2 UV1 = TexelSize * (IN.DispatchThreadID.xy + float2(0.25, 0.25));
-		float2 O = TexelSize * 0.5;
-		
-		Src1 = SrcMip.SampleLevel(LinearClampSampler, UV1, SrcMipLevel);
-		Src1 += SrcMip.SampleLevel(LinearClampSampler, UV1 + float2(O.x, 0.0), SrcMipLevel);
-		Src1 += SrcMip.SampleLevel(LinearClampSampler, UV1 + float2(0.0, O.y), SrcMipLevel);
-		Src1 += SrcMip.SampleLevel(LinearClampSampler, UV1 + float2(O.x, O.y), SrcMipLevel);
-		Src1 *= 0.25;
-	}
-	break;
-	}
+            Src1 = SrcMip.SampleLevel( LinearClampSampler, UV, SrcMipLevel );
+        }
+        break;
+        case WIDTH_ODD_HEIGHT_EVEN:
+        {
+            // > 2:1 in X dimension
+            // Use 2 bilinear samples to guarantee we don't undersample when downsizing by more than 2x
+            // horizontally.
+            float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.25, 0.5 ) );
+            float2 Off = TexelSize * float2( 0.5, 0.0 );
+
+            Src1 = 0.5 * ( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) +
+                           SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) );
+        }
+        break;
+        case WIDTH_EVEN_HEIGHT_ODD:
+        {
+            // > 2:1 in Y dimension
+            // Use 2 bilinear samples to guarantee we don't undersample when downsizing by more than 2x
+            // vertically.
+            float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.5, 0.25 ) );
+            float2 Off = TexelSize * float2( 0.0, 0.5 );
+
+            Src1 = 0.5 * ( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) +
+                           SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) );
+        }
+        break;
+        case WIDTH_HEIGHT_ODD:
+        {
+            // > 2:1 in in both dimensions
+            // Use 4 bilinear samples to guarantee we don't undersample when downsizing by more than 2x
+            // in both directions.
+            float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.25, 0.25 ) );
+            float2 Off = TexelSize * 0.5;
+
+            Src1 = SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel );
+            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, 0.0   ), SrcMipLevel );
+            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( 0.0,   Off.y ), SrcMipLevel );
+            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, Off.y ), SrcMipLevel );
+            Src1 *= 0.25;
+        }
+        break;
+    }
 
     OutMip1[IN.DispatchThreadID.xy] = PackColor( Src1 );
 

@@ -80,37 +80,40 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
 // Returns the fence value to wait for for this command list.
 uint64_t CommandQueue::ExecuteCommandList(std::shared_ptr<CommandList> commandList)
 {
-    ResourceStateTracker::Lock();
+    return ExecuteCommandLists( std::vector<std::shared_ptr<CommandList> >( { commandList } ) );
+    //ResourceStateTracker::Lock();
 
-    auto pendingCommandList = GetCommandList();
+    //auto pendingCommandList = GetCommandList();
 
-    // If there are no pending resource barriers, then only execute a single command list.
-    UINT numCommandLists = 1;
-    UINT firstCommandList = 1;
+    //// If there are no pending resource barriers, then only execute a single command list.
+    //UINT numCommandLists = 1;
+    //UINT firstCommandList = 1;
 
-    // Close the command list, flushing any pending resource barriers.
-    if ( commandList->Close( *pendingCommandList ) )
-    {
-        // There are pending resource barriers. Execute both command lists.
-        numCommandLists = 2;
-        firstCommandList = 0;
-    }
-    pendingCommandList->Close();
+    //// Close the command list, flushing any pending resource barriers.
+    //if ( commandList->Close( *pendingCommandList ) )
+    //{
+    //    // There are pending resource barriers. Execute both command lists.
+    //    numCommandLists = 2;
+    //    firstCommandList = 0;
+    //}
+    //pendingCommandList->Close();
 
-    ID3D12CommandList* const ppCommandLists[] = {
-        pendingCommandList->GetGraphicsCommandList().Get(),
-        commandList->GetGraphicsCommandList().Get()
-    };
+    //ID3D12CommandList* const ppCommandLists[] = {
+    //    pendingCommandList->GetGraphicsCommandList().Get(),
+    //    commandList->GetGraphicsCommandList().Get()
+    //};
 
-    m_d3d12CommandQueue->ExecuteCommandLists(numCommandLists, &ppCommandLists[firstCommandList]);
-    uint64_t fenceValue = Signal();
+    //m_d3d12CommandQueue->ExecuteCommandLists(numCommandLists, &ppCommandLists[firstCommandList]);
+    //uint64_t fenceValue = Signal();
 
-    ResourceStateTracker::Unlock();
+    //ResourceStateTracker::Unlock();
 
-    m_CommandListQueue.emplace(CommandListEntry{ fenceValue, pendingCommandList });
-    m_CommandListQueue.emplace(CommandListEntry{ fenceValue, commandList });
+    //m_CommandListQueue.emplace(CommandListEntry{ fenceValue, pendingCommandList });
+    //m_CommandListQueue.emplace(CommandListEntry{ fenceValue, commandList });
 
-    return fenceValue;
+
+
+    //return fenceValue;
 }
 
 uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<CommandList> >& commandLists)
@@ -121,6 +124,10 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     std::vector<std::shared_ptr<CommandList> > toBeQueued;
     toBeQueued.reserve(commandLists.size() * 2);        // 2x since each command list will have a pending command list.
 
+    // Generate mips command lists.
+    std::vector<std::shared_ptr<CommandList> > generateMipsCommandLists;
+    generateMipsCommandLists.reserve( commandLists.size() );
+
     // Command lists that need to be executed.
     std::vector<ID3D12CommandList*> d3d12CommandLists;
     d3d12CommandLists.reserve(commandLists.size() * 2); // 2x since each command list will have a pending command list.
@@ -128,14 +135,24 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     for (auto commandList : commandLists)
     {
         auto pendingCommandList = GetCommandList();
-        commandList->Close(*pendingCommandList);
+        bool hasPendingBarriers = commandList->Close( *pendingCommandList );
         pendingCommandList->Close();
-
-        d3d12CommandLists.push_back(pendingCommandList->GetGraphicsCommandList().Get());
+        // If there are no pending barriers on the pending command list, there is no reason to 
+        // execute an empty command list on the command queue.
+        if ( hasPendingBarriers )
+        {
+            d3d12CommandLists.push_back( pendingCommandList->GetGraphicsCommandList().Get() );
+        }
         d3d12CommandLists.push_back(commandList->GetGraphicsCommandList().Get());
 
         toBeQueued.push_back(pendingCommandList);
         toBeQueued.push_back(commandList);
+
+        auto generateMipsCommandList = commandList->GetGenerateMipsCommandList();
+        if ( generateMipsCommandList )
+        {
+            generateMipsCommandLists.push_back( generateMipsCommandList );
+        }
     }
 
     UINT numCommandLists = static_cast<UINT>(d3d12CommandLists.size());
@@ -148,6 +165,15 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     for (auto commandList : toBeQueued)
     {
         m_CommandListQueue.emplace(CommandListEntry{ fenceValue, commandList });
+    }
+
+    // If there are any command lists that generate mips then execute those
+    // after the initial resource command lists have finished.
+    if ( generateMipsCommandLists.size() > 0 )
+    {
+        auto computeQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE );
+        computeQueue->Wait( *this );
+        computeQueue->ExecuteCommandLists( generateMipsCommandLists );
     }
 
     return fenceValue;

@@ -191,6 +191,7 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::CreateDevice(Microsoft::WRL::
             D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   // I'm really not sure how to avoid this message.
             D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,                         // This warning occurs when using capture frame while graphics debugging.
             D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,                       // This warning occurs when using capture frame while graphics debugging.
+//            D3D12_MESSAGE_ID_INVALID_DESCRIPTOR_HANDLE,                     // This happens if an invalid descriptor is copied to a descriptor heap. This error occurs even if the shader never access the descriptor.
         };
 
         D3D12_INFO_QUEUE_FILTER NewFilter = {};

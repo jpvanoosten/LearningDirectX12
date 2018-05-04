@@ -32,7 +32,7 @@ public:
      * Descriptors are not copied to the GPU visible descriptor heap until
      * the CopyAndBindStagedDescriptors function is called.
      */
-    void StageDescriptors(uint32_t rootParameterIndex, uint32_t offset, uint32_t numDescriptors, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors[]);
+    void StageDescriptors(uint32_t rootParameterIndex, uint32_t offset, uint32_t numDescriptors, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors);
 
     /**
      * Copy all of the staged descriptors to the GPU visible descriptor heap and

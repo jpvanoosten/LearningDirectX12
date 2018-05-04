@@ -28,14 +28,32 @@ void ResourceStateTracker::ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier
         const auto iter = m_FinalResourceState.find(transitionBarrier.pResource);
         if (iter != m_FinalResourceState.end())
         {
+            auto& resourceState = iter->second;
             // If the known final state of the resource is different...
-            auto finalState = (iter->second).GetSubresourceState(transitionBarrier.Subresource);
-            if (transitionBarrier.StateAfter != finalState)
+            if ( transitionBarrier.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES &&
+                 !resourceState.SubresourceState.empty() )
             {
-                // Push a new transition barrier with the correct before state.
-                D3D12_RESOURCE_BARRIER newBarrier = barrier;
-                newBarrier.Transition.StateBefore = finalState;
-                m_ResourceBarriers.push_back(newBarrier);
+                for ( auto subresourceState : resourceState.SubresourceState )
+                {
+                    if ( transitionBarrier.StateAfter != subresourceState.second )
+                    {
+                        D3D12_RESOURCE_BARRIER newBarrier = barrier;
+                        newBarrier.Transition.Subresource = subresourceState.first;
+                        newBarrier.Transition.StateBefore = subresourceState.second;
+                        m_ResourceBarriers.push_back( newBarrier );
+                    }
+                }
+            }
+            else
+            {
+                auto finalState = resourceState.GetSubresourceState( transitionBarrier.Subresource );
+                if ( transitionBarrier.StateAfter != finalState )
+                {
+                    // Push a new transition barrier with the correct before state.
+                    D3D12_RESOURCE_BARRIER newBarrier = barrier;
+                    newBarrier.Transition.StateBefore = finalState;
+                    m_ResourceBarriers.push_back( newBarrier );
+                }
             }
         }
         else // In this case, the resource is being used on the command list for the first time. 
