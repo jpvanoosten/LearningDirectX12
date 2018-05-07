@@ -4,6 +4,7 @@
 
 #include <Application.h>
 #include <CommandQueue.h>
+#include <CommandList.h>
 #include <Game.h>
 #include <ResourceStateTracker.h>
 
@@ -15,6 +16,7 @@ Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int c
     , m_VSync(vSync)
     , m_Fullscreen(false)
     , m_FrameCounter(0)
+    , m_FenceValues{0}
 {
     Application& app = Application::Get();
 
@@ -361,10 +363,21 @@ UINT Window::GetCurrentBackBufferIndex() const
 
 UINT Window::Present()
 {
+    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
+    auto commandList = commandQueue->GetCommandList();
+
+    commandList->TransitionBarrier( m_BackBufferTextures[m_CurrentBackBufferIndex], D3D12_RESOURCE_STATE_PRESENT );
+    commandQueue->ExecuteCommandList( commandList );
+
     UINT syncInterval = m_VSync ? 1 : 0;
     UINT presentFlags = m_IsTearingSupported && !m_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
     ThrowIfFailed(m_dxgiSwapChain->Present(syncInterval, presentFlags));
+
+    m_FenceValues[m_CurrentBackBufferIndex] = commandQueue->Signal();
+
     m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
+
+    commandQueue->WaitForFenceValue( m_FenceValues[m_CurrentBackBufferIndex] );
 
     return m_CurrentBackBufferIndex;
 }

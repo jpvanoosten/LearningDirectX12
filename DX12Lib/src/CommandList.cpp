@@ -375,8 +375,8 @@ void CommandList::GenerateMips_UAV( Texture& texture )
 
         SetCompute32BitConstants( GenerateMips::GenerateMipsCB, generateMipsCB );
 
-        SetShaderResourceView( GenerateMips::SrcMip, 0, stagingTexture, srcMip, 1, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
-        SetUnorderedAccessView( GenerateMips::OutMip, 0, stagingTexture, srcMip + 1, mipCount, D3D12_RESOURCE_STATE_UNORDERED_ACCESS );
+        SetShaderResourceView( GenerateMips::SrcMip, 0, stagingTexture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1 );
+        SetUnorderedAccessView( GenerateMips::OutMip, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, srcMip + 1, mipCount );
         // Pad any unused mip levels with a default UAV
         if ( mipCount < 4 )
         {
@@ -601,7 +601,12 @@ void CommandList::SetComputeRootSignature( const RootSignature& rootSignature )
 }
 
 
-void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, uint32_t firstSubresource, uint32_t numSubresources, D3D12_RESOURCE_STATES stateAfter )
+void CommandList::SetShaderResourceView( uint32_t rootParameterIndex,
+                                         uint32_t descriptorOffset,
+                                         const Resource& resource,
+                                         D3D12_RESOURCE_STATES stateAfter,
+                                         uint32_t firstSubresource,
+                                         uint32_t numSubresources )
 {
     if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
     {
@@ -619,7 +624,12 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t d
     m_TrackedObjects.push_back( resource.GetD3D12Resource() );
 }
 
-void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const Resource& resource, uint32_t firstSubresource, uint32_t numSubresources, D3D12_RESOURCE_STATES stateAfter )
+void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, 
+                                          uint32_t descrptorOffset,
+                                          const Resource& resource,
+                                          D3D12_RESOURCE_STATES stateAfter,
+                                          uint32_t firstSubresource,
+                                          uint32_t numSubresources )
 {
     if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
     {
@@ -752,7 +762,7 @@ void CommandList::Reset()
     m_ResourceStateTracker->Reset();
     m_UploadBuffer->Reset();
 
-    ReleaseTrackedObject();
+    ReleaseTrackedObjects();
 
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
     {
@@ -764,7 +774,7 @@ void CommandList::Reset()
     m_GenerateMipsCommandList = nullptr;
 }
 
-void CommandList::ReleaseTrackedObject()
+void CommandList::ReleaseTrackedObjects()
 {
     m_TrackedObjects.clear();
 }

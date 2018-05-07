@@ -21,6 +21,19 @@ CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
     ThrowIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_d3d12CommandQueue)));
     ThrowIfFailed(device->CreateFence(m_FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_d3d12Fence)));
 
+    switch ( type )
+    {
+        case D3D12_COMMAND_LIST_TYPE_COPY:
+            m_d3d12CommandQueue->SetName( L"Copy Command Queue" );
+            break;
+        case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+            m_d3d12CommandQueue->SetName( L"Compute Command Queue" );
+            break;
+        case D3D12_COMMAND_LIST_TYPE_DIRECT:
+            m_d3d12CommandQueue->SetName( L"Direct Command Queue" );
+            break;
+    }
+
     m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(m_FenceEvent && "Failed to create fence event handle.");
 }
@@ -57,9 +70,15 @@ void CommandQueue::Flush()
     {
         auto entry = tmpQueue.front();
         WaitForFenceValue(entry.fenceValue);
-        entry.commandList->ReleaseTrackedObject();
+        entry.commandList->ReleaseTrackedObjects();
         tmpQueue.pop();
     }
+
+    // In case the command queue was signaled directly 
+    // using the CommandQueue::Signal method then the 
+    // fence value of the command queue might be higher than the fence
+    // value of any of the executed command lists.
+    WaitForFenceValue( m_FenceValue );
 }
 
 std::shared_ptr<CommandList> CommandQueue::GetCommandList()
@@ -135,7 +154,7 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     
     ResourceStateTracker::Unlock();
 
-    // Queue command lists.
+    // Queue command lists for reuse.
     for (auto commandList : toBeQueued)
     {
         m_CommandListQueue.emplace(CommandListEntry{ fenceValue, commandList });

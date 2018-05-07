@@ -143,6 +143,8 @@ private:
     HighResolutionClock m_RenderClock;
     uint64_t m_FrameCounter;
 
+    UINT64 m_FenceValues[BufferCount];
+
     std::weak_ptr<Game> m_pGame;
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;

@@ -82,8 +82,6 @@ private:
     // Resize the depth buffer to match the size of the client area.
     void ResizeDepthBuffer(int width, int height);
     
-    uint64_t m_FenceValues[Window::BufferCount] = {};
-
     // Some geometry to render.
     std::unique_ptr<Mesh> m_CubeMesh;
     std::unique_ptr<Mesh> m_SphereMesh;

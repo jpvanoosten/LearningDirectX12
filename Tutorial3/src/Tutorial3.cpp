@@ -392,8 +392,6 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     UINT currentBackBufferIndex = m_pWindow->GetCurrentBackBufferIndex();
     auto& renderTarget = m_pWindow->GetCurrentRenderTarget();
 
-    auto refCount = renderTarget.RefCount();
-
     // Clear the render targets.
     {
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
@@ -574,19 +572,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
         m_ConeMesh->Draw( *commandList );
     }
 
+    commandQueue->ExecuteCommandList( commandList );
+
     // Present
-    {
-        commandList->TransitionBarrier( renderTarget, D3D12_RESOURCE_STATE_PRESENT );
-
-        m_FenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList( commandList );
-
-        currentBackBufferIndex = m_pWindow->Present();
-
-        commandQueue->WaitForFenceValue( m_FenceValues[currentBackBufferIndex] );
-
-        auto refCount = renderTarget.RefCount();
-        int i = 3;
-    }
+    m_pWindow->Present();
 }
 
 void Tutorial3::OnKeyPressed( KeyEventArgs& e )

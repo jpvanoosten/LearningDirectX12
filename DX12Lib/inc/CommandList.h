@@ -258,12 +258,27 @@ public:
     /**
      * Set the SRV on the graphics pipeline.
      */
-    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource, uint32_t firstSubresource = 0, uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+    void SetShaderResourceView(
+        uint32_t rootParameterIndex,
+        uint32_t descriptorOffset,
+        const Resource& resource,
+        D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | 
+                                           D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+        uint32_t firstSubresource = 0,
+        uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES 
+    );
 
     /**
      * Set the UAV on the graphics pipeline.
      */
-    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const Resource& resource, uint32_t firstSubresource = 0, uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+    void SetUnorderedAccessView( 
+        uint32_t rootParameterIndex, 
+        uint32_t descrptorOffset,
+        const Resource& resource, 
+        D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+        uint32_t firstSubresource = 0, 
+        uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES 
+    );
 
     /**
      * Set the render targets for the graphics rendering pipeline.
@@ -310,7 +325,7 @@ public:
     /**
      * Release tracked objects. Useful if the swap chain needs to be resized.
      */
-    void ReleaseTrackedObject();
+    void ReleaseTrackedObjects();
 
     /**
      * Set the currently bound descriptor heap.
