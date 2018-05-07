@@ -377,7 +377,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
 
         SetShaderResourceView( GenerateMips::SrcMip, 0, stagingTexture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1 );
         SetUnorderedAccessView( GenerateMips::OutMip, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, srcMip + 1, mipCount );
-        // Pad any unused mip levels with a default UAV
+        // Pad any unused mip levels with a default UAV. Doing this keeps the DX12 runtime happy.
         if ( mipCount < 4 )
         {
             m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors( GenerateMips::OutMip, mipCount, 4 - mipCount, m_GenerateMipsPSO->GetDefaultUAV() );

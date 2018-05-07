@@ -10,3 +10,5 @@ CTestTestfile.cmake
 /build_vs2017
 .vs/
 *.aps
+/Data/Shaders/GenerateMips_CS.cso
+/DX12Lib/inc/GenerateMips_CS.inc
