@@ -83,6 +83,10 @@ Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSyn
     : super( name, width, height, vSync )
     , m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
     , m_Viewport( CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( width ), static_cast<float>( height ) ) )
+    , m_DepthBuffer( CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, 
+        width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL), 
+        &CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
+        D3D12_RESOURCE_STATE_COMMON, L"Depth Buffer")
     , m_Forward( 0 )
     , m_Backward( 0 )
     , m_Left( 0 )
@@ -96,8 +100,6 @@ Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSyn
     , m_Width( 0 )
     , m_Height( 0 )
 {
-    // Create the descriptor handle for the depth-stencil view.
-    m_hDSV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_DSV );
 
     XMVECTOR cameraPos = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -168,8 +170,8 @@ bool Tutorial3::LoadContent()
     rootParameters[RootParameters::SpotLights].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
     rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
 
-    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler;
-    linearRepeatSampler.Init( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
+    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
+    CD3DX12_STATIC_SAMPLER_DESC anisotropicSampler( 0, D3D12_FILTER_ANISOTROPIC );
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
     rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler, rootSignatureFlags );
@@ -218,25 +220,7 @@ void Tutorial3::ResizeDepthBuffer( int width, int height )
     width = std::max( 1, width );
     height = std::max( 1, height );
 
-    auto device = Application::Get().GetDevice();
-
-    // Resize screen dependent resources.
-    // Create a depth buffer.
-    D3D12_CLEAR_VALUE optimizedClearValue = {};
-    optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
-    optimizedClearValue.DepthStencil = { 1.0f, 0 };
-
-    ThrowIfFailed( device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ),
-        D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_D32_FLOAT, width, height,
-                                       1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL ),
-        D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        &optimizedClearValue,
-        IID_PPV_ARGS( &m_DepthBuffer )
-    ) );
-
-    device->CreateDepthStencilView( m_DepthBuffer.Get(), nullptr, m_hDSV );
+    m_DepthBuffer.Resize(width, height);
 }
 
 void Tutorial3::OnResize( ResizeEventArgs& e )
@@ -252,7 +236,7 @@ void Tutorial3::OnResize( ResizeEventArgs& e )
         m_Camera.set_Projection( 45.0f, aspectRatio, 0.1f, 100.0f );
 
         m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f,
-                                       static_cast<float>( e.Width ), static_cast<float>( e.Height ) );
+            static_cast<float>(e.Width), static_cast<float>(e.Height));
 
         ResizeDepthBuffer( e.Width, e.Height );
     }
@@ -404,24 +388,21 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto commandList = commandQueue->GetCommandList();
-    auto d3d12CommandList = commandList->GetGraphicsCommandList();
 
     UINT currentBackBufferIndex = m_pWindow->GetCurrentBackBufferIndex();
-    auto backBuffer = m_pWindow->GetCurrentBackBuffer();
-    auto rtv = m_pWindow->GetCurrentRenderTargetView();
+    auto& renderTarget = m_pWindow->GetCurrentRenderTarget();
+
+    auto refCount = renderTarget.RefCount();
 
     // Clear the render targets.
     {
-        TransitionResource( d3d12CommandList, backBuffer,
-                            D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
-
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
-        ClearRTV( d3d12CommandList, rtv, clearColor );
-        ClearDepth( d3d12CommandList, m_hDSV );
+        commandList->ClearTexture( renderTarget, clearColor );
+        commandList->ClearDepthStencilTexture( m_DepthBuffer, D3D12_CLEAR_FLAG_DEPTH );
     }
 
-    d3d12CommandList->SetPipelineState( m_PipelineState.Get() );
+    commandList->SetPipelineState(m_PipelineState);
     commandList->SetGraphicsRootSignature( m_RootSignature );
 
     // Upload lights
@@ -433,10 +414,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::PointLights, m_PointLights );
     commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
 
-    d3d12CommandList->RSSetViewports( 1, &m_Viewport );
-    d3d12CommandList->RSSetScissorRects( 1, &m_ScissorRect );
+    commandList->SetViewport( m_Viewport );
+    commandList->SetScissorRect( m_ScissorRect);
 
-    d3d12CommandList->OMSetRenderTargets( 1, &rtv, FALSE, &m_hDSV );
+    commandList->SetRenderTarget( &renderTarget, &m_DepthBuffer );
 
     // Draw the earth sphere
     XMMATRIX translationMatrix = XMMatrixTranslation( -4.0f, 2.0f, -4.0f );
@@ -595,14 +576,16 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     // Present
     {
-        TransitionResource( d3d12CommandList, backBuffer,
-                            D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
+        commandList->TransitionBarrier( renderTarget, D3D12_RESOURCE_STATE_PRESENT );
 
         m_FenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList( commandList );
 
         currentBackBufferIndex = m_pWindow->Present();
 
         commandQueue->WaitForFenceValue( m_FenceValues[currentBackBufferIndex] );
+
+        auto refCount = renderTarget.RefCount();
+        int i = 3;
     }
 }
 

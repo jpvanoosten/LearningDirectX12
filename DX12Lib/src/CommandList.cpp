@@ -269,15 +269,15 @@ void CommandList::GenerateMips( Texture& texture )
         throw std::exception( "Generate Mips only supports 2D Textures." );
     }
 
-    if ( Texture::IsFormatUAVCompatible( d3d12ResourceDesc.Format ) )
+    if ( Texture::IsUAVCompatibleFormat( d3d12ResourceDesc.Format ) )
     {
         GenerateMips_UAV( texture );
     }
-    else if ( Texture::IsFormatBGR( d3d12ResourceDesc.Format ) )
+    else if ( Texture::IsBGRFormat( d3d12ResourceDesc.Format ) )
     {
         GenerateMips_BGR( texture );
     }
-    else if ( Texture::IsFormatSRGB( d3d12ResourceDesc.Format ) )
+    else if ( Texture::IsSRGBFormat( d3d12ResourceDesc.Format ) )
     {
         GenerateMips_sRGB( texture );
     }
@@ -308,7 +308,6 @@ void CommandList::GenerateMips_UAV( Texture& texture )
     {
         auto stagingDesc = resourceDesc;
         stagingDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-        //		stagingDesc.Format = Texture::GetTypelessFormat(resourceDesc.Format);
 
         ThrowIfFailed( device->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ),
@@ -333,7 +332,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
 
     GenerateMipsCB generateMipsCB;
 
-    for ( uint32_t srcMip = 0; srcMip < resourceDesc.MipLevels - 1; )
+    for ( uint32_t srcMip = 0; srcMip < resourceDesc.MipLevels - 1u; )
     {
         uint32_t srcWidth = static_cast<uint32_t>( resourceDesc.Width >> srcMip );
         uint32_t srcHeight = resourceDesc.Height >> srcMip;
@@ -408,6 +407,22 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
 
 }
 
+void CommandList::ClearTexture( const Texture& texture, const float clearColor[4])
+{
+    TransitionBarrier(texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    m_d3d12CommandList->ClearRenderTargetView(texture.GetRenderTargetView(), clearColor, 0, nullptr );
+
+    m_TrackedObjects.push_back(texture.GetD3D12Resource().Get());
+}
+
+void CommandList::ClearDepthStencilTexture( const Texture& texture, D3D12_CLEAR_FLAGS clearFlags, float depth, uint8_t stencil)
+{
+    TransitionBarrier(texture, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+    m_d3d12CommandList->ClearDepthStencilView(texture.GetDepthStencilView(), clearFlags, depth, stencil, 0, nullptr);
+
+    m_TrackedObjects.push_back(texture.GetD3D12Resource().Get());
+}
+
 void CommandList::CopyTextureSubresource( Texture& texture, uint32_t firstSubresource, uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData )
 {
     auto device = Application::Get().GetDevice();
@@ -415,7 +430,7 @@ void CommandList::CopyTextureSubresource( Texture& texture, uint32_t firstSubres
     if ( destinationResource )
     {
         // Resource must be in the copy-destination state.
-        TransitionBarrier( texture, D3D12_RESOURCE_STATE_COPY_DEST, true );
+        TransitionBarrier( texture, D3D12_RESOURCE_STATE_COPY_DEST );
 
         UINT64 requiredSize = GetRequiredIntermediateSize( destinationResource.Get(), firstSubresource, numSubresources );
 
@@ -518,6 +533,36 @@ void CommandList::SetGraphicsDynamicStructuredBuffer( uint32_t slot, size_t numE
 
     m_d3d12CommandList->SetGraphicsRootShaderResourceView( slot, heapAllocation.GPU );
 }
+void CommandList::SetViewport(const D3D12_VIEWPORT& viewport)
+{
+    SetViewports( {viewport} );
+}
+
+void CommandList::SetViewports(const std::vector<D3D12_VIEWPORT>& viewports)
+{
+    assert(viewports.size() < D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
+    m_d3d12CommandList->RSSetViewports( static_cast<UINT>( viewports.size() ), 
+        viewports.data() );
+}
+
+void CommandList::SetScissorRect(const D3D12_RECT& scissorRect)
+{
+    SetScissorRects({scissorRect});
+}
+
+void CommandList::SetScissorRects(const std::vector<D3D12_RECT>& scissorRects)
+{
+    assert( scissorRects.size() < D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
+    m_d3d12CommandList->RSSetScissorRects( static_cast<UINT>( scissorRects.size() ), 
+        scissorRects.data());
+}
+
+void CommandList::SetPipelineState(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState)
+{
+    m_d3d12CommandList->SetPipelineState(pipelineState.Get());
+
+    m_TrackedObjects.push_back(pipelineState);
+}
 
 void CommandList::SetGraphicsRootSignature( const RootSignature& rootSignature )
 {
@@ -592,6 +637,39 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t 
     m_TrackedObjects.push_back( resource.GetD3D12Resource() );
 }
 
+void CommandList::SetRenderTarget(const Texture* renderTarget, const Texture* depthTexture )
+{
+    SetRenderTargets( {renderTarget}, depthTexture );
+}
+
+void CommandList::SetRenderTargets(const std::vector<const Texture*> renderTargets, const Texture* depthTexture )
+{
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> renderTargetDescriptors;
+    renderTargetDescriptors.reserve(renderTargets.size());
+
+    for (auto texture : renderTargets)
+    {
+        if (texture)
+        {
+            TransitionBarrier(*texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
+            renderTargetDescriptors.push_back(texture->GetRenderTargetView());
+
+            m_TrackedObjects.push_back(texture->GetD3D12Resource());
+        }
+    }
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE depthStencilDescriptor(D3D12_DEFAULT);
+    if (depthTexture)
+    {
+        TransitionBarrier(*depthTexture, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        depthStencilDescriptor = depthTexture->GetDepthStencilView();
+
+        m_TrackedObjects.push_back(depthTexture->GetD3D12Resource());
+    }
+
+    m_d3d12CommandList->OMSetRenderTargets( static_cast<UINT>( renderTargetDescriptors.size() ),
+        renderTargetDescriptors.data(), FALSE, &depthStencilDescriptor );
+}
 
 void CommandList::Draw( uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance )
 {
@@ -673,7 +751,8 @@ void CommandList::Reset()
 
     m_ResourceStateTracker->Reset();
     m_UploadBuffer->Reset();
-    m_TrackedObjects.clear();
+
+    ReleaseTrackedObject();
 
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
     {
@@ -685,6 +764,10 @@ void CommandList::Reset()
     m_GenerateMipsCommandList = nullptr;
 }
 
+void CommandList::ReleaseTrackedObject()
+{
+    m_TrackedObjects.clear();
+}
 
 void CommandList::SetDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE heapType, ID3D12DescriptorHeap* heap )
 {

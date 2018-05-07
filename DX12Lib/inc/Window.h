@@ -12,6 +12,7 @@
 
 #include <Events.h>
 #include <HighResolutionClock.h>
+#include <Texture.h>
 
 // Forward-declare the DirectXTemplate class.
 class Game;
@@ -78,13 +79,7 @@ public:
     /**
      * Get the render target view for the current back buffer.
      */
-    D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentRenderTargetView() const;
-
-    /**
-     * Get the back buffer resource for the current back buffer.
-     */
-    Microsoft::WRL::ComPtr<ID3D12Resource> GetCurrentBackBuffer() const;
-
+    const Texture& GetCurrentRenderTarget() const;
 
 protected:
     // The Window procedure needs to call protected methods of this class.
@@ -151,10 +146,8 @@ private:
     std::weak_ptr<Game> m_pGame;
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_d3d12RTVDescriptorHeap;
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12BackBuffers[BufferCount];
+    Texture m_BackBufferTextures[BufferCount];
 
-    UINT m_RTVDescriptorSize;
     UINT m_CurrentBackBufferIndex;
 
     RECT m_WindowRect;

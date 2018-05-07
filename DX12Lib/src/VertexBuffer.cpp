@@ -32,3 +32,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE VertexBuffer::GetUnorderedAccessView(uint32_t subres
     throw std::exception("VertexBuffer::GetUnorderedAccessView should not be called.");
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE VertexBuffer::GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice) const
+{
+    throw std::exception("VertexBuffer::GetUnorderedAccessView should not be called.");
+}

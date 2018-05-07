@@ -20,10 +20,12 @@ Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int c
 
     m_IsTearingSupported = app.IsTearingSupported();
 
-    m_dxgiSwapChain = CreateSwapChain();
-    m_d3d12RTVDescriptorHeap = app.CreateDescriptorHeap(BufferCount, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    m_RTVDescriptorSize = app.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    for (int i = 0; i < BufferCount; ++i)
+    {
+        m_BackBufferTextures[i].SetName(L"Backbuffer[" + std::to_wstring(i) + L"]" );
+    }
 
+    m_dxgiSwapChain = CreateSwapChain();
     UpdateRenderTargetViews();
 }
 
@@ -63,14 +65,6 @@ void Window::Destroy()
     {
         // Notify the registered game that the window is being destroyed.
         pGame->OnWindowDestroy();
-    }
-
-    // Remove back buffer resource from the global resource state tracker.
-    for (int i = 0; i < BufferCount; ++i)
-    {
-        auto resource = m_d3d12BackBuffers[i].Get();
-        ResourceStateTracker::RemoveGlobalResourceState(resource);
-        m_d3d12BackBuffers[i].Reset();
     }
 
     if (m_hWnd)
@@ -273,9 +267,8 @@ void Window::OnResize(ResizeEventArgs& e)
 
         for (int i = 0; i < BufferCount; ++i)
         {
-            auto resource = m_d3d12BackBuffers[i].Get();
-            ResourceStateTracker::RemoveGlobalResourceState(resource);
-            m_d3d12BackBuffers[i].Reset();
+            ResourceStateTracker::RemoveGlobalResourceState(m_BackBufferTextures[i].GetD3D12Resource().Get());
+            m_BackBufferTextures[i].Reset();
         }
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -342,36 +335,23 @@ Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()
     return dxgiSwapChain4;
 }
 
-// Update the render target views for the swapchain back buffers.
 void Window::UpdateRenderTargetViews()
 {
-    auto device = Application::Get().GetDevice();
-
-    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_d3d12RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-    for (int i = 0; i < BufferCount; ++i)
+    for (int i = 0; i < BufferCount; ++i )
     {
         ComPtr<ID3D12Resource> backBuffer;
         ThrowIfFailed(m_dxgiSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
+        
+        ResourceStateTracker::AddGlobalResourceState(backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON);
 
-        device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
-
-        ResourceStateTracker::AddGlobalResourceState(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT);
-        m_d3d12BackBuffers[i] = backBuffer;
-
-        rtvHandle.Offset(m_RTVDescriptorSize);
+        m_BackBufferTextures[i].SetD3D12Resource(backBuffer);
+        m_BackBufferTextures[i].CreateViews();
     }
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Window::GetCurrentRenderTargetView() const
+const Texture& Window::GetCurrentRenderTarget() const
 {
-    return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_d3d12RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-        m_CurrentBackBufferIndex, m_RTVDescriptorSize);
-}
-
-Microsoft::WRL::ComPtr<ID3D12Resource> Window::GetCurrentBackBuffer() const
-{
-    return m_d3d12BackBuffers[m_CurrentBackBufferIndex];
+    return m_BackBufferTextures[m_CurrentBackBufferIndex];
 }
 
 UINT Window::GetCurrentBackBufferIndex() const

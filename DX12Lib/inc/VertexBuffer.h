@@ -41,6 +41,7 @@ public:
     * Get the UAV for a (sub)resource.
     */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t subresource = 0) const override;
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice = 0, uint32_t planeSlice = 0) const override;
 
 protected:
 

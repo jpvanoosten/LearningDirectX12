@@ -134,6 +134,16 @@ public:
     void LoadTextureFromFile( Texture& texture, const std::wstring& fileName );
 
     /**
+     * Clear a texture.
+     */
+    void ClearTexture( const Texture& texture, const float clearColor[4] );
+
+    /**
+     * Clear depth/stencil texture.
+     */
+    void ClearDepthStencilTexture( const Texture& texture, D3D12_CLEAR_FLAGS clearFlags, float depth = 1.0f, uint8_t stencil = 0 );
+
+    /**
      * Generate mips for the texture.
      * The first subresource is used to generate the mip chain.
      * Mips are automatically generated for textures loaded from files.
@@ -223,6 +233,23 @@ public:
     }
 
     /**
+     * Set viewports.
+     */
+    void SetViewport( const D3D12_VIEWPORT& viewport );
+    void SetViewports( const std::vector<D3D12_VIEWPORT>& viewports );
+
+    /**
+     * Set scissor rects.
+     */
+    void SetScissorRect( const D3D12_RECT& scissorRect );
+    void SetScissorRects( const std::vector<D3D12_RECT>& scissorRects );
+
+    /**
+     * Set the pipeline state object on the command list.
+     */
+    void SetPipelineState( Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState );
+
+    /**
      * Set the current root signature on the command list.
      */
     void SetGraphicsRootSignature( const RootSignature& rootSignature );
@@ -237,6 +264,13 @@ public:
      * Set the UAV on the graphics pipeline.
      */
     void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const Resource& resource, uint32_t firstSubresource = 0, uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+
+    /**
+     * Set the render targets for the graphics rendering pipeline.
+     * TODO: Create a RenderTarget class.
+     */
+    void SetRenderTarget( const Texture* renderTarget, const Texture* depthTexture = nullptr );
+    void SetRenderTargets( const std::vector<const Texture*> renderTargets, const Texture* depthTexture = nullptr );
 
     /**
      * Draw geometry.
@@ -272,6 +306,11 @@ public:
      * before the command list is returned from CommandQueue::GetCommandList.
      */
     void Reset();
+
+    /**
+     * Release tracked objects. Useful if the swap chain needs to be resized.
+     */
+    void ReleaseTrackedObject();
 
     /**
      * Set the currently bound descriptor heap.

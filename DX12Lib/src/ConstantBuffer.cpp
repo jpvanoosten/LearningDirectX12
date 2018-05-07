@@ -38,3 +38,8 @@ D3D12_CPU_DESCRIPTOR_HANDLE ConstantBuffer::GetUnorderedAccessView(uint32_t subr
 {
     throw std::exception("ConstantBuffer::GetUnorderedAccessView should not be called.");
 }
+
+D3D12_CPU_DESCRIPTOR_HANDLE ConstantBuffer::GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice) const
+{
+    throw std::exception("ConstantBuffer::GetUnorderedAccessView should not be called.");
+}

@@ -97,9 +97,7 @@ private:
     Texture m_MonaLisaTexture;
 
     // Depth buffer.
-    Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthBuffer;
-    // A descriptor handle for the depth buffer.
-    D3D12_CPU_DESCRIPTOR_HANDLE m_hDSV;
+    Texture m_DepthBuffer;
 
     // Root signature
     RootSignature m_RootSignature;

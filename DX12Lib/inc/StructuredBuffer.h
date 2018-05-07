@@ -11,6 +11,10 @@ class StructuredBuffer : public Buffer
 {
 public:
     StructuredBuffer( const std::wstring& name = L"" );
+    StructuredBuffer( const D3D12_RESOURCE_DESC& resDesc, 
+        size_t numElements, size_t elementSize,
+        D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON,
+        const std::wstring& name = L"");
 
     /**
     * Get the number of elements contained in this buffer.
@@ -45,10 +49,15 @@ public:
     /**
      * Get the UAV for a (sub)resource.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t subresource = 0 ) const override
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t subresource) const override
     {
         return m_UAV;
     }
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice) const override
+    {
+        return m_UAV;
+    }
+
 
     const ByteAddressBuffer& GetCounterBuffer() const
     {
@@ -59,8 +68,8 @@ private:
     size_t m_NumElements;
     size_t m_ElementSize;
 
-    D3D12_CPU_DESCRIPTOR_HANDLE m_SRV;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_UAV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE m_SRV;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE m_UAV;
 
     // A buffer to store the internal counter for the structured buffer.
     ByteAddressBuffer m_CounterBuffer;

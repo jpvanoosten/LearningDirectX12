@@ -52,7 +52,14 @@ void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
 
 void CommandQueue::Flush()
 {
-    WaitForFenceValue(Signal());
+    auto tmpQueue = m_CommandListQueue;
+    while (!tmpQueue.empty())
+    {
+        auto entry = tmpQueue.front();
+        WaitForFenceValue(entry.fenceValue);
+        entry.commandList->ReleaseTrackedObject();
+        tmpQueue.pop();
+    }
 }
 
 std::shared_ptr<CommandList> CommandQueue::GetCommandList()
@@ -81,39 +88,6 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
 uint64_t CommandQueue::ExecuteCommandList(std::shared_ptr<CommandList> commandList)
 {
     return ExecuteCommandLists( std::vector<std::shared_ptr<CommandList> >( { commandList } ) );
-    //ResourceStateTracker::Lock();
-
-    //auto pendingCommandList = GetCommandList();
-
-    //// If there are no pending resource barriers, then only execute a single command list.
-    //UINT numCommandLists = 1;
-    //UINT firstCommandList = 1;
-
-    //// Close the command list, flushing any pending resource barriers.
-    //if ( commandList->Close( *pendingCommandList ) )
-    //{
-    //    // There are pending resource barriers. Execute both command lists.
-    //    numCommandLists = 2;
-    //    firstCommandList = 0;
-    //}
-    //pendingCommandList->Close();
-
-    //ID3D12CommandList* const ppCommandLists[] = {
-    //    pendingCommandList->GetGraphicsCommandList().Get(),
-    //    commandList->GetGraphicsCommandList().Get()
-    //};
-
-    //m_d3d12CommandQueue->ExecuteCommandLists(numCommandLists, &ppCommandLists[firstCommandList]);
-    //uint64_t fenceValue = Signal();
-
-    //ResourceStateTracker::Unlock();
-
-    //m_CommandListQueue.emplace(CommandListEntry{ fenceValue, pendingCommandList });
-    //m_CommandListQueue.emplace(CommandListEntry{ fenceValue, commandList });
-
-
-
-    //return fenceValue;
 }
 
 uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<CommandList> >& commandLists)

@@ -9,6 +9,10 @@ class Buffer : public Resource
 {
 public:
     Buffer(const std::wstring& name = L"");
+    Buffer( const D3D12_RESOURCE_DESC& resDesc,
+        size_t numElements, size_t elementSize,
+        D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON, 
+        const std::wstring& name = L"" );
     
     /**
      * Create the views for the buffer resource.
