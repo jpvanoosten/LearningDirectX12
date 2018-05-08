@@ -113,37 +113,40 @@ void CommandList::CopyBuffer( Buffer& buffer, size_t numElements, size_t element
     ComPtr<ID3D12Resource> d3d12Resource;
     if ( bufferSize == 0 )
     {
-        // This will result in a NULL resource (which may be desired to define a default resource.
+        // This will result in a NULL resource (which may be desired to define a default null resource).
     }
     else
     {
-        ThrowIfFailed( device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ),
-                                                        D3D12_HEAP_FLAG_NONE,
-                                                        &CD3DX12_RESOURCE_DESC::Buffer( bufferSize, flags ),
-                                                        D3D12_RESOURCE_STATE_COPY_DEST,
-                                                        nullptr,
-                                                        IID_PPV_ARGS( &d3d12Resource ) ) );
+        ThrowIfFailed( device->CreateCommittedResource( 
+            &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ),
+            D3D12_HEAP_FLAG_NONE,
+            &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr,
+            IID_PPV_ARGS(&d3d12Resource)));
 
         // Add the resource to the global resource state tracker.
-        ResourceStateTracker::AddGlobalResourceState( d3d12Resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST );
+        ResourceStateTracker::AddGlobalResourceState( d3d12Resource.Get(), D3D12_RESOURCE_STATE_COMMON);
 
         if ( bufferData != nullptr )
         {
             // Create an upload resource to use as an intermediate buffer to copy the buffer resource 
             ComPtr<ID3D12Resource> uploadResource;
-            ThrowIfFailed( device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
-                                                            D3D12_HEAP_FLAG_NONE,
-                                                            &CD3DX12_RESOURCE_DESC::Buffer( bufferSize ),
-                                                            D3D12_RESOURCE_STATE_GENERIC_READ,
-                                                            nullptr,
-                                                            IID_PPV_ARGS( &uploadResource ) ) );
+            ThrowIfFailed( device->CreateCommittedResource( 
+                &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+                D3D12_HEAP_FLAG_NONE,
+                &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&uploadResource)));
 
             D3D12_SUBRESOURCE_DATA subresourceData = {};
             subresourceData.pData = bufferData;
             subresourceData.RowPitch = bufferSize;
             subresourceData.SlicePitch = subresourceData.RowPitch;
 
-            UpdateSubresources( m_d3d12CommandList.Get(), d3d12Resource.Get(), uploadResource.Get(), 0, 0, 1, &subresourceData );
+            UpdateSubresources( m_d3d12CommandList.Get(), d3d12Resource.Get(),
+                uploadResource.Get(), 0, 0, 1, &subresourceData );
 
             // Add references to resources so they stay in scope until the command list is reset.
             m_TrackedObjects.push_back( uploadResource );

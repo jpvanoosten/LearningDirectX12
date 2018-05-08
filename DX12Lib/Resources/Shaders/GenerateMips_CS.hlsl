@@ -101,7 +101,7 @@ float4 PackColor( float4 Linear )
 [numthreads( BLOCK_SIZE, BLOCK_SIZE, 1 )]
 void main( ComputeShaderInput IN )
 {
-    float4 Src1;
+    float4 Src1 = (float4)0;
 
     // One bilinear sample is insufficient when scaling down by more than 2x.
     // You will slightly undersample in the case where the source dimension
