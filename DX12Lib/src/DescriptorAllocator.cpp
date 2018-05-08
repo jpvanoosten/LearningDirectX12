@@ -4,6 +4,16 @@
 
 #include <Application.h>
 
+DescriptorPage::DescriptorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+{
+    // Number of descriptors in the heap must be a power-of-two.
+    numDescriptors = Math::NextHighestPow2(numDescriptors);
+    _BitScanReverse(&m_NumBuckets, numDescriptors);
+
+
+
+}
+
 DescriptorAllocator::DescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptorsPerHeap)
     : m_HeapType(type)
     , m_NumDescriptorsPerHeap(numDescriptorsPerHeap)

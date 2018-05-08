@@ -337,9 +337,9 @@ void CommandList::GenerateMips_UAV( Texture& texture )
 
     for ( uint32_t srcMip = 0; srcMip < resourceDesc.MipLevels - 1u; )
     {
-        uint32_t srcWidth = static_cast<uint32_t>( resourceDesc.Width >> srcMip );
+        uint64_t srcWidth = resourceDesc.Width >> srcMip;
         uint32_t srcHeight = resourceDesc.Height >> srcMip;
-        uint32_t dstWidth = srcWidth >> 1;
+        uint32_t dstWidth = static_cast<uint32_t>( srcWidth >> 1 );
         uint32_t dstHeight = srcHeight >> 1;
 
         // Determine the compute shader to use based on the dimension of the 
@@ -386,7 +386,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
             m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors( GenerateMips::OutMip, mipCount, 4 - mipCount, m_GenerateMipsPSO->GetDefaultUAV() );
         }
         
-        Dispatch( dstWidth, dstHeight );
+        Dispatch( Math::DivideByMultiple(dstWidth, 8), Math::DivideByMultiple(dstHeight, 8) );
 
         UAVBarrier( stagingTexture );
 

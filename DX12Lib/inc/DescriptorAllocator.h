@@ -13,6 +13,46 @@
 #include <cstdint>
 #include <vector>
 
+struct DescriptorList
+{
+    DescriptorList(D3D12_CPU_DESCRIPTOR_HANDLE baseDescriptor )
+        : BaseDescriptor(baseDescriptor)
+    {
+        Previous = this;
+        Next = this;
+    }
+    
+    // Push an entry into the list.
+    void Push(DescriptorList* entry)
+    {
+        entry->Previous = Previous;
+        entry->Next = this;
+        Previous->Next = entry;
+        Previous = entry;
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE BaseDescriptor;
+
+    DescriptorList* Previous;
+    DescriptorList* Next;
+};
+
+class DescriptorPage
+{
+public:
+    DescriptorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
+
+    D3D12_CPU_DESCRIPTOR_HANDLE Allocate(uint32_t numDescriptors);
+    void Free(D3D12_CPU_DESCRIPTOR_HANDLE hDescriptor);
+
+private:
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_d3d12DescriptorHeap;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_CurrentHandle;
+    DWORD m_NumBuckets;
+
+    uint32_t m_DescriptorSize;
+};
+
 class DescriptorAllocator
 {
 public:
