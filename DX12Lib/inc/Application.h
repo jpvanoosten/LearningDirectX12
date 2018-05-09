@@ -3,6 +3,8 @@
 */
 #pragma once
 
+#include "DescriptorAllocation.h"
+
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
@@ -97,7 +99,13 @@ public:
     /**
      * Allocate a number of CPU visible descriptors.
      */
-    D3D12_CPU_DESCRIPTOR_HANDLE AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors = 1);
+    DescriptorAllocation AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors = 1);
+    void FreeDescriptors( DescriptorAllocation&& allocation );
+
+    /**
+     * Release stale descriptors. This should only be called with a finished frame counter.
+     */
+    void ReleaseStaleDescriptors( uint64_t finishedFrame );
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type);
     UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;

@@ -8,7 +8,9 @@ set( HEADER_FILES
     inc/CommandList.h
     inc/CommandQueue.h
     inc/ConstantBuffer.h
+    inc/DescriptorAllocation.h
     inc/DescriptorAllocator.h
+    inc/DescriptorAllocatorPage.h
     inc/DynamicDescriptorHeap.h
     inc/Events.h
     inc/Game.h
@@ -36,7 +38,9 @@ set( SOURCE_FILES
     src/CommandQueue.cpp
     src/CommandList.cpp
     src/ConstantBuffer.cpp
+    src/DescriptorAllocation.cpp
     src/DescriptorAllocator.cpp
+    src/DescriptorAllocatorPage.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp
 	src/GenerateMipsPSO.cpp

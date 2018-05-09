@@ -5,6 +5,7 @@
 #include <CommandQueue.h>
 #include <Game.h>
 #include <DescriptorAllocator.h>
+#include <DescriptorAllocatorPage.h>
 #include <Window.h>
 
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
@@ -364,9 +365,26 @@ void Application::Flush()
     m_CopyCommandQueue->Flush();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE Application::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+DescriptorAllocation Application::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
 {
     return m_DescriptorAllocators[type]->Allocate(numDescriptors);
+}
+
+void Application::FreeDescriptors( DescriptorAllocation&& allocation )
+{
+    if ( !allocation.IsNull() )
+    {
+        auto type = allocation.GetDescriptorAllocatorPage()->GetHeapType();
+        m_DescriptorAllocators[type]->Free( std::move( allocation ) );
+    }
+}
+
+void Application::ReleaseStaleDescriptors( uint64_t finishedFrame )
+{
+    for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
+    {
+        m_DescriptorAllocators[i]->ReleaseStaleDescriptors( finishedFrame );
+    }
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Application::CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type)

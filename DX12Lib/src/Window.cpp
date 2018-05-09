@@ -379,7 +379,7 @@ UINT Window::Present()
     commandQueue->WaitForFenceValue( m_FenceValues[m_CurrentBackBufferIndex] );
 
     // TODO: Release stale descriptors
-    // Application::Get().ReleaseStaleDescriptors( m_FrameValues[m_CurrentBackBufferIndex] );
+    Application::Get().ReleaseStaleDescriptors( m_FrameValues[m_CurrentBackBufferIndex] );
 
     return m_CurrentBackBufferIndex;
 }
