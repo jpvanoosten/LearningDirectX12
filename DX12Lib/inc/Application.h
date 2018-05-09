@@ -102,6 +102,11 @@ public:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type);
     UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
 
+    static uint64_t GetFrameCount()
+    {
+        return ms_FrameCount;
+    }
+
 protected:
 
     // Create an application instance.
@@ -117,6 +122,7 @@ protected:
     bool CheckTearingSupport();
 
 private:
+    friend LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
     Application(const Application& copy) = delete;
     Application& operator=(const Application& other) = delete;
 
@@ -131,7 +137,7 @@ private:
 
     std::unique_ptr<DescriptorAllocator> m_DescriptorAllocators[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-
     bool m_TearingSupported;
 
+    static uint64_t ms_FrameCount;
 };

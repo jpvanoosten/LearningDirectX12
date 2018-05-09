@@ -152,26 +152,30 @@ class UpdateEventArgs : public EventArgs
 {
 public:
     typedef EventArgs base;
-    UpdateEventArgs( double fDeltaTime, double fTotalTime )
-        : ElapsedTime( fDeltaTime )
-        , TotalTime( fTotalTime )
+    UpdateEventArgs(double fDeltaTime, double fTotalTime, uint64_t frameNumber)
+        : ElapsedTime(fDeltaTime)
+        , TotalTime(fTotalTime)
+        , FrameNumber(frameNumber)
     {}
 
     double ElapsedTime;
     double TotalTime;
+    uint64_t FrameNumber;
 };
 
 class RenderEventArgs : public EventArgs
 {
 public:
     typedef EventArgs base;
-    RenderEventArgs( double fDeltaTime, double fTotalTime )
-        : ElapsedTime( fDeltaTime )
-        , TotalTime( fTotalTime )
+    RenderEventArgs(double fDeltaTime, double fTotalTime, uint64_t frameNumber)
+        : ElapsedTime(fDeltaTime)
+        , TotalTime(fTotalTime)
+        , FrameNumber(frameNumber)
     {}
 
     double ElapsedTime;
     double TotalTime;
+    uint64_t FrameNumber;
 };
 
 class UserEventArgs : public EventArgs

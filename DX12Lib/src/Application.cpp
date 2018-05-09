@@ -17,6 +17,8 @@ static Application* gs_pSingelton = nullptr;
 static WindowMap gs_Windows;
 static WindowNameMap gs_WindowByName;
 
+uint64_t Application::ms_FrameCount = 0;
+
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 // A wrapper struct to allow shared pointers for the window class.
@@ -88,6 +90,9 @@ void Application::Initialize()
     {
         m_DescriptorAllocators[i] = std::make_unique<DescriptorAllocator>(static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(i));
     }
+
+    // Initialize frame counter 
+    ms_FrameCount = 0;
 }
 
 void Application::Create(HINSTANCE hInst)
@@ -445,10 +450,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
         {
         case WM_PAINT:
         {
+            ++Application::ms_FrameCount;
+
             // Delta time will be filled in by the Window.
-            UpdateEventArgs updateEventArgs(0.0f, 0.0f);
+            UpdateEventArgs updateEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
             pWindow->OnUpdate(updateEventArgs);
-            RenderEventArgs renderEventArgs(0.0f, 0.0f);
+            RenderEventArgs renderEventArgs(0.0f, 0.0f, Application::ms_FrameCount);
             // Delta time will be filled in by the Window.
             pWindow->OnRender(renderEventArgs);
         }

@@ -10,6 +10,7 @@ set( HEADER_FILES
     inc/ConstantBuffer.h
     inc/DescriptorAllocator.h
     inc/DynamicDescriptorHeap.h
+    inc/Events.h
     inc/Game.h
 	inc/GenerateMipsPSO.h
     inc/Helpers.h

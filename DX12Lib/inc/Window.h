@@ -141,9 +141,9 @@ private:
 
     HighResolutionClock m_UpdateClock;
     HighResolutionClock m_RenderClock;
-    uint64_t m_FrameCounter;
 
     UINT64 m_FenceValues[BufferCount];
+    uint64_t m_FrameValues[BufferCount];
 
     std::weak_ptr<Game> m_pGame;
 

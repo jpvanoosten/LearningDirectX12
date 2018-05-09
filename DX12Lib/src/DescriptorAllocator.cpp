@@ -4,13 +4,42 @@
 
 #include <Application.h>
 
-DescriptorPage::DescriptorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+DescriptorAllocatorPage::DescriptorAllocatorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )
+    : m_HeapType( type )
+    , m_NumDescriptorsInHeap( numDescriptors )
 {
-    // Number of descriptors in the heap must be a power-of-two.
-    numDescriptors = Math::NextHighestPow2(numDescriptors);
-    _BitScanReverse(&m_NumBuckets, numDescriptors);
+    auto device = Application::Get().GetDevice();
 
+    D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+    heapDesc.Type = m_HeapType;
+    heapDesc.NumDescriptors = m_NumDescriptorsInHeap;
 
+    ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_d3d12DescriptorHeap)));
+
+    m_BaseDescriptor = m_d3d12DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(m_HeapType);
+    m_NumFreeHandles = m_NumDescriptorsInHeap;
+}
+
+void DescriptorAllocatorPage::AddNewBlock(uint32_t offset, uint32_t numDescriptors)
+{
+    auto offsetIt = m_FreeListByOffset.emplace(offset, numDescriptors);
+    auto sizeIt = m_FreeListBySize.emplace(numDescriptors, offsetIt.first);
+    offsetIt.first->second.FreeListBySizeIt = sizeIt;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DescriptorAllocatorPage::Allocate(uint32_t numDescriptors)
+{
+
+}
+
+void DescriptorAllocatorPage::Free(D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle, uint64_t frameNumber)
+{
+
+}
+
+void DescriptorAllocatorPage::ReleaseStaleDescriptors(uint64_t frameNumber)
+{
 
 }
 

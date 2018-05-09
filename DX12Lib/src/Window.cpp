@@ -15,8 +15,8 @@ Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int c
     , m_ClientHeight(clientHeight)
     , m_VSync(vSync)
     , m_Fullscreen(false)
-    , m_FrameCounter(0)
     , m_FenceValues{0}
+    , m_FrameValues{0}
 {
     Application& app = Application::Get();
 
@@ -172,26 +172,24 @@ void Window::RegisterCallbacks(std::shared_ptr<Game> pGame)
     return;
 }
 
-void Window::OnUpdate(UpdateEventArgs&)
+void Window::OnUpdate(UpdateEventArgs& e)
 {
     m_UpdateClock.Tick();
 
     if (auto pGame = m_pGame.lock())
     {
-        m_FrameCounter++;
-
-        UpdateEventArgs updateEventArgs(m_UpdateClock.GetDeltaSeconds(), m_UpdateClock.GetTotalSeconds());
+        UpdateEventArgs updateEventArgs(m_UpdateClock.GetDeltaSeconds(), m_UpdateClock.GetTotalSeconds(), e.FrameNumber);
         pGame->OnUpdate(updateEventArgs);
     }
 }
 
-void Window::OnRender(RenderEventArgs&)
+void Window::OnRender(RenderEventArgs& e)
 {
     m_RenderClock.Tick();
 
     if (auto pGame = m_pGame.lock())
     {
-        RenderEventArgs renderEventArgs(m_RenderClock.GetDeltaSeconds(), m_RenderClock.GetTotalSeconds());
+        RenderEventArgs renderEventArgs(m_RenderClock.GetDeltaSeconds(), m_RenderClock.GetTotalSeconds(), e.FrameNumber);
         pGame->OnRender(renderEventArgs);
     }
 }
@@ -374,10 +372,14 @@ UINT Window::Present()
     ThrowIfFailed(m_dxgiSwapChain->Present(syncInterval, presentFlags));
 
     m_FenceValues[m_CurrentBackBufferIndex] = commandQueue->Signal();
+    m_FrameValues[m_CurrentBackBufferIndex] = Application::GetFrameCount();
 
     m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
     commandQueue->WaitForFenceValue( m_FenceValues[m_CurrentBackBufferIndex] );
+
+    // TODO: Release stale descriptors
+    // Application::Get().ReleaseStaleDescriptors( m_FrameValues[m_CurrentBackBufferIndex] );
 
     return m_CurrentBackBufferIndex;
 }
