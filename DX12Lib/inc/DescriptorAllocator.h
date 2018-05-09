@@ -46,17 +46,27 @@ public:
     void ReleaseStaleDescriptors( uint64_t frameNumber );
 
 protected:
+
+    // Compute the offset of the descriptor handle from the start of the heap.
+    uint32_t ComputeOffset( D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle );
+
     // Adds a new block to the free list.
     void AddNewBlock( uint32_t offset, uint32_t numDescriptors );
+
+    // Free a block of descriptors.
+    // This will also merge free blocks in the free list to form larger blocks
+    // that can be reused.
+    void FreeBlock( uint32_t offset, uint32_t numDescriptors );
+
 private:
     // The offset (in descriptors) within the descriptor heap.
     using OffsetType = uint32_t;
     // The number of descriptors that are available.
     using SizeType = uint32_t;
 
-    struct FreeBlock;
+    struct FreeBlockInfo;
     // A map that lists the free blocks by the offset within the descriptor heap.
-    using FreeListByOffset = std::map<OffsetType, FreeBlock>;
+    using FreeListByOffset = std::map<OffsetType, FreeBlockInfo>;
 
     // A map that lists the free blocks by size.
     // Needs to be a multimap since multiple blocks can have the same size.
@@ -64,16 +74,16 @@ private:
 
     // Map the allocated descriptor to the number of descriptors that were
     // allocated. This is required for returning the descriptors back to the heap.
-    using AllocatedDesciptorMap = std::map<D3D12_CPU_DESCRIPTOR_HANDLE, SizeType>;
+    using AllocatedDesciptorMap = std::map<OffsetType, SizeType>;
 
-    struct StaleDescriptor;
+    struct StaleDescriptorInfo;
     // Stale descriptors are queued for release until the frame that they were freed
     // has completed.
-    using StaleDescriptorQueue = std::queue< StaleDescriptor>;
+    using StaleDescriptorQueue = std::queue<StaleDescriptorInfo>;
 
-    struct FreeBlock
+    struct FreeBlockInfo
     {
-        FreeBlock( SizeType size )
+        FreeBlockInfo( SizeType size )
             : Size(size)
         {}
 
@@ -81,10 +91,10 @@ private:
         FreeListBySize::iterator FreeListBySizeIt;
     };
 
-    struct StaleDescriptor
+    struct StaleDescriptorInfo
     {
-        // The handle to the stale descriptor.
-        D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHandle;
+        // The offset within the descriptor heap.
+        OffsetType Offset;
         // The frame number that the descriptor was freed.
         uint64_t FrameNumber;
     };
