@@ -100,10 +100,9 @@ public:
      * Allocate a number of CPU visible descriptors.
      */
     DescriptorAllocation AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors = 1);
-    void FreeDescriptors( DescriptorAllocation&& allocation );
 
     /**
-     * Release stale descriptors. This should only be called with a finished frame counter.
+     * Release stale descriptors. This should only be called with a completed frame counter.
      */
     void ReleaseStaleDescriptors( uint64_t finishedFrame );
 

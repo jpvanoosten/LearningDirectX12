@@ -52,8 +52,9 @@ void Application::Initialize()
     ComPtr<ID3D12Debug1> debugInterface;
     ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
     debugInterface->EnableDebugLayer();
-    debugInterface->SetEnableGPUBasedValidation(TRUE);
-    debugInterface->SetEnableSynchronizedCommandQueueValidation(TRUE);
+    // Enable these if you want full validation (will slow down rendering a lot).
+    //debugInterface->SetEnableGPUBasedValidation(TRUE);
+    //debugInterface->SetEnableSynchronizedCommandQueueValidation(TRUE);
 #endif
 
     WNDCLASSEXW wndClass = { 0 };
@@ -199,7 +200,6 @@ Microsoft::WRL::ComPtr<ID3D12Device2> Application::CreateDevice(Microsoft::WRL::
             D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   // I'm really not sure how to avoid this message.
             D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,                         // This warning occurs when using capture frame while graphics debugging.
             D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,                       // This warning occurs when using capture frame while graphics debugging.
-//            D3D12_MESSAGE_ID_INVALID_DESCRIPTOR_HANDLE,                     // This happens if an invalid descriptor is copied to a descriptor heap. This error occurs even if the shader never access the descriptor.
         };
 
         D3D12_INFO_QUEUE_FILTER NewFilter = {};
@@ -368,15 +368,6 @@ void Application::Flush()
 DescriptorAllocation Application::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
 {
     return m_DescriptorAllocators[type]->Allocate(numDescriptors);
-}
-
-void Application::FreeDescriptors( DescriptorAllocation&& allocation )
-{
-    if ( !allocation.IsNull() )
-    {
-        auto type = allocation.GetDescriptorAllocatorPage()->GetHeapType();
-        m_DescriptorAllocators[type]->Free( std::move( allocation ) );
-    }
 }
 
 void Application::ReleaseStaleDescriptors( uint64_t finishedFrame )

@@ -15,6 +15,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <queue>
 
 class DescriptorAllocatorPage : public std::enable_shared_from_this<DescriptorAllocatorPage>
@@ -123,4 +124,6 @@ private:
     uint32_t m_DescriptorHandleIncrementSize;
     uint32_t m_NumDescriptorsInHeap;
     uint32_t m_NumFreeHandles;
+
+    std::mutex m_AllocationMutex;
 };

@@ -37,11 +37,6 @@ public:
     DescriptorAllocation Allocate(uint32_t numDescriptors = 1);
 
     /**
-     * Free the descriptor allocation back onto the heap it came from.
-     */
-    void Free( DescriptorAllocation&& allocation );
-
-    /**
      * When the frame has completed, the stale descriptors can be released.
      */
     void ReleaseStaleDescriptors( uint64_t frameNumber );

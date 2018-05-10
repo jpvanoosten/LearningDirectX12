@@ -49,6 +49,8 @@ void DescriptorAllocatorPage::AddNewBlock( uint32_t offset, uint32_t numDescript
 
 DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors )
 {
+    std::lock_guard<std::mutex> lock( m_AllocationMutex );
+
     // There are less than the requested number of descriptors left in the heap.
     // Return a NULL descriptor and try another heap.
     if ( numDescriptors > m_NumFreeHandles )
@@ -106,10 +108,7 @@ void DescriptorAllocatorPage::Free( DescriptorAllocation&& descriptor, uint64_t 
     // Compute the offset of the descriptor within the descriptor heap.
     auto offset = ComputeOffset( descriptor.GetDescriptorHandle() );
 
-    if ( offset >= m_NumDescriptorsInHeap )
-    {
-        throw std::exception( "Computed offset of the descriptor is out of bounds for this descriptor heap." );
-    }
+    std::lock_guard<std::mutex> lock( m_AllocationMutex );
 
     // Don't add the block directly to the free list until the frame has completed.
     m_StaleDescriptors.emplace( offset, descriptor.GetNumHandles(), frameNumber );
@@ -181,6 +180,8 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
 
 void DescriptorAllocatorPage::ReleaseStaleDescriptors( uint64_t frameNumber )
 {
+    std::lock_guard<std::mutex> lock( m_AllocationMutex );
+
     while ( !m_StaleDescriptors.empty() && m_StaleDescriptors.front().FrameNumber <= frameNumber )
     {
         auto& staleDescriptor = m_StaleDescriptors.front();

@@ -60,14 +60,6 @@ DescriptorAllocation DescriptorAllocator::Allocate(uint32_t numDescriptors)
     return allocation;
 }
 
-void DescriptorAllocator::Free( DescriptorAllocation&& allocation )
-{
-    std::lock_guard<std::mutex> lock( m_AllocationMutex );
-
-    auto allocatorPage = allocation.GetDescriptorAllocatorPage();
-    allocatorPage->Free( std::move(allocation), Application::GetFrameCount() );
-}
-
 void DescriptorAllocator::ReleaseStaleDescriptors( uint64_t frameNumber )
 {
     std::lock_guard<std::mutex> lock( m_AllocationMutex );
