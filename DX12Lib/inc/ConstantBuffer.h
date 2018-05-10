@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "DescriptorAllocation.h"
 
 class ConstantBuffer : public Buffer
 {
@@ -21,7 +22,7 @@ public:
 
     D3D12_CPU_DESCRIPTOR_HANDLE GetConstantBufferView() const
     {
-        return m_ConstantBufferView;
+        return m_ConstantBufferView.GetDescriptorHandle();
     }
 
     /**
@@ -40,6 +41,5 @@ protected:
 
 private:
     size_t m_SizeInBytes;
-
-    D3D12_CPU_DESCRIPTOR_HANDLE m_ConstantBufferView;
+    DescriptorAllocation m_ConstantBufferView;
 };

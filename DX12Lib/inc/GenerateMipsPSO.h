@@ -3,7 +3,8 @@
  */
 #pragma once
 
-#include <RootSignature.h>
+#include "RootSignature.h"
+#include "DescriptorAllocation.h"
 
 #include <d3d12.h>
 #include <DirectXMath.h>
@@ -47,7 +48,7 @@ public:
 
     D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultUAV() const
     {
-        return m_DefaultUAV;
+        return m_DefaultUAV.GetDescriptorHandle();
     }
 
 private:
@@ -56,5 +57,5 @@ private:
     // Default (no resource) UAV's to padd the unused UAV descriptors.
     // If generating less than 4 mip map levels, the unused mip maps
     // need to be padded with default UAVs (to keep the DX runtime happy).
-    D3D12_CPU_DESCRIPTOR_HANDLE m_DefaultUAV;
+    DescriptorAllocation m_DefaultUAV;
 };

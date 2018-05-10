@@ -26,7 +26,7 @@ void ConstantBuffer::CreateViews(size_t numElements, size_t elementSize)
 
     auto device = Application::Get().GetDevice();
 
-    device->CreateConstantBufferView(&d3d12ConstantBufferViewDesc, m_ConstantBufferView);
+    device->CreateConstantBufferView(&d3d12ConstantBufferViewDesc, m_ConstantBufferView.GetDescriptorHandle());
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE ConstantBuffer::GetShaderResourceView() const

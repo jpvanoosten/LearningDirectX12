@@ -3,10 +3,10 @@
  */
 #pragma once
 
-#include <Resource.h>
+#include "Resource.h"
+#include "DescriptorAllocation.h"
 
-#include <d3d12.h>
-#include <d3dx12.h>
+#include "d3dx12.h"
 
 #include <map>
 
@@ -93,10 +93,8 @@ public:
 protected:
 
 private:
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_ShaderResourceView;
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_UnorderedAccessViews;
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_RenderTargetView;
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_DepthStencilView;
-
-    UINT m_DescriptorHandleIncrementSize;
+    DescriptorAllocation m_ShaderResourceView;
+    DescriptorAllocation m_UnorderedAccessViews;
+    DescriptorAllocation m_RenderTargetView;
+    DescriptorAllocation m_DepthStencilView;
 };

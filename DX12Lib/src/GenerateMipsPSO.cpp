@@ -60,7 +60,6 @@ GenerateMipsPSO::GenerateMipsPSO()
     m_DefaultUAV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4 );
     UINT descriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE hUAV( m_DefaultUAV );
     for ( UINT i = 0; i < 4; ++i )
     {
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -69,7 +68,6 @@ GenerateMipsPSO::GenerateMipsPSO()
         uavDesc.Texture2D.MipSlice = i;
         uavDesc.Texture2D.PlaneSlice = 0;
 
-        device->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, hUAV );
-        hUAV.Offset( descriptorHandleIncrementSize );
+        device->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, m_DefaultUAV.GetDescriptorHandle(i) );
     }
 }

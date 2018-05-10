@@ -6,9 +6,9 @@
 
 ByteAddressBuffer::ByteAddressBuffer( const std::wstring& name )
     : Buffer(name)
-    , m_SRV(D3D12_DEFAULT)
-    , m_UAV(D3D12_DEFAULT)
 {
+    m_SRV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+    m_UAV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 }
 
 ByteAddressBuffer::ByteAddressBuffer(const D3D12_RESOURCE_DESC& resDesc,
@@ -16,8 +16,6 @@ ByteAddressBuffer::ByteAddressBuffer(const D3D12_RESOURCE_DESC& resDesc,
     D3D12_RESOURCE_STATES initialState,
     const std::wstring& name )
     : Buffer(resDesc, numElements, elementSize, initialState, name)
-    , m_SRV(D3D12_DEFAULT)
-    , m_UAV(D3D12_DEFAULT)
 {}
 
 void ByteAddressBuffer::CreateViews( size_t numElements, size_t elementSize )
@@ -34,8 +32,7 @@ void ByteAddressBuffer::CreateViews( size_t numElements, size_t elementSize )
     srvDesc.Buffer.NumElements = (UINT)m_BufferSize / 4;
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
 
-    m_SRV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->CreateShaderResourceView( m_d3d12Resource.Get(), &srvDesc, m_SRV );
+    device->CreateShaderResourceView( m_d3d12Resource.Get(), &srvDesc, m_SRV.GetDescriptorHandle() );
 
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -43,6 +40,5 @@ void ByteAddressBuffer::CreateViews( size_t numElements, size_t elementSize )
     uavDesc.Buffer.NumElements = (UINT)m_BufferSize / 4;
     uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
 
-    m_UAV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->CreateUnorderedAccessView( m_d3d12Resource.Get(), nullptr, &uavDesc, m_UAV );
+    device->CreateUnorderedAccessView( m_d3d12Resource.Get(), nullptr, &uavDesc, m_UAV.GetDescriptorHandle() );
 }

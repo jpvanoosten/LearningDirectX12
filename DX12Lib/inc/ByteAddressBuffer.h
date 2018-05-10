@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Buffer.h"
+#include "DescriptorAllocation.h"
 
 #include <d3dx12.h>
 
@@ -33,7 +34,7 @@ public:
      */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView() const override
     {
-        return m_SRV;
+        return m_SRV.GetDescriptorHandle();
     }
 
     /**
@@ -41,12 +42,14 @@ public:
      */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t subresource ) const override
     {
-        return m_UAV;
+        // Buffers only have a single subresource.
+        return m_UAV.GetDescriptorHandle();
     }
 
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice) const override
     {
-        return m_UAV;
+        // Buffers only have a single subresource.
+        return m_UAV.GetDescriptorHandle();
     }
     
 protected:
@@ -54,6 +57,6 @@ protected:
 private:
     size_t m_BufferSize;
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_SRV;
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_UAV;
+    DescriptorAllocation m_SRV;
+    DescriptorAllocation m_UAV;
 };

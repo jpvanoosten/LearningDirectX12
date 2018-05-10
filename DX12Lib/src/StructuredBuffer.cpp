@@ -14,9 +14,9 @@ StructuredBuffer::StructuredBuffer( const std::wstring& name )
         1, 4, D3D12_RESOURCE_STATE_COMMON, name + L" Counter" )
     , m_NumElements(0)
     , m_ElementSize(0)
-    , m_SRV(D3D12_DEFAULT)
-    , m_UAV(D3D12_DEFAULT)
 {
+    m_SRV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+    m_UAV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 }
 
 StructuredBuffer::StructuredBuffer(const D3D12_RESOURCE_DESC& resDesc,
@@ -30,6 +30,8 @@ StructuredBuffer::StructuredBuffer(const D3D12_RESOURCE_DESC& resDesc,
     , m_NumElements(numElements)
     , m_ElementSize(elementSize)
 {
+    m_SRV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+    m_UAV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 }
 
 void StructuredBuffer::CreateViews( size_t numElements, size_t elementSize )
@@ -47,8 +49,9 @@ void StructuredBuffer::CreateViews( size_t numElements, size_t elementSize )
     srvDesc.Buffer.StructureByteStride = static_cast<UINT>( m_ElementSize );
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-    m_SRV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->CreateShaderResourceView( m_d3d12Resource.Get(), &srvDesc, m_SRV );
+    device->CreateShaderResourceView( m_d3d12Resource.Get(), 
+                                      &srvDesc, 
+                                      m_SRV.GetDescriptorHandle() );
 
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -58,8 +61,8 @@ void StructuredBuffer::CreateViews( size_t numElements, size_t elementSize )
     uavDesc.Buffer.StructureByteStride = static_cast<UINT>( m_ElementSize );
     uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-    m_UAV = Application::Get().AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     device->CreateUnorderedAccessView( m_d3d12Resource.Get(),
                                        m_CounterBuffer.GetD3D12Resource().Get(),
-                                       &uavDesc, m_UAV );
+                                       &uavDesc, 
+                                       m_UAV.GetDescriptorHandle() );
 }

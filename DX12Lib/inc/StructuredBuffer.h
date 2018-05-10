@@ -43,19 +43,21 @@ public:
      */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView() const
     {
-        return m_SRV;
+        return m_SRV.GetDescriptorHandle();
     }
 
     /**
      * Get the UAV for a (sub)resource.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t subresource) const override
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t) const override
     {
-        return m_UAV;
+        // Buffers don't have subresources.
+        return m_UAV.GetDescriptorHandle();
     }
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice) const override
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t, uint32_t, uint32_t) const override
     {
-        return m_UAV;
+        // Buffers don't have subresources.
+        return m_UAV.GetDescriptorHandle();
     }
 
 
@@ -68,8 +70,8 @@ private:
     size_t m_NumElements;
     size_t m_ElementSize;
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_SRV;
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_UAV;
+    DescriptorAllocation m_SRV;
+    DescriptorAllocation m_UAV;
 
     // A buffer to store the internal counter for the structured buffer.
     ByteAddressBuffer m_CounterBuffer;

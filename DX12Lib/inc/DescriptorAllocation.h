@@ -9,6 +9,9 @@
 
 #include <d3d12.h>
 
+#include <cstdint>
+#include <memory>
+
 class DescriptorAllocatorPage;
 
 class DescriptorAllocation
@@ -19,20 +22,16 @@ public:
 
     DescriptorAllocation( D3D12_CPU_DESCRIPTOR_HANDLE descriptor, uint32_t numHandles, uint32_t descriptorSize, std::shared_ptr<DescriptorAllocatorPage> page );
 
-    // Copies are not allowed.
-    DescriptorAllocation( const DescriptorAllocation& ) = delete;
-
-    // Moves allowed.
-    DescriptorAllocation( DescriptorAllocation&& allocation ) = default;
-
     // The destructor will automatically free the allocation.
     ~DescriptorAllocation();
 
-    // Assignment is not allowed.
+    // Copies are not allowed.
+    DescriptorAllocation( const DescriptorAllocation& ) = delete;
     DescriptorAllocation& operator=( const DescriptorAllocation& ) = delete;
 
-    // Move assignment is allowed.
-    DescriptorAllocation& operator=( DescriptorAllocation&& other ) = default;
+    // Move is allowed.
+    DescriptorAllocation( DescriptorAllocation&& allocation );
+    DescriptorAllocation& operator=( DescriptorAllocation&& other );
 
     // Check if this a valid descriptor.
     bool IsNull() const;
@@ -48,6 +47,9 @@ public:
     std::shared_ptr<DescriptorAllocatorPage> GetDescriptorAllocatorPage() const;
 
 private:
+    // Free the descriptor back to the heap it came from.
+    void Free();
+
     // The base descriptor.
     D3D12_CPU_DESCRIPTOR_HANDLE m_Descriptor;
     // The number of descriptors in this allocation.

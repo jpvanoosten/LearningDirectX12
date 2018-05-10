@@ -17,7 +17,7 @@
 #include <memory>
 #include <queue>
 
-class DescriptorAllocatorPage : std::enable_shared_from_this<DescriptorAllocatorPage>
+class DescriptorAllocatorPage : public std::enable_shared_from_this<DescriptorAllocatorPage>
 {
 public:
     DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
