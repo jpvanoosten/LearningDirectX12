@@ -133,7 +133,6 @@ private:
     Application(const Application& copy) = delete;
     Application& operator=(const Application& other) = delete;
 
-    // The application instance handle that this application was created with.
     HINSTANCE m_hInstance;
 
     Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;

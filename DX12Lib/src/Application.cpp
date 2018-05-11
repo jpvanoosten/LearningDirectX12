@@ -35,16 +35,34 @@ struct MakeWindow : public Window
 Application::Application(HINSTANCE hInst)
     : m_hInstance(hInst)
     , m_TearingSupported(false)
-{}
-
-void Application::Initialize()
 {
     // Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
     // Using this awareness context allows the client area of the window 
     // to achieve 100% scaling while still allowing non-client window content to 
     // be rendered in a DPI sensitive fashion.
-    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
 
+    WNDCLASSEXW wndClass = { 0 };
+
+    wndClass.cbSize = sizeof( WNDCLASSEX );
+    wndClass.style = CS_HREDRAW | CS_VREDRAW;
+    wndClass.lpfnWndProc = &WndProc;
+    wndClass.hInstance = m_hInstance;
+    wndClass.hCursor = LoadCursor( nullptr, IDC_ARROW );
+    wndClass.hIcon = LoadIcon( m_hInstance, MAKEINTRESOURCE( APP_ICON ) );
+    wndClass.hbrBackground = (HBRUSH)( COLOR_WINDOW + 1 );
+    wndClass.lpszMenuName = nullptr;
+    wndClass.lpszClassName = WINDOW_CLASS_NAME;
+    wndClass.hIconSm = LoadIcon( m_hInstance, MAKEINTRESOURCE( APP_ICON ) );
+
+    if ( !RegisterClassExW( &wndClass ) )
+    {
+        MessageBoxA( NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR );
+    }
+}
+
+void Application::Initialize()
+{
 #if defined(_DEBUG)
     // Always enable the debug layer before doing anything DX12 related
     // so all possible errors generated while creating DX12 objects
@@ -57,28 +75,20 @@ void Application::Initialize()
     //debugInterface->SetEnableSynchronizedCommandQueueValidation(TRUE);
 #endif
 
-    WNDCLASSEXW wndClass = { 0 };
-
-    wndClass.cbSize = sizeof(WNDCLASSEX);
-    wndClass.style = CS_HREDRAW | CS_VREDRAW;
-    wndClass.lpfnWndProc = &WndProc;
-    wndClass.hInstance = m_hInstance;
-    wndClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wndClass.hIcon = LoadIcon(m_hInstance, MAKEINTRESOURCE(APP_ICON));
-    wndClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wndClass.lpszMenuName = nullptr;
-    wndClass.lpszClassName = WINDOW_CLASS_NAME;
-    wndClass.hIconSm = LoadIcon(m_hInstance, MAKEINTRESOURCE(APP_ICON));
-
-    if (!RegisterClassExW(&wndClass))
+    auto dxgiAdapter = GetAdapter(false);
+    if ( !dxgiAdapter )
     {
-        MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
+        // If no supporting DX12 adapters exist, fall back to WARP
+        dxgiAdapter = GetAdapter( true );
     }
 
-    auto dxgiAdapter = GetAdapter(false);
     if (dxgiAdapter)
     {
         m_d3d12Device = CreateDevice(dxgiAdapter);
+    }
+    else
+    {
+        throw std::exception( "DXGI adapter enumeration failed." );
     }
     
     m_DirectCommandQueue = std::make_shared<CommandQueue>(D3D12_COMMAND_LIST_TYPE_DIRECT);

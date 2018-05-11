@@ -27,7 +27,6 @@
  *
  *  @brief Helper functions.
  */
-
 #pragma once
 
 #include <cstdint>
