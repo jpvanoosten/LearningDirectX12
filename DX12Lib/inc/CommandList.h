@@ -71,6 +71,15 @@ public:
     void UAVBarrier( const Resource& resource, bool flushBarriers = false );
 
     /**
+     * Add an aliasing barrier to indicate a transition between usages of two 
+     * different resources that occupy the same space in a heap.
+     * 
+     * @param beforeResource The resource that currently occupies the heap.
+     * @param afterResource The resource that will occupy the space in the heap.
+     */
+    void AliasingBarrier( const Resource& beforeResource, const Resource& afterResource, bool flushBarriers = false );
+
+    /**
      * Flush any barriers that have been pushed to the command list.
      */
     void FlushResourceBarriers();
@@ -341,13 +350,15 @@ public:
 protected:
 
 private:
+    void TrackObject(Microsoft::WRL::ComPtr<ID3D12Object> object);
+    void TrackResource(const Resource& res);
 
-	// Generate mips for UAV compatible textures.
-	void GenerateMips_UAV(Texture& texture);
-	// Generate mips for BGR textures.
-	void GenerateMips_BGR(Texture& texture);
-	// Generate mips for sRGB textures.
-	void GenerateMips_sRGB(Texture& texture);
+    // Generate mips for UAV compatible textures.
+    void GenerateMips_UAV(Texture& texture);
+    // Generate mips for BGR textures.
+    void GenerateMips_BGR(Texture& texture);
+    // Generate mips for sRGB textures.
+    void GenerateMips_sRGB(Texture& texture);
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
     void CopyBuffer( Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );

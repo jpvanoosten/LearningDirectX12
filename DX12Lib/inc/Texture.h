@@ -13,12 +13,12 @@
 class Texture : public Resource
 {
 public:
-    Texture(const std::wstring& name = L"");
-    Texture( const D3D12_RESOURCE_DESC& resourceDesc, 
+    explicit Texture(const std::wstring& name = L"");
+    explicit Texture( const D3D12_RESOURCE_DESC& resourceDesc, 
         const D3D12_CLEAR_VALUE* clearValue = nullptr,
         D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON, 
         const std::wstring& name = L"" );
-    Texture(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"");
+    explicit Texture(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"");
     Texture(const Texture& copy);
     Texture( Texture&& copy );
 
