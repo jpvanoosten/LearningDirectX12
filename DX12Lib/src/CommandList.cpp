@@ -197,7 +197,7 @@ void CommandList::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY primitiveTopology
     m_d3d12CommandList->IASetPrimitiveTopology( primitiveTopology );
 }
 
-void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fileName )
+void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fileName, TextureUsage textureUsage )
 {
     auto device = Application::Get().GetDevice();
 
@@ -219,22 +219,37 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
 
         if ( filePath.extension() == ".dds" )
         {
+            unsigned int loadFlags = DDS_LOADER_MIP_RESERVE;
+            if ( textureUsage == TextureUsage::Albedo )
+            {
+                loadFlags |= DDS_LOADER_FORCE_SRGB;
+            }
             // Use DDS texture loader.
             ThrowIfFailed( LoadDDSTextureFromFileEx( device.Get(),
                                                      fileName.c_str(), 0, D3D12_RESOURCE_FLAG_NONE,
-                                                     DDS_LOADER_MIP_RESERVE, &textureResource, textureData,
-                                                     subresourceData
-            ) );
+                                                     loadFlags, &textureResource, textureData,
+                                                     subresourceData ) );
         }
         else
         {
             D3D12_SUBRESOURCE_DATA resourceData;
+
+            unsigned int loadFlags = WIC_LOADER_MIP_RESERVE;
+            if ( textureUsage == TextureUsage::Albedo )
+            {
+                loadFlags |= WIC_LOADER_FORCE_SRGB;
+            }
+            else if ( textureUsage == TextureUsage::Heightmap ||
+                      textureUsage == TextureUsage::Normalmap )
+            {
+                loadFlags |= WIC_LOADER_IGNORE_SRGB;
+            }
+
             // Use WIC texture loader.
             ThrowIfFailed( LoadWICTextureFromFileEx( device.Get(),
                                                      fileName.c_str(), 0, D3D12_RESOURCE_FLAG_NONE,
-                                                     WIC_LOADER_MIP_RESERVE, &textureResource, textureData,
-                                                     resourceData
-            ) );
+                                                     loadFlags, &textureResource, textureData,
+                                                     resourceData ) );
 
             subresourceData.push_back( resourceData );
         }
@@ -242,6 +257,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         // Update the global state tracker.
         ResourceStateTracker::AddGlobalResourceState( textureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST );
 
+        texture.SetTextureUsage( textureUsage );
         texture.SetD3D12Resource( textureResource );
         texture.CreateViews();
 

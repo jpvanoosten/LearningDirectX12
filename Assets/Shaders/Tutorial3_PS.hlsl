@@ -78,6 +78,15 @@ Texture2D DiffuseTexture            : register( t2 );
 
 SamplerState LinearRepeatSampler    : register(s0);
 
+float3 LinearToSRGB( float3 x )
+{
+    // This is exactly the sRGB curve
+    //return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
+
+    // This is cheaper but nearly equivalent
+    return x < 0.0031308 ? 12.92 * x : 1.13005 * sqrt( abs( x - 0.00228 ) ) - 0.13448 * x + 0.005719;
+}
+
 float DoDiffuse( float3 N, float3 L )
 {
     return max( 0, dot( N, L ) );
@@ -183,5 +192,8 @@ float4 main( PixelShaderInput IN ) : SV_Target
     float4 specular = MaterialCB.Specular * lit.Specular;
     float4 texColor = DiffuseTexture.Sample( LinearRepeatSampler, IN.TexCoord );
 
-    return ( emissive + ambient + diffuse + specular ) * texColor;
+    float4 finalColor = ( emissive + ambient + diffuse + specular ) * texColor;
+
+    // Return the gamma-corrected result
+    return float4( LinearToSRGB( finalColor.rgb ), finalColor.a );
 }

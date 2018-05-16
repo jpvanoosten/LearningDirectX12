@@ -5,6 +5,7 @@
 
 #include "Resource.h"
 #include "DescriptorAllocation.h"
+#include "TextureUsage.h"
 
 #include "d3dx12.h"
 
@@ -13,12 +14,17 @@
 class Texture : public Resource
 {
 public:
-    explicit Texture(const std::wstring& name = L"");
+    explicit Texture(TextureUsage textureUsage = TextureUsage::Albedo, 
+                      const std::wstring& name = L"" );
     explicit Texture( const D3D12_RESOURCE_DESC& resourceDesc, 
-        const D3D12_CLEAR_VALUE* clearValue = nullptr,
-        D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON, 
-        const std::wstring& name = L"" );
-    explicit Texture(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"");
+                      const D3D12_CLEAR_VALUE* clearValue = nullptr,
+                      D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON,
+                      TextureUsage textureUsage = TextureUsage::Albedo,
+                      const std::wstring& name = L"" );
+    explicit Texture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                      TextureUsage textureUsage = TextureUsage::Albedo,
+                      const std::wstring& name = L"");
+
     Texture(const Texture& copy);
     Texture( Texture&& copy );
 
@@ -26,6 +32,16 @@ public:
     Texture& operator=(Texture&& other);
 
     virtual ~Texture();
+
+    TextureUsage GetTextureUsage() const
+    {
+        return m_TextureUsage;
+    }
+
+    void SetTextureUsage( TextureUsage textureUsage )
+    {
+        m_TextureUsage = textureUsage;
+    }
 
     /**
      * Resize the texture.
@@ -97,4 +113,6 @@ private:
     DescriptorAllocation m_UnorderedAccessViews;
     DescriptorAllocation m_RenderTargetView;
     DescriptorAllocation m_DepthStencilView;
+
+    TextureUsage m_TextureUsage;
 };

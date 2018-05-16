@@ -5,19 +5,28 @@
 #include <Application.h>
 #include <ResourceStateTracker.h>
 
-Texture::Texture(const std::wstring& name)
+Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)
+    , m_TextureUsage(textureUsage)
 {
 }
 
-Texture::Texture(const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue, D3D12_RESOURCE_STATES initialState, const std::wstring& name )
+Texture::Texture( const D3D12_RESOURCE_DESC& resourceDesc,
+                  const D3D12_CLEAR_VALUE* clearValue, 
+                  D3D12_RESOURCE_STATES initialState, 
+                  TextureUsage textureUsage,
+                  const std::wstring& name )
     : Resource(resourceDesc, clearValue, initialState, name )
+    , m_TextureUsage(textureUsage)
 {
     CreateViews();
 }
 
-Texture::Texture(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name)
+Texture::Texture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                  TextureUsage textureUsage,
+                  const std::wstring& name )
     : Resource(resource, name)
+    , m_TextureUsage(textureUsage)
 {
     CreateViews();
 }

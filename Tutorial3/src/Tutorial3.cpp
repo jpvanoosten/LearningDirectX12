@@ -86,7 +86,7 @@ Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSyn
     , m_DepthBuffer( CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, 
         width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL), 
         &CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
-        D3D12_RESOURCE_STATE_COMMON, L"Depth Buffer")
+        D3D12_RESOURCE_STATE_COMMON, TextureUsage::Depth, L"Depth Buffer")
     , m_Forward( 0 )
     , m_Backward( 0 )
     , m_Left( 0 )

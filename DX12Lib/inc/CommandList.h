@@ -5,6 +5,8 @@
  */
 #pragma once
 
+#include "TextureUsage.h"
+
 #include <d3d12.h>
 #include <wrl.h>
 
@@ -140,7 +142,7 @@ public:
     /**
      * Load a texture by a filename.
      */
-    void LoadTextureFromFile( Texture& texture, const std::wstring& fileName );
+    void LoadTextureFromFile( Texture& texture, const std::wstring& fileName, TextureUsage textureUsage = TextureUsage::Albedo );
 
     /**
      * Clear a texture.

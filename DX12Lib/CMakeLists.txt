@@ -24,6 +24,7 @@ set( HEADER_FILES
     inc/RootSignature.h
     inc/StructuredBuffer.h
     inc/Texture.h
+    inc/TextureUsage.h
     inc/UploadBuffer.h
     inc/VertexBuffer.h
     inc/Window.h
