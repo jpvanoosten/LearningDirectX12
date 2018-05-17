@@ -24,7 +24,7 @@ public:
     /**
      * @param pageSize The size to use to allocate new pages in GPU memory.
      */
-    UploadBuffer(size_t pageSize = _2MB);
+    explicit UploadBuffer(size_t pageSize = _2MB);
 
     virtual ~UploadBuffer();
 
