@@ -13,9 +13,8 @@ ByteAddressBuffer::ByteAddressBuffer( const std::wstring& name )
 
 ByteAddressBuffer::ByteAddressBuffer(const D3D12_RESOURCE_DESC& resDesc,
     size_t numElements, size_t elementSize,
-    D3D12_RESOURCE_STATES initialState,
     const std::wstring& name )
-    : Buffer(resDesc, numElements, elementSize, initialState, name)
+    : Buffer(resDesc, numElements, elementSize, name)
 {}
 
 void ByteAddressBuffer::CreateViews( size_t numElements, size_t elementSize )

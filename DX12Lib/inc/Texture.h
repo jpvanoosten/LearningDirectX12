@@ -18,7 +18,6 @@ public:
                       const std::wstring& name = L"" );
     explicit Texture( const D3D12_RESOURCE_DESC& resourceDesc, 
                       const D3D12_CLEAR_VALUE* clearValue = nullptr,
-                      D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON,
                       TextureUsage textureUsage = TextureUsage::Albedo,
                       const std::wstring& name = L"" );
     explicit Texture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,

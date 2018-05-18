@@ -9,7 +9,7 @@ Resource::Resource(const std::wstring& name)
     : m_ResourceName(name)
 {}
 
-Resource::Resource(const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue, D3D12_RESOURCE_STATES initialState, const std::wstring& name)
+Resource::Resource(const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue, const std::wstring& name)
 {
     auto device = Application::Get().GetDevice();
 
@@ -22,12 +22,12 @@ Resource::Resource(const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VA
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
         D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
-        initialState,
+        D3D12_RESOURCE_STATE_COMMON,
         m_d3d12ClearValue.get(),
         IID_PPV_ARGS(&m_d3d12Resource)
     ) );
 
-    ResourceStateTracker::AddGlobalResourceState(m_d3d12Resource.Get(), initialState);
+    ResourceStateTracker::AddGlobalResourceState(m_d3d12Resource.Get(), D3D12_RESOURCE_STATE_COMMON );
 
     SetName(name);
 }

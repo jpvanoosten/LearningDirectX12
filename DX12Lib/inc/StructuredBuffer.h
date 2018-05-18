@@ -13,7 +13,6 @@ public:
     StructuredBuffer( const std::wstring& name = L"" );
     StructuredBuffer( const D3D12_RESOURCE_DESC& resDesc, 
         size_t numElements, size_t elementSize,
-        D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON,
         const std::wstring& name = L"");
 
     /**

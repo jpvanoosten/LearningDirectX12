@@ -15,7 +15,6 @@ public:
     Resource(const std::wstring& name = L"");
     Resource(const D3D12_RESOURCE_DESC& resourceDesc, 
         const D3D12_CLEAR_VALUE* clearValue = nullptr,
-        D3D12_RESOURCE_STATES initialState = D3D12_RESOURCE_STATE_COMMON, 
         const std::wstring& name = L"");
     Resource(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const std::wstring& name = L"");
     Resource(const Resource& copy);

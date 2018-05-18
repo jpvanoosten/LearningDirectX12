@@ -13,10 +13,9 @@ Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
 
 Texture::Texture( const D3D12_RESOURCE_DESC& resourceDesc,
                   const D3D12_CLEAR_VALUE* clearValue, 
-                  D3D12_RESOURCE_STATES initialState, 
                   TextureUsage textureUsage,
                   const std::wstring& name )
-    : Resource(resourceDesc, clearValue, initialState, name )
+    : Resource(resourceDesc, clearValue, name )
     , m_TextureUsage(textureUsage)
 {
     CreateViews();

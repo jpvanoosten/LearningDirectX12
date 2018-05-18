@@ -11,7 +11,7 @@ StructuredBuffer::StructuredBuffer( const std::wstring& name )
     : Buffer(name)
     , m_CounterBuffer(
         CD3DX12_RESOURCE_DESC::Buffer(4, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-        1, 4, D3D12_RESOURCE_STATE_COMMON, name + L" Counter" )
+        1, 4, name + L" Counter" )
     , m_NumElements(0)
     , m_ElementSize(0)
 {
@@ -21,12 +21,11 @@ StructuredBuffer::StructuredBuffer( const std::wstring& name )
 
 StructuredBuffer::StructuredBuffer(const D3D12_RESOURCE_DESC& resDesc,
     size_t numElements, size_t elementSize,
-    D3D12_RESOURCE_STATES initialState,
     const std::wstring& name)
-    : Buffer(resDesc, numElements, elementSize, initialState, name )
+    : Buffer(resDesc, numElements, elementSize, name )
     , m_CounterBuffer(
         CD3DX12_RESOURCE_DESC::Buffer(4, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-        1, 4, D3D12_RESOURCE_STATE_COMMON, name + L" Counter")
+        1, 4, name + L" Counter")
     , m_NumElements(numElements)
     , m_ElementSize(elementSize)
 {

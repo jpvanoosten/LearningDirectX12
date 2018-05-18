@@ -228,7 +228,6 @@ bool Tutorial3::LoadContent()
     colorClearValue.Color[3] = 1.0f;
 
     Texture colorTexture = Texture( colorDesc, &colorClearValue, 
-                                    D3D12_RESOURCE_STATE_RENDER_TARGET, 
                                     TextureUsage::RenderTarget, 
                                     L"Color Render Target" );
 
@@ -243,7 +242,6 @@ bool Tutorial3::LoadContent()
     depthClearValue.DepthStencil = { 1.0f, 0 };
 
     Texture depthTexture = Texture( depthDesc, &depthClearValue, 
-                                    D3D12_RESOURCE_STATE_DEPTH_WRITE, 
                                     TextureUsage::Depth, 
                                     L"Depth Render Target" );
 
