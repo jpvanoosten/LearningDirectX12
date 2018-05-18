@@ -7,6 +7,7 @@
 #include <CommandList.h>
 #include <Game.h>
 #include <ResourceStateTracker.h>
+#include <Texture.h>
 
 Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
     : m_hWnd(hWnd)
@@ -349,22 +350,23 @@ void Window::UpdateRenderTargetViews()
     }
 }
 
-const Texture& Window::GetCurrentRenderTarget() const
-{
-    return m_BackBufferTextures[m_CurrentBackBufferIndex];
-}
-
-UINT Window::GetCurrentBackBufferIndex() const
-{
-    return m_CurrentBackBufferIndex;
-}
-
-UINT Window::Present()
+UINT Window::Present( const Texture& texture )
 {
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto commandList = commandQueue->GetCommandList();
 
-    commandList->TransitionBarrier( m_BackBufferTextures[m_CurrentBackBufferIndex], D3D12_RESOURCE_STATE_PRESENT );
+    auto& backBuffer = m_BackBufferTextures[m_CurrentBackBufferIndex];
+
+    if ( texture.GetD3D12ResourceDesc().SampleDesc.Count > 1 )
+    {
+        commandList->ResolveSubresource( backBuffer, texture );
+    }
+    else
+    {
+        commandList->CopyResource( backBuffer, texture );
+    }
+
+    commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     commandQueue->ExecuteCommandList( commandList );
 
     UINT syncInterval = m_VSync ? 1 : 0;

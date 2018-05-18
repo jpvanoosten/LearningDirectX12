@@ -87,6 +87,9 @@ void Texture::Resize(uint32_t width, uint32_t height, uint32_t depthOrArraySize 
             IID_PPV_ARGS(&m_d3d12Resource)
         ));
 
+        // Retain the name of the resource if one was already specified.
+        m_d3d12Resource->SetName( m_ResourceName.c_str() );
+
         ResourceStateTracker::AddGlobalResourceState(m_d3d12Resource.Get(), D3D12_RESOURCE_STATE_COMMON);
 
         CreateViews();

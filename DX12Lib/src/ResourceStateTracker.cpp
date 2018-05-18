@@ -132,12 +132,34 @@ uint32_t ResourceStateTracker::FlushPendingResourceBarriers(CommandList& command
             const auto& iter = ms_GlobalResourceState.find(pendingTransition.pResource);
             if (iter != ms_GlobalResourceState.end())
             {
-                auto globalState = (iter->second).GetSubresourceState(pendingTransition.Subresource);
-                if (pendingTransition.StateAfter != globalState)
+                // If all subresources are being transitioned, and there are multiple
+                // subresources of the resource that are in a different state...
+                auto& resourceState = iter->second;
+                if ( pendingTransition.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES &&
+                     !resourceState.SubresourceState.empty() )
                 {
-                    // Fix-up the before state based on current global state of the resource.
-                    pendingBarrier.Transition.StateBefore = globalState;
-                    resourceBarriers.push_back(pendingBarrier);
+                    // Transition all subresources
+                    for ( auto subresourceState : resourceState.SubresourceState )
+                    {
+                        if ( pendingTransition.StateAfter != subresourceState.second )
+                        {
+                            D3D12_RESOURCE_BARRIER newBarrier = pendingBarrier;
+                            newBarrier.Transition.Subresource = subresourceState.first;
+                            newBarrier.Transition.StateBefore = subresourceState.second;
+                            resourceBarriers.push_back( newBarrier );
+                        }
+                    }
+                }
+                else
+                {
+                    // No (sub)resources need to be transitioned. Just add a single transition barrier (if needed).
+                    auto globalState = ( iter->second ).GetSubresourceState( pendingTransition.Subresource );
+                    if ( pendingTransition.StateAfter != globalState )
+                    {
+                        // Fix-up the before state based on current global state of the resource.
+                        pendingBarrier.Transition.StateBefore = globalState;
+                        resourceBarriers.push_back( pendingBarrier );
+                    }
                 }
             }
         }

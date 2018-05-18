@@ -19,6 +19,7 @@ set( HEADER_FILES
     inc/HighResolutionClock.h
     inc/IndexBuffer.h
     inc/Mesh.h
+    inc/RenderTarget.h
     inc/Resource.h
     inc/ResourceStateTracker.h
     inc/RootSignature.h
@@ -48,6 +49,7 @@ set( SOURCE_FILES
     src/HighResolutionClock.cpp
     src/IndexBuffer.cpp
     src/Mesh.cpp
+    src/RenderTarget.cpp
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp

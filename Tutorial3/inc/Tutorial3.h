@@ -6,6 +6,7 @@
 #include <Light.h>
 #include <Window.h>
 #include <Mesh.h>
+#include <RenderTarget.h>
 #include <RootSignature.h>
 #include <Texture.h>
 #include <VertexBuffer.h>
@@ -65,23 +66,6 @@ protected:
     virtual void OnResize(ResizeEventArgs& e) override; 
 
 private:
-    // Helper functions
-    // Transition a resource
-    void TransitionResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-        Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-        D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
-
-    // Clear a render target view.
-    void ClearRTV(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-        D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor);
-
-    // Clear the depth of a depth-stencil view.
-    void ClearDepth(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-        D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth = 1.0f );
-
-    // Resize the depth buffer to match the size of the client area.
-    void ResizeDepthBuffer(int width, int height);
-    
     // Some geometry to render.
     std::unique_ptr<Mesh> m_CubeMesh;
     std::unique_ptr<Mesh> m_SphereMesh;
@@ -94,8 +78,8 @@ private:
     Texture m_EarthTexture;
     Texture m_MonaLisaTexture;
 
-    // Depth buffer.
-    Texture m_DepthBuffer;
+    // Render target
+    RenderTarget m_RenderTarget;
 
     // Root signature
     RootSignature m_RootSignature;

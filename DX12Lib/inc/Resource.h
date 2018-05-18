@@ -32,6 +32,17 @@ public:
         return m_d3d12Resource;
     }
 
+    D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const
+    {
+        D3D12_RESOURCE_DESC resDesc = {};
+        if ( m_d3d12Resource )
+        {
+            resDesc = m_d3d12Resource->GetDesc();
+        }
+
+        return resDesc;
+    }
+
     // Replace the D3D12 resource
     // Should only be called by the CommandList.
     virtual void SetD3D12Resource(Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource, 
@@ -61,22 +72,9 @@ public:
      */
     virtual void Reset();
 
-    ULONG RefCount() const
-    {
-        if (m_d3d12Resource)
-        {
-            m_d3d12Resource->AddRef();
-            return m_d3d12Resource->Release();
-        }
-
-        return 0ul;
-    }
-
 protected:
     // The underlying D3D12 resource.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource;
     std::unique_ptr<D3D12_CLEAR_VALUE> m_d3d12ClearValue;
-
-private:
     std::wstring m_ResourceName;
 };

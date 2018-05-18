@@ -47,12 +47,10 @@ Resource::Resource(const Resource& copy)
 }
 
 Resource::Resource(Resource&& copy)
-    : m_d3d12Resource(copy.m_d3d12Resource)
-    , m_ResourceName(copy.m_ResourceName)
+    : m_d3d12Resource(std::move(copy.m_d3d12Resource))
+    , m_ResourceName(std::move(copy.m_ResourceName))
     , m_d3d12ClearValue(std::move(copy.m_d3d12ClearValue))
 {
-    copy.m_d3d12Resource.Reset();
-    copy.m_ResourceName.clear();
 }
 
 Resource& Resource::operator=(const Resource& other)

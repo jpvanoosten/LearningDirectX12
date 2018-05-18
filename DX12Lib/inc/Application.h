@@ -41,6 +41,11 @@ public:
     bool IsTearingSupported() const;
 
     /**
+     * Check if the requested multisample quality is supported for the given format.
+     */
+    DXGI_SAMPLE_DESC GetMultisampleQualityLevels( DXGI_FORMAT format, UINT numSamples, D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE ) const;
+
+    /**
     * Create a new DirectX11 render window instance.
     * @param windowName The name of the window. This name will appear in the title bar of the window. This name should be unique.
     * @param clientWidth The width (in pixels) of the window's client area.

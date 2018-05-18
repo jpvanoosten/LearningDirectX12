@@ -254,6 +254,30 @@ bool Application::IsTearingSupported() const
     return m_TearingSupported;
 }
 
+DXGI_SAMPLE_DESC Application::GetMultisampleQualityLevels( DXGI_FORMAT format, UINT numSamples, D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS flags ) const
+{
+    DXGI_SAMPLE_DESC sampleDesc = { 1, 0 };
+
+    D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS qualityLevels;
+    qualityLevels.Format = format;
+    qualityLevels.SampleCount = 1;
+    qualityLevels.Flags = flags;
+    qualityLevels.NumQualityLevels = 0;
+
+    while ( qualityLevels.SampleCount <= numSamples && SUCCEEDED( m_d3d12Device->CheckFeatureSupport( D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &qualityLevels, sizeof( D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS ) ) ) && qualityLevels.NumQualityLevels > 0 )
+    {
+        // That works...
+        sampleDesc.Count = qualityLevels.SampleCount;
+        sampleDesc.Quality = qualityLevels.NumQualityLevels - 1;
+
+        // But can we do better?
+        qualityLevels.SampleCount *= 2;
+    }
+
+    return sampleDesc;
+}
+
+
 std::shared_ptr<Window> Application::CreateRenderWindow(const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
 {
     // First check if a window with the given name already exists.

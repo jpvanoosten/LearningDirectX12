@@ -20,6 +20,8 @@ struct alignas( 16 ) GenerateMipsCB
     DirectX::XMFLOAT2 TexelSize;	// 1.0 / OutMip1.Dimensions
 };
 
+// I don't use scoped enums to avoid the explicit cast that is required to 
+// treat these as root indices.
 namespace GenerateMips
 {
     enum

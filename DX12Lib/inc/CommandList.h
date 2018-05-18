@@ -21,6 +21,7 @@ class ConstantBuffer;
 class DynamicDescriptorHeap;
 class GenerateMipsPSO;
 class IndexBuffer;
+class RenderTarget;
 class Resource;
 class ResourceStateTracker;
 class StructuredBuffer;
@@ -90,6 +91,11 @@ public:
 	 * Copy resources.
 	 */
 	void CopyResource(Resource& dstRes, const Resource& srcRes);
+
+    /**
+     * Resolve a multisampled resource into a non-multisampled resource.
+     */
+    void ResolveSubresource( Resource& dstRes, const Resource& srcRes, uint32_t dstSubresource = 0, uint32_t srcSubresource = 0 );
 
     /**
      * Copy the contents to a vertex buffer in GPU memory.
@@ -295,8 +301,7 @@ public:
      * Set the render targets for the graphics rendering pipeline.
      * TODO: Create a RenderTarget class.
      */
-    void SetRenderTarget( const Texture* renderTarget, const Texture* depthTexture = nullptr );
-    void SetRenderTargets( const std::vector<const Texture*> renderTargets, const Texture* depthTexture = nullptr );
+    void SetRenderTarget( const RenderTarget& renderTarget );
 
     /**
      * Draw geometry.

@@ -9,6 +9,7 @@
 #include <DynamicDescriptorHeap.h>
 #include <GenerateMipsPSO.h>
 #include <IndexBuffer.h>
+#include <RenderTarget.h>
 #include <Resource.h>
 #include <ResourceStateTracker.h>
 #include <RootSignature.h>
@@ -116,6 +117,20 @@ void CommandList::CopyResource( Resource& dstRes, const Resource& srcRes )
     TrackResource(dstRes);
     TrackResource(srcRes);
 }
+
+void CommandList::ResolveSubresource( Resource& dstRes, const Resource& srcRes, uint32_t dstSubresource, uint32_t srcSubresource )
+{
+    TransitionBarrier( dstRes, D3D12_RESOURCE_STATE_RESOLVE_DEST, dstSubresource );
+    TransitionBarrier( srcRes, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, srcSubresource );
+
+    FlushResourceBarriers();
+
+    m_d3d12CommandList->ResolveSubresource( dstRes.GetD3D12Resource().Get(), dstSubresource, srcRes.GetD3D12Resource().Get(), srcSubresource, dstRes.GetD3D12ResourceDesc().Format );
+
+    TrackResource( srcRes );
+    TrackResource( dstRes );
+}
+
 
 void CommandList::CopyBuffer( Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags )
 {
@@ -824,34 +839,38 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex,
     TrackResource(resource);
 }
 
-void CommandList::SetRenderTarget(const Texture* renderTarget, const Texture* depthTexture )
-{
-    SetRenderTargets( {renderTarget}, depthTexture );
-}
 
-void CommandList::SetRenderTargets(const std::vector<const Texture*> renderTargets, const Texture* depthTexture )
+void CommandList::SetRenderTarget(const RenderTarget& renderTarget )
 {
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> renderTargetDescriptors;
-    renderTargetDescriptors.reserve(renderTargets.size());
+    renderTargetDescriptors.reserve(AttachmentPoint::NumAttachmentPoints);
 
-    for (auto texture : renderTargets)
+    const auto& textures = renderTarget.GetTextures();
+    
+    // Bind color targets (max of 8 render targets can be bound to the rendering pipeline.
+    for ( int i = 0; i < 8; ++i )
     {
-        if (texture)
-        {
-            TransitionBarrier(*texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
-            renderTargetDescriptors.push_back(texture->GetRenderTargetView());
+        auto& texture = textures[i];
 
-            TrackResource(*texture);
+        auto d3d12Resource = texture.GetD3D12Resource();
+        if ( d3d12Resource )
+        {
+            TransitionBarrier( texture, D3D12_RESOURCE_STATE_RENDER_TARGET );
+            renderTargetDescriptors.push_back( texture.GetRenderTargetView() );
+
+            TrackResource( texture );
         }
     }
 
-    CD3DX12_CPU_DESCRIPTOR_HANDLE depthStencilDescriptor(D3D12_DEFAULT);
-    if (depthTexture)
-    {
-        TransitionBarrier(*depthTexture, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-        depthStencilDescriptor = depthTexture->GetDepthStencilView();
+    const auto& depthTexture = renderTarget.GetTexture( AttachmentPoint::DepthStencil );
 
-        TrackResource(*depthTexture);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE depthStencilDescriptor(D3D12_DEFAULT);
+    if (depthTexture.GetD3D12Resource())
+    {
+        TransitionBarrier(depthTexture, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        depthStencilDescriptor = depthTexture.GetDepthStencilView();
+
+        TrackResource(depthTexture);
     }
 
     m_d3d12CommandList->OMSetRenderTargets( static_cast<UINT>( renderTargetDescriptors.size() ),

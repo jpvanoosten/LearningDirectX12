@@ -14,8 +14,8 @@
 #include <HighResolutionClock.h>
 #include <Texture.h>
 
-// Forward-declare the DirectXTemplate class.
 class Game;
+class Texture;
 
 class Window
 {
@@ -66,20 +66,10 @@ public:
     void Hide();
 
     /**
-     * Return the current back buffer index.
-     */
-    UINT GetCurrentBackBufferIndex() const;
-
-    /**
      * Present the swapchain's back buffer to the screen.
      * Returns the current back buffer index after the present.
      */
-    UINT Present();
-
-    /**
-     * Get the render target view for the current back buffer.
-     */
-    const Texture& GetCurrentRenderTarget() const;
+    UINT Present( const Texture& texture );
 
 protected:
     // The Window procedure needs to call protected methods of this class.

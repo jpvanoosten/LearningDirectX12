@@ -192,8 +192,5 @@ float4 main( PixelShaderInput IN ) : SV_Target
     float4 specular = MaterialCB.Specular * lit.Specular;
     float4 texColor = DiffuseTexture.Sample( LinearRepeatSampler, IN.TexCoord );
 
-    float4 finalColor = ( emissive + ambient + diffuse + specular ) * texColor;
-
-    // Return the gamma-corrected result
-    return float4( LinearToSRGB( finalColor.rgb ), finalColor.a );
+    return ( emissive + ambient + diffuse + specular ) * texColor;
 }

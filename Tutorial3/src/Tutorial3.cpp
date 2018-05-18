@@ -41,6 +41,8 @@ struct LightProperties
 };
 
 // An enum for root signature parameters.
+// I'm not using scoped enums to avoid the explicit cast that would be required
+// to use these as root indices in the root signature.
 enum RootParameters
 {
     MatricesCB,         // ConstantBuffer<Mat> MatCB : register(b0);
@@ -83,10 +85,6 @@ Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSyn
     : super( name, width, height, vSync )
     , m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
     , m_Viewport( CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( width ), static_cast<float>( height ) ) )
-    , m_DepthBuffer( CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, 
-        width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL), 
-        &CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
-        D3D12_RESOURCE_STATE_COMMON, TextureUsage::Depth, L"Depth Buffer")
     , m_Forward( 0 )
     , m_Backward( 0 )
     , m_Left( 0 )
@@ -178,6 +176,7 @@ bool Tutorial3::LoadContent()
 
     m_RootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
+    // Setup the pipeline state.
     struct PipelineStateStream
     {
         CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
@@ -187,40 +186,75 @@ bool Tutorial3::LoadContent()
         CD3DX12_PIPELINE_STATE_STREAM_PS PS;
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+        CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
     } pipelineStateStream;
+
+    // sRGB formats provide free gamma correction!
+    DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
+
+    // Check the best multisample quality level that can be used for the given back buffer format.
+    DXGI_SAMPLE_DESC sampleDesc = Application::Get().GetMultisampleQualityLevels( backBufferFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT );
 
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
     rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+    rtvFormats.RTFormats[0] = backBufferFormat;
 
     pipelineStateStream.pRootSignature = m_RootSignature.GetRootSignature().Get();
     pipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements, VertexPositionNormalTexture::InputElementCount };
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
     pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
-    pipelineStateStream.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+    pipelineStateStream.DSVFormat = depthBufferFormat;
     pipelineStateStream.RTVFormats = rtvFormats;
+    pipelineStateStream.SampleDesc = sampleDesc;
 
     D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
         sizeof( PipelineStateStream ), &pipelineStateStream
     };
     ThrowIfFailed( device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
 
+    // Create an off-screen render target with a single color buffer and a depth buffer.
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat,
+                                                   m_Width, m_Height,
+                                                   1, 1,
+                                                   sampleDesc.Count, sampleDesc.Quality,
+                                                   D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET );
+    D3D12_CLEAR_VALUE colorClearValue;
+    colorClearValue.Format = colorDesc.Format;
+    colorClearValue.Color[0] = 0.4f;
+    colorClearValue.Color[1] = 0.6f;
+    colorClearValue.Color[2] = 0.9f;
+    colorClearValue.Color[3] = 1.0f;
+
+    Texture colorTexture = Texture( colorDesc, &colorClearValue, 
+                                    D3D12_RESOURCE_STATE_RENDER_TARGET, 
+                                    TextureUsage::RenderTarget, 
+                                    L"Color Render Target" );
+
+    // Create a depth buffer.
+    auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, 
+                                                   m_Width, m_Height,
+                                                   1, 1, 
+                                                   sampleDesc.Count, sampleDesc.Quality,
+                                                   D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL );
+    D3D12_CLEAR_VALUE depthClearValue;
+    depthClearValue.Format = depthDesc.Format;
+    depthClearValue.DepthStencil = { 1.0f, 0 };
+
+    Texture depthTexture = Texture( depthDesc, &depthClearValue, 
+                                    D3D12_RESOURCE_STATE_DEPTH_WRITE, 
+                                    TextureUsage::Depth, 
+                                    L"Depth Render Target" );
+
+    // Attach the textures to the render target.
+    m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
+    m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
+
     auto fenceValue = commandQueue->ExecuteCommandList( commandList );
     commandQueue->WaitForFenceValue( fenceValue );
 
     return true;
-}
-
-void Tutorial3::ResizeDepthBuffer( int width, int height )
-{
-    // Flush any GPU commands that might be referencing the depth buffer.
-    Application::Get().Flush();
-
-    width = std::max( 1, width );
-    height = std::max( 1, height );
-
-    m_DepthBuffer.Resize(width, height);
 }
 
 void Tutorial3::OnResize( ResizeEventArgs& e )
@@ -238,7 +272,7 @@ void Tutorial3::OnResize( ResizeEventArgs& e )
         m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f,
             static_cast<float>(e.Width), static_cast<float>(e.Height));
 
-        ResizeDepthBuffer( e.Width, e.Height );
+        m_RenderTarget.Resize( m_Width, m_Height );
     }
 }
 
@@ -349,31 +383,6 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
     }
 }
 
-// Transition a resource
-void Tutorial3::TransitionResource( Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-                                    Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-                                    D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState )
-{
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        resource.Get(),
-        beforeState, afterState );
-
-    commandList->ResourceBarrier( 1, &barrier );
-}
-
-// Clear a render target.
-void Tutorial3::ClearRTV( Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-                          D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor )
-{
-    commandList->ClearRenderTargetView( rtv, clearColor, 0, nullptr );
-}
-
-void Tutorial3::ClearDepth( Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-                            D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth )
-{
-    commandList->ClearDepthStencilView( dsv, D3D12_CLEAR_FLAG_DEPTH, depth, 0, 0, nullptr );
-}
-
 void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX viewProjection, Mat& mat )
 {
     mat.ModelMatrix = model;
@@ -389,15 +398,12 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto commandList = commandQueue->GetCommandList();
 
-    UINT currentBackBufferIndex = m_pWindow->GetCurrentBackBufferIndex();
-    auto& renderTarget = m_pWindow->GetCurrentRenderTarget();
-
     // Clear the render targets.
     {
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
-        commandList->ClearTexture( renderTarget, clearColor );
-        commandList->ClearDepthStencilTexture( m_DepthBuffer, D3D12_CLEAR_FLAG_DEPTH );
+        commandList->ClearTexture( m_RenderTarget.GetTexture(AttachmentPoint::Color0), clearColor );
+        commandList->ClearDepthStencilTexture( m_RenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH );
     }
 
     commandList->SetPipelineState(m_PipelineState);
@@ -415,7 +421,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     commandList->SetViewport( m_Viewport );
     commandList->SetScissorRect( m_ScissorRect);
 
-    commandList->SetRenderTarget( &renderTarget, &m_DepthBuffer );
+    commandList->SetRenderTarget( m_RenderTarget );
 
     // Draw the earth sphere
     XMMATRIX translationMatrix = XMMatrixTranslation( -4.0f, 2.0f, -4.0f );
@@ -575,8 +581,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     commandQueue->ExecuteCommandList( commandList );
 
     // Present
-    m_pWindow->Present();
+    m_pWindow->Present( m_RenderTarget.GetTexture(AttachmentPoint::Color0) );
 }
+
+static bool g_AllowFullscreenToggle = true;
 
 void Tutorial3::OnKeyPressed( KeyEventArgs& e )
 {
@@ -591,7 +599,11 @@ void Tutorial3::OnKeyPressed( KeyEventArgs& e )
             if ( e.Alt )
             {
         case KeyCode::F11:
-            m_pWindow->ToggleFullscreen();
+            if ( g_AllowFullscreenToggle )
+            {
+                m_pWindow->ToggleFullscreen();
+                g_AllowFullscreenToggle = false;
+            }
             break;
             }
         case KeyCode::V:
@@ -642,6 +654,13 @@ void Tutorial3::OnKeyReleased( KeyEventArgs& e )
 
     switch ( e.Key )
     {
+        case KeyCode::Enter:
+            if ( e.Alt )
+            {
+        case KeyCode::F11:
+                g_AllowFullscreenToggle = true;
+            }
+            break;
         case KeyCode::Up:
         case KeyCode::W:
             m_Forward = 0.0f;
