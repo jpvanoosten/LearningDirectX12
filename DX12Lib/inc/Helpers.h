@@ -44,12 +44,6 @@ inline void ThrowIfFailed(HRESULT hr)
     }
 }
 
-inline ULONG GetReferenceCount(Microsoft::WRL::ComPtr<ID3D12Resource> res)
-{
-    res->AddRef();
-    return res->Release();
-}
-
 namespace Math
 {
     constexpr float PI = 3.1415926535897932384626433832795f;

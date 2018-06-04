@@ -1,5 +1,5 @@
 /**
- * This is a linear allocator for CPU visible descriptors.
+ * This is an allocator for CPU visible descriptors.
  * CPU visible descriptors must be copied to a GPU visible descriptor heap before
  * being used in a shader. The DynamicDescriptorHeap class is used to upload
  * CPU visible descriptors to a GPU visible descriptor heap.

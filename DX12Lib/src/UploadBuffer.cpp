@@ -33,19 +33,6 @@ UploadBuffer::Allocation UploadBuffer::Allocate(size_t sizeInBytes, size_t align
     return m_CurrentPage->Allocate(sizeInBytes, alignment);
 }
 
-void UploadBuffer::Reset()
-{
-    m_CurrentPage = nullptr;
-    // Reset all available pages.
-    m_AvailablePages = m_PagePool;
-
-    for (auto page : m_AvailablePages)
-    {
-        // Reset the page for new allocations.
-        page->Reset();
-    }
-}
-
 std::shared_ptr<UploadBuffer::Page> UploadBuffer::RequestPage()
 {
     std::shared_ptr<Page> page;
@@ -62,6 +49,19 @@ std::shared_ptr<UploadBuffer::Page> UploadBuffer::RequestPage()
     }
 
     return page;
+}
+
+void UploadBuffer::Reset()
+{
+    m_CurrentPage = nullptr;
+    // Reset all available pages.
+    m_AvailablePages = m_PagePool;
+
+    for ( auto page : m_AvailablePages )
+    {
+        // Reset the page for new allocations.
+        page->Reset();
+    }
 }
 
 UploadBuffer::Page::Page(size_t sizeInBytes)

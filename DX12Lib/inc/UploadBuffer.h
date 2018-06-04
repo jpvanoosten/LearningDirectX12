@@ -92,7 +92,6 @@ private:
     PagePool m_PagePool;
     PagePool m_AvailablePages;
 
-    Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;
     std::shared_ptr<Page> m_CurrentPage;
 
     // The size of each page of memory.
