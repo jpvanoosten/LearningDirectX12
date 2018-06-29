@@ -139,8 +139,8 @@ void RegisterWindowClass( HINSTANCE hInst, const wchar_t* windowClassName )
     windowClass.lpszClassName = windowClassName;
     windowClass.hIconSm = ::LoadIcon(hInst, MAKEINTRESOURCE(APP_ICON)); //  MAKEINTRESOURCE(APPLICATION_ICON));
 
-    static HRESULT hr = ::RegisterClassExW(&windowClass);
-    assert(SUCCEEDED(hr));
+    static ATOM atom = ::RegisterClassExW(&windowClass);
+    assert(atom > 0);
 }
 
 HWND CreateWindow(const wchar_t* windowClassName, HINSTANCE hInst,
@@ -514,11 +514,11 @@ void Render()
         };
         g_CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
 
-        g_FrameFenceValues[g_CurrentBackBufferIndex] = Signal(g_CommandQueue, g_Fence, g_FenceValue);
-
         UINT syncInterval = g_VSync ? 1 : 0;
         UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
         ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
+
+        g_FrameFenceValues[g_CurrentBackBufferIndex] = Signal( g_CommandQueue, g_Fence, g_FenceValue );
 
         g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
 
@@ -583,7 +583,7 @@ void SetFullscreen(bool fullscreen)
             monitorInfo.cbSize = sizeof(MONITORINFOEX);
             ::GetMonitorInfo(hMonitor, &monitorInfo);
 
-            ::SetWindowPos(g_hWnd, HWND_TOPMOST,
+            ::SetWindowPos(g_hWnd, HWND_TOP,
                 monitorInfo.rcMonitor.left,
                 monitorInfo.rcMonitor.top,
                 monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,

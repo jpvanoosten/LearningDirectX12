@@ -106,7 +106,7 @@ void DynamicDescriptorHeap::CommitStagedDescriptors(CommandList& commandList, st
             device->CopyDescriptors(1, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
                 numSrcDescriptors, pSrcDescriptorHandles, nullptr, m_DescriptorHeapType);
 
-            // Set the descriptors on the command list using the passed-in set function.
+            // Set the descriptors on the command list using the passed-in setter function.
             setFunc(d3d12GraphicsCommandList, rootIndex, m_CurrentGPUDescriptorHandle);
 
             // Offset current CPU and GPU descriptor handles.

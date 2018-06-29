@@ -53,6 +53,10 @@ add_executable( Tutorial2 WIN32
 	Tutorial2.rc
 )
 
+target_compile_definitions( Tutorial2
+    PRIVATE _ENABLE_EXTENDED_ALIGNED_STORAGE # This is required when using the DirectX Math library as of VS 2017 15.8. See 
+)
+
 target_include_directories( Tutorial2
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
