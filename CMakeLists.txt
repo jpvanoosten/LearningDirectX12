@@ -17,8 +17,9 @@ add_subdirectory( DX12Lib )
 add_subdirectory( Tutorial1 )
 add_subdirectory( Tutorial2 )
 add_subdirectory( Tutorial3 )
+add_subdirectory( Tutorial4 )
 
 # Set the startup project.
 set_directory_properties( PROPERTIES 
-    VS_STARTUP_PROJECT Tutorial3
+    VS_STARTUP_PROJECT Tutorial4
 )

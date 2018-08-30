@@ -1,4 +1,4 @@
-#include <Tutorial3.h>
+#include <Tutorial4.h>
 
 #include <Application.h>
 #include <CommandQueue.h>
@@ -81,7 +81,7 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
     return M;
 }
 
-Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSync )
+Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSync )
     : super( name, width, height, vSync )
     , m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
     , m_Viewport( CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( width ), static_cast<float>( height ) ) )
@@ -111,12 +111,12 @@ Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSyn
     m_pAlignedCameraData->m_InitialCamRot = m_Camera.get_Rotation();
 }
 
-Tutorial3::~Tutorial3()
+Tutorial4::~Tutorial4()
 {
     _aligned_free( m_pAlignedCameraData );
 }
 
-bool Tutorial3::LoadContent()
+bool Tutorial4::LoadContent()
 {
     auto device = Application::Get().GetDevice();
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
@@ -137,11 +137,11 @@ bool Tutorial3::LoadContent()
 
     // Load the vertex shader.
     ComPtr<ID3DBlob> vertexShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial3/VertexShader.cso", &vertexShaderBlob ) );
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/VertexShader.cso", &vertexShaderBlob ) );
 
     // Load the pixel shader.
     ComPtr<ID3DBlob> pixelShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial3/PixelShader.cso", &pixelShaderBlob ) );
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/PixelShader.cso", &pixelShaderBlob ) );
 
     // Create a root signature.
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -255,7 +255,7 @@ bool Tutorial3::LoadContent()
     return true;
 }
 
-void Tutorial3::OnResize( ResizeEventArgs& e )
+void Tutorial4::OnResize( ResizeEventArgs& e )
 {
     super::OnResize( e );
 
@@ -274,11 +274,11 @@ void Tutorial3::OnResize( ResizeEventArgs& e )
     }
 }
 
-void Tutorial3::UnloadContent()
+void Tutorial4::UnloadContent()
 {
 }
 
-void Tutorial3::OnUpdate( UpdateEventArgs& e )
+void Tutorial4::OnUpdate( UpdateEventArgs& e )
 {
     static uint64_t frameCount = 0;
     static double totalTime = 0.0;
@@ -389,7 +389,7 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
     mat.ModelViewProjectionMatrix = model * viewProjection;
 }
 
-void Tutorial3::OnRender( RenderEventArgs& e )
+void Tutorial4::OnRender( RenderEventArgs& e )
 {
     super::OnRender( e );
 
@@ -584,7 +584,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
 static bool g_AllowFullscreenToggle = true;
 
-void Tutorial3::OnKeyPressed( KeyEventArgs& e )
+void Tutorial4::OnKeyPressed( KeyEventArgs& e )
 {
     super::OnKeyPressed( e );
 
@@ -646,7 +646,7 @@ void Tutorial3::OnKeyPressed( KeyEventArgs& e )
     }
 }
 
-void Tutorial3::OnKeyReleased( KeyEventArgs& e )
+void Tutorial4::OnKeyReleased( KeyEventArgs& e )
 {
     super::OnKeyReleased( e );
 
@@ -687,7 +687,7 @@ void Tutorial3::OnKeyReleased( KeyEventArgs& e )
     }
 }
 
-void Tutorial3::OnMouseMoved( MouseMotionEventArgs& e )
+void Tutorial4::OnMouseMoved( MouseMotionEventArgs& e )
 {
     super::OnMouseMoved( e );
 
@@ -704,7 +704,7 @@ void Tutorial3::OnMouseMoved( MouseMotionEventArgs& e )
 }
 
 
-void Tutorial3::OnMouseWheel( MouseWheelEventArgs& e )
+void Tutorial4::OnMouseWheel( MouseWheelEventArgs& e )
 {
     auto fov = m_Camera.get_FoV();
 
