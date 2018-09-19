@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include <imgui.h>
+
 class Window;
 
 class Game : public std::enable_shared_from_this<Game>
@@ -110,5 +112,4 @@ private:
     int m_Width;
     int m_Height;
     bool m_vSync;
-
 };

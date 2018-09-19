@@ -59,7 +59,10 @@ Resource& Resource::operator=(const Resource& other)
     {
         m_d3d12Resource = other.m_d3d12Resource;
         m_ResourceName = other.m_ResourceName;
-        m_d3d12ClearValue = std::make_unique<D3D12_CLEAR_VALUE>( *other.m_d3d12ClearValue );
+        if ( other.m_d3d12ClearValue )
+        {
+            m_d3d12ClearValue = std::make_unique<D3D12_CLEAR_VALUE>( *other.m_d3d12ClearValue );
+        }
     }
 
     return *this;

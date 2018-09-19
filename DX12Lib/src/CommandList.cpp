@@ -350,7 +350,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
     Texture stagingTexture( stagingResource );
     // If the passed-in resource does not allow for UAV access
     // then create a staging resource that is used to generate
-    // the mip-map chain.
+    // the mipmap chain.
     if ( ( resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) == 0 )
     {
         auto stagingDesc = resourceDesc;
@@ -394,7 +394,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
         // 0b11(3): Both width and height are odd.
         generateMipsCB.SrcDimension = ( srcHeight & 1 ) << 1 | ( srcWidth & 1 );
 
-        // How many mip map levels to compute this pass (max 4 mips per pass)
+        // How many mipmap levels to compute this pass (max 4 mips per pass)
         DWORD mipCount;
 
         // The number of times we can half the size of the texture and get
@@ -757,36 +757,36 @@ void CommandList::SetPipelineState(Microsoft::WRL::ComPtr<ID3D12PipelineState> p
 void CommandList::SetGraphicsRootSignature( const RootSignature& rootSignature )
 {
     auto d3d12RootSignature = rootSignature.GetRootSignature().Get();
-    if ( m_CurrentRootSignature != d3d12RootSignature )
+    if ( m_RootSignature != d3d12RootSignature )
     {
-        m_CurrentRootSignature = d3d12RootSignature;
+        m_RootSignature = d3d12RootSignature;
 
         for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
         {
             m_DynamicDescriptorHeap[i]->ParseRootSignature( rootSignature );
         }
 
-        m_d3d12CommandList->SetGraphicsRootSignature(m_CurrentRootSignature);
+        m_d3d12CommandList->SetGraphicsRootSignature(m_RootSignature);
 
-        TrackObject(m_CurrentRootSignature);
+        TrackObject(m_RootSignature);
     }
 }
 
 void CommandList::SetComputeRootSignature( const RootSignature& rootSignature )
 {
     auto d3d12RootSignature = rootSignature.GetRootSignature().Get();
-    if ( m_CurrentRootSignature != d3d12RootSignature )
+    if ( m_RootSignature != d3d12RootSignature )
     {
-        m_CurrentRootSignature = d3d12RootSignature;
+        m_RootSignature = d3d12RootSignature;
 
         for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
         {
             m_DynamicDescriptorHeap[i]->ParseRootSignature( rootSignature );
         }
 
-        m_d3d12CommandList->SetComputeRootSignature(m_CurrentRootSignature);
+        m_d3d12CommandList->SetComputeRootSignature(m_RootSignature);
 
-        TrackObject(m_CurrentRootSignature);
+        TrackObject(m_RootSignature);
     }
 }
 
@@ -873,19 +873,16 @@ void CommandList::SetRenderTarget(const RenderTarget& renderTarget )
         TrackResource(depthTexture);
     }
 
+    D3D12_CPU_DESCRIPTOR_HANDLE* pDSV = depthStencilDescriptor.ptr != 0 ? &depthStencilDescriptor : nullptr;
+
     m_d3d12CommandList->OMSetRenderTargets( static_cast<UINT>( renderTargetDescriptors.size() ),
-        renderTargetDescriptors.data(), FALSE, &depthStencilDescriptor );
+        renderTargetDescriptors.data(), FALSE, pDSV );
 }
 
 void CommandList::Draw( uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance )
 {
     FlushResourceBarriers();
 
-    if ( m_PreviousRootSignature != m_CurrentRootSignature )
-    {
-        m_d3d12CommandList->SetGraphicsRootSignature( m_CurrentRootSignature );
-        m_PreviousRootSignature = m_CurrentRootSignature;
-    }
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
     {
         m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw( *this );
@@ -956,7 +953,7 @@ void CommandList::Reset()
         m_DescriptorHeaps[i] = nullptr;
     }
 
-    m_CurrentRootSignature = nullptr;
+    m_RootSignature = nullptr;
     m_GenerateMipsCommandList = nullptr;
 }
 

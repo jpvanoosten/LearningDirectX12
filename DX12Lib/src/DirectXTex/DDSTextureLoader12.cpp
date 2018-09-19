@@ -13,7 +13,6 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 // http://go.microsoft.com/fwlink/?LinkID=615561
 //--------------------------------------------------------------------------------------
-#include <DX12LibPCH.h>
 #include <DirectXTex/DDSTextureLoader12.h>
 
 #include <assert.h>

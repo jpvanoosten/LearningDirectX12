@@ -299,7 +299,6 @@ public:
 
     /**
      * Set the render targets for the graphics rendering pipeline.
-     * TODO: Create a RenderTarget class.
      */
     void SetRenderTarget( const RenderTarget& renderTarget );
 
@@ -387,8 +386,7 @@ private:
 
     // Keep track of the currently bound root signatures to minimize root
     // signature changes.
-    ID3D12RootSignature* m_CurrentRootSignature;
-    ID3D12RootSignature* m_PreviousRootSignature;
+    ID3D12RootSignature* m_RootSignature;
 
     // Resource created in an upload heap. Useful for drawing of dynamic geometry
     // or for uploading constant buffer data that changes every draw call.

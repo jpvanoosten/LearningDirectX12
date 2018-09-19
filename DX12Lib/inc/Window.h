@@ -11,13 +11,16 @@
 #include <dxgi1_5.h>
 
 #include <Events.h>
+#include <GUI.h>
 #include <HighResolutionClock.h>
 #include <Texture.h>
+
+#include <memory>
 
 class Game;
 class Texture;
 
-class Window
+class Window : public std::enable_shared_from_this<Window>
 {
 public:
     // Number of swapchain back buffers.
@@ -28,6 +31,11 @@ public:
     * @returns The handle to the window instance or nullptr if this is not a valid window.
     */
     HWND GetWindowHandle() const;
+
+    /**
+     * Initialize the window.
+     */
+    void Initialize();
 
     /**
     * Destroy this window.
@@ -147,5 +155,7 @@ private:
 
     int m_PreviousMouseX;
     int m_PreviousMouseY;
+
+    GUI m_GUI;
 
 };

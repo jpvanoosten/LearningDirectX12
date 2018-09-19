@@ -21,6 +21,7 @@ static WindowNameMap gs_WindowByName;
 uint64_t Application::ms_FrameCount = 0;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+extern LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 // A wrapper struct to allow shared pointers for the window class.
 // This is needed because the constructor and destructor for the Window
@@ -303,6 +304,7 @@ std::shared_ptr<Window> Application::CreateRenderWindow(const std::wstring& wind
     }
 
     WindowPtr pWindow = std::make_shared<MakeWindow>(hWnd, windowName, clientWidth, clientHeight, vSync);
+    pWindow->Initialize();
 
     gs_Windows.insert(WindowMap::value_type(hWnd, pWindow));
     gs_WindowByName.insert(WindowNameMap::value_type(windowName, pWindow));
@@ -478,6 +480,11 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(UINT messageID)
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    if ( ImGui_ImplWin32_WndProcHandler( hwnd, message, wParam, lParam ) )
+    {
+        return true;
+    }
+
     WindowPtr pWindow;
     {
         WindowMap::iterator iter = gs_Windows.find(hwnd);
@@ -512,10 +519,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             // For printable characters, the next message will be WM_CHAR.
             // This message contains the character code we need to send the KeyPressed event.
             // Inspired by the SDL 1.2 implementation.
-            if (PeekMessage(&charMsg, hwnd, 0, 0, PM_NOREMOVE) && charMsg.message == WM_CHAR)
+            if (PeekMessage(&charMsg, hwnd, 0, 0, PM_NOREMOVE ) && charMsg.message == WM_CHAR)
             {
                 GetMessage(&charMsg, hwnd, 0, 0);
                 c = static_cast<unsigned int>( charMsg.wParam );
+
+                if ( charMsg.wParam > 0 && charMsg.wParam < 0x10000 )
+                    ImGui::GetIO().AddInputCharacter( (unsigned short)charMsg.wParam );
             }
             bool shift = ( GetAsyncKeyState(VK_SHIFT) & 0x8000 ) != 0;
             bool control = ( GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
