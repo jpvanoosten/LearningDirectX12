@@ -204,6 +204,10 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     ImGuiIO& io = ImGui::GetIO();
     ImDrawData* drawData = ImGui::GetDrawData();
 
+    // Check if there is anything to render.
+    if ( !drawData || drawData->CmdListsCount == 0 )
+        return;
+
     ImVec2 displayPos = drawData->DisplayPos;
 
     commandList->SetGraphicsRootSignature( *m_RootSignature );
@@ -237,6 +241,14 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     commandList->SetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     const DXGI_FORMAT indexFormat = sizeof( ImDrawIdx ) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+
+    // It may happen that ImGui doesn't actually render anything. In this case,
+    // any pending resource barriers in the commandList will not be flushed (since 
+    // resource barriers are only flushed when a draw command is executed).
+    // In that case, manually flushing the resource barriers will ensure that
+    // they are properly flushed before exiting this function.
+    commandList->FlushResourceBarriers();
+
     for ( int i = 0; i < drawData->CmdListsCount; ++i )
     {
         const ImDrawList* drawList = drawData->CmdLists[i];

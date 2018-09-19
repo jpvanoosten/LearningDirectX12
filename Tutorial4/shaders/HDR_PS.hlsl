@@ -29,10 +29,9 @@ struct PointLight
     //----------------------------------- (16 byte boundary)
     float4 Color;
     //----------------------------------- (16 byte boundary)
-    float       ConstantAttenuation;
-    float       LinearAttenuation;
-    float       QuadraticAttenuation;
-    float       Padding;
+    float       Intensity;
+    float       Attenuation;
+    float2      Padding;                // Pad to 16 bytes
     //----------------------------------- (16 byte boundary)
     // Total:                              16 * 4 = 64 bytes
 };
@@ -49,10 +48,10 @@ struct SpotLight
     //----------------------------------- (16 byte boundary)
     float4 Color;
     //----------------------------------- (16 byte boundary)
+    float       Intensity;
     float       SpotAngle;
-    float       ConstantAttenuation;
-    float       LinearAttenuation;
-    float       QuadraticAttenuation;
+    float       Attenuation;
+    float       Padding;                // Pad to 16 bytes.
     //----------------------------------- (16 byte boundary)
     // Total:                              16 * 6 = 96 bytes
 };
@@ -100,9 +99,9 @@ float DoSpecular( float3 V, float3 N, float3 L )
     return pow( RdotV, MaterialCB.SpecularPower );
 }
 
-float DoAttenuation( float c, float l, float q, float d )
+float DoAttenuation( float attenuation, float distance )
 {
-    return 1.0f / ( c + l * d + q * d * d );
+    return 1.0f / ( 1.0f + attenuation * distance * distance );
 }
 
 float DoSpotCone( float3 spotDir, float3 L, float spotAngle )
@@ -120,13 +119,10 @@ LightResult DoPointLight( PointLight light, float3 V, float3 P, float3 N )
     float d = length( L );
     L = L / d;
 
-    float attenuation = DoAttenuation( light.ConstantAttenuation,
-                                       light.LinearAttenuation,
-                                       light.QuadraticAttenuation,
-                                       d );
+    float attenuation = DoAttenuation( light.Attenuation, d );
 
-    result.Diffuse = DoDiffuse( N, L ) * attenuation * light.Color;
-    result.Specular = DoSpecular( V, N, L ) * attenuation * light.Color;
+    result.Diffuse = DoDiffuse( N, L ) * attenuation * light.Color * light.Intensity;
+    result.Specular = DoSpecular( V, N, L ) * attenuation * light.Color * light.Intensity;
 
     return result;
 }
@@ -138,15 +134,12 @@ LightResult DoSpotLight( SpotLight light, float3 V, float3 P, float3 N )
     float d = length( L );
     L = L / d;
 
-    float attenuation = DoAttenuation( light.ConstantAttenuation,
-                                       light.LinearAttenuation,
-                                       light.QuadraticAttenuation,
-                                       d );
+    float attenuation = DoAttenuation( light.Attenuation, d );
 
     float spotIntensity = DoSpotCone( light.DirectionVS.xyz, L, light.SpotAngle );
 
-    result.Diffuse = DoDiffuse( N, L ) * attenuation * spotIntensity * light.Color;
-    result.Specular = DoSpecular( V, N, L ) * attenuation * spotIntensity * light.Color;
+    result.Diffuse = DoDiffuse( N, L ) * attenuation * spotIntensity * light.Color * light.Intensity;
+    result.Specular = DoSpecular( V, N, L ) * attenuation * spotIntensity * light.Color * light.Intensity;
 
     return result;
 }
@@ -175,9 +168,6 @@ LightResult DoLighting( float3 P, float3 N )
         totalResult.Diffuse += result.Diffuse;
         totalResult.Specular += result.Specular;
     }
-
-    totalResult.Diffuse = saturate( totalResult.Diffuse );
-    totalResult.Specular = saturate( totalResult.Specular );
 
     return totalResult;
 }

@@ -136,12 +136,12 @@ bool Tutorial4::LoadContent()
     commandList->LoadTextureFromFile( m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg" );
 
     // Load the vertex shader.
-    ComPtr<ID3DBlob> vertexShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/VertexShader.cso", &vertexShaderBlob ) );
+    ComPtr<ID3DBlob> vs;
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDR_VS.cso", &vs ) );
 
     // Load the pixel shader.
-    ComPtr<ID3DBlob> pixelShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/PixelShader.cso", &pixelShaderBlob ) );
+    ComPtr<ID3DBlob> ps;
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDR_PS.cso", &ps ) );
 
     // Create a root signature.
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -158,7 +158,7 @@ bool Tutorial4::LoadContent()
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
-    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
+    CD3DX12_DESCRIPTOR_RANGE1 descriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
 
     CD3DX12_ROOT_PARAMETER1 rootParameters[RootParameters::NumRootParameters];
     rootParameters[RootParameters::MatricesCB].InitAsConstantBufferView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX );
@@ -166,7 +166,7 @@ bool Tutorial4::LoadContent()
     rootParameters[RootParameters::LightPropertiesCB].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL );
     rootParameters[RootParameters::PointLights].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
     rootParameters[RootParameters::SpotLights].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
-    rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRange, D3D12_SHADER_VISIBILITY_PIXEL );
 
     CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
     CD3DX12_STATIC_SAMPLER_DESC anisotropicSampler( 0, D3D12_FILTER_ANISOTROPIC );
@@ -174,10 +174,10 @@ bool Tutorial4::LoadContent()
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
     rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler, rootSignatureFlags );
 
-    m_RootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+    m_HDRRootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
-    // Setup the pipeline state.
-    struct PipelineStateStream
+    // Setup the HDR pipeline state.
+    struct HDRPipelineStateStream
     {
         CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
         CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
@@ -187,35 +187,76 @@ bool Tutorial4::LoadContent()
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
         CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
-    } pipelineStateStream;
+    } hdrPipelineStateStream;
 
-    // sRGB formats provide free gamma correction!
-    DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    // Create render targets.
+    DXGI_FORMAT HDRFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    DXGI_FORMAT SDRFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
     // Check the best multisample quality level that can be used for the given back buffer format.
-    DXGI_SAMPLE_DESC sampleDesc = Application::Get().GetMultisampleQualityLevels( backBufferFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT );
+    DXGI_SAMPLE_DESC sampleDesc = Application::Get().GetMultisampleQualityLevels( HDRFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT );
 
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
     rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = backBufferFormat;
+    rtvFormats.RTFormats[0] = HDRFormat;
 
-    pipelineStateStream.pRootSignature = m_RootSignature.GetRootSignature().Get();
-    pipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements, VertexPositionNormalTexture::InputElementCount };
-    pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
-    pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
-    pipelineStateStream.DSVFormat = depthBufferFormat;
-    pipelineStateStream.RTVFormats = rtvFormats;
-    pipelineStateStream.SampleDesc = sampleDesc;
+    hdrPipelineStateStream.pRootSignature = m_HDRRootSignature.GetRootSignature().Get();
+    hdrPipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements, VertexPositionNormalTexture::InputElementCount };
+    hdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    hdrPipelineStateStream.VS = CD3DX12_SHADER_BYTECODE( vs.Get() );
+    hdrPipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( ps.Get() );
+    hdrPipelineStateStream.DSVFormat = depthBufferFormat;
+    hdrPipelineStateStream.RTVFormats = rtvFormats;
+    hdrPipelineStateStream.SampleDesc = sampleDesc;
 
-    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
-        sizeof( PipelineStateStream ), &pipelineStateStream
+    D3D12_PIPELINE_STATE_STREAM_DESC hdrPipelineStateStreamDesc = {
+        sizeof( HDRPipelineStateStream ), &hdrPipelineStateStream
     };
-    ThrowIfFailed( device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+    ThrowIfFailed( device->CreatePipelineState( &hdrPipelineStateStreamDesc, IID_PPV_ARGS( &m_HDRPipelineState ) ) );
+
+    // Create the SDR Root Signature
+    descriptorRange.Init( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0 );
+    rootParameters[0].InitAsDescriptorTable( 1, &descriptorRange, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootSignatureDescription.Init_1_1( 1, rootParameters );
+
+    m_SDRRootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+
+    // Create the SDR PSO
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDRtoSDR_VS.cso", &vs ) );
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDRtoSDR_PS.cso", &ps ) );
+
+    rtvFormats.NumRenderTargets = 1;
+    rtvFormats.RTFormats[0] = SDRFormat;
+
+    CD3DX12_RASTERIZER_DESC rasterizerDesc( D3D12_DEFAULT );
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+
+    struct SDRPipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+        CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+        CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+        CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER Rasterizer;
+        CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+    } sdrPipelineStateStream;
+
+
+    sdrPipelineStateStream.pRootSignature = m_SDRRootSignature.GetRootSignature().Get();
+    sdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    sdrPipelineStateStream.VS = CD3DX12_SHADER_BYTECODE( vs.Get() );
+    sdrPipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( ps.Get() );
+    sdrPipelineStateStream.Rasterizer = rasterizerDesc;
+    sdrPipelineStateStream.RTVFormats = rtvFormats;
+
+    D3D12_PIPELINE_STATE_STREAM_DESC sdrPipelineStateStreamDesc = {
+        sizeof( SDRPipelineStateStream ), &sdrPipelineStateStream
+    };
+    ThrowIfFailed( device->CreatePipelineState( &sdrPipelineStateStreamDesc, IID_PPV_ARGS( &m_SDRPipelineState ) ) );
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
-    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat,
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( HDRFormat,
                                                    m_Width, m_Height,
                                                    1, 1,
                                                    sampleDesc.Count, sampleDesc.Quality,
@@ -227,9 +268,15 @@ bool Tutorial4::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    Texture colorTexture = Texture( colorDesc, &colorClearValue, 
+    Texture HDRTexture = Texture( colorDesc, &colorClearValue, 
                                     TextureUsage::RenderTarget, 
-                                    L"Color Render Target" );
+                                    L"HDR Texture" );
+
+    colorDesc.Format = SDRFormat;
+    colorDesc.SampleDesc = { 1, 0 };    // The SDR texture doesn't require MSAA.
+    Texture SDRTexture = Texture( colorDesc, nullptr,
+                                  TextureUsage::RenderTarget,
+                                  L"SDR Texture" );
 
     // Create a depth buffer.
     auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, 
@@ -245,9 +292,14 @@ bool Tutorial4::LoadContent()
                                     TextureUsage::Depth, 
                                     L"Depth Render Target" );
 
-    // Attach the textures to the render target.
-    m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
-    m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
+    // Attach the HDR texture to the HDR render target.
+    m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, HDRTexture );
+    m_HDRRenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
+
+    // Attach the SDR texture to the SDR render target.
+    m_SDRRenderTarget.AttachTexture( AttachmentPoint::Color0, SDRTexture );
+    // The SDR render target doesn't require a depth buffer since it will only be 
+    // used to perform tone mapping of the HDR texture before display.
 
     auto fenceValue = commandQueue->ExecuteCommandList( commandList );
     commandQueue->WaitForFenceValue( fenceValue );
@@ -270,7 +322,8 @@ void Tutorial4::OnResize( ResizeEventArgs& e )
         m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f,
             static_cast<float>(e.Width), static_cast<float>(e.Height));
 
-        m_RenderTarget.Resize( m_Width, m_Height );
+        m_HDRRenderTarget.Resize( m_Width, m_Height );
+        m_SDRRenderTarget.Resize( m_Width, m_Height );
     }
 }
 
@@ -348,9 +401,8 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         XMStoreFloat4( &l.PositionVS, positionVS );
 
         l.Color = XMFLOAT4( LightColors[i] );
-        l.ConstantAttenuation = 1.0f;
-        l.LinearAttenuation = 0.08f;
-        l.QuadraticAttenuation = 0.0f;
+        l.Intensity = 10.0f;
+        l.Attenuation = 0.0f;
     }
 
     m_SpotLights.resize( numSpotLights );
@@ -374,10 +426,9 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         XMStoreFloat4( &l.DirectionVS, directionVS );
 
         l.Color = XMFLOAT4( LightColors[numPointLights+i] );
+        l.Intensity = 10.0f;
         l.SpotAngle = XMConvertToRadians( 45.0f );
-        l.ConstantAttenuation = 1.0f;
-        l.LinearAttenuation = 0.08f;
-        l.QuadraticAttenuation = 0.0f;
+        l.Attenuation = 0.0f;
     }
 }
 
@@ -400,12 +451,12 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     {
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
-        commandList->ClearTexture( m_RenderTarget.GetTexture(AttachmentPoint::Color0), clearColor );
-        commandList->ClearDepthStencilTexture( m_RenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH );
+        commandList->ClearTexture( m_HDRRenderTarget.GetTexture(AttachmentPoint::Color0), clearColor );
+        commandList->ClearDepthStencilTexture( m_HDRRenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH );
     }
 
-    commandList->SetPipelineState(m_PipelineState);
-    commandList->SetGraphicsRootSignature( m_RootSignature );
+    commandList->SetPipelineState(m_HDRPipelineState);
+    commandList->SetGraphicsRootSignature( m_HDRRootSignature );
 
     // Upload lights
     LightProperties lightProps;
@@ -419,7 +470,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     commandList->SetViewport( m_Viewport );
     commandList->SetScissorRect( m_ScissorRect);
 
-    commandList->SetRenderTarget( m_RenderTarget );
+    commandList->SetRenderTarget( m_HDRRenderTarget );
 
     // Draw the earth sphere
     XMMATRIX translationMatrix = XMMatrixTranslation( -4.0f, 2.0f, -4.0f );
@@ -576,10 +627,18 @@ void Tutorial4::OnRender( RenderEventArgs& e )
         m_ConeMesh->Draw( *commandList );
     }
 
+    // Perform HDR -> SDR tonemapping.
+    commandList->SetRenderTarget( m_SDRRenderTarget );
+    commandList->SetPipelineState( m_SDRPipelineState );
+    commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    commandList->SetGraphicsRootSignature( m_SDRRootSignature );
+    commandList->SetShaderResourceView( 0, 0, m_HDRRenderTarget.GetTexture( Color0 ), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->Draw( 3 );
+
     commandQueue->ExecuteCommandList( commandList );
 
     // Present
-    m_pWindow->Present( m_RenderTarget.GetTexture(AttachmentPoint::Color0) );
+    m_pWindow->Present( m_SDRRenderTarget.GetTexture(AttachmentPoint::Color0) );
 }
 
 static bool g_AllowFullscreenToggle = true;

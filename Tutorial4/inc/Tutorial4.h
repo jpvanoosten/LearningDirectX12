@@ -78,14 +78,20 @@ private:
     Texture m_EarthTexture;
     Texture m_MonaLisaTexture;
 
-    // Render target
-    RenderTarget m_RenderTarget;
+    // HDR Render target
+    RenderTarget m_HDRRenderTarget;
+
+    // SDR Render target
+    RenderTarget m_SDRRenderTarget;
 
     // Root signature
-    RootSignature m_RootSignature;
+    RootSignature m_HDRRootSignature;
+    RootSignature m_SDRRootSignature;
 
     // Pipeline state object.
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_HDRPipelineState;
+    // HDR -> SDR tone mapping PSO.
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_SDRPipelineState;
 
     D3D12_VIEWPORT m_Viewport;
     D3D12_RECT m_ScissorRect;

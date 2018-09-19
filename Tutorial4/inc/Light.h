@@ -8,9 +8,8 @@ struct PointLight
         : PositionWS( 0.0f, 0.0f, 0.0f, 1.0f )
         , PositionVS( 0.0f, 0.0f, 0.0f, 1.0f )
         , Color( 1.0f, 1.0f, 1.0f, 1.0f )
-        , ConstantAttenuation( 1.0f )
-        , LinearAttenuation( 0.0f )
-        , QuadraticAttenuation( 0.0f )
+        , Intensity( 1.0f )
+        , Attenuation( 0.0f )
     {}
 
     DirectX::XMFLOAT4    PositionWS; // Light position in world space.
@@ -19,11 +18,9 @@ struct PointLight
     //----------------------------------- (16 byte boundary)
     DirectX::XMFLOAT4    Color;
     //----------------------------------- (16 byte boundary)
-    float       ConstantAttenuation;
-    float       LinearAttenuation;
-    float       QuadraticAttenuation;
-    // Add some padding to align to 16 bytes.
-    float       Padding;
+    float       Intensity;
+    float       Attenuation;
+    float       Padding[2];             // Pad to 16 bytes.
     //----------------------------------- (16 byte boundary)
     // Total:                              16 * 4 = 64 bytes
 };
@@ -36,10 +33,9 @@ struct SpotLight
         , DirectionWS( 0.0f, 0.0f, 1.0f, 0.0f )
         , DirectionVS( 0.0f, 0.0f, 1.0f, 0.0f )
         , Color( 1.0f, 1.0f, 1.0f, 1.0f )
+        , Intensity( 1.0f )
         , SpotAngle( DirectX::XM_PIDIV2 )
-        , ConstantAttenuation( 1.0f )
-        , LinearAttenuation( 0.0f )
-        , QuadraticAttenuation( 0.0f )
+        , Attenuation( 0.0f )
     {}
 
     DirectX::XMFLOAT4    PositionWS; // Light position in world space.
@@ -52,10 +48,10 @@ struct SpotLight
     //----------------------------------- (16 byte boundary)
     DirectX::XMFLOAT4    Color;
     //----------------------------------- (16 byte boundary)
+    float       Intensity;
     float       SpotAngle;
-    float       ConstantAttenuation;
-    float       LinearAttenuation;
-    float       QuadraticAttenuation;
+    float       Attenuation;
+    float       Padding;                // Pad to 16 bytes.
     //----------------------------------- (16 byte boundary)
     // Total:                              16 * 6 = 96 bytes
 };
