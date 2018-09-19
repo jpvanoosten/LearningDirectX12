@@ -579,7 +579,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     commandQueue->ExecuteCommandList( commandList );
 
     static bool showDemoWindow = true;
-    ImGui::ShowDemoWindow(&showDemoWindow);
+	if ( showDemoWindow )
+	{
+		ImGui::ShowDemoWindow(&showDemoWindow);
+	}
 
     // Present
     m_pWindow->Present( m_RenderTarget.GetTexture(AttachmentPoint::Color0) );
