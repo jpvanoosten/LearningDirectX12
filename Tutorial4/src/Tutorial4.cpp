@@ -40,6 +40,53 @@ struct LightProperties
     uint32_t NumSpotLights;
 };
 
+enum TonemapMethod : uint32_t
+{
+    TM_Linear,
+    TM_Reinhard,
+    TM_ReinhardSq,
+    TM_ACESFilmic,
+};
+
+struct TonemapParameters
+{
+    TonemapParameters()
+        : TonemapMethod( TM_Linear )
+        , Exposure( 0.0f )
+        , MaxLuminance( 10.0f )
+        , K( 1.0f )
+        , A( 0.22f )
+        , B( 0.3f )
+        , C( 0.1f )
+        , D( 0.2f )
+        , E( 0.01f )
+        , F( 0.3f )
+    {}
+
+    // The method to use to perform tonemapping.
+    TonemapMethod TonemapMethod;
+    // Exposure should be expressed as a relative expsure value (-2, -1, 0, +1, +2 )
+    float Exposure;
+
+    // The maximum luminance to use for linear tonemapping.
+    float MaxLuminance;
+
+    // Reinhard constant. Generlly this is 1.0.
+    float K;
+
+    // ACES Filmic parameters
+    // See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
+    float A; // Shoulder strength
+    float B; // Linear strength
+    float C; // Linear angle
+    float D; // Toe strength
+    float E; // Toe Numerator
+    float F; // Toe denominator
+    // Note E/F = Toe angle.
+};
+
+TonemapParameters g_TonemapParameters;
+
 // An enum for root signature parameters.
 // I'm not using scoped enums to avoid the explicit cast that would be required
 // to use these as root indices in the root signature.
@@ -217,8 +264,9 @@ bool Tutorial4::LoadContent()
 
     // Create the SDR Root Signature
     descriptorRange.Init( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0 );
-    rootParameters[0].InitAsDescriptorTable( 1, &descriptorRange, D3D12_SHADER_VISIBILITY_PIXEL );
-    rootSignatureDescription.Init_1_1( 1, rootParameters );
+    rootParameters[0].InitAsConstants( sizeof( TonemapParameters ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[1].InitAsDescriptorTable( 1, &descriptorRange, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootSignatureDescription.Init_1_1( 2, rootParameters );
 
     m_SDRRootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
@@ -432,6 +480,94 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
     }
 }
 
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+static void ShowHelpMarker( const char* desc )
+{
+    ImGui::TextDisabled( "(?)" );
+    if ( ImGui::IsItemHovered() )
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos( ImGui::GetFontSize() * 35.0f );
+        ImGui::TextUnformatted( desc );
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+void OnGUI()
+{
+    static bool showDemoWindow = true;
+    static bool showOptions = true;
+
+    if ( ImGui::BeginMainMenuBar() )
+    {
+        if ( ImGui::BeginMenu( "View" ) )
+        {
+            ImGui::MenuItem( "Demo Window", nullptr, &showDemoWindow );
+            ImGui::MenuItem( "Tonemapping Options", nullptr, &showOptions );
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    if ( showDemoWindow )
+    {
+        ImGui::ShowDemoWindow( &showDemoWindow );
+    }
+
+    if ( showOptions )
+    {
+        ImGui::Begin( "Tonemapping", &showOptions );
+        {
+            ImGui::TextWrapped( "TODO: Make help text about the tonemapping options." );
+            ImGui::TextWrapped( "Use the Exposure slider to adjust the overal exposure of the HDR scene." );
+            ImGui::SliderFloat( "Exposure", &g_TonemapParameters.Exposure, -10.0f, 10.0f );
+            ImGui::SameLine(); ShowHelpMarker( "Adjust the overall exposure of the HDR scene." );
+
+            const char* toneMappingMethods[] = {
+                "Linear",
+                "Reinhard",
+                "Reinhard Squared",
+                "ACES Filmic"
+            };
+            ImGui::Separator();
+            ImGui::Combo( "Tonemapping Methods", (int*)(&g_TonemapParameters.TonemapMethod), toneMappingMethods, 4 );
+
+            switch ( g_TonemapParameters.TonemapMethod )
+            {
+                case TonemapMethod::TM_Linear:
+                    ImGui::SliderFloat( "Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, 10.0f );
+                    ImGui::SameLine(); ShowHelpMarker( "Linearly scale the HDR image by the maximum brightness." );
+                    break;
+                case TonemapMethod::TM_Reinhard:
+                case TonemapMethod::TM_ReinhardSq:
+                    ImGui::SliderFloat( "Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f );
+                    ImGui::SameLine(); ShowHelpMarker( "The Reinhard constant is used in the denominator." );
+                    break;
+                case TonemapMethod::TM_ACESFilmic:
+                    ImGui::SliderFloat( "Shoulder Strength", &g_TonemapParameters.A, 0.0f, 100.0f );
+                    ImGui::SliderFloat( "Linear Strength", &g_TonemapParameters.B, 0.0f, 100.0f );
+                    ImGui::SliderFloat( "Linear Angle", &g_TonemapParameters.C, 0.0f, 1.0f );
+                    ImGui::SliderFloat( "Toe Strength", &g_TonemapParameters.D, 0.0f, 1.0f );
+
+                default:
+                    break;
+            }
+        }
+
+        if ( ImGui::Button( "Reset to Defaults" ) )
+        {
+            TonemapMethod method = g_TonemapParameters.TonemapMethod;
+            g_TonemapParameters = TonemapParameters();
+            g_TonemapParameters.TonemapMethod = method;
+        }
+
+        ImGui::End();
+
+    }
+}
+
 void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX viewProjection, Mat& mat )
 {
     mat.ModelMatrix = model;
@@ -632,10 +768,15 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     commandList->SetPipelineState( m_SDRPipelineState );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     commandList->SetGraphicsRootSignature( m_SDRRootSignature );
-    commandList->SetShaderResourceView( 0, 0, m_HDRRenderTarget.GetTexture( Color0 ), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetGraphics32BitConstants( 0, g_TonemapParameters );
+    commandList->SetShaderResourceView( 1, 0, m_HDRRenderTarget.GetTexture( Color0 ), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+
     commandList->Draw( 3 );
 
     commandQueue->ExecuteCommandList( commandList );
+
+    // Render GUI.
+    OnGUI();
 
     // Present
     m_pWindow->Present( m_SDRRenderTarget.GetTexture(AttachmentPoint::Color0) );
@@ -647,61 +788,63 @@ void Tutorial4::OnKeyPressed( KeyEventArgs& e )
 {
     super::OnKeyPressed( e );
 
-    switch ( e.Key )
+    if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
-        case KeyCode::Escape:
-            Application::Get().Quit( 0 );
-            break;
-        case KeyCode::Enter:
-            if ( e.Alt )
-            {
-        case KeyCode::F11:
-            if ( g_AllowFullscreenToggle )
-            {
-                m_pWindow->ToggleFullscreen();
-                g_AllowFullscreenToggle = false;
-            }
-            break;
-            }
-        case KeyCode::V:
-            m_pWindow->ToggleVSync();
-            break;
-        case KeyCode::R:
-            // Reset camera transform
-            m_Camera.set_Translation( m_pAlignedCameraData->m_InitialCamPos );
-            m_Camera.set_Rotation( m_pAlignedCameraData->m_InitialCamRot );
-            m_Pitch = 0.0f;
-            m_Yaw = 0.0f;
-            break;
-        case KeyCode::Up:
-        case KeyCode::W:
-            m_Forward = 1.0f;
-            break;
-        case KeyCode::Left:
-        case KeyCode::A:
-            m_Left = 1.0f;
-            break;
-        case KeyCode::Down:
-        case KeyCode::S:
-            m_Backward = 1.0f;
-            break;
-        case KeyCode::Right:
-        case KeyCode::D:
-            m_Right = 1.0f;
-            break;
-        case KeyCode::Q:
-            m_Down = 1.0f;
-            break;
-        case KeyCode::E:
-            m_Up = 1.0f;
-            break;
-        case KeyCode::Space:
-            m_AnimateLights = !m_AnimateLights;
-            break;
-        case KeyCode::ShiftKey:
-            m_Shift = true;
-            break;
-
+        switch ( e.Key )
+        {
+            case KeyCode::Escape:
+                Application::Get().Quit( 0 );
+                break;
+            case KeyCode::Enter:
+                if ( e.Alt )
+                {
+            case KeyCode::F11:
+                if ( g_AllowFullscreenToggle )
+                {
+                    m_pWindow->ToggleFullscreen();
+                    g_AllowFullscreenToggle = false;
+                }
+                break;
+                }
+            case KeyCode::V:
+                m_pWindow->ToggleVSync();
+                break;
+            case KeyCode::R:
+                // Reset camera transform
+                m_Camera.set_Translation( m_pAlignedCameraData->m_InitialCamPos );
+                m_Camera.set_Rotation( m_pAlignedCameraData->m_InitialCamRot );
+                m_Pitch = 0.0f;
+                m_Yaw = 0.0f;
+                break;
+            case KeyCode::Up:
+            case KeyCode::W:
+                m_Forward = 1.0f;
+                break;
+            case KeyCode::Left:
+            case KeyCode::A:
+                m_Left = 1.0f;
+                break;
+            case KeyCode::Down:
+            case KeyCode::S:
+                m_Backward = 1.0f;
+                break;
+            case KeyCode::Right:
+            case KeyCode::D:
+                m_Right = 1.0f;
+                break;
+            case KeyCode::Q:
+                m_Down = 1.0f;
+                break;
+            case KeyCode::E:
+                m_Up = 1.0f;
+                break;
+            case KeyCode::Space:
+                m_AnimateLights = !m_AnimateLights;
+                break;
+            case KeyCode::ShiftKey:
+                m_Shift = true;
+                break;
+        }
     }
 }
 
@@ -709,40 +852,43 @@ void Tutorial4::OnKeyReleased( KeyEventArgs& e )
 {
     super::OnKeyReleased( e );
 
-    switch ( e.Key )
+    if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
-        case KeyCode::Enter:
-            if ( e.Alt )
-            {
-        case KeyCode::F11:
+        switch ( e.Key )
+        {
+            case KeyCode::Enter:
+                if ( e.Alt )
+                {
+            case KeyCode::F11:
                 g_AllowFullscreenToggle = true;
-            }
-            break;
-        case KeyCode::Up:
-        case KeyCode::W:
-            m_Forward = 0.0f;
-            break;
-        case KeyCode::Left:
-        case KeyCode::A:
-            m_Left = 0.0f;
-            break;
-        case KeyCode::Down:
-        case KeyCode::S:
-            m_Backward = 0.0f;
-            break;
-        case KeyCode::Right:
-        case KeyCode::D:
-            m_Right = 0.0f;
-            break;
-        case KeyCode::Q:
-            m_Down = 0.0f;
-            break;
-        case KeyCode::E:
-            m_Up = 0.0f;
-            break;
-        case KeyCode::ShiftKey:
-            m_Shift = false;
-            break;
+                }
+                break;
+            case KeyCode::Up:
+            case KeyCode::W:
+                m_Forward = 0.0f;
+                break;
+            case KeyCode::Left:
+            case KeyCode::A:
+                m_Left = 0.0f;
+                break;
+            case KeyCode::Down:
+            case KeyCode::S:
+                m_Backward = 0.0f;
+                break;
+            case KeyCode::Right:
+            case KeyCode::D:
+                m_Right = 0.0f;
+                break;
+            case KeyCode::Q:
+                m_Down = 0.0f;
+                break;
+            case KeyCode::E:
+                m_Up = 0.0f;
+                break;
+            case KeyCode::ShiftKey:
+                m_Shift = false;
+                break;
+        }
     }
 }
 
@@ -751,28 +897,33 @@ void Tutorial4::OnMouseMoved( MouseMotionEventArgs& e )
     super::OnMouseMoved( e );
 
     const float mouseSpeed = 0.1f;
-
-    if ( e.LeftButton )
+    if ( !ImGui::GetIO().WantCaptureMouse )
     {
-        m_Pitch -= e.RelY * mouseSpeed;
+        if ( e.LeftButton )
+        {
+            m_Pitch -= e.RelY * mouseSpeed;
 
-        m_Pitch = clamp( m_Pitch, -90.0f, 90.0f );
+            m_Pitch = clamp( m_Pitch, -90.0f, 90.0f );
 
-        m_Yaw -= e.RelX * mouseSpeed;
+            m_Yaw -= e.RelX * mouseSpeed;
+        }
     }
 }
 
 
 void Tutorial4::OnMouseWheel( MouseWheelEventArgs& e )
 {
-    auto fov = m_Camera.get_FoV();
+    if ( !ImGui::GetIO().WantCaptureMouse )
+    {
+        auto fov = m_Camera.get_FoV();
 
-    fov -= e.WheelDelta;
-    fov = clamp( fov, 12.0f, 90.0f );
+        fov -= e.WheelDelta;
+        fov = clamp( fov, 12.0f, 90.0f );
 
-    m_Camera.set_FoV( fov );
+        m_Camera.set_FoV( fov );
 
-    char buffer[256];
-    sprintf_s( buffer, "FoV: %f\n", fov );
-    OutputDebugStringA( buffer );
+        char buffer[256];
+        sprintf_s( buffer, "FoV: %f\n", fov );
+        OutputDebugStringA( buffer );
+    }
 }
