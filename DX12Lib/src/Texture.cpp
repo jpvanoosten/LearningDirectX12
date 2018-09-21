@@ -71,8 +71,8 @@ void Texture::Resize(uint32_t width, uint32_t height, uint32_t depthOrArraySize 
 
         CD3DX12_RESOURCE_DESC resDesc(m_d3d12Resource->GetDesc());
 
-        resDesc.Width = width;
-        resDesc.Height = height;
+        resDesc.Width = std::max( width, 1u );
+        resDesc.Height = std::max( height, 1u );
         resDesc.DepthOrArraySize = depthOrArraySize;
 
         auto device = Application::Get().GetDevice();
