@@ -108,7 +108,7 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     rootParameters[RootParameters::MatrixCB].InitAsConstants( sizeof( DirectX::XMMATRIX ) / 4, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_VERTEX );
     rootParameters[RootParameters::FontTexture].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
 
-    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR );
+    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
     linearRepeatSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
     linearRepeatSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 

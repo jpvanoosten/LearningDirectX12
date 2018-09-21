@@ -25,6 +25,7 @@ struct TonemapParameters
     float D; // Toe strength
     float E; // Toe Numerator
     float F; // Toe denominator
+    float W; // Linear white point value
     // Note E/F = Toe angle.
 };
 
@@ -99,7 +100,7 @@ float4 main( float4 Position : SV_Position ) : SV_Target0
         break;
     case TM_ACESFilmic:
         SDR = ACESFilmic( HDR, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F ) /
-              ACESFilmic( 11.2, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
+              ACESFilmic( TonemapParametersCB.W, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
         break;
     }
 
