@@ -261,14 +261,14 @@ void Tutorial3::OnResize( ResizeEventArgs& e )
 
     if ( m_Width != e.Width || m_Height != e.Height )
     {
-        m_Width = e.Width;
-        m_Height = e.Height;
+        m_Width = std::max( 1, e.Width );
+        m_Height = std::max( 1, e.Height );
 
-        float aspectRatio = e.Width / (float)e.Height;
+        float aspectRatio = m_Width / (float)m_Height;
         m_Camera.set_Projection( 45.0f, aspectRatio, 0.1f, 100.0f );
 
         m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f,
-            static_cast<float>(e.Width), static_cast<float>(e.Height));
+            static_cast<float>(m_Width), static_cast<float>(m_Height));
 
         m_RenderTarget.Resize( m_Width, m_Height );
     }
