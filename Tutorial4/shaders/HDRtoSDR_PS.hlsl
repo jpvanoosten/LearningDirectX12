@@ -63,7 +63,7 @@ float3 ReinhardSqr( float3 HDR, float k )
 // See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
 float3 ACESFilmic( float3 x, float A, float B, float C, float D, float E, float F )
 {
-    return saturate( ( ( x * ( A * x + C * B ) + D * E ) / ( x * ( A * x + B ) + D * F ) ) - ( E / F ) );
+    return ( ( x * ( A * x + C * B ) + D * E ) / ( x * ( A * x + B ) + D * F ) ) - ( E / F );
 }
 
 Texture2DMS<float4> HDRTexture : register( t0 );
