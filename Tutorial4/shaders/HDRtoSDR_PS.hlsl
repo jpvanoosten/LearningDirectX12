@@ -26,6 +26,7 @@ struct TonemapParameters
     float E; // Toe Numerator
     float F; // Toe denominator
     // Note E/F = Toe angle.
+	float LinearWhite;
 };
 
 
@@ -99,7 +100,7 @@ float4 main( float4 Position : SV_Position ) : SV_Target0
         break;
     case TM_ACESFilmic:
         SDR = ACESFilmic( HDR, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F ) /
-              ACESFilmic( 11.2, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
+              ACESFilmic(TonemapParametersCB.LinearWhite, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
         break;
     }
 
