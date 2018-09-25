@@ -224,8 +224,10 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
     auto iter = ms_TextureCache.find( fileName );
     if ( iter != ms_TextureCache.end() )
     {
-        texture.SetD3D12Resource( iter->second );
-    }
+ 		texture.SetTextureUsage(textureUsage);
+		texture.SetD3D12Resource(iter->second);
+		texture.CreateViews();
+	}
     else
     {
         Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
