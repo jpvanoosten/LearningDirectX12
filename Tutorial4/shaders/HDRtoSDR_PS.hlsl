@@ -25,8 +25,8 @@ struct TonemapParameters
     float D; // Toe strength
     float E; // Toe Numerator
     float F; // Toe denominator
-    float W; // Linear white point value
     // Note E/F = Toe angle.
+	float LinearWhite;
 };
 
 
@@ -63,7 +63,7 @@ float3 ReinhardSqr( float3 HDR, float k )
 // See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
 float3 ACESFilmic( float3 x, float A, float B, float C, float D, float E, float F )
 {
-    return saturate( ( ( x * ( A * x + C * B ) + D * E ) / ( x * ( A * x + B ) + D * F ) ) - ( E / F ) );
+    return ( ( x * ( A * x + C * B ) + D * E ) / ( x * ( A * x + B ) + D * F ) ) - ( E / F );
 }
 
 Texture2DMS<float4> HDRTexture : register( t0 );
@@ -100,7 +100,7 @@ float4 main( float4 Position : SV_Position ) : SV_Target0
         break;
     case TM_ACESFilmic:
         SDR = ACESFilmic( HDR, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F ) /
-              ACESFilmic( TonemapParametersCB.W, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
+              ACESFilmic(TonemapParametersCB.LinearWhite, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
         break;
     }
 

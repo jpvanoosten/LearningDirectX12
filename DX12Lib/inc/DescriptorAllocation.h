@@ -1,5 +1,5 @@
 /**
- * A single page for the descriptor allocator.
+ * A single allocation for the descriptor allocator.
  *
  * Variable sized memory allocation strategy based on:
  * http://diligentgraphics.com/diligent-engine/architecture/d3d12/variable-size-memory-allocations-manager/

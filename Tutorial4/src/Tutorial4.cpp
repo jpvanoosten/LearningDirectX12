@@ -51,9 +51,9 @@ enum TonemapMethod : uint32_t
 struct TonemapParameters
 {
     TonemapParameters()
-        : TonemapMethod( TM_Reinhard )
+        : TonemapMethod( TM_Linear )
         , Exposure( 0.0f )
-        , MaxLuminance( 10.0f )
+        , MaxLuminance( 1.0f )
         , K( 1.0f )
         , A( 0.22f )
         , B( 0.3f )
@@ -61,18 +61,18 @@ struct TonemapParameters
         , D( 0.2f )
         , E( 0.01f )
         , F( 0.3f )
-        , W( 11.2 )
+		, LinearWhite(11.2f)
     {}
 
     // The method to use to perform tonemapping.
     TonemapMethod TonemapMethod;
-    // Exposure should be expressed as a relative expsure value (-2, -1, 0, +1, +2 )
+    // Exposure should be expressed as a relative exposure value (-2, -1, 0, +1, +2 )
     float Exposure;
 
     // The maximum luminance to use for linear tonemapping.
     float MaxLuminance;
 
-    // Reinhard constant. Generlly this is 1.0.
+    // Reinhard constant. Generally this is 1.0.
     float K;
 
     // ACES Filmic parameters
@@ -83,8 +83,8 @@ struct TonemapParameters
     float D; // Toe strength
     float E; // Toe Numerator
     float F; // Toe denominator
-    float W; // Linear white point value
     // Note E/F = Toe angle.
+	float LinearWhite;
 };
 
 TonemapParameters g_TonemapParameters;
@@ -105,7 +105,7 @@ enum RootParameters
 
 // Clamp a value between a min and max range.
 template<typename T>
-constexpr const T& clamp( const T& val, const T& min, const T& max )
+constexpr const T& clamp( const T& val, const T& min = T(0), const T& max = T(1) )
 {
     return val < min ? min : val > max ? max : val;
 }
@@ -363,14 +363,14 @@ void Tutorial4::OnResize( ResizeEventArgs& e )
 
     if ( m_Width != e.Width || m_Height != e.Height )
     {
-        m_Width = e.Width;
-        m_Height = e.Height;
+        m_Width = std::max(1, e.Width);
+        m_Height = std::max( 1, e.Height );
 
-        float aspectRatio = e.Width / (float)e.Height;
+        float aspectRatio = m_Width / (float)m_Height;
         m_Camera.set_Projection( 45.0f, aspectRatio, 0.1f, 100.0f );
 
         m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f,
-            static_cast<float>(e.Width), static_cast<float>(e.Height));
+            static_cast<float>(m_Width), static_cast<float>(m_Height));
 
         m_HDRRenderTarget.Resize( m_Width, m_Height );
         m_SDRRenderTarget.Resize( m_Width, m_Height );
@@ -496,27 +496,68 @@ static void ShowHelpMarker( const char* desc )
     }
 }
 
-float LinearTonmapping( void*, int idx )
+// Number of values to plot in the tonemapping curves.
+static const int VALUES_COUNT = 1024;
+// Maximum HDR value to normalize the plot samples.
+static const float HDR_MAX = 12.0f;
+
+float LinearTonemapping(float HDR, float max )
 {
-    return std::sinf( idx / 10.0f );
+	if (max > 0.0f)
+	{
+		return clamp( HDR / max );
+	}
+	return HDR;
+}
+
+float LinearTonemappingPlot(void*, int index)
+{
+	return LinearTonemapping( index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.MaxLuminance );
+}
+
+// Reinhard tone mapping.
+// See: http://www.cs.utah.edu/~reinhard/cdrom/tonemap.pdf
+float ReinhardTonemapping( float HDR, float k)
+{
+	return HDR / (HDR + k);
+}
+
+float ReinhardTonemappingPlot(void*, int index)
+{
+	return ReinhardTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K);
+}
+
+float ReinhardSqrTonemappingPlot(void*, int index)
+{
+	float reinhard = ReinhardTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K);
+	return reinhard * reinhard;
+}
+
+// ACES Filmic
+// See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
+float ACESFilmicTonemapping(float x, float A, float B, float C, float D, float E, float F)
+{
+	return (((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - (E / F));
+}
+
+float ACESFilmicTonemappingPlot(void*, int index)
+{
+	float HDR = index / (float)VALUES_COUNT * HDR_MAX;
+	return ACESFilmicTonemapping(HDR, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F) /
+		ACESFilmicTonemapping(g_TonemapParameters.LinearWhite, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F);
 }
 
 void OnGUI()
 {
-    static bool showDemoWindow = false;
-    static bool showSettings = true;
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigResizeWindowsFromEdges = true;
-
-    io.FontGlobalScale = 1.5f;
+    static bool showDemoWindow = true;
+    static bool showOptions = true;
 
     if ( ImGui::BeginMainMenuBar() )
     {
         if ( ImGui::BeginMenu( "View" ) )
         {
-            ImGui::MenuItem( "Settings", nullptr, &showSettings );
             ImGui::MenuItem( "Demo Window", nullptr, &showDemoWindow );
+            ImGui::MenuItem( "Tonemapping Options", nullptr, &showOptions );
 
             ImGui::EndMenu();
         }
@@ -528,63 +569,64 @@ void OnGUI()
         ImGui::ShowDemoWindow( &showDemoWindow );
     }
 
-    if ( showSettings )
+    if ( showOptions )
     {
-        ImGui::Begin( "Settings", &showSettings );
+        ImGui::Begin( "Tonemapping", &showOptions );
         {
-            if ( ImGui::CollapsingHeader("Tonemapping") )
+            ImGui::TextWrapped( "Use the Exposure slider to adjust the overal exposure of the HDR scene." );
+            ImGui::SliderFloat( "Exposure", &g_TonemapParameters.Exposure, -10.0f, 10.0f );
+            ImGui::SameLine(); ShowHelpMarker( "Adjust the overall exposure of the HDR scene." );
+
+            const char* toneMappingMethods[] = {
+                "Linear",
+                "Reinhard",
+                "Reinhard Squared",
+                "ACES Filmic"
+            };
+            ImGui::Separator();
+            ImGui::Combo( "Tonemapping Methods", (int*)(&g_TonemapParameters.TonemapMethod), toneMappingMethods, 4 );
+
+            switch ( g_TonemapParameters.TonemapMethod )
             {
-                const char* toneMappingMethods[] = {
-                    "Linear",
-                    "Reinhard",
-                    "Reinhard Squared",
-                    "ACES Filmic"
-                };
-
-                ImGui::Spacing();
-                ImGui::Combo( "Tonemapping Methods", (int*)( &g_TonemapParameters.TonemapMethod ), toneMappingMethods, 4 );
-
-                switch ( g_TonemapParameters.TonemapMethod )
-                {
-                    case TonemapMethod::TM_Linear:
-                        ImGui::SliderFloat( "Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, 10.0f );
-                        ImGui::SameLine(); ShowHelpMarker( "Linearly scale the HDR image by the maximum brightness." );
-                        break;
-                    case TonemapMethod::TM_Reinhard:
-                    case TonemapMethod::TM_ReinhardSq:
-                        ImGui::SliderFloat( "Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f );
-                        ImGui::SameLine(); ShowHelpMarker( "The Reinhard constant controls the shoulder strength." );
-                        break;
-                    case TonemapMethod::TM_ACESFilmic:
-                        ImGui::SliderFloat( "Shoulder Strength", &g_TonemapParameters.A, 0.0f, 100.0f );
-                        ImGui::SliderFloat( "Linear Strength", &g_TonemapParameters.B, 0.0f, 100.0f );
-                        ImGui::SliderFloat( "Linear Angle", &g_TonemapParameters.C, 0.0f, 1.0f );
-                        ImGui::SliderFloat( "Toe Strength", &g_TonemapParameters.D, 0.0f, 1.0f );
-                        ImGui::SliderFloat( "Toe Numerator", &g_TonemapParameters.E, 0.0f, 10.0f );
-                        ImGui::SliderFloat( "Toe Denominator", &g_TonemapParameters.F, 1.0f, 10.0f );
-                        ImGui::SliderFloat( "Linear White Point Value", &g_TonemapParameters.W, 1.0f, 100.0f );
-                        ImGui::PlotLines( "Tonmapping Curve", &LinearTonmapping, nullptr, 1024, 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(0, 250) );
-
-                    default:
-                        break;
-                }
-                ImGui::Spacing();
-                ImGui::TextWrapped( "Use the Exposure slider to adjust the overal exposure of the HDR scene." );
-                ImGui::SliderFloat( "Exposure", &g_TonemapParameters.Exposure, -10.0f, 10.0f );
-                ImGui::SameLine(); ShowHelpMarker( "Adjust the overall exposure of the HDR scene. The default exposure is 0." );
-
+                case TonemapMethod::TM_Linear:
+                    ImGui::SliderFloat( "Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, 10.0f );
+                    ImGui::SameLine(); ShowHelpMarker( "Linearly scale the HDR image by the maximum brightness." );
+					ImGui::PlotLines("Linear Tonemapping", &LinearTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
+                    break;
+                case TonemapMethod::TM_Reinhard:
+					ImGui::SliderFloat("Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f);
+					ImGui::SameLine(); ShowHelpMarker("The Reinhard constant is used in the denominator.");
+					ImGui::PlotLines("Reinhard Tonemapping", &ReinhardTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
+					break;
+				case TonemapMethod::TM_ReinhardSq:
+                    ImGui::SliderFloat( "Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f );
+                    ImGui::SameLine(); ShowHelpMarker( "The Reinhard constant is used in the denominator." );
+					ImGui::PlotLines("Reinhard Squared Tonemapping", &ReinhardSqrTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
+					break;
+                case TonemapMethod::TM_ACESFilmic:
+                    ImGui::SliderFloat( "Shoulder Strength", &g_TonemapParameters.A, 0.01f, 5.0f );
+                    ImGui::SliderFloat( "Linear Strength", &g_TonemapParameters.B, 0.0f, 100.0f );
+                    ImGui::SliderFloat( "Linear Angle", &g_TonemapParameters.C, 0.0f, 1.0f );
+                    ImGui::SliderFloat( "Toe Strength", &g_TonemapParameters.D, 0.01f, 1.0f );
+					ImGui::SliderFloat("Toe Numerator", &g_TonemapParameters.E, 0.0f, 10.0f);
+					ImGui::SliderFloat("Toe Denominator", &g_TonemapParameters.F, 1.0f, 10.0f);
+					ImGui::SliderFloat("Linear White", &g_TonemapParameters.LinearWhite, 1.0f, 120.0f);
+					ImGui::PlotLines("ACES Filmic Tonemapping", &ACESFilmicTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
+					break;
+				default:
+                    break;
             }
-
-            ImGui::Spacing();
-            if ( ImGui::Button( "Reset to Defaults" ) )
-            {
-                TonemapMethod method = g_TonemapParameters.TonemapMethod;
-                g_TonemapParameters = TonemapParameters();
-                g_TonemapParameters.TonemapMethod = method;
-            }
-
-            ImGui::End();
         }
+
+        if ( ImGui::Button( "Reset to Defaults" ) )
+        {
+            TonemapMethod method = g_TonemapParameters.TonemapMethod;
+            g_TonemapParameters = TonemapParameters();
+            g_TonemapParameters.TonemapMethod = method;
+        }
+
+        ImGui::End();
+
     }
 }
 
