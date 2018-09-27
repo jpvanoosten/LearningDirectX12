@@ -158,6 +158,9 @@ void CommandList::CopyBuffer( Buffer& buffer, size_t numElements, size_t element
 
         if ( bufferData != nullptr )
         {
+
+            m_ResourceStateTracker->TransitionResource( d3d12Resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST );
+
             // Create an upload resource to use as an intermediate buffer to copy the buffer resource 
             ComPtr<ID3D12Resource> uploadResource;
             ThrowIfFailed( device->CreateCommittedResource( 
