@@ -13,6 +13,7 @@
 #include <Events.h>
 #include <GUI.h>
 #include <HighResolutionClock.h>
+#include <RenderTarget.h>
 #include <Texture.h>
 
 #include <memory>
@@ -74,10 +75,22 @@ public:
     void Hide();
 
     /**
+     * Get the render target of the window. This method should be called every
+     * frame since the color attachment point changes depending on the window's 
+     * current back buffer.
+     */
+    const RenderTarget& GetRenderTarget() const;
+
+    /**
      * Present the swapchain's back buffer to the screen.
      * Returns the current back buffer index after the present.
+     * 
+     * @param texture The texture to copy to the swap chain's backbuffer before
+     * presenting. By default, this is an empty texture. In this case, no copy 
+     * will be performed. Use the Window::GetRenderTarget method to get a render
+     * target for the window's color buffer. 
      */
-    UINT Present( const Texture& texture );
+    UINT Present( const Texture& texture = Texture() );
 
 protected:
     // The Window procedure needs to call protected methods of this class.
@@ -147,6 +160,8 @@ private:
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
     Texture m_BackBufferTextures[BufferCount];
+    // Marked mutable to allow modification in a const function.
+    mutable RenderTarget m_RenderTarget;
 
     UINT m_CurrentBackBufferIndex;
 

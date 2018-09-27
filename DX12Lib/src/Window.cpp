@@ -278,6 +278,8 @@ void Window::OnResize(ResizeEventArgs& e)
 
         Application::Get().Flush();
 
+        // Release all references to back buffer textures.
+        m_RenderTarget.AttachTexture( Color0, Texture() );
         for (int i = 0; i < BufferCount; ++i)
         {
             ResourceStateTracker::RemoveGlobalResourceState(m_BackBufferTextures[i].GetD3D12Resource().Get());
@@ -362,6 +364,12 @@ void Window::UpdateRenderTargetViews()
     }
 }
 
+const RenderTarget& Window::GetRenderTarget() const
+{
+    m_RenderTarget.AttachTexture( AttachmentPoint::Color0, m_BackBufferTextures[m_CurrentBackBufferIndex] );
+    return m_RenderTarget;
+}
+
 UINT Window::Present( const Texture& texture )
 {
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
@@ -369,13 +377,16 @@ UINT Window::Present( const Texture& texture )
 
     auto& backBuffer = m_BackBufferTextures[m_CurrentBackBufferIndex];
 
-    if ( texture.GetD3D12ResourceDesc().SampleDesc.Count > 1 )
+    if( texture.IsValid() )
     {
-        commandList->ResolveSubresource( backBuffer, texture );
-    }
-    else
-    {
-        commandList->CopyResource( backBuffer, texture );
+        if ( texture.GetD3D12ResourceDesc().SampleDesc.Count > 1 )
+        {
+            commandList->ResolveSubresource( backBuffer, texture );
+        }
+        else
+        {
+            commandList->CopyResource( backBuffer, texture );
+        }
     }
 
     RenderTarget renderTarget;

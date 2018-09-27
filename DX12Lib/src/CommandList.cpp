@@ -854,8 +854,7 @@ void CommandList::SetRenderTarget(const RenderTarget& renderTarget )
     {
         auto& texture = textures[i];
 
-        auto d3d12Resource = texture.GetD3D12Resource();
-        if ( d3d12Resource )
+        if ( texture.IsValid() )
         {
             TransitionBarrier( texture, D3D12_RESOURCE_STATE_RENDER_TARGET );
             renderTargetDescriptors.push_back( texture.GetRenderTargetView() );

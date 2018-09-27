@@ -81,10 +81,7 @@ private:
     // HDR Render target
     RenderTarget m_HDRRenderTarget;
 
-    // SDR Render target
-    RenderTarget m_SDRRenderTarget;
-
-    // Root signature
+    // Root signatures
     RootSignature m_HDRRootSignature;
     RootSignature m_SDRRootSignature;
 

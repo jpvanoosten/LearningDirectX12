@@ -52,6 +52,14 @@ public:
     // render target to the output merger stage of the rendering pipeline.
     const std::vector<Texture>& GetTextures() const;
 
+    // Get the render target formats of the textures currently 
+    // attached to this render target object.
+    // This is needed to configure the Pipeline state object.
+    D3D12_RT_FORMAT_ARRAY GetRenderTargetFormats() const;
+
+    // Get the format of the attached depth/stencil buffer.
+    DXGI_FORMAT GetDepthStencilFormat() const;
+
 private:
     
     std::vector<Texture> m_Textures;

@@ -25,6 +25,14 @@ public:
 
     virtual ~Resource();
 
+    /**
+     * Check to see if the underlying resource is valid.
+     */
+    bool IsValid() const
+    {
+        return ( m_d3d12Resource != nullptr );
+    }
+
     // Get access to the underlying D3D12 resource
     Microsoft::WRL::ComPtr<ID3D12Resource> GetD3D12Resource() const
     {

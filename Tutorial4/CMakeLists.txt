@@ -58,6 +58,11 @@ target_link_libraries( Tutorial4
     Shlwapi.lib
 )
 
+# Set debug database to enable the "Edit and Continue" feature.
+target_compile_options( Tutorial4
+    PRIVATE $<$<CONFIG:Debug>:/ZI>
+)
+
 # Set Local Debugger Settings (Command Arguments and Environment Variables)
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
 configure_file( Tutorial4.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/Tutorial4.vcxproj.user @ONLY )

@@ -61,7 +61,7 @@ struct TonemapParameters
         , D( 0.2f )
         , E( 0.01f )
         , F( 0.3f )
-		, LinearWhite(11.2f)
+        , LinearWhite( 11.2f )
     {}
 
     // The method to use to perform tonemapping.
@@ -84,7 +84,7 @@ struct TonemapParameters
     float E; // Toe Numerator
     float F; // Toe denominator
     // Note E/F = Toe angle.
-	float LinearWhite;
+    float LinearWhite;
 };
 
 TonemapParameters g_TonemapParameters;
@@ -105,7 +105,7 @@ enum RootParameters
 
 // Clamp a value between a min and max range.
 template<typename T>
-constexpr const T& clamp( const T& val, const T& min = T(0), const T& max = T(1) )
+constexpr const T& clamp( const T& val, const T& min = T( 0 ), const T& max = T( 1 ) )
 {
     return val < min ? min : val > max ? max : val;
 }
@@ -155,7 +155,7 @@ Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSyn
     m_Camera.set_LookAt( cameraPos, cameraTarget, cameraUp );
 
     m_pAlignedCameraData = (CameraData*)_aligned_malloc( sizeof( CameraData ), 16 );
-    
+
     m_pAlignedCameraData->m_InitialCamPos = m_Camera.get_Translation();
     m_pAlignedCameraData->m_InitialCamRot = m_Camera.get_Rotation();
 }
@@ -191,6 +191,47 @@ bool Tutorial4::LoadContent()
     // Load the pixel shader.
     ComPtr<ID3DBlob> ps;
     ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDR_PS.cso", &ps ) );
+
+    DXGI_FORMAT HDRFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
+
+    // Check the best multisample quality level that can be used for the given texture format.
+    DXGI_SAMPLE_DESC sampleDesc = Application::Get().GetMultisampleQualityLevels( HDRFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT );
+
+    // Create an off-screen render target with a single color buffer and a depth buffer.
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( HDRFormat,
+                                                   m_Width, m_Height,
+                                                   1, 1,
+                                                   sampleDesc.Count, sampleDesc.Quality,
+                                                   D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET );
+    D3D12_CLEAR_VALUE colorClearValue;
+    colorClearValue.Format = colorDesc.Format;
+    colorClearValue.Color[0] = 0.4f;
+    colorClearValue.Color[1] = 0.6f;
+    colorClearValue.Color[2] = 0.9f;
+    colorClearValue.Color[3] = 1.0f;
+
+    Texture HDRTexture = Texture( colorDesc, &colorClearValue,
+                                  TextureUsage::RenderTarget,
+                                  L"HDR Texture" );
+
+    // Create a depth buffer for the HDR render target.
+    auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat,
+                                                   m_Width, m_Height,
+                                                   1, 1,
+                                                   sampleDesc.Count, sampleDesc.Quality,
+                                                   D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL );
+    D3D12_CLEAR_VALUE depthClearValue;
+    depthClearValue.Format = depthDesc.Format;
+    depthClearValue.DepthStencil = { 1.0f, 0 };
+
+    Texture depthTexture = Texture( depthDesc, &depthClearValue,
+                                    TextureUsage::Depth,
+                                    L"Depth Render Target" );
+
+    // Attach the HDR texture to the HDR render target.
+    m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, HDRTexture );
+    m_HDRRenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
 
     // Create a root signature.
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -238,25 +279,13 @@ bool Tutorial4::LoadContent()
         CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
     } hdrPipelineStateStream;
 
-    // Create render targets.
-    DXGI_FORMAT HDRFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    DXGI_FORMAT SDRFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
-
-    // Check the best multisample quality level that can be used for the given back buffer format.
-    DXGI_SAMPLE_DESC sampleDesc = Application::Get().GetMultisampleQualityLevels( HDRFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT );
-
-    D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-    rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = HDRFormat;
-
     hdrPipelineStateStream.pRootSignature = m_HDRRootSignature.GetRootSignature().Get();
     hdrPipelineStateStream.InputLayout = { VertexPositionNormalTexture::InputElements, VertexPositionNormalTexture::InputElementCount };
     hdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     hdrPipelineStateStream.VS = CD3DX12_SHADER_BYTECODE( vs.Get() );
     hdrPipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( ps.Get() );
-    hdrPipelineStateStream.DSVFormat = depthBufferFormat;
-    hdrPipelineStateStream.RTVFormats = rtvFormats;
+    hdrPipelineStateStream.DSVFormat = m_HDRRenderTarget.GetDepthStencilFormat();
+    hdrPipelineStateStream.RTVFormats = m_HDRRenderTarget.GetRenderTargetFormats();
     hdrPipelineStateStream.SampleDesc = sampleDesc;
 
     D3D12_PIPELINE_STATE_STREAM_DESC hdrPipelineStateStreamDesc = {
@@ -275,9 +304,6 @@ bool Tutorial4::LoadContent()
     // Create the SDR PSO
     ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDRtoSDR_VS.cso", &vs ) );
     ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDRtoSDR_PS.cso", &ps ) );
-
-    rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = SDRFormat;
 
     CD3DX12_RASTERIZER_DESC rasterizerDesc( D3D12_DEFAULT );
     rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -298,58 +324,12 @@ bool Tutorial4::LoadContent()
     sdrPipelineStateStream.VS = CD3DX12_SHADER_BYTECODE( vs.Get() );
     sdrPipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( ps.Get() );
     sdrPipelineStateStream.Rasterizer = rasterizerDesc;
-    sdrPipelineStateStream.RTVFormats = rtvFormats;
+    sdrPipelineStateStream.RTVFormats = m_pWindow->GetRenderTarget().GetRenderTargetFormats();
 
     D3D12_PIPELINE_STATE_STREAM_DESC sdrPipelineStateStreamDesc = {
         sizeof( SDRPipelineStateStream ), &sdrPipelineStateStream
     };
     ThrowIfFailed( device->CreatePipelineState( &sdrPipelineStateStreamDesc, IID_PPV_ARGS( &m_SDRPipelineState ) ) );
-
-    // Create an off-screen render target with a single color buffer and a depth buffer.
-    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( HDRFormat,
-                                                   m_Width, m_Height,
-                                                   1, 1,
-                                                   sampleDesc.Count, sampleDesc.Quality,
-                                                   D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET );
-    D3D12_CLEAR_VALUE colorClearValue;
-    colorClearValue.Format = colorDesc.Format;
-    colorClearValue.Color[0] = 0.4f;
-    colorClearValue.Color[1] = 0.6f;
-    colorClearValue.Color[2] = 0.9f;
-    colorClearValue.Color[3] = 1.0f;
-
-    Texture HDRTexture = Texture( colorDesc, &colorClearValue, 
-                                    TextureUsage::RenderTarget, 
-                                    L"HDR Texture" );
-
-    colorDesc.Format = SDRFormat;
-    colorDesc.SampleDesc = { 1, 0 };    // The SDR texture doesn't require MSAA.
-    Texture SDRTexture = Texture( colorDesc, nullptr,
-                                  TextureUsage::RenderTarget,
-                                  L"SDR Texture" );
-
-    // Create a depth buffer.
-    auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, 
-                                                   m_Width, m_Height,
-                                                   1, 1, 
-                                                   sampleDesc.Count, sampleDesc.Quality,
-                                                   D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL );
-    D3D12_CLEAR_VALUE depthClearValue;
-    depthClearValue.Format = depthDesc.Format;
-    depthClearValue.DepthStencil = { 1.0f, 0 };
-
-    Texture depthTexture = Texture( depthDesc, &depthClearValue, 
-                                    TextureUsage::Depth, 
-                                    L"Depth Render Target" );
-
-    // Attach the HDR texture to the HDR render target.
-    m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, HDRTexture );
-    m_HDRRenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
-
-    // Attach the SDR texture to the SDR render target.
-    m_SDRRenderTarget.AttachTexture( AttachmentPoint::Color0, SDRTexture );
-    // The SDR render target doesn't require a depth buffer since it will only be 
-    // used to perform tone mapping of the HDR texture before display.
 
     auto fenceValue = commandQueue->ExecuteCommandList( commandList );
     commandQueue->WaitForFenceValue( fenceValue );
@@ -363,17 +343,16 @@ void Tutorial4::OnResize( ResizeEventArgs& e )
 
     if ( m_Width != e.Width || m_Height != e.Height )
     {
-        m_Width = std::max(1, e.Width);
+        m_Width = std::max( 1, e.Width );
         m_Height = std::max( 1, e.Height );
 
         float aspectRatio = m_Width / (float)m_Height;
         m_Camera.set_Projection( 45.0f, aspectRatio, 0.1f, 100.0f );
 
         m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f,
-            static_cast<float>(m_Width), static_cast<float>(m_Height));
+                                       static_cast<float>( m_Width ), static_cast<float>( m_Height ) );
 
         m_HDRRenderTarget.Resize( m_Width, m_Height );
-        m_SDRRenderTarget.Resize( m_Width, m_Height );
     }
 }
 
@@ -435,16 +414,16 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
     const float offset2 = offset + ( offset / 2.0f );
 
     // Setup the light buffers.
-    m_PointLights.resize(numPointLights);
+    m_PointLights.resize( numPointLights );
     for ( int i = 0; i < numPointLights; ++i )
     {
         PointLight& l = m_PointLights[i];
 
-        l.PositionWS = { 
-            static_cast<float>(std::sin( lightAnimTime + offset * i )) * radius,
-            9.0f, 
-            static_cast<float>(std::cos( lightAnimTime + offset * i )) * radius,
-            1.0f 
+        l.PositionWS = {
+            static_cast<float>( std::sin( lightAnimTime + offset * i ) ) * radius,
+            9.0f,
+            static_cast<float>( std::cos( lightAnimTime + offset * i ) ) * radius,
+            1.0f
         };
         XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
         XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
@@ -461,7 +440,7 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         SpotLight& l = m_SpotLights[i];
 
         l.PositionWS = {
-            static_cast<float>( std::sin( lightAnimTime + offset * i + offset2) ) * radius,
+            static_cast<float>( std::sin( lightAnimTime + offset * i + offset2 ) ) * radius,
             9.0f,
             static_cast<float>( std::cos( lightAnimTime + offset * i + offset2 ) ) * radius,
             1.0f
@@ -470,12 +449,12 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
         XMStoreFloat4( &l.PositionVS, positionVS );
 
-        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorNegate( positionWS ), 0) );
+        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorNegate( positionWS ), 0 ) );
         XMVECTOR directionVS = XMVector3Normalize( XMVector3TransformNormal( directionWS, viewMatrix ) );
         XMStoreFloat4( &l.DirectionWS, directionWS );
         XMStoreFloat4( &l.DirectionVS, directionVS );
 
-        l.Color = XMFLOAT4( LightColors[numPointLights+i] );
+        l.Color = XMFLOAT4( LightColors[numPointLights + i] );
         l.Intensity = 10.0f;
         l.SpotAngle = XMConvertToRadians( 45.0f );
         l.Attenuation = 0.0f;
@@ -497,59 +476,59 @@ static void ShowHelpMarker( const char* desc )
 }
 
 // Number of values to plot in the tonemapping curves.
-static const int VALUES_COUNT = 1024;
+static const int VALUES_COUNT = 256;
 // Maximum HDR value to normalize the plot samples.
 static const float HDR_MAX = 12.0f;
 
-float LinearTonemapping(float HDR, float max )
+float LinearTonemapping( float HDR, float max )
 {
-	if (max > 0.0f)
-	{
-		return clamp( HDR / max );
-	}
-	return HDR;
+    if ( max > 0.0f )
+    {
+        return clamp( HDR / max );
+    }
+    return HDR;
 }
 
-float LinearTonemappingPlot(void*, int index)
+float LinearTonemappingPlot( void*, int index )
 {
-	return LinearTonemapping( index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.MaxLuminance );
+    return LinearTonemapping( index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.MaxLuminance );
 }
 
 // Reinhard tone mapping.
 // See: http://www.cs.utah.edu/~reinhard/cdrom/tonemap.pdf
-float ReinhardTonemapping( float HDR, float k)
+float ReinhardTonemapping( float HDR, float k )
 {
-	return HDR / (HDR + k);
+    return HDR / ( HDR + k );
 }
 
-float ReinhardTonemappingPlot(void*, int index)
+float ReinhardTonemappingPlot( void*, int index )
 {
-	return ReinhardTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K);
+    return ReinhardTonemapping( index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K );
 }
 
-float ReinhardSqrTonemappingPlot(void*, int index)
+float ReinhardSqrTonemappingPlot( void*, int index )
 {
-	float reinhard = ReinhardTonemapping(index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K);
-	return reinhard * reinhard;
+    float reinhard = ReinhardTonemapping( index / (float)VALUES_COUNT * HDR_MAX, g_TonemapParameters.K );
+    return reinhard * reinhard;
 }
 
 // ACES Filmic
 // See: https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting/142
-float ACESFilmicTonemapping(float x, float A, float B, float C, float D, float E, float F)
+float ACESFilmicTonemapping( float x, float A, float B, float C, float D, float E, float F )
 {
-	return (((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - (E / F));
+    return ( ( ( x * ( A * x + C * B ) + D * E ) / ( x * ( A * x + B ) + D * F ) ) - ( E / F ) );
 }
 
-float ACESFilmicTonemappingPlot(void*, int index)
+float ACESFilmicTonemappingPlot( void*, int index )
 {
-	float HDR = index / (float)VALUES_COUNT * HDR_MAX;
-	return ACESFilmicTonemapping(HDR, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F) /
-		ACESFilmicTonemapping(g_TonemapParameters.LinearWhite, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F);
+    float HDR = index / (float)VALUES_COUNT * HDR_MAX;
+    return ACESFilmicTonemapping( HDR, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F ) /
+        ACESFilmicTonemapping( g_TonemapParameters.LinearWhite, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F );
 }
 
 void OnGUI()
 {
-    static bool showDemoWindow = true;
+    static bool showDemoWindow = false;
     static bool showOptions = true;
 
     if ( ImGui::BeginMainMenuBar() )
@@ -583,37 +562,37 @@ void OnGUI()
                 "Reinhard Squared",
                 "ACES Filmic"
             };
-            ImGui::Separator();
-            ImGui::Combo( "Tonemapping Methods", (int*)(&g_TonemapParameters.TonemapMethod), toneMappingMethods, 4 );
+
+            ImGui::Combo( "Tonemapping Methods", (int*)( &g_TonemapParameters.TonemapMethod ), toneMappingMethods, 4 );
 
             switch ( g_TonemapParameters.TonemapMethod )
             {
                 case TonemapMethod::TM_Linear:
+                    ImGui::PlotLines( "Linear Tonemapping", &LinearTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2( 0, 250 ) );
                     ImGui::SliderFloat( "Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, 10.0f );
                     ImGui::SameLine(); ShowHelpMarker( "Linearly scale the HDR image by the maximum brightness." );
-					ImGui::PlotLines("Linear Tonemapping", &LinearTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
                     break;
                 case TonemapMethod::TM_Reinhard:
-					ImGui::SliderFloat("Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f);
-					ImGui::SameLine(); ShowHelpMarker("The Reinhard constant is used in the denominator.");
-					ImGui::PlotLines("Reinhard Tonemapping", &ReinhardTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
-					break;
-				case TonemapMethod::TM_ReinhardSq:
+                    ImGui::PlotLines( "Reinhard Tonemapping", &ReinhardTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2( 0, 250 ) );
                     ImGui::SliderFloat( "Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f );
                     ImGui::SameLine(); ShowHelpMarker( "The Reinhard constant is used in the denominator." );
-					ImGui::PlotLines("Reinhard Squared Tonemapping", &ReinhardSqrTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
-					break;
+                    break;
+                case TonemapMethod::TM_ReinhardSq:
+                    ImGui::PlotLines( "Reinhard Squared Tonemapping", &ReinhardSqrTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2( 0, 250 ) );
+                    ImGui::SliderFloat( "Reinhard Constant", &g_TonemapParameters.K, 0.01f, 10.0f );
+                    ImGui::SameLine(); ShowHelpMarker( "The Reinhard constant is used in the denominator." );
+                    break;
                 case TonemapMethod::TM_ACESFilmic:
+                    ImGui::PlotLines( "ACES Filmic Tonemapping", &ACESFilmicTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2( 0, 250 ) );
                     ImGui::SliderFloat( "Shoulder Strength", &g_TonemapParameters.A, 0.01f, 5.0f );
                     ImGui::SliderFloat( "Linear Strength", &g_TonemapParameters.B, 0.0f, 100.0f );
                     ImGui::SliderFloat( "Linear Angle", &g_TonemapParameters.C, 0.0f, 1.0f );
                     ImGui::SliderFloat( "Toe Strength", &g_TonemapParameters.D, 0.01f, 1.0f );
-					ImGui::SliderFloat("Toe Numerator", &g_TonemapParameters.E, 0.0f, 10.0f);
-					ImGui::SliderFloat("Toe Denominator", &g_TonemapParameters.F, 1.0f, 10.0f);
-					ImGui::SliderFloat("Linear White", &g_TonemapParameters.LinearWhite, 1.0f, 120.0f);
-					ImGui::PlotLines("ACES Filmic Tonemapping", &ACESFilmicTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.5f, ImVec2(0, 250));
-					break;
-				default:
+                    ImGui::SliderFloat( "Toe Numerator", &g_TonemapParameters.E, 0.0f, 10.0f );
+                    ImGui::SliderFloat( "Toe Denominator", &g_TonemapParameters.F, 1.0f, 10.0f );
+                    ImGui::SliderFloat( "Linear White", &g_TonemapParameters.LinearWhite, 1.0f, 120.0f );
+                    break;
+                default:
                     break;
             }
         }
@@ -649,11 +628,11 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     {
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
-        commandList->ClearTexture( m_HDRRenderTarget.GetTexture(AttachmentPoint::Color0), clearColor );
-        commandList->ClearDepthStencilTexture( m_HDRRenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH );
+        commandList->ClearTexture( m_HDRRenderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
+        commandList->ClearDepthStencilTexture( m_HDRRenderTarget.GetTexture( AttachmentPoint::DepthStencil ), D3D12_CLEAR_FLAG_DEPTH );
     }
 
-    commandList->SetPipelineState(m_HDRPipelineState);
+    commandList->SetPipelineState( m_HDRPipelineState );
     commandList->SetGraphicsRootSignature( m_HDRRootSignature );
 
     // Upload lights
@@ -666,7 +645,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
 
     commandList->SetViewport( m_Viewport );
-    commandList->SetScissorRect( m_ScissorRect);
+    commandList->SetScissorRect( m_ScissorRect );
 
     commandList->SetRenderTarget( m_HDRRenderTarget );
 
@@ -814,7 +793,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
         XMVECTOR up = XMVectorSet( 0, 1, 0, 0 );
 
         // Rotate the cone so it is facing the Z axis.
-        rotationMatrix = XMMatrixRotationX( XMConvertToRadians(-90.0f) );
+        rotationMatrix = XMMatrixRotationX( XMConvertToRadians( -90.0f ) );
         worldMatrix = rotationMatrix * LookAtMatrix( lightPos, lightDir, up );
 
         ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
@@ -826,7 +805,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     }
 
     // Perform HDR -> SDR tonemapping.
-    commandList->SetRenderTarget( m_SDRRenderTarget );
+    commandList->SetRenderTarget( m_pWindow->GetRenderTarget() );
     commandList->SetPipelineState( m_SDRPipelineState );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     commandList->SetGraphicsRootSignature( m_SDRRootSignature );
@@ -841,7 +820,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
     OnGUI();
 
     // Present
-    m_pWindow->Present( m_SDRRenderTarget.GetTexture(AttachmentPoint::Color0) );
+    m_pWindow->Present();
 }
 
 static bool g_AllowFullscreenToggle = true;
