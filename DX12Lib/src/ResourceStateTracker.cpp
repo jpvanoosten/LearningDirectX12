@@ -89,10 +89,6 @@ void ResourceStateTracker::TransitionResource( const Resource& resource, D3D12_R
 void ResourceStateTracker::UAVBarrier(const Resource* resource )
 {
     ID3D12Resource* pResource = resource != nullptr ? resource->GetD3D12Resource().Get() : nullptr;
-    if (resource)
-    {
-        pResource = resource->GetD3D12Resource().Get();
-    }
 
     ResourceBarrier(CD3DX12_RESOURCE_BARRIER::UAV(pResource));
 }

@@ -158,9 +158,6 @@ void CommandList::CopyBuffer( Buffer& buffer, size_t numElements, size_t element
 
         if ( bufferData != nullptr )
         {
-
-            m_ResourceStateTracker->TransitionResource( d3d12Resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST );
-
             // Create an upload resource to use as an intermediate buffer to copy the buffer resource 
             ComPtr<ID3D12Resource> uploadResource;
             ThrowIfFailed( device->CreateCommittedResource( 
@@ -175,6 +172,9 @@ void CommandList::CopyBuffer( Buffer& buffer, size_t numElements, size_t element
             subresourceData.pData = bufferData;
             subresourceData.RowPitch = bufferSize;
             subresourceData.SlicePitch = subresourceData.RowPitch;
+
+            m_ResourceStateTracker->TransitionResource(d3d12Resource.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+            FlushResourceBarriers();
 
             UpdateSubresources( m_d3d12CommandList.Get(), d3d12Resource.Get(),
                 uploadResource.Get(), 0, 0, 1, &subresourceData );
@@ -227,10 +227,10 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
     auto iter = ms_TextureCache.find( fileName );
     if ( iter != ms_TextureCache.end() )
     {
- 		texture.SetTextureUsage(textureUsage);
-		texture.SetD3D12Resource(iter->second);
-		texture.CreateViews();
-	}
+        texture.SetTextureUsage(textureUsage);
+        texture.SetD3D12Resource(iter->second);
+        texture.CreateViews();
+    }
     else
     {
         Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
