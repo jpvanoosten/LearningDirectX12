@@ -14,7 +14,7 @@ set( HEADER_FILES
     inc/DynamicDescriptorHeap.h
     inc/Events.h
     inc/Game.h
-	inc/GenerateMipsPSO.h
+    inc/GenerateMipsPSO.h
     inc/GUI.h
     inc/Helpers.h
     inc/HighResolutionClock.h
@@ -46,7 +46,7 @@ set( SOURCE_FILES
     src/DescriptorAllocatorPage.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp
-	src/GenerateMipsPSO.cpp
+    src/GenerateMipsPSO.cpp
     src/GUI.cpp
     src/HighResolutionClock.cpp
     src/IndexBuffer.cpp
@@ -77,18 +77,18 @@ set( DIRECTXTEX_SOURCE
 source_group( "Source Files\\DirectXTex" FILES ${DIRECTXTEX_SOURCE} )
 
 set( IMGUI_HEADERS
-	inc/imgui.h
-	inc/imconfig.h
+    inc/imgui.h
+    inc/imconfig.h
     inc/imgui_impl_win32.h
 )
 
 source_group( "Header Files\\ImGUI" FILES ${IMGUI_HEADERS} )
 
 set( IMGUI_SOURCE
-	src/imgui.cpp
-	src/imgui_demo.cpp
-	src/imgui_draw.cpp
-	src/imgui_widgets.cpp
+    src/imgui.cpp
+    src/imgui_demo.cpp
+    src/imgui_draw.cpp
+    src/imgui_widgets.cpp
     src/imgui_impl_win32.cpp
 )
 
@@ -97,15 +97,15 @@ source_group( "Source Files\\ImGUI" FILES ${IMGUI_SOURCE} )
 set( RESOURCE_FILES 
     DX12Lib.rc
     Resources/Icon/app_icon.ico
-	Resources/Shaders/GenerateMips_CS.hlsl
-	Resources/Shaders/ImGUI_VS.hlsl
-	Resources/Shaders/ImGUI_PS.hlsl
+    Resources/Shaders/GenerateMips_CS.hlsl
+    Resources/Shaders/ImGUI_VS.hlsl
+    Resources/Shaders/ImGUI_PS.hlsl
 )
 
 set( SHADER_FILES
-	Resources/Shaders/GenerateMips_CS.hlsl 
-	Resources/Shaders/ImGUI_VS.hlsl
-	Resources/Shaders/ImGUI_PS.hlsl
+    Resources/Shaders/GenerateMips_CS.hlsl 
+    Resources/Shaders/ImGUI_VS.hlsl
+    Resources/Shaders/ImGUI_PS.hlsl
 )
 
 source_group( "Resources" FILES DX12Lib.rc resource.h )
@@ -122,7 +122,7 @@ add_library( DX12Lib STATIC
 
 target_include_directories( DX12Lib
     PUBLIC inc
-	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
+    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
 target_link_libraries( DX12Lib 
@@ -144,28 +144,27 @@ set_source_files_properties( src/DX12LibPCH.cpp
 )
 
 set_source_files_properties( ${SHADER_FILES}
-	PROPERTIES
-		VS_SHADER_MODEL 5.1
-		VS_SHADER_OBJECT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/CompiledShaders/%(Filename).cso"
-		VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
-	    VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+    PROPERTIES
+        VS_SHADER_MODEL 5.1
+        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
+        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
 set_source_files_properties( Resources/Shaders/GenerateMips_CS.hlsl
-	PROPERTIES
-		VS_SHADER_TYPE Compute
-		VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
+    PROPERTIES
+        VS_SHADER_TYPE Compute
+        VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
 )
 
 set_source_files_properties( Resources/Shaders/ImGUI_VS.hlsl
-	PROPERTIES
-		VS_SHADER_TYPE Vertex
-		VS_SHADER_VARIABLE_NAME g_ImGUI_VS
+    PROPERTIES
+        VS_SHADER_TYPE Vertex
+        VS_SHADER_VARIABLE_NAME g_ImGUI_VS
 )
 
 set_source_files_properties( Resources/Shaders/ImGUI_PS.hlsl
-	PROPERTIES
-		VS_SHADER_TYPE Pixel
-		VS_SHADER_VARIABLE_NAME g_ImGUI_PS
+    PROPERTIES
+        VS_SHADER_TYPE Pixel
+        VS_SHADER_VARIABLE_NAME g_ImGUI_PS
 )
