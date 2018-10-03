@@ -2,7 +2,7 @@
 
 #include <GenerateMipsPSO.h>
 
-#include <GenerateMips_CS.inc>
+#include <GenerateMips_CS.h>
 
 #include <Application.h>
 #include <Helpers.h>

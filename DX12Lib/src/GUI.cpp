@@ -11,8 +11,8 @@
 #include <Window.h>
 
 // Include compiled shaders for ImGui.
-#include <ImGUI_VS.inc>
-#include <ImGUI_PS.inc>
+#include <ImGUI_VS.h>
+#include <ImGUI_PS.h>
 
 #include <imgui_impl_win32.h>
 
