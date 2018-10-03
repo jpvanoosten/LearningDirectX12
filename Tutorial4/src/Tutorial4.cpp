@@ -62,6 +62,7 @@ struct TonemapParameters
         , E( 0.01f )
         , F( 0.3f )
         , LinearWhite( 11.2f )
+        , Gamma( 2.2f )
     {}
 
     // The method to use to perform tonemapping.
@@ -85,6 +86,7 @@ struct TonemapParameters
     float F; // Toe denominator
     // Note E/F = Toe angle.
     float LinearWhite;
+    float Gamma;
 };
 
 TonemapParameters g_TonemapParameters;
@@ -552,9 +554,11 @@ void OnGUI()
     {
         ImGui::Begin( "Tonemapping", &showOptions );
         {
-            ImGui::TextWrapped( "Use the Exposure slider to adjust the overal exposure of the HDR scene." );
+            ImGui::TextWrapped( "Use the Exposure slider to adjust the overall exposure of the HDR scene." );
             ImGui::SliderFloat( "Exposure", &g_TonemapParameters.Exposure, -10.0f, 10.0f );
             ImGui::SameLine(); ShowHelpMarker( "Adjust the overall exposure of the HDR scene." );
+            ImGui::SliderFloat( "Gamma", &g_TonemapParameters.Gamma, 0.01f, 5.0f );
+            ImGui::SameLine(); ShowHelpMarker( "Adjust the Gamma of the output image." );
 
             const char* toneMappingMethods[] = {
                 "Linear",

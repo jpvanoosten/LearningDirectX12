@@ -26,7 +26,9 @@ struct TonemapParameters
     float E; // Toe Numerator
     float F; // Toe denominator
     // Note E/F = Toe angle.
-	float LinearWhite;
+    float LinearWhite;
+
+    float Gamma;
 };
 
 
@@ -104,5 +106,5 @@ float4 main( float4 Position : SV_Position ) : SV_Target0
         break;
     }
 
-    return float4( SDR, 1 );
+    return float4( pow( SDR, 1.0f / TonemapParametersCB.Gamma), 1 );
 }
