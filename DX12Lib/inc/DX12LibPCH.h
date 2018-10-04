@@ -25,13 +25,13 @@
 using namespace Microsoft::WRL;
 
 // DirectX 12 specific headers.
-#include <d3d12.h>
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <DirectXTex.h>
 
-// D3D12 extension library.
-#include <d3dx12.h>
+using namespace DirectX;
 
 // STL Headers
 #include <algorithm>
@@ -43,6 +43,7 @@ using namespace Microsoft::WRL;
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace fs = std::experimental::filesystem;
 

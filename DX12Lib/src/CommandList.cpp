@@ -18,18 +18,6 @@
 #include <UploadBuffer.h>
 #include <VertexBuffer.h>
 
-#include <DirectXTex/DDSTextureLoader12.h>
-#include <DirectXTex/WICTextureLoader12.h>
-
-#include <d3dx12.h>
-
-#include <filesystem>
-#include <memory> // For std::unique_ptr
-#include <vector> // For std::vector
-
-namespace fs = std::experimental::filesystem;
-using namespace DirectX;
-
 std::map<std::wstring, ID3D12Resource* > CommandList::ms_TextureCache;
 std::mutex CommandList::ms_TextureCacheMutex;
 
@@ -222,8 +210,9 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
     fs::path filePath( fileName );
     if ( !fs::exists( filePath ) )
     {
-        throw std::invalid_argument( "Invalid filename specified." );
+        throw std::exception( "File not found." );
     }
+
     auto iter = ms_TextureCache.find( fileName );
     if ( iter != ms_TextureCache.end() )
     {
@@ -233,57 +222,77 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
     }
     else
     {
+        TexMetadata metadata;
+        ScratchImage scratchImage;
         Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
-        std::unique_ptr<uint8_t[]> textureData;
-        std::vector<D3D12_SUBRESOURCE_DATA> subresourceData;
 
         if ( filePath.extension() == ".dds" )
         {
-            unsigned int loadFlags = DDS_LOADER_MIP_RESERVE;
-            if ( textureUsage == TextureUsage::Albedo )
-            {
-                loadFlags |= DDS_LOADER_FORCE_SRGB;
-            }
             // Use DDS texture loader.
-            ThrowIfFailed( LoadDDSTextureFromFileEx( device.Get(),
-                                                     fileName.c_str(), 0, D3D12_RESOURCE_FLAG_NONE,
-                                                     loadFlags, &textureResource, textureData,
-                                                     subresourceData ) );
+            ThrowIfFailed( LoadFromDDSFile( fileName.c_str(), DDS_FLAGS_NONE, &metadata, scratchImage ) );
+        }
+        else if ( filePath.extension() == ".hdr" )
+        {
+            ThrowIfFailed( LoadFromHDRFile( fileName.c_str(), &metadata, scratchImage ) );
+        }
+        else if ( filePath.extension() == ".tga" )
+        {
+            ThrowIfFailed( LoadFromTGAFile( fileName.c_str(), &metadata, scratchImage ) );
         }
         else
         {
-            D3D12_SUBRESOURCE_DATA resourceData;
-
-            unsigned int loadFlags = WIC_LOADER_MIP_RESERVE;
-            if ( textureUsage == TextureUsage::Albedo )
-            {
-                loadFlags |= WIC_LOADER_FORCE_SRGB;
-            }
-            else if ( textureUsage == TextureUsage::Heightmap ||
-                      textureUsage == TextureUsage::Normalmap )
-            {
-                loadFlags |= WIC_LOADER_IGNORE_SRGB;
-            }
-
-            // Use WIC texture loader.
-            ThrowIfFailed( LoadWICTextureFromFileEx( device.Get(),
-                                                     fileName.c_str(), 0, D3D12_RESOURCE_FLAG_NONE,
-                                                     loadFlags, &textureResource, textureData,
-                                                     resourceData ) );
-
-            subresourceData.push_back( resourceData );
+            ThrowIfFailed( LoadFromWICFile( fileName.c_str(), WIC_FLAGS_NONE, &metadata, scratchImage ) );
         }
 
+        if ( textureUsage == TextureUsage::Albedo )
+        {
+            metadata.format = MakeSRGB( metadata.format );
+        }
+
+        D3D12_RESOURCE_DESC textureDesc = {};
+        switch ( metadata.dimension )
+        {
+            case TEX_DIMENSION_TEXTURE1D:
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex1D( metadata.format, metadata.width, metadata.arraySize );
+                break;
+            case TEX_DIMENSION_TEXTURE2D:
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex2D( metadata.format, metadata.width, metadata.height, metadata.arraySize );
+                break;
+            case TEX_DIMENSION_TEXTURE3D:
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex3D( metadata.format, metadata.width, metadata.height, metadata.depth );
+                break;
+            default:
+                throw std::exception( "Invalid texture dimension." );
+                break;
+        }
+
+        ThrowIfFailed( device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ),
+                                                        D3D12_HEAP_FLAG_NONE,
+                                                        &textureDesc,
+                                                        D3D12_RESOURCE_STATE_COMMON,
+                                                        nullptr,
+                                                        IID_PPV_ARGS( &textureResource ) ) );
+
         // Update the global state tracker.
-        ResourceStateTracker::AddGlobalResourceState( textureResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST );
+        ResourceStateTracker::AddGlobalResourceState( textureResource.Get(), D3D12_RESOURCE_STATE_COMMON );
 
         texture.SetTextureUsage( textureUsage );
         texture.SetD3D12Resource( textureResource );
         texture.CreateViews();
 
-        CopyTextureSubresource( texture, 0, static_cast<uint32_t>( subresourceData.size() ), subresourceData.data() );
+        std::vector<D3D12_SUBRESOURCE_DATA> subresources( scratchImage.GetImageCount() );
+        const Image* pImages = scratchImage.GetImages();
+        for ( int i = 0; i < scratchImage.GetImageCount(); ++i )
+        {
+            auto& subresource = subresources[i];
+            subresource.RowPitch = pImages[i].rowPitch;
+            subresource.SlicePitch = pImages[i].slicePitch;
+            subresource.pData = pImages[i].pixels;
+        }
+        
+        CopyTextureSubresource( texture, 0, static_cast<uint32_t>( subresources.size() ), subresources.data() );
 
-        if ( subresourceData.size() < textureResource->GetDesc().MipLevels )
+        if ( subresources.size() < textureResource->GetDesc().MipLevels )
         {
             GenerateMips( texture );
         }

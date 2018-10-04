@@ -185,6 +185,7 @@ bool Tutorial4::LoadContent()
     commandList->LoadTextureFromFile( m_DirectXTexture, L"Assets/Textures/Directx9.png" );
     commandList->LoadTextureFromFile( m_EarthTexture, L"Assets/Textures/earth.dds" );
     commandList->LoadTextureFromFile( m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg" );
+    commandList->LoadTextureFromFile( m_GraceCathedralTexture, L"Assets/Textures/grace-new.hdr" );
 
     // Load the vertex shader.
     ComPtr<ID3DBlob> vs;

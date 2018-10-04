@@ -62,20 +62,6 @@ set( SOURCE_FILES
     src/Window.cpp
 )
 
-set( DIRECTXTEX_HEADERS
-    inc/DirectXTex/DDSTextureLoader12.h
-    inc/DirectXTex/WICTextureLoader12.h
-)
-
-source_group( "Header Files\\DirectXTex" FILES ${DIRECTXTEX_HEADERS} )
-
-set( DIRECTXTEX_SOURCE 
-    src/DirectXTex/DDSTextureLoader12.cpp
-    src/DirectXTex/WICTextureLoader12.cpp
-)
-
-source_group( "Source Files\\DirectXTex" FILES ${DIRECTXTEX_SOURCE} )
-
 set( IMGUI_HEADERS
     inc/imgui.h
     inc/imconfig.h
@@ -116,8 +102,7 @@ add_library( DX12Lib STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ${DIRECTXTEX_HEADERS} ${DIRECTXTEX_SOURCE}
-	${IMGUI_HEADERS} ${IMGUI_SOURCE}
+    ${IMGUI_HEADERS} ${IMGUI_SOURCE}
 )
 
 target_include_directories( DX12Lib
