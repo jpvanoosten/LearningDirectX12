@@ -126,6 +126,7 @@ target_include_directories( DX12Lib
 )
 
 target_link_libraries( DX12Lib 
+	PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib

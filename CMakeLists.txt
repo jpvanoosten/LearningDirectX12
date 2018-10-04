@@ -13,6 +13,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory f
 
 project( LearningDirectX12 LANGUAGES CXX )
 
+add_subdirectory( DirectXTex )
 add_subdirectory( DX12Lib )
 add_subdirectory( Tutorial1 )
 add_subdirectory( Tutorial2 )
