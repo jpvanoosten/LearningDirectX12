@@ -51,11 +51,27 @@ set( SHADER_FILES
 
 source_group( "Source Files\\Shaders" FILES ${SHADER_FILES} )
 
-file( GLOB COMPILED_SHADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/DirectXTex/Shaders/Compiled/*.inc )
+set( COMPILED_SHADER_FILES
+    DirectXTex/Shaders/Compiled/BC7Encode_TryMode137CS.inc
+    DirectXTex/Shaders/Compiled/BC7Encode_TryMode456CS.inc
+    DirectXTex/Shaders/Compiled/BC6HEncode_EncodeBlockCS.inc
+    DirectXTex/Shaders/Compiled/BC6HEncode_TryModeG10CS.inc
+    DirectXTex/Shaders/Compiled/BC6HEncode_TryModeLE10CS.inc
+    DirectXTex/Shaders/Compiled/BC7Encode_EncodeBlockCS.inc
+    DirectXTex/Shaders/Compiled/BC7Encode_TryMode02CS.inc
+)
 
 source_group( "Source Files\\Shaders\\Compiled" FILES ${COMPILED_SHADER_FILES} )
 
-file( GLOB SHADER_SYMBOL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/DirectXTex/Shaders/Compiled/*.pdb )
+set( SHADER_SYMBOL_FILES
+    DirectXTex/Shaders/Compiled/BC7Encode_TryMode137CS.pdb
+    DirectXTex/Shaders/Compiled/BC7Encode_TryMode456CS.pdb
+    DirectXTex/Shaders/Compiled/BC6HEncode_EncodeBlockCS.pdb
+    DirectXTex/Shaders/Compiled/BC6HEncode_TryModeG10CS.pdb
+    DirectXTex/Shaders/Compiled/BC6HEncode_TryModeLE10CS.pdb
+    DirectXTex/Shaders/Compiled/BC7Encode_EncodeBlockCS.pdb
+    DirectXTex/Shaders/Compiled/BC7Encode_TryMode02CS.pdb
+)
 
 source_group( "Source Files\\Shaders\\Symbols" FILES ${SHADER_SYMBOL_FILES} )
 
@@ -69,13 +85,16 @@ add_library( DirectXTex STATIC
     ${PRIVATE_HEADER_FILES}
     ${SOURCE_FILES}
     ${SHADER_FILES}
+    ${COMPILED_SHADER_FILES}
+    ${SHADER_SYMBOL_FILES}
 )
 
 target_include_directories( DirectXTex
     PUBLIC DirectXTex
 )
 
-add_custom_command( TARGET DirectXTex PRE_BUILD
+add_custom_command( OUTPUT ${COMPILED_SHADER_FILES} ${SHADER_SYMBOL_FILES}
     COMMAND CompileShaders.cmd
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/DirectXTex/Shaders"
+    DEPENDS ${SHADER_FILES}
 )

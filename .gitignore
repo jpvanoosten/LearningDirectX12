@@ -14,4 +14,3 @@ CTestTestfile.cmake
 /Data/Shaders/*.cso
 *.cso
 imgui.ini
-/DirectXTex/DirectXTex/Shaders/Compiled
