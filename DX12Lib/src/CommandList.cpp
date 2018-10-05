@@ -219,6 +219,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         texture.SetTextureUsage(textureUsage);
         texture.SetD3D12Resource(iter->second);
         texture.CreateViews();
+        texture.SetName(fileName);
     }
     else
     {
@@ -279,6 +280,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         texture.SetTextureUsage( textureUsage );
         texture.SetD3D12Resource( textureResource );
         texture.CreateViews();
+        texture.SetName(fileName);
 
         std::vector<D3D12_SUBRESOURCE_DATA> subresources( scratchImage.GetImageCount() );
         const Image* pImages = scratchImage.GetImages();

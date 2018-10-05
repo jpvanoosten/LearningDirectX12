@@ -80,18 +80,17 @@ set( IMGUI_SOURCE
 
 source_group( "Source Files\\ImGUI" FILES ${IMGUI_SOURCE} )
 
-set( RESOURCE_FILES 
-    DX12Lib.rc
-    Resources/Icon/app_icon.ico
+set( SHADER_FILES
     Resources/Shaders/GenerateMips_CS.hlsl
+    Resources/Shaders/PanoToCubemap_CS.hlsl
     Resources/Shaders/ImGUI_VS.hlsl
     Resources/Shaders/ImGUI_PS.hlsl
 )
 
-set( SHADER_FILES
-    Resources/Shaders/GenerateMips_CS.hlsl 
-    Resources/Shaders/ImGUI_VS.hlsl
-    Resources/Shaders/ImGUI_PS.hlsl
+set( RESOURCE_FILES 
+    DX12Lib.rc
+    Resources/Icon/app_icon.ico
+	${SHADER_FILES}
 )
 
 source_group( "Resources" FILES DX12Lib.rc resource.h )
@@ -141,6 +140,12 @@ set_source_files_properties( Resources/Shaders/GenerateMips_CS.hlsl
     PROPERTIES
         VS_SHADER_TYPE Compute
         VS_SHADER_VARIABLE_NAME g_GenerateMips_CS
+)
+
+set_source_files_properties( Resources/Shaders/PanoToCubemap_CS.hlsl
+    PROPERTIES
+        VS_SHADER_TYPE Compute
+        VS_SHADER_VARIABLE_NAME g_PanoToCubemap_CS
 )
 
 set_source_files_properties( Resources/Shaders/ImGUI_VS.hlsl
