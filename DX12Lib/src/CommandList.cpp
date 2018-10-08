@@ -9,6 +9,7 @@
 #include <DynamicDescriptorHeap.h>
 #include <GenerateMipsPSO.h>
 #include <IndexBuffer.h>
+#include <PanoToCubemapPSO.h>
 #include <RenderTarget.h>
 #include <Resource.h>
 #include <ResourceStateTracker.h>
@@ -309,11 +310,11 @@ void CommandList::GenerateMips( Texture& texture )
 {
     if ( m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY )
     {
-        if ( !m_GenerateMipsCommandList )
+        if ( !m_ComputeCommandList )
         {
-            m_GenerateMipsCommandList = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE )->GetCommandList();
+            m_ComputeCommandList = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE )->GetCommandList();
         }
-        m_GenerateMipsCommandList->GenerateMips( texture );
+        m_ComputeCommandList->GenerateMips( texture );
         return;
     }
 
@@ -609,6 +610,91 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
     TrackResource(copyTexture);
     TrackResource(aliasTexture);
     TrackResource(texture);
+}
+
+void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoTexture )
+{
+    if (m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY)
+    {
+        if (!m_ComputeCommandList)
+        {
+            m_ComputeCommandList = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE)->GetCommandList();
+        }
+        m_ComputeCommandList->PanoToCubemap(cubemapTexture, panoTexture);
+        return;
+    }
+
+    if (!m_PanoToCubemapPSO)
+    {
+        m_PanoToCubemapPSO = std::make_unique<PanoToCubemapPSO>();
+    }
+
+    auto device = Application::Get().GetDevice();
+
+    auto cubemapResource = cubemapTexture.GetD3D12Resource();
+    if (!cubemapResource) return;
+
+    CD3DX12_RESOURCE_DESC cubemapDesc(cubemapResource->GetDesc());
+
+    auto stagingResource = cubemapResource;
+    Texture stagingTexture(stagingResource);
+    // If the passed-in resource does not allow for UAV access
+    // then create a staging resource that is used to generate
+    // the cubemap.
+    if ((cubemapDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) == 0)
+    {
+        auto stagingDesc = cubemapDesc;
+        stagingDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+        ThrowIfFailed(device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+            D3D12_HEAP_FLAG_NONE,
+            &stagingDesc,
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            nullptr,
+            IID_PPV_ARGS(&stagingResource)
+
+        ));
+
+        ResourceStateTracker::AddGlobalResourceState(stagingResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+
+        stagingTexture.SetD3D12Resource(stagingResource);
+        stagingTexture.CreateViews();
+
+        CopyResource(stagingTexture, cubemapTexture );
+    }
+
+    m_d3d12CommandList->SetPipelineState(m_PanoToCubemapPSO->GetPipelineState().Get());
+    SetComputeRootSignature(m_PanoToCubemapPSO->GetRootSignature());
+
+    PanoToCubemapCB panoToCubemapCB;
+
+    for (uint32_t srcMip = 0; srcMip < cubemapDesc.MipLevels; )
+    {
+        panoToCubemapCB.FirstMip = srcMip;
+        panoToCubemapCB.CubemapSize = std::max<uint32_t>( static_cast<uint32_t>( cubemapDesc.Width ), cubemapDesc.Height) >> srcMip;
+        // Maximum number of mips to generate per pass is 5.
+        panoToCubemapCB.NumMips = std::min<uint32_t>(5, cubemapDesc.MipLevels - srcMip);
+
+        SetCompute32BitConstants(PanoToCubemapRS::PanoToCubemapCB, panoToCubemapCB);
+
+        SetShaderResourceView(PanoToCubemapRS::SrcTexture, 0, panoTexture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        SetUnorderedAccessView(PanoToCubemapRS::DstMips, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, cubemapDesc.CalcSubresource(srcMip, 0, 0), panoToCubemapCB.NumMips);
+        if (panoToCubemapCB.NumMips < 5)
+        {
+            // Pad unused mips
+            m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(PanoToCubemapRS::DstMips, panoToCubemapCB.NumMips, 5 - panoToCubemapCB.NumMips, m_PanoToCubemapPSO->GetDefaultUAV());
+        }
+
+        Dispatch(Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), 6 );
+
+        srcMip += panoToCubemapCB.NumMips;
+    }
+
+    if (stagingResource != cubemapResource)
+    {
+        CopyResource(cubemapTexture, stagingTexture);
+    }
 }
 
 void CommandList::ClearTexture( const Texture& texture, const float clearColor[4])
@@ -969,7 +1055,7 @@ void CommandList::Reset()
     }
 
     m_RootSignature = nullptr;
-    m_GenerateMipsCommandList = nullptr;
+    m_ComputeCommandList = nullptr;
 }
 
 void CommandList::TrackObject(Microsoft::WRL::ComPtr<ID3D12Object> object)

@@ -21,6 +21,7 @@ class ConstantBuffer;
 class DynamicDescriptorHeap;
 class GenerateMipsPSO;
 class IndexBuffer;
+class PanoToCubemapPSO;
 class RenderTarget;
 class Resource;
 class ResourceStateTracker;
@@ -166,6 +167,11 @@ public:
      * Mips are automatically generated for textures loaded from files.
      */
     void GenerateMips( Texture& texture );
+
+    /**
+     * Generate a cubemap texture from a panoramic (equirectangular) texture.
+     */
+    void PanoToCubemap(Texture& cubemap, const Texture& pano);
 
     /**
      * Copy subresource data to a texture.
@@ -350,7 +356,7 @@ public:
 
     std::shared_ptr<CommandList> GetGenerateMipsCommandList() const
     {
-        return m_GenerateMipsCommandList;
+        return m_ComputeCommandList;
     }
 
 protected:
@@ -382,7 +388,7 @@ private:
     // Mips can't be generated on copy queues but must be generated on compute or
     // direct queues. In this case, a Compute command list is generated and executed 
     // after the copy queue is finished uploading the first sub resource.
-    std::shared_ptr<CommandList> m_GenerateMipsCommandList;
+    std::shared_ptr<CommandList> m_ComputeCommandList;
 
     // Keep track of the currently bound root signatures to minimize root
     // signature changes.
@@ -408,6 +414,8 @@ private:
 
 	// Pipeline state object for Mip map generation.
 	std::unique_ptr<GenerateMipsPSO> m_GenerateMipsPSO;
+    // Pipeline state object for converting panorama (equirectangular) to cubemaps
+    std::unique_ptr<PanoToCubemapPSO> m_PanoToCubemapPSO;
 
     // Objects that are being tracked by a command list that is "in-flight" on 
     // the command-queue and cannot be deleted. To ensure objects are not deleted 
