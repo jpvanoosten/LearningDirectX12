@@ -387,6 +387,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
 
         stagingTexture.SetD3D12Resource( stagingResource );
         stagingTexture.CreateViews();
+        stagingTexture.SetName(L"Generate Mips UAV Staging Texture");
 
         CopyResource( stagingTexture, texture );
     }
@@ -660,6 +661,7 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
 
         stagingTexture.SetD3D12Resource(stagingResource);
         stagingTexture.CreateViews();
+        stagingTexture.SetName(L"Pano to Cubemap Staging Texture");
 
         CopyResource(stagingTexture, cubemapTexture );
     }
@@ -669,17 +671,18 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
 
     PanoToCubemapCB panoToCubemapCB;
 
-    for (uint32_t srcMip = 0; srcMip < cubemapDesc.MipLevels; )
+    for (uint32_t mipSlice = 0; mipSlice < cubemapDesc.MipLevels; )
     {
-        panoToCubemapCB.FirstMip = srcMip;
-        panoToCubemapCB.CubemapSize = std::max<uint32_t>( static_cast<uint32_t>( cubemapDesc.Width ), cubemapDesc.Height) >> srcMip;
+        panoToCubemapCB.FirstMip = mipSlice;
+        panoToCubemapCB.CubemapSize = std::max<uint32_t>( static_cast<uint32_t>( cubemapDesc.Width ), cubemapDesc.Height) >> mipSlice;
         // Maximum number of mips to generate per pass is 5.
-        panoToCubemapCB.NumMips = std::min<uint32_t>(5, cubemapDesc.MipLevels - srcMip);
+        panoToCubemapCB.NumMips = std::min<uint32_t>(5, cubemapDesc.MipLevels - mipSlice);
 
         SetCompute32BitConstants(PanoToCubemapRS::PanoToCubemapCB, panoToCubemapCB);
 
         SetShaderResourceView(PanoToCubemapRS::SrcTexture, 0, panoTexture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-        SetUnorderedAccessView(PanoToCubemapRS::DstMips, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, cubemapDesc.CalcSubresource(srcMip, 0, 0), panoToCubemapCB.NumMips);
+        SetUnorderedAccessView(PanoToCubemapRS::DstMips, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, cubemapDesc.CalcSubresource(mipSlice, 0, 0), panoToCubemapCB.NumMips);
+
         if (panoToCubemapCB.NumMips < 5)
         {
             // Pad unused mips
@@ -688,7 +691,7 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
 
         Dispatch(Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), 6 );
 
-        srcMip += panoToCubemapCB.NumMips;
+        mipSlice += panoToCubemapCB.NumMips;
     }
 
     if (stagingResource != cubemapResource)

@@ -33,6 +33,7 @@ void ResourceStateTracker::ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier
             if ( transitionBarrier.Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES &&
                  !resourceState.SubresourceState.empty() )
             {
+                // First transition all of the subresources if they are different than the StateAfter.
                 for ( auto subresourceState : resourceState.SubresourceState )
                 {
                     if ( transitionBarrier.StateAfter != subresourceState.second )

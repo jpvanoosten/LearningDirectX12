@@ -187,6 +187,16 @@ bool Tutorial4::LoadContent()
     commandList->LoadTextureFromFile( m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg" );
     commandList->LoadTextureFromFile( m_GraceCathedralTexture, L"Assets/Textures/grace-new.hdr" );
 
+    // Create a cubemap for the HDR panorama.
+    auto cubemapDesc = m_GraceCathedralTexture.GetD3D12ResourceDesc();
+    cubemapDesc.Width = cubemapDesc.Height = 1024;
+    cubemapDesc.DepthOrArraySize = 6;
+    cubemapDesc.MipLevels = 0;
+
+    m_GraceCathedralCubemap = Texture(cubemapDesc, nullptr, TextureUsage::Albedo, L"Grace Cathedral Cubemap");
+
+    commandList->PanoToCubemap(m_GraceCathedralCubemap, m_GraceCathedralTexture);
+
     // Load the vertex shader.
     ComPtr<ID3DBlob> vs;
     ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDR_VS.cso", &vs ) );

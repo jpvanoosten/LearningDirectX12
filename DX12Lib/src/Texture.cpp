@@ -107,7 +107,7 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC GetUAVDesc(const D3D12_RESOURCE_DESC& resDesc, 
         if (resDesc.DepthOrArraySize > 1)
         {
             uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE1DARRAY;
-            uavDesc.Texture1DArray.ArraySize = resDesc.DepthOrArraySize;
+            uavDesc.Texture1DArray.ArraySize = resDesc.DepthOrArraySize - arraySlice;
             uavDesc.Texture1DArray.FirstArraySlice = arraySlice;
             uavDesc.Texture1DArray.MipSlice = mipSlice;
         }
@@ -121,7 +121,7 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC GetUAVDesc(const D3D12_RESOURCE_DESC& resDesc, 
         if (resDesc.DepthOrArraySize > 1)
         {
             uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
-            uavDesc.Texture2DArray.ArraySize = resDesc.DepthOrArraySize;
+            uavDesc.Texture2DArray.ArraySize = resDesc.DepthOrArraySize - arraySlice;
             uavDesc.Texture2DArray.FirstArraySlice = arraySlice;
             uavDesc.Texture2DArray.PlaneSlice = planeSlice;
             uavDesc.Texture2DArray.MipSlice = mipSlice;
@@ -135,7 +135,7 @@ D3D12_UNORDERED_ACCESS_VIEW_DESC GetUAVDesc(const D3D12_RESOURCE_DESC& resDesc, 
         break;
     case D3D12_RESOURCE_DIMENSION_TEXTURE3D:
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
-        uavDesc.Texture3D.WSize = resDesc.DepthOrArraySize;
+        uavDesc.Texture3D.WSize = resDesc.DepthOrArraySize - arraySlice;
         uavDesc.Texture3D.FirstWSlice = arraySlice;
         uavDesc.Texture3D.MipSlice = mipSlice;
         break;
