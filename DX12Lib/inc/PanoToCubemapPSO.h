@@ -1,42 +1,38 @@
-/**
- * Pipeline state object for generating mip maps.
- */
 #pragma once
 
 #include "RootSignature.h"
 #include "DescriptorAllocation.h"
 
-#include <d3d12.h>
-#include <DirectXMath.h>
-#include <wrl.h>
+#include <cstdint>
 
-
-struct alignas( 16 ) GenerateMipsCB
+// Struct used in the PanoToCubemap_CS compute shader.
+struct PanoToCubemapCB
 {
-    uint32_t SrcMipLevel;	// Texture level of source mip
-    uint32_t NumMipLevels;	// Number of OutMips to write: [1-4]
-    uint32_t SrcDimension;  // Width and height of the source texture are even or odd.
-    uint32_t Padding;       // Pad to 16 byte alignment.
-    DirectX::XMFLOAT2 TexelSize;	// 1.0 / OutMip1.Dimensions
+    // Size of the cubemap face in pixels at the current mipmap level.
+    uint32_t CubemapSize;
+    // The first mip level to generate.
+    uint32_t FirstMip;
+    // The number of mips to generate.
+    uint32_t NumMips;
 };
 
 // I don't use scoped enums to avoid the explicit cast that is required to 
-// treat these as root indices.
-namespace GenerateMips
+// treat these as root indices into the root signature.
+namespace PanoToCubemapRS
 {
     enum
     {
-        GenerateMipsCB,
-        SrcMip,
-        OutMip,
+        PanoToCubemapCB,
+        SrcTexture,
+        DstMips,
         NumRootParameters
     };
 }
 
-class GenerateMipsPSO
+class PanoToCubemapPSO
 {
 public:
-    GenerateMipsPSO();
+    PanoToCubemapPSO();
 
     const RootSignature& GetRootSignature() const
     {
@@ -57,7 +53,7 @@ private:
     RootSignature m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
     // Default (no resource) UAV's to pad the unused UAV descriptors.
-    // If generating less than 4 mip map levels, the unused mip maps
+    // If generating less than 5 mip map levels, the unused mip maps
     // need to be padded with default UAVs (to keep the DX12 runtime happy).
     DescriptorAllocation m_DefaultUAV;
 };

@@ -254,13 +254,13 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         switch ( metadata.dimension )
         {
             case TEX_DIMENSION_TEXTURE1D:
-                textureDesc = CD3DX12_RESOURCE_DESC::Tex1D( metadata.format, metadata.width, metadata.arraySize );
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex1D( metadata.format, static_cast<UINT64>( metadata.width ), static_cast<UINT16>(metadata.arraySize) );
                 break;
             case TEX_DIMENSION_TEXTURE2D:
-                textureDesc = CD3DX12_RESOURCE_DESC::Tex2D( metadata.format, metadata.width, metadata.height, metadata.arraySize );
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex2D( metadata.format, static_cast<UINT64>( metadata.width ), static_cast<UINT>(metadata.height), static_cast<UINT16>(metadata.arraySize) );
                 break;
             case TEX_DIMENSION_TEXTURE3D:
-                textureDesc = CD3DX12_RESOURCE_DESC::Tex3D( metadata.format, metadata.width, metadata.height, metadata.depth );
+                textureDesc = CD3DX12_RESOURCE_DESC::Tex3D( metadata.format, static_cast<UINT64>( metadata.width ), static_cast<UINT>(metadata.height), static_cast<UINT16>(metadata.depth) );
                 break;
             default:
                 throw std::exception( "Invalid texture dimension." );
@@ -1012,4 +1012,3 @@ void CommandList::BindDescriptorHeaps()
 
     m_d3d12CommandList->SetDescriptorHeaps( numDescriptorHeaps, descriptorHeaps );
 }
-

@@ -26,14 +26,14 @@ ConstantBuffer<PanoToCubemap> PanoToCubemapCB : register(b0);
 
 // Source texture as an equirectangular panoramic image.
 // It is assumed that the src texture has a full mipmap chain.
-Texture2D<float4> srcTexture : register(t0);
+Texture2D<float4> SrcTexture : register(t0);
 
 // Destination texture as a mip slice in the cubemap texture (texture array with 6 elements).
-RWTexture2DArray<float4> dstMip1 : register(u0);
-RWTexture2DArray<float4> dstMip2 : register(u1);
-RWTexture2DArray<float4> dstMip3 : register(u2);
-RWTexture2DArray<float4> dstMip4 : register(u3);
-RWTexture2DArray<float4> dstMip5 : register(u4);
+RWTexture2DArray<float4> DstMip1 : register(u0);
+RWTexture2DArray<float4> DstMip2 : register(u1);
+RWTexture2DArray<float4> DstMip3 : register(u2);
+RWTexture2DArray<float4> DstMip4 : register(u3);
+RWTexture2DArray<float4> DstMip5 : register(u4);
 
 // Linear repeat sampler.
 SamplerState LinearRepeatSampler : register(s0);
@@ -96,30 +96,30 @@ void main( ComputeShaderInput IN )
     // Source: http://gl.ict.usc.edu/Data/HighResProbes/
     float2 panoUV = float2(1.0f + atan2(dir.x, -dir.z), acos(dir.y)) * InvPI;
 
-    dstMip1[IN.DispatchThreadID] = srcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip);
+    DstMip1[IN.DispatchThreadID] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip);
 
     // Only perform on threads that are a multiple of 2.
     if (PanoToCubemapCB.NumMips > 1 && (IN.GroupIndex & 0x11) == 0)
     {
-        dstMip2[IN.DispatchThreadID / 2] = srcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 1);
+        DstMip2[IN.DispatchThreadID / 2] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 1);
     }
 
     // Only perform on threads that are a multiple of 4.
     if (PanoToCubemapCB.NumMips > 2 && (IN.GroupIndex & 0x33) == 0)
     {
-        dstMip3[IN.DispatchThreadID / 4] = srcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 2);
+        DstMip3[IN.DispatchThreadID / 4] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 2);
     }
 
     // Only perform on threads that are a multiple of 8.
     if (PanoToCubemapCB.NumMips > 3 && (IN.GroupIndex & 0x77) == 0)
     {
-        dstMip4[IN.DispatchThreadID / 8] = srcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 3);
+        DstMip4[IN.DispatchThreadID / 8] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 3);
     }
 
     // Only perform on threads that are a multiple of 16.
     // This should only be thread 0 in this group.
     if (PanoToCubemapCB.NumMips > 4 && (IN.GroupIndex & 0xFF) == 0)
     {
-        dstMip5[IN.DispatchThreadID / 16] = srcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 4);
+        DstMip5[IN.DispatchThreadID / 16] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 4);
     }
 }

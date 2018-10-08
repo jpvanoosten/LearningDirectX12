@@ -20,6 +20,7 @@ set( HEADER_FILES
     inc/HighResolutionClock.h
     inc/IndexBuffer.h
     inc/Mesh.h
+    inc/PanoToCubemapPSO.h
     inc/RenderTarget.h
     inc/Resource.h
     inc/ResourceStateTracker.h
@@ -51,6 +52,7 @@ set( SOURCE_FILES
     src/HighResolutionClock.cpp
     src/IndexBuffer.cpp
     src/Mesh.cpp
+    src/PanoToCubemapPSO.cpp
     src/RenderTarget.cpp
     src/Resource.cpp
     src/ResourceStateTracker.cpp
