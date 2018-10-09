@@ -441,7 +441,15 @@ void CommandList::GenerateMips_UAV( Texture& texture )
         SetCompute32BitConstants( GenerateMips::GenerateMipsCB, generateMipsCB );
 
         SetShaderResourceView( GenerateMips::SrcMip, 0, stagingTexture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1 );
-        SetUnorderedAccessView( GenerateMips::OutMip, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, srcMip + 1, mipCount );
+        for ( uint32_t mip = 0; mip < mipCount; ++mip )
+        {
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            uavDesc.Format = resourceDesc.Format;
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            uavDesc.Texture2D.MipSlice = srcMip + mip + 1;
+
+            SetUnorderedAccessView(GenerateMips::OutMip, mip, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, srcMip + mip + 1, 1, &uavDesc );
+        }
         // Pad any unused mip levels with a default UAV. Doing this keeps the DX12 runtime happy.
         if ( mipCount < 4 )
         {
@@ -666,27 +674,42 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
         CopyResource(stagingTexture, cubemapTexture );
     }
 
+    TransitionBarrier(stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
     m_d3d12CommandList->SetPipelineState(m_PanoToCubemapPSO->GetPipelineState().Get());
     SetComputeRootSignature(m_PanoToCubemapPSO->GetRootSignature());
 
     PanoToCubemapCB panoToCubemapCB;
 
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.Format = cubemapDesc.Format;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+    uavDesc.Texture2DArray.FirstArraySlice = 0;
+    uavDesc.Texture2DArray.ArraySize = 6;
+
     for (uint32_t mipSlice = 0; mipSlice < cubemapDesc.MipLevels; )
     {
+        uint32_t numMips = std::min<uint32_t>(5, cubemapDesc.MipLevels - mipSlice);
+
         panoToCubemapCB.FirstMip = mipSlice;
         panoToCubemapCB.CubemapSize = std::max<uint32_t>( static_cast<uint32_t>( cubemapDesc.Width ), cubemapDesc.Height) >> mipSlice;
         // Maximum number of mips to generate per pass is 5.
-        panoToCubemapCB.NumMips = std::min<uint32_t>(5, cubemapDesc.MipLevels - mipSlice);
+        panoToCubemapCB.NumMips = numMips;
 
         SetCompute32BitConstants(PanoToCubemapRS::PanoToCubemapCB, panoToCubemapCB);
 
         SetShaderResourceView(PanoToCubemapRS::SrcTexture, 0, panoTexture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-        SetUnorderedAccessView(PanoToCubemapRS::DstMips, 0, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, cubemapDesc.CalcSubresource(mipSlice, 0, 0), panoToCubemapCB.NumMips);
 
-        if (panoToCubemapCB.NumMips < 5)
+        for ( uint32_t mip = 0; mip < numMips; ++mip )
+        {
+            uavDesc.Texture2DArray.MipSlice = mipSlice + mip;
+            SetUnorderedAccessView(PanoToCubemapRS::DstMips, mip, stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0, 0, &uavDesc);
+        }
+
+        if (numMips < 5)
         {
             // Pad unused mips
-            m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(PanoToCubemapRS::DstMips, panoToCubemapCB.NumMips, 5 - panoToCubemapCB.NumMips, m_PanoToCubemapPSO->GetDefaultUAV());
+            m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(PanoToCubemapRS::DstMips, panoToCubemapCB.NumMips, 5 - numMips, m_PanoToCubemapPSO->GetDefaultUAV());
         }
 
         Dispatch(Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), 6 );
@@ -895,27 +918,27 @@ void CommandList::SetComputeRootSignature( const RootSignature& rootSignature )
     }
 }
 
-
 void CommandList::SetShaderResourceView( uint32_t rootParameterIndex,
                                          uint32_t descriptorOffset,
                                          const Resource& resource,
                                          D3D12_RESOURCE_STATES stateAfter,
-                                         uint32_t firstSubresource,
-                                         uint32_t numSubresources )
+                                         UINT firstSubresource,
+                                         UINT numSubresources,
+                                         const D3D12_SHADER_RESOURCE_VIEW_DESC* srv)
 {
-    if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+    if (numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
     {
-        for ( uint32_t i = 0; i < numSubresources; ++i )
+        for (uint32_t i = 0; i < numSubresources; ++i)
         {
-            TransitionBarrier( resource, stateAfter, firstSubresource + i );
+            TransitionBarrier(resource, stateAfter, firstSubresource + i);
         }
     }
     else
     {
-        TransitionBarrier( resource, stateAfter );
+        TransitionBarrier(resource, stateAfter);
     }
 
-    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors( rootParameterIndex, descriptorOffset, 1, resource.GetShaderResourceView() );
+    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors( rootParameterIndex, descriptorOffset, 1, resource.GetShaderResourceView( srv ) );
 
     TrackResource(resource);
 }
@@ -924,8 +947,9 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex,
                                           uint32_t descrptorOffset,
                                           const Resource& resource,
                                           D3D12_RESOURCE_STATES stateAfter,
-                                          uint32_t firstSubresource,
-                                          uint32_t numSubresources )
+                                          UINT firstSubresource,
+                                          UINT numSubresources,
+                                          const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav)
 {
     if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
     {
@@ -939,7 +963,7 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex,
         TransitionBarrier( resource, stateAfter );
     }
 
-    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors( rootParameterIndex, descrptorOffset, numSubresources, resource.GetUnorderedAccessView( firstSubresource ) );
+    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors( rootParameterIndex, descrptorOffset, 1, resource.GetUnorderedAccessView( uav ) );
 
     TrackResource(resource);
 }

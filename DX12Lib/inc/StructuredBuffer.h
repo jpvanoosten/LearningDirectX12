@@ -40,7 +40,7 @@ public:
     /**
      * Get the SRV for a resource.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView() const
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr) const
     {
         return m_SRV.GetDescriptorHandle();
     }
@@ -48,17 +48,11 @@ public:
     /**
      * Get the UAV for a (sub)resource.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t) const override
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr) const override
     {
         // Buffers don't have subresources.
         return m_UAV.GetDescriptorHandle();
     }
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t, uint32_t, uint32_t) const override
-    {
-        // Buffers don't have subresources.
-        return m_UAV.GetDescriptorHandle();
-    }
-
 
     const ByteAddressBuffer& GetCounterBuffer() const
     {

@@ -9,7 +9,8 @@
 
 #include "d3dx12.h"
 
-#include <map>
+#include <mutex>
+#include <unordered_map>
 
 class Texture : public Resource
 {
@@ -58,13 +59,12 @@ public:
     * @param dxgiFormat The required format of the resource. When accessing a
     * depth-stencil buffer as a shader resource view, the format will be different.
     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView() const override;
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr) const override;
 
     /**
     * Get the UAV for a (sub)resource.
     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(uint32_t subresource = 0) const override;
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice ) const override;
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr) const override;
 
     /**
      * Get the RTV for the texture.
@@ -108,8 +108,15 @@ public:
 protected:
 
 private:
-    DescriptorAllocation m_ShaderResourceView;
-    DescriptorAllocation m_UnorderedAccessViews;
+    DescriptorAllocation CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc) const;
+    DescriptorAllocation CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc) const;
+
+    mutable std::unordered_map<size_t, DescriptorAllocation> m_ShaderResourceViews;
+    mutable std::unordered_map<size_t, DescriptorAllocation> m_UnorderedAccessViews;
+
+    mutable std::mutex m_ShaderResourceViewsMutex;
+    mutable std::mutex m_UnorderedAccessViewsMutex;
+
     DescriptorAllocation m_RenderTargetView;
     DescriptorAllocation m_DepthStencilView;
 

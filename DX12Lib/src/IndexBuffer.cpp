@@ -26,17 +26,12 @@ void IndexBuffer::CreateViews(size_t numElements, size_t elementSize)
     m_IndexBufferView.Format = m_IndexFormat;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetShaderResourceView() const
+D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc) const
 {
     throw std::exception("IndexBuffer::GetShaderResourceView should not be called.");
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetUnorderedAccessView(uint32_t subresource) const
-{
-    throw std::exception("IndexBuffer::GetUnorderedAccessView should not be called.");
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetUnorderedAccessView(uint32_t mipSlice, uint32_t arraySlice, uint32_t planeSlice) const
+D3D12_CPU_DESCRIPTOR_HANDLE IndexBuffer::GetUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc) const
 {
     throw std::exception("IndexBuffer::GetUnorderedAccessView should not be called.");
 }

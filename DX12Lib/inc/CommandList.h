@@ -285,10 +285,11 @@ public:
         uint32_t rootParameterIndex,
         uint32_t descriptorOffset,
         const Resource& resource,
-        D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | 
-                                           D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-        uint32_t firstSubresource = 0,
-        uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES 
+        D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+        UINT firstSubresource = 0,
+        UINT numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+        const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr
     );
 
     /**
@@ -299,8 +300,9 @@ public:
         uint32_t descrptorOffset,
         const Resource& resource, 
         D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        uint32_t firstSubresource = 0, 
-        uint32_t numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES 
+        UINT firstSubresource = 0,
+        UINT numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+        const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav = nullptr
     );
 
     /**
