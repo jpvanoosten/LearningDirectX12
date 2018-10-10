@@ -15,11 +15,21 @@ set( SRC_FILES
     src/Tutorial4.cpp
 )
 
-set( SHADER_FILES
+set( VERTEX_SHADER_FILES 
     shaders/HDR_VS.hlsl
-    shaders/HDR_PS.hlsl
     shaders/HDRtoSDR_VS.hlsl
+    shaders/Skybox_VS.hlsl
+)
+
+set( PIXEL_SHADER_FILES
+    shaders/HDR_PS.hlsl
     shaders/HDRtoSDR_PS.hlsl
+    shaders/Skybox_PS.hlsl
+)
+
+set( SHADER_FILES
+    ${VERTEX_SHADER_FILES}
+    ${PIXEL_SHADER_FILES}
 )
 
 source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
@@ -32,12 +42,12 @@ set_source_files_properties( ${SHADER_FILES}
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( shaders/HDR_VS.hlsl shaders/HDRtoSDR_VS.hlsl
+set_source_files_properties( ${VERTEX_SHADER_FILES}
     PROPERTIES 
         VS_SHADER_TYPE Vertex
 )
 
-set_source_files_properties( shaders/HDR_PS.hlsl shaders/HDRtoSDR_PS.hlsl
+set_source_files_properties( ${PIXEL_SHADER_FILES}
     PROPERTIES 
         VS_SHADER_TYPE Pixel
 )

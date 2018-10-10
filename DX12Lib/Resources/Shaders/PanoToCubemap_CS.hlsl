@@ -57,22 +57,25 @@ static const float InvPI = 0.31830988618379067153776752674503f;
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
 void main( ComputeShaderInput IN )
 {
+    // Cubemap texture coords.
+    uint3 texCoord = IN.DispatchThreadID;
+
     // First check if the thread is in the cubemap dimensions.
-    if (IN.DispatchThreadID.x >= PanoToCubemapCB.CubemapSize || IN.DispatchThreadID.y >= PanoToCubemapCB.CubemapSize) return;
+    if (texCoord.x >= PanoToCubemapCB.CubemapSize || texCoord.y >= PanoToCubemapCB.CubemapSize) return;
 
     // Compute the worldspace direction vector from the dispatch thread ID.
-    float3 dir = float3(IN.DispatchThreadID.xy / float(PanoToCubemapCB.CubemapSize) - 0.5f, 0.0f);
+    float3 dir = float3(texCoord.xy / float(PanoToCubemapCB.CubemapSize) - 0.5f, 0.0f);
 
-    // The Z component represents the cubemap face that is being generated.
-    switch (IN.DispatchThreadID.z)
+    // The Z component of the texture coordinate represents the cubemap face that is being generated.
+    switch (texCoord.z)
     {
         // +X
         case 0:
-            dir = normalize(float3(0.5f, dir.y, dir.x));
+            dir = normalize(float3(0.5f, -dir.y, -dir.x));
             break;
         // -X
         case 1:
-            dir = normalize(float3(-0.5f, dir.y, -dir.x));
+            dir = normalize(float3(-0.5f, -dir.y, dir.x));
             break;
         // +Y
         case 2:
@@ -84,11 +87,11 @@ void main( ComputeShaderInput IN )
             break;
         // +Z
         case 4:
-            dir = normalize(float3(-dir.x, dir.y, 0.5f));
+            dir = normalize(float3(dir.x, -dir.y, 0.5f));
             break;
         // -Z
         case 5:
-            dir = normalize(float3(dir.x, dir.y, -0.5f));
+            dir = normalize(float3(-dir.x, -dir.y, -0.5f));
             break;
     }
 
@@ -96,30 +99,30 @@ void main( ComputeShaderInput IN )
     // Source: http://gl.ict.usc.edu/Data/HighResProbes/
     float2 panoUV = float2(1.0f + atan2(dir.x, -dir.z), acos(dir.y)) * InvPI;
 
-    DstMip1[IN.DispatchThreadID] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip);
+    DstMip1[texCoord] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip);
 
     // Only perform on threads that are a multiple of 2.
     if (PanoToCubemapCB.NumMips > 1 && (IN.GroupIndex & 0x11) == 0)
     {
-        DstMip2[IN.DispatchThreadID / 2] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 1);
+        DstMip2[uint3(texCoord.xy / 2, texCoord.z)] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 1);
     }
 
     // Only perform on threads that are a multiple of 4.
     if (PanoToCubemapCB.NumMips > 2 && (IN.GroupIndex & 0x33) == 0)
     {
-        DstMip3[IN.DispatchThreadID / 4] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 2);
+        DstMip3[uint3(texCoord.xy / 4, texCoord.z)] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 2);
     }
 
     // Only perform on threads that are a multiple of 8.
     if (PanoToCubemapCB.NumMips > 3 && (IN.GroupIndex & 0x77) == 0)
     {
-        DstMip4[IN.DispatchThreadID / 8] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 3);
+        DstMip4[uint3(texCoord.xy / 8, texCoord.z)] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 3);
     }
 
     // Only perform on threads that are a multiple of 16.
     // This should only be thread 0 in this group.
     if (PanoToCubemapCB.NumMips > 4 && (IN.GroupIndex & 0xFF) == 0)
     {
-        DstMip5[IN.DispatchThreadID / 16] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 4);
+        DstMip5[uint3(texCoord.xy / 16, texCoord.z)] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip + 4);
     }
 }

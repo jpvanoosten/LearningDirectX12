@@ -689,11 +689,11 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
 
     for (uint32_t mipSlice = 0; mipSlice < cubemapDesc.MipLevels; )
     {
+        // Maximum number of mips to generate per pass is 5.
         uint32_t numMips = std::min<uint32_t>(5, cubemapDesc.MipLevels - mipSlice);
 
         panoToCubemapCB.FirstMip = mipSlice;
         panoToCubemapCB.CubemapSize = std::max<uint32_t>( static_cast<uint32_t>( cubemapDesc.Width ), cubemapDesc.Height) >> mipSlice;
-        // Maximum number of mips to generate per pass is 5.
         panoToCubemapCB.NumMips = numMips;
 
         SetCompute32BitConstants(PanoToCubemapRS::PanoToCubemapCB, panoToCubemapCB);
@@ -708,13 +708,13 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
 
         if (numMips < 5)
         {
-            // Pad unused mips
+            // Pad unused mips. This keeps DX12 runtime happy.
             m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(PanoToCubemapRS::DstMips, panoToCubemapCB.NumMips, 5 - numMips, m_PanoToCubemapPSO->GetDefaultUAV());
         }
 
         Dispatch(Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), Math::DivideByMultiple(panoToCubemapCB.CubemapSize, 16), 6 );
 
-        mipSlice += panoToCubemapCB.NumMips;
+        mipSlice += numMips;
     }
 
     if (stagingResource != cubemapResource)

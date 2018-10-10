@@ -174,6 +174,10 @@ void Texture::CreateViews()
         }
     }
 
+    std::lock_guard<std::mutex> lock(m_ShaderResourceViewsMutex);
+    std::lock_guard<std::mutex> guard(m_UnorderedAccessViewsMutex);
+
+    // SRVs and UAVs will be created as needed.
     m_ShaderResourceViews.clear();
     m_UnorderedAccessViews.clear();
 }

@@ -73,6 +73,8 @@ private:
     std::unique_ptr<Mesh> m_TorusMesh;
     std::unique_ptr<Mesh> m_PlaneMesh;
 
+    std::unique_ptr<Mesh> m_SkyboxMesh;
+
     Texture m_DefaultTexture;
     Texture m_DirectXTexture;
     Texture m_EarthTexture;
@@ -84,10 +86,13 @@ private:
     RenderTarget m_HDRRenderTarget;
 
     // Root signatures
+    RootSignature m_SkyboxSignature;
     RootSignature m_HDRRootSignature;
     RootSignature m_SDRRootSignature;
 
     // Pipeline state object.
+    // Skybox PSO
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_SkyboxPipelineState;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_HDRPipelineState;
     // HDR -> SDR tone mapping PSO.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_SDRPipelineState;
