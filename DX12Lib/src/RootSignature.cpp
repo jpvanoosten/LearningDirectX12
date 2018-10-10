@@ -39,9 +39,16 @@ void RootSignature::Destroy()
 
     delete[] m_RootSignatureDesc.pParameters; 
     m_RootSignatureDesc.pParameters = nullptr;
+    m_RootSignatureDesc.NumParameters = 0;
     
     delete[] m_RootSignatureDesc.pStaticSamplers; 
     m_RootSignatureDesc.pStaticSamplers = nullptr;
+    m_RootSignatureDesc.NumStaticSamplers = 0;
+
+    m_DescriptorTableBitMask = 0;
+    m_SamplerTableBitMask = 0;
+
+    memset(m_NumDescriptorsPerTable, 0, sizeof(m_NumDescriptorsPerTable));
 }
 
 void RootSignature::SetRootSignatureDesc(
