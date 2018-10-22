@@ -28,6 +28,7 @@ set( HEADER_FILES
     inc/StructuredBuffer.h
     inc/Texture.h
     inc/TextureUsage.h
+    inc/ThreadSafeQueue.h
     inc/UploadBuffer.h
     inc/VertexBuffer.h
     inc/Window.h

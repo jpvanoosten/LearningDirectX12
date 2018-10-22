@@ -9,6 +9,7 @@
 CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
     : m_FenceValue(0)
     , m_CommandListType(type)
+    , m_bProcessInFlightCommandLists(true)
 {
     auto device = Application::Get().GetDevice();
 
@@ -36,10 +37,14 @@ CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
 
     m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(m_FenceEvent && "Failed to create fence event handle.");
+
+    m_ProcessInFlightCommandListsThread = std::thread(&CommandQueue::ProccessInFlightCommandLists, this);
 }
 
 CommandQueue::~CommandQueue()
 {
+    m_bProcessInFlightCommandLists = false;
+    m_ProcessInFlightCommandListsThread.join();
 }
 
 uint64_t CommandQueue::Signal()
@@ -58,6 +63,7 @@ void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
 {
     if (!IsFenceComplete(fenceValue))
     {
+        std::lock_guard<std::mutex> lock(m_FenceMutex);
         m_d3d12Fence->SetEventOnCompletion(fenceValue, m_FenceEvent);
         ::WaitForSingleObject(m_FenceEvent, DWORD_MAX);
     }
@@ -65,13 +71,9 @@ void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
 
 void CommandQueue::Flush()
 {
-    auto tmpQueue = m_CommandListQueue;
-    while (!tmpQueue.empty())
+    while (!m_InFlightCommandLists.Empty())
     {
-        auto entry = tmpQueue.front();
-        WaitForFenceValue(entry.fenceValue);
-        entry.commandList->ReleaseTrackedObjects();
-        tmpQueue.pop();
+        std::this_thread::yield();
     }
 
     // In case the command queue was signaled directly 
@@ -86,12 +88,9 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
     std::shared_ptr<CommandList> commandList;
 
     // If there is a command list on the queue.
-    if ( !m_CommandListQueue.empty() && IsFenceComplete(m_CommandListQueue.front().fenceValue))
+    if ( !m_AvailableCommandLists.Empty() )
     {
-        commandList = m_CommandListQueue.front().commandList;
-        m_CommandListQueue.pop();
-
-        commandList->Reset();
+        m_AvailableCommandLists.TryPop(commandList);
     }
     else
     {
@@ -157,7 +156,7 @@ uint64_t CommandQueue::ExecuteCommandLists(const std::vector<std::shared_ptr<Com
     // Queue command lists for reuse.
     for (auto commandList : toBeQueued)
     {
-        m_CommandListQueue.emplace(CommandListEntry{ fenceValue, commandList });
+        m_InFlightCommandLists.Push({ fenceValue, commandList });
     }
 
     // If there are any command lists that generate mips then execute those
@@ -180,4 +179,25 @@ void CommandQueue::Wait( const CommandQueue& other )
 Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::GetD3D12CommandQueue() const
 {
     return m_d3d12CommandQueue;
+}
+
+void CommandQueue::ProccessInFlightCommandLists()
+{
+    while (m_bProcessInFlightCommandLists)
+    {
+        CommandListEntry commandListEntry;
+        while (m_InFlightCommandLists.TryPop(commandListEntry))
+        {
+            auto fenceValue = std::get<0>(commandListEntry);
+            auto commandList = std::get<1>(commandListEntry);
+
+            WaitForFenceValue( fenceValue );
+            
+            commandList->Reset();
+
+            m_AvailableCommandLists.Push(commandList);
+        }
+
+        std::this_thread::yield();
+    }
 }
