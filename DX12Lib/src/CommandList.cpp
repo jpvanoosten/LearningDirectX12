@@ -556,7 +556,7 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
 
     // Create a copy of the original texture with UAV compatible format and UAV flags.
     auto copyDesc = resourceDesc;
-    copyDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    copyDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     copyDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     // Create the resource as a placed resource in a heap to perform an aliased copy.

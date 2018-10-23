@@ -65,13 +65,13 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto commandList = commandQueue->GetCommandList();
 
-    auto fontTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_B8G8R8A8_UNORM, width, height );
+    auto fontTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_R8G8B8A8_UNORM, width, height );
 
     m_FontTexture = std::make_unique<Texture>( fontTextureDesc );
     m_FontTexture->SetName( L"ImGui Font Texture" );
 
     size_t rowPitch, slicePitch;
-    GetSurfaceInfo( width, height, DXGI_FORMAT_B8G8R8A8_UNORM, &slicePitch, &rowPitch, nullptr );
+    GetSurfaceInfo( width, height, DXGI_FORMAT_R8G8B8A8_UNORM, &slicePitch, &rowPitch, nullptr );
 
     D3D12_SUBRESOURCE_DATA subresourceData;
     subresourceData.pData = pixelData;
