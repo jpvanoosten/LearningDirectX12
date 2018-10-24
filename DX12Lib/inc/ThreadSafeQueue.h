@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- *  Copyright(c) 2015 Jeremiah van Oosten
+ *  Copyright(c) 2018 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal

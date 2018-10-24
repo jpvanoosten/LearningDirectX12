@@ -19,6 +19,7 @@ set( HEADER_FILES
     inc/Helpers.h
     inc/HighResolutionClock.h
     inc/IndexBuffer.h
+    inc/KeyCodes.h
     inc/Mesh.h
     inc/PanoToCubemapPSO.h
     inc/RenderTarget.h

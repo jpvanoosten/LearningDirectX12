@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  *  Copyright(c) 2017 Jeremiah van Oosten
  *
@@ -27,7 +29,6 @@
  *
  *  @brief Helper functions.
  */
-#pragma once
 
 #include <cstdint>
 #include <functional>

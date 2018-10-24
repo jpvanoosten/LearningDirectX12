@@ -506,6 +506,9 @@ void CommandList::GenerateMips_BGR( Texture& texture )
         nullptr,
         IID_PPV_ARGS(&resourceCopy)
     ));
+
+    ResourceStateTracker::AddGlobalResourceState(resourceCopy.Get(), D3D12_RESOURCE_STATE_COMMON );
+
     Texture copyTexture(resourceCopy);
 
     // Create an alias for which to perform the copy operation.
@@ -523,6 +526,8 @@ void CommandList::GenerateMips_BGR( Texture& texture )
         nullptr,
         IID_PPV_ARGS(&aliasCopy)
     ));
+
+    ResourceStateTracker::AddGlobalResourceState(aliasCopy.Get(), D3D12_RESOURCE_STATE_COMMON);
 
     // Copy the original texture to the aliased texture.
     Texture aliasTexture(aliasCopy);
@@ -584,6 +589,9 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
         nullptr,
         IID_PPV_ARGS(&resourceCopy)
     ));
+
+    ResourceStateTracker::AddGlobalResourceState(resourceCopy.Get(), D3D12_RESOURCE_STATE_COMMON);
+
     Texture copyTexture(resourceCopy);
 
     // Create an alias for which to perform the copy operation.
@@ -598,6 +606,8 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
         nullptr,
         IID_PPV_ARGS(&aliasCopy)
     ));
+
+    ResourceStateTracker::AddGlobalResourceState(aliasCopy.Get(), D3D12_RESOURCE_STATE_COMMON );
 
     // Copy the original texture to the aliased texture.
     Texture aliasTexture(aliasCopy);
