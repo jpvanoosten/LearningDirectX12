@@ -35,9 +35,6 @@ CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE type)
             break;
     }
 
-    m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
-    assert(m_FenceEvent && "Failed to create fence event handle.");
-
     m_ProcessInFlightCommandListsThread = std::thread(&CommandQueue::ProccessInFlightCommandLists, this);
 }
 
@@ -63,9 +60,13 @@ void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
 {
     if (!IsFenceComplete(fenceValue))
     {
-        std::lock_guard<std::mutex> lock(m_FenceMutex);
-        m_d3d12Fence->SetEventOnCompletion(fenceValue, m_FenceEvent);
-        ::WaitForSingleObject(m_FenceEvent, DWORD_MAX);
+        auto event = ::CreateEvent( NULL, FALSE, FALSE, NULL );
+        assert( event && "Failed to create fence event handle." );
+
+        m_d3d12Fence->SetEventOnCompletion(fenceValue, event );
+        ::WaitForSingleObject( event, DWORD_MAX);
+
+        ::CloseHandle( event );
     }
 }
 
