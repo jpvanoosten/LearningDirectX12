@@ -3,8 +3,6 @@
 #include <DescriptorAllocator.h>
 #include <DescriptorAllocatorPage.h>
 
-#include <Application.h>
-
 DescriptorAllocator::DescriptorAllocator(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptorsPerHeap)
     : m_HeapType(type)
     , m_NumDescriptorsPerHeap(numDescriptorsPerHeap)
@@ -38,7 +36,7 @@ DescriptorAllocation DescriptorAllocator::Allocate(uint32_t numDescriptors)
 
         if ( allocatorPage->NumFreeHandles() == 0 )
         {
-            m_AvailableHeaps.erase( iter );
+            iter = m_AvailableHeaps.erase( iter );
         }
 
         // A valid allocation has been found.
