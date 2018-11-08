@@ -63,6 +63,7 @@ void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
         auto event = ::CreateEvent( NULL, FALSE, FALSE, NULL );
         assert( event && "Failed to create fence event handle." );
 
+        // Is this function thread safe?
         m_d3d12Fence->SetEventOnCompletion(fenceValue, event );
         ::WaitForSingleObject( event, DWORD_MAX);
 

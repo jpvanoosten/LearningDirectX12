@@ -70,6 +70,7 @@ using namespace DirectX;
 #include <map>
 #include <memory>
 #include <mutex>
+#include <new>
 #include <string>
 #include <thread>
 #include <vector>

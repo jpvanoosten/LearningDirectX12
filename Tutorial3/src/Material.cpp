@@ -1,5 +1,3 @@
-#include <DX12LibPCH.h>
-
 #include <Material.h>
 
 const Material Material::Red =

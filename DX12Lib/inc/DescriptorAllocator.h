@@ -68,8 +68,6 @@ public:
      */
     void ReleaseStaleDescriptors( uint64_t frameNumber );
 
-protected:
-
 private:
     using DescriptorHeapPool = std::vector< std::shared_ptr<DescriptorAllocatorPage> >;
 

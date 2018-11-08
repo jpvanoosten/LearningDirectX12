@@ -5,10 +5,6 @@
 #include <Application.h>
 #include <Helpers.h>
 
-#include <d3dx12.h>
-
-#include <new> // for std::bad_alloc
-
 UploadBuffer::UploadBuffer(size_t pageSize)
     : m_PageSize(pageSize)
 {}
