@@ -53,8 +53,8 @@ public:
     D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const;
 
     /**
-    * Check to see if this descriptor page has enough descriptors to allocate.
-    * Note: Due to fragmentation, allocations from this heap could still fail.
+    * Check to see if this descriptor page has a contiguous block of descriptors
+    * large enough to satisfy the request.
     */
     bool HasSpace( uint32_t numDescriptors ) const;
 

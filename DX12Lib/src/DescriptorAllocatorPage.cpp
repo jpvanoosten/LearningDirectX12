@@ -32,7 +32,7 @@ D3D12_DESCRIPTOR_HEAP_TYPE DescriptorAllocatorPage::GetHeapType() const
 
 bool DescriptorAllocatorPage::HasSpace( uint32_t numDescriptors ) const
 {
-    return numDescriptors < m_NumFreeHandles;
+    return m_FreeListBySize.lower_bound(numDescriptors) != m_FreeListBySize.end();
 }
 
 uint32_t DescriptorAllocatorPage::NumFreeHandles() const
