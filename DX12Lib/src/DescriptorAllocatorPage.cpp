@@ -1,9 +1,7 @@
 #include <DX12LibPCH.h>
 
 #include <DescriptorAllocatorPage.h>
-
 #include <Application.h>
-#include <Helpers.h>
 
 DescriptorAllocatorPage::DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )
     : m_HeapType( type )
@@ -18,7 +16,7 @@ DescriptorAllocatorPage::DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE typ
     ThrowIfFailed( device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &m_d3d12DescriptorHeap ) ) );
 
     m_BaseDescriptor = m_d3d12DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    m_DescriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize( m_HeapType );
+    m_DescriptorHandleIncrementSize = device->GetDescriptorHandleIncrementSize( m_HeapType );
     m_NumFreeHandles = m_NumDescriptorsInHeap;
 
     // Initialize the free lists
@@ -30,14 +28,14 @@ D3D12_DESCRIPTOR_HEAP_TYPE DescriptorAllocatorPage::GetHeapType() const
     return m_HeapType;
 }
 
-bool DescriptorAllocatorPage::HasSpace( uint32_t numDescriptors ) const
-{
-    return m_FreeListBySize.lower_bound(numDescriptors) != m_FreeListBySize.end();
-}
-
 uint32_t DescriptorAllocatorPage::NumFreeHandles() const
 {
     return m_NumFreeHandles;
+}
+
+bool DescriptorAllocatorPage::HasSpace( uint32_t numDescriptors ) const
+{
+    return m_FreeListBySize.lower_bound(numDescriptors) != m_FreeListBySize.end();
 }
 
 void DescriptorAllocatorPage::AddNewBlock( uint32_t offset, uint32_t numDescriptors )
@@ -69,19 +67,19 @@ DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors 
     // The size of the smallest block that satisfies the request.
     auto blockSize = smallestBlockIt->first;
 
-    // The pointer to the same entry in the FreeListByIndex map.
+    // The pointer to the same entry in the FreeListByOffset map.
     auto offsetIt = smallestBlockIt->second;
 
     // The offset in the descriptor heap.
     auto offset = offsetIt->first;
 
-    // Compute the new free block that results from splitting this block.
-    auto newOffset = offset + numDescriptors;
-    auto newSize = blockSize - numDescriptors;
-
     // Remove the existing free block from the free list.
     m_FreeListBySize.erase( smallestBlockIt );
     m_FreeListByOffset.erase( offsetIt );
+
+    // Compute the new free block that results from splitting this block.
+    auto newOffset = offset + numDescriptors;
+    auto newSize = blockSize - numDescriptors;
 
     if ( newSize > 0 )
     {
@@ -135,6 +133,11 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
         prevBlockIt = m_FreeListByOffset.end();
     }
 
+    // Add the number of free handles back to the heap.
+    // This needs to be done before merging any blocks since merging
+    // blocks modifies the numDescriptors variable.
+    m_NumFreeHandles += numDescriptors;
+
     if ( prevBlockIt != m_FreeListByOffset.end() &&
          offset == prevBlockIt->first + prevBlockIt->second.Size )
     {
@@ -173,9 +176,6 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
 
     // Add the freed block to the free list.
     AddNewBlock( offset, numDescriptors );
-
-    // Add the number of free handles back to the heap.
-    m_NumFreeHandles += numDescriptors;
 }
 
 void DescriptorAllocatorPage::ReleaseStaleDescriptors( uint64_t frameNumber )

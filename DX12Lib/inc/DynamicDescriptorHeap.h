@@ -57,7 +57,7 @@ public:
     /**
      * Stages a contiguous range of CPU visible descriptors.
      * Descriptors are not copied to the GPU visible descriptor heap until
-     * the CopyAndBindStagedDescriptors function is called.
+     * the CommitStagedDescriptors function is called.
      */
     void StageDescriptors(uint32_t rootParameterIndex, uint32_t offset, uint32_t numDescriptors, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors);
 
@@ -81,11 +81,11 @@ public:
      * This is useful for the
      *   * ID3D12GraphicsCommandList::ClearUnorderedAccessViewFloat
      *   * ID3D12GraphicsCommandList::ClearUnorderedAccessViewUint
-     * methods which which require both a CPU and GPU visible descriptors for a 
-     * UAV resource.
+     * methods which require both a CPU and GPU visible descriptors for a UAV 
+     * resource.
      * 
      * @param commandList The command list is required in case the GPU visible
-     * descriptor needs to be updated on the command list.
+     * descriptor heap needs to be updated on the command list.
      * @param cpuDescriptor The CPU descriptor to copy into a GPU visible 
      * descriptor heap.
      * 
@@ -116,7 +116,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap();
 
     // Compute the number of stale descriptors that need to be copied
-    // to GPU visible descriptor heaps.
+    // to GPU visible descriptor heap.
     uint32_t ComputeStaleDescriptorCount() const;
 
     /**
@@ -148,12 +148,6 @@ private:
         // The pointer to the descriptor in the descriptor handle cache.
         D3D12_CPU_DESCRIPTOR_HANDLE* BaseDescriptor;
     };
-
-    // Describe the type of command list being used to stage the descriptors.
-    // Valid values are:
-    //   * D3D12_COMMAND_LIST_TYPE_DIRECT
-    //   * D3D12_COMMAND_LIST_TYPE_COMPUTE
-    D3D12_COMMAND_LIST_TYPE m_CommandListType;
 
     // Describes the type of descriptors that can be staged using this 
     // dynamic descriptor heap.

@@ -5,7 +5,6 @@
 #include <Application.h>
 #include <DescriptorAllocatorPage.h>
 
-
 DescriptorAllocation::DescriptorAllocation()
     : m_Descriptor{ 0 }
     , m_NumHandles( 0 )

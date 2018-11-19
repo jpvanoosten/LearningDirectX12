@@ -110,11 +110,6 @@ private:
     // Needs to be a multimap since multiple blocks can have the same size.
     using FreeListBySize = std::multimap<SizeType, FreeListByOffset::iterator>;
 
-    struct StaleDescriptorInfo;
-    // Stale descriptors are queued for release until the frame that they were freed
-    // has completed.
-    using StaleDescriptorQueue = std::queue<StaleDescriptorInfo>;
-
     struct FreeBlockInfo
     {
         FreeBlockInfo( SizeType size )
@@ -140,6 +135,10 @@ private:
         // The frame number that the descriptor was freed.
         uint64_t FrameNumber;
     };
+
+    // Stale descriptors are queued for release until the frame that they were freed
+    // has completed.
+    using StaleDescriptorQueue = std::queue<StaleDescriptorInfo>;
 
     FreeListByOffset m_FreeListByOffset;
     FreeListBySize m_FreeListBySize;
