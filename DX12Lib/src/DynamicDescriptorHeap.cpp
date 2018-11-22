@@ -57,9 +57,13 @@ void DynamicDescriptorHeap::StageDescriptors(uint32_t rootParameterIndex, uint32
 uint32_t DynamicDescriptorHeap::ComputeStaleDescriptorCount() const
 {
     uint32_t numStaleDescriptors = 0;
-    for (int i = 0; i < MaxDescriptorTables; ++i)
+    DWORD i;
+    DWORD staleDescriptorsBitMask = m_StaleDescriptorTableBitMask;
+
+    while ( _BitScanForward( &i, staleDescriptorsBitMask ) )
     {
         numStaleDescriptors += m_DescriptorTableCache[i].NumDescriptors;
+        staleDescriptorsBitMask ^= ( 1 << i );
     }
 
     return numStaleDescriptors;
@@ -76,7 +80,7 @@ void DynamicDescriptorHeap::CommitStagedDescriptors(CommandList& commandList, st
         auto d3d12GraphicsCommandList = commandList.GetGraphicsCommandList().Get();
         assert(d3d12GraphicsCommandList != nullptr);
 
-        if (!m_CurrentDescriptorHeap || m_NumFreeHandles < numDescriptorsToCommit)
+        if ( !m_CurrentDescriptorHeap || m_NumFreeHandles < numDescriptorsToCommit )
         {
             m_CurrentDescriptorHeap = RequestDescriptorHeap();
             m_CurrentCPUDescriptorHandle = m_CurrentDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -88,7 +92,7 @@ void DynamicDescriptorHeap::CommitStagedDescriptors(CommandList& commandList, st
 
         DWORD rootIndex;
         // Scan from LSB to MSB for a bit set in staleDescriptorsBitMask
-        while (_BitScanForward(&rootIndex, m_StaleDescriptorTableBitMask))
+        while ( _BitScanForward( &rootIndex, m_StaleDescriptorTableBitMask ) )
         {
             UINT numSrcDescriptors = m_DescriptorTableCache[rootIndex].NumDescriptors;
             D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptorHandles = m_DescriptorTableCache[rootIndex].BaseDescriptor;
