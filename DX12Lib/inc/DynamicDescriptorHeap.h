@@ -170,9 +170,12 @@ private:
     // Descriptor handle cache per descriptor table.
     DescriptorTableCache m_DescriptorTableCache[MaxDescriptorTables];
 
+    // Each bit in the bit mask represents the index in the root signature
+    // that contains a descriptor table.
+    uint32_t m_DescriptorTableBitMask;
     // Each bit set in the bit mask represents a descriptor table
-    // in the root signature that needs to be bound to the command list
-    // before rendering or dispatch.
+    // in the root signature that has changed since the last time the 
+    // descriptors were copied.
     uint32_t m_StaleDescriptorTableBitMask;
 
     using DescriptorHeapPool = std::queue< Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> >;
