@@ -64,14 +64,17 @@ using namespace DirectX;
 
 // STL Headers
 #include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <chrono>
+#include <condition_variable>
 #include <filesystem>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <new>
 #include <string>
+#include <unordered_map>
 #include <thread>
 #include <vector>
 

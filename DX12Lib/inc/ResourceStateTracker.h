@@ -44,7 +44,7 @@
  *  @see https://msdn.microsoft.com/en-us/library/dn899226(v=vs.85).aspx#implicit_state_transitions
  */
 
-#include "d3dx12.h"
+#include <d3d12.h>
 
 #include <mutex>
 #include <map>
@@ -111,7 +111,7 @@ public:
     void FlushResourceBarriers(CommandList& commandList);
 
     /**
-     * Commit final resource states to the global resource state array (map)
+     * Commit final resource states to the global resource state map.
      * This must be called when the command list is closed.
      */
     void CommitFinalResourceStates();
