@@ -153,6 +153,14 @@ private:
     // An array (vector) of resource barriers.
     using ResourceBarriers = std::vector<D3D12_RESOURCE_BARRIER>;
 
+    // Pending resource transitions are committed before a command list
+    // is executed on the command queue. This guarantees that resources will
+    // be in the expected state at the beginning of a command list.
+    ResourceBarriers m_PendingResourceBarriers;
+
+    // Resource barriers that need to be committed to the command list.
+    ResourceBarriers m_ResourceBarriers;
+
     // Tracks the state of a particular resource and all of its subresources.
     struct ResourceState
     {
@@ -196,14 +204,6 @@ private:
         std::map<UINT, D3D12_RESOURCE_STATES> SubresourceState;
     };
 
-    // Pending resource transitions are committed before a command list
-    // is executed on the command queue. This guarantees that resources will
-    // be in the expected state at the beginning of a command list.
-    ResourceBarriers m_PendingResourceBarriers;
-
-    // Resource barriers that need to be committed to the command list.
-    ResourceBarriers m_ResourceBarriers;
-
     using ResourceStateMap = std::unordered_map<ID3D12Resource*, ResourceState>;
 
     // The final (last known state) of the resources within a command list.
@@ -211,10 +211,11 @@ private:
     // command list is closed but before it is executed on the command queue.
     ResourceStateMap m_FinalResourceState;
 
-    // The mutex protects shared access to the GlobalResourceState map.
-    static std::mutex ms_GlobalMutex;
-    static bool ms_IsLocked;
     // The global resource state array (map) stores the state of a resource
     // between command list execution.
     static ResourceStateMap ms_GlobalResourceState;
+
+    // The mutex protects shared access to the GlobalResourceState map.
+    static std::mutex ms_GlobalMutex;
+    static bool ms_IsLocked;
 };
