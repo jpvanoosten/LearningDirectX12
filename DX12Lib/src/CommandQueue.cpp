@@ -73,10 +73,8 @@ void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
 
 void CommandQueue::Flush()
 {
-    while (!m_InFlightCommandLists.Empty())
-    {
-        std::this_thread::yield();
-    }
+    std::unique_lock<std::mutex> lock(m_ProcessInFlightCommandListsThreadMutex);
+    m_ProcessInFlightCommandListsThreadCV.wait(lock, [this] { return m_InFlightCommandLists.Empty(); });
 
     // In case the command queue was signaled directly 
     // using the CommandQueue::Signal method then the 
@@ -185,9 +183,13 @@ Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::GetD3D12CommandQueue() 
 
 void CommandQueue::ProccessInFlightCommandLists()
 {
+    std::unique_lock<std::mutex> lock(m_ProcessInFlightCommandListsThreadMutex, std::defer_lock );
+
     while (m_bProcessInFlightCommandLists)
     {
         CommandListEntry commandListEntry;
+        
+        lock.lock();
         while (m_InFlightCommandLists.TryPop(commandListEntry))
         {
             auto fenceValue = std::get<0>(commandListEntry);
@@ -199,6 +201,8 @@ void CommandQueue::ProccessInFlightCommandLists()
 
             m_AvailableCommandLists.Push(commandList);
         }
+        lock.unlock();
+        m_ProcessInFlightCommandListsThreadCV.notify_one();
 
         std::this_thread::yield();
     }

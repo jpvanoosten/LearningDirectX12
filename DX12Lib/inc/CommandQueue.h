@@ -31,11 +31,12 @@
  */
 
 
-#include <d3d12.h>  // For ID3D12CommandQueue, ID3D12Device2, and ID3D12Fence
-#include <wrl.h>    // For Microsoft::WRL::ComPtr
+#include <d3d12.h>              // For ID3D12CommandQueue, ID3D12Device2, and ID3D12Fence
+#include <wrl.h>                // For Microsoft::WRL::ComPtr
 
-#include <atomic>   // For std::atomic_bool
-#include <cstdint>  // For uint64_t
+#include <atomic>               // For std::atomic_bool
+#include <cstdint>              // For uint64_t
+#include <condition_variable>   // For std::condition_variable.
 
 #include "ThreadSafeQueue.h"
 
@@ -85,4 +86,6 @@ private:
     // A thread to process in-flight command lists.
     std::thread m_ProcessInFlightCommandListsThread;
     std::atomic_bool m_bProcessInFlightCommandLists;
+    std::mutex m_ProcessInFlightCommandListsThreadMutex;
+    std::condition_variable m_ProcessInFlightCommandListsThreadCV;
 };
