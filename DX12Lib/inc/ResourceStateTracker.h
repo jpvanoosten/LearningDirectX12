@@ -165,9 +165,23 @@ private:
     struct ResourceState
     {
         // Initialize all of the subresources within a resource to the given state.
-        ResourceState(D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON)
+        explicit ResourceState(D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON)
             : State(state)
         {}
+
+        // Set a subresource to a particular state.
+        void SetSubresourceState(UINT subresource, D3D12_RESOURCE_STATES state)
+        {
+            if (subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+            {
+                State = state;
+                SubresourceState.clear();
+            }
+            else
+            {
+                SubresourceState[subresource] = state;
+            }
+        }
 
         // Get the state of a (sub)resource within the resource.
         // If the specified subresource is not found in the SubresourceState array (map)
@@ -182,20 +196,6 @@ private:
                 state = iter->second;
             }
             return state;
-        }
-
-        // Set a subresource to a particular state.
-        void SetSubresourceState(UINT subresource, D3D12_RESOURCE_STATES state)
-        {
-            if (subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
-            {
-                State = state;
-                SubresourceState.clear();
-            }
-            else
-            {
-                SubresourceState[subresource] = state;
-            }
         }
 
         // If the SubresourceState array (map) is empty, then the State variable defines 
