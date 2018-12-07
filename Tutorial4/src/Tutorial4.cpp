@@ -513,7 +513,7 @@ void Tutorial4::OnUpdate(UpdateEventArgs& e)
         XMStoreFloat4(&l.PositionVS, positionVS);
 
         l.Color = XMFLOAT4(LightColors[i]);
-        l.Intensity = 10.0f;
+        l.Intensity = 1.0f;
         l.Attenuation = 0.0f;
     }
 
@@ -538,7 +538,7 @@ void Tutorial4::OnUpdate(UpdateEventArgs& e)
         XMStoreFloat4(&l.DirectionVS, directionVS);
 
         l.Color = XMFLOAT4(LightColors[numPointLights + i]);
-        l.Intensity = 10.0f;
+        l.Intensity = 1.0f;
         l.SpotAngle = XMConvertToRadians(45.0f);
         l.Attenuation = 0.0f;
     }

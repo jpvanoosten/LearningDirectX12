@@ -201,18 +201,14 @@ void ResourceStateTracker::Reset()
 
 void ResourceStateTracker::Lock()
 {
-    assert(!ms_IsLocked);
-
     ms_GlobalMutex.lock();
     ms_IsLocked = true;
 }
 
 void ResourceStateTracker::Unlock()
 {
-    assert(ms_IsLocked);
-
-    ms_IsLocked = false;
     ms_GlobalMutex.unlock();
+    ms_IsLocked = false;
 }
 
 void ResourceStateTracker::AddGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state)
