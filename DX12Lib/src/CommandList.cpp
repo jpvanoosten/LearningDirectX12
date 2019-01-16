@@ -214,6 +214,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         throw std::exception( "File not found." );
     }
 
+    std::lock_guard<std::mutex> lock(ms_TextureCacheMutex);
     auto iter = ms_TextureCache.find( fileName );
     if ( iter != ms_TextureCache.end() )
     {
@@ -230,7 +231,6 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
 
         if ( filePath.extension() == ".dds" )
         {
-            // Use DDS texture loader.
             ThrowIfFailed( LoadFromDDSFile( fileName.c_str(), DDS_FLAGS_NONE, &metadata, scratchImage ) );
         }
         else if ( filePath.extension() == ".hdr" )
@@ -301,7 +301,6 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         }
 
         // Add the texture resource to the texture cache.
-        std::lock_guard<std::mutex> lock( ms_TextureCacheMutex );
         ms_TextureCache[fileName] = textureResource.Get();
     }
 }
@@ -561,7 +560,7 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
 
     // Create a copy of the original texture with UAV compatible format and UAV flags.
     auto copyDesc = resourceDesc;
-    copyDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    copyDesc.Format = Texture::GetUAVCompatableFormat(resourceDesc.Format);
     copyDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     // Create the resource as a placed resource in a heap to perform an aliased copy.
@@ -663,6 +662,7 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
     if ((cubemapDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS) == 0)
     {
         auto stagingDesc = cubemapDesc;
+        stagingDesc.Format = Texture::GetUAVCompatableFormat(cubemapDesc.Format);
         stagingDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
         ThrowIfFailed(device->CreateCommittedResource(
@@ -692,7 +692,7 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
     PanoToCubemapCB panoToCubemapCB;
 
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    uavDesc.Format = cubemapDesc.Format;
+    uavDesc.Format = Texture::GetUAVCompatableFormat(cubemapDesc.Format);
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
     uavDesc.Texture2DArray.FirstArraySlice = 0;
     uavDesc.Texture2DArray.ArraySize = 6;
