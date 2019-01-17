@@ -52,7 +52,8 @@ SamplerState LinearRepeatSampler : register(s0);
 
 // 1 / PI
 static const float InvPI = 0.31830988618379067153776752674503f;
-static const float2 InvAtan = float2(-0.1591, 0.3183);
+static const float Inv2PI = 0.15915494309189533576888376337251;
+static const float2 InvAtan = float2(Inv2PI, InvPI);
 
 [RootSignature(GenerateMips_RootSignature)]
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
@@ -64,7 +65,8 @@ void main( ComputeShaderInput IN )
     // First check if the thread is in the cubemap dimensions.
     if (texCoord.x >= PanoToCubemapCB.CubemapSize || texCoord.y >= PanoToCubemapCB.CubemapSize) return;
 
-    // Compute the worldspace direction vector from the dispatch thread ID.
+    // Map the UV coords of the cubemap face to a direction
+    // [(0,0), (1,1)] => [(-0.5,-0.5), (0.5, 0.5)] 
     float3 dir = float3(texCoord.xy / float(PanoToCubemapCB.CubemapSize) - 0.5f, 0.0f);
 
     // The Z component of the texture coordinate represents the cubemap face that is being generated.
@@ -98,7 +100,7 @@ void main( ComputeShaderInput IN )
 
     // Convert the world space direction into U,V texture coordinates in the panoramic texture.
     // Source: http://gl.ict.usc.edu/Data/HighResProbes/
-    float2 panoUV = float2(1.0f + atan2(dir.x, -dir.z), acos(dir.y)) * InvAtan;
+    float2 panoUV = float2(atan2(-dir.x, -dir.z), acos(dir.y)) * InvAtan;
 
     DstMip1[texCoord] = SrcTexture.SampleLevel(LinearRepeatSampler, panoUV, PanoToCubemapCB.FirstMip);
 
