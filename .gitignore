@@ -14,3 +14,4 @@ CTestTestfile.cmake
 /Data/Shaders/*.cso
 *.cso
 imgui.ini
+*.nsight-gfxproj

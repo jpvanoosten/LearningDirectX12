@@ -96,6 +96,9 @@ protected:
 
     virtual void OnResize(ResizeEventArgs& e) override; 
 
+
+    void OnGUI();
+
 private:
     // Some geometry to render.
     std::unique_ptr<Mesh> m_CubeMesh;

@@ -444,6 +444,8 @@ void Tutorial4::UnloadContent()
 {
 }
 
+static double g_FPS = 0.0;
+
 void Tutorial4::OnUpdate(UpdateEventArgs& e)
 {
     static uint64_t frameCount = 0;
@@ -456,10 +458,10 @@ void Tutorial4::OnUpdate(UpdateEventArgs& e)
 
     if (totalTime > 1.0)
     {
-        double fps = frameCount / totalTime;
+        g_FPS = frameCount / totalTime;
 
         char buffer[512];
-        sprintf_s(buffer, "FPS: %f\n", fps);
+        sprintf_s(buffer, "FPS: %f\n", g_FPS);
         OutputDebugStringA(buffer);
 
         frameCount = 0;
@@ -610,20 +612,55 @@ float ACESFilmicTonemappingPlot(void*, int index)
         ACESFilmicTonemapping(g_TonemapParameters.LinearWhite, g_TonemapParameters.A, g_TonemapParameters.B, g_TonemapParameters.C, g_TonemapParameters.D, g_TonemapParameters.E, g_TonemapParameters.F);
 }
 
-void OnGUI()
+void Tutorial4::OnGUI()
 {
     static bool showDemoWindow = false;
     static bool showOptions = true;
 
     if (ImGui::BeginMainMenuBar())
     {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Exit", "Esc"))
+            {
+                Application::Get().Quit();
+            }
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("View"))
         {
-            ImGui::MenuItem("Demo Window", nullptr, &showDemoWindow);
-            ImGui::MenuItem("Tonemapping Options", nullptr, &showOptions);
+            ImGui::MenuItem("ImGui Demo", nullptr, &showDemoWindow);
+            ImGui::MenuItem("Tonemapping", nullptr, &showOptions);
 
             ImGui::EndMenu();
         }
+
+        if (ImGui::BeginMenu("Options") )
+        {
+            bool vSync = m_pWindow->IsVSync();
+            if (ImGui::MenuItem("V-Sync", "V", &vSync))
+            {
+                m_pWindow->SetVSync(vSync);
+            }
+
+            bool fullscreen = m_pWindow->IsFullScreen();
+            if (ImGui::MenuItem("Full screen", "Alt+Enter", &fullscreen) )
+            {
+                m_pWindow->SetFullscreen(fullscreen);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        {
+            char buffer[256];
+            sprintf(buffer, "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
+            auto textSize = ImGui::CalcTextSize(buffer);
+            ImGui::SameLine(ImGui::GetWindowWidth() - textSize.x);
+            ImGui::Text(buffer);
+        }
+
         ImGui::EndMainMenuBar();
     }
 

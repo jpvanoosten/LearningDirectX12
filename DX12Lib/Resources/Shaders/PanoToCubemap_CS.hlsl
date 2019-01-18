@@ -52,8 +52,36 @@ SamplerState LinearRepeatSampler : register(s0);
 
 // 1 / PI
 static const float InvPI = 0.31830988618379067153776752674503f;
-static const float Inv2PI = 0.15915494309189533576888376337251;
+static const float Inv2PI = 0.15915494309189533576888376337251f;
 static const float2 InvAtan = float2(Inv2PI, InvPI);
+
+// Transform from dispatch ID to cubemap face direction
+static const float3x3 RotateUV[6] = {
+    // +X
+    float3x3(  0,  0,  1,
+               0, -1,  0,
+              -1,  0,  0 ),
+    // -X
+    float3x3(  0,  0, -1,
+               0, -1,  0,
+               1,  0,  0 ),
+    // +Y
+    float3x3(  1,  0,  0,
+               0,  0,  1,
+               0,  1,  0 ),
+    // -Y
+    float3x3(  1,  0,  0,
+               0,  0, -1,
+               0, -1,  0 ),
+    // +Z
+    float3x3(  1,  0,  0,
+               0, -1,  0,
+               0,  0,  1 ),
+    // -Z
+    float3x3( -1,  0,  0,
+               0, -1,  0,
+               0,  0, -1 )
+};
 
 [RootSignature(GenerateMips_RootSignature)]
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
@@ -65,37 +93,12 @@ void main( ComputeShaderInput IN )
     // First check if the thread is in the cubemap dimensions.
     if (texCoord.x >= PanoToCubemapCB.CubemapSize || texCoord.y >= PanoToCubemapCB.CubemapSize) return;
 
-    // Compute the worldspace direction vector from the dispatch thread ID.
-    float3 dir = float3(texCoord.xy / float(PanoToCubemapCB.CubemapSize) - 0.5f, 0.0f);
+    // Map the UV coords of the cubemap face to a direction
+    // [(0, 0), (1, 1)] => [(-0.5, -0.5), (0.5, 0.5)]
+    float3 dir = float3( texCoord.xy / float(PanoToCubemapCB.CubemapSize) - 0.5f, 0.5f);
 
-    // The Z component of the texture coordinate represents the cubemap face that is being generated.
-    switch (texCoord.z)
-    {
-        // +X
-        case 0:
-            dir = normalize(float3(0.5f, -dir.y, -dir.x));
-            break;
-        // -X
-        case 1:
-            dir = normalize(float3(-0.5f, -dir.y, dir.x));
-            break;
-        // +Y
-        case 2:
-            dir = normalize(float3(dir.x, 0.5f, dir.y));
-            break;
-        // -Y
-        case 3:
-            dir = normalize(float3(dir.x, -0.5f, -dir.y));
-            break;
-        // +Z
-        case 4:
-            dir = normalize(float3(dir.x, -dir.y, 0.5f));
-            break;
-        // -Z
-        case 5:
-            dir = normalize(float3(-dir.x, -dir.y, -0.5f));
-            break;
-    }
+    // Rotate to cubemap face
+    dir = normalize( mul( RotateUV[texCoord.z], dir ) );
 
     // Convert the world space direction into U,V texture coordinates in the panoramic texture.
     // Source: http://gl.ict.usc.edu/Data/HighResProbes/
