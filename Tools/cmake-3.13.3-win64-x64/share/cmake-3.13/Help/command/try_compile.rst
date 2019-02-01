@@ -10,7 +10,7 @@ Try building some code.
 Try Compiling Whole Projects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: cmake
 
   try_compile(RESULT_VAR <bindir> <srcdir>
               <projectName> [<targetName>] [CMAKE_FLAGS <flags>...]
@@ -28,11 +28,12 @@ below for the meaning of other options.
 Try Compiling Source Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
+.. code-block:: cmake
 
   try_compile(RESULT_VAR <bindir> <srcfile|SOURCES srcfile...>
               [CMAKE_FLAGS <flags>...]
               [COMPILE_DEFINITIONS <defs>...]
+              [LINK_OPTIONS <options>...]
               [LINK_LIBRARIES <libs>...]
               [OUTPUT_VARIABLE <var>]
               [COPY_FILE <fileName> [COPY_FILE_ERROR <var>]]
@@ -47,12 +48,15 @@ returned in ``RESULT_VAR``.
 
 In this form the user need only supply one or more source files that include a
 definition for ``main``.  CMake will create a ``CMakeLists.txt`` file to build
-the source(s) as an executable that looks something like this::
+the source(s) as an executable that looks something like this:
+
+.. code-block:: cmake
 
   add_definitions(<expanded COMPILE_DEFINITIONS from caller>)
   include_directories(${INCLUDE_DIRECTORIES})
   link_directories(${LINK_DIRECTORIES})
   add_executable(cmTryCompileExec <srcfile>...)
+  target_link_options(cmTryCompileExec PRIVATE <LINK_OPTIONS from caller>)
   target_link_libraries(cmTryCompileExec ${LINK_LIBRARIES})
 
 The options are:
@@ -65,7 +69,7 @@ The options are:
   are used.
 
 ``COMPILE_DEFINITIONS <defs>...``
-  Specify ``-Ddefinition`` arguments to pass to ``add_definitions``
+  Specify ``-Ddefinition`` arguments to pass to :command:`add_definitions`
   in the generated test project.
 
 ``COPY_FILE <fileName>``
@@ -82,6 +86,11 @@ The options are:
 
   If this option is specified, any ``-DLINK_LIBRARIES=...`` value
   given to the ``CMAKE_FLAGS`` option will be ignored.
+
+``LINK_OPTIONS <options>...``
+  Specify link step options to pass to :command:`target_link_options` or
+  to :prop_tgt:`STATIC_LIBRARY_OPTIONS` target property in the generated
+  project, depending of the :variable:`CMAKE_TRY_COMPILE_TARGET_TYPE` variable.
 
 ``OUTPUT_VARIABLE <var>``
   Store the output from the build process the given variable.
@@ -125,7 +134,13 @@ default values:
 If :policy:`CMP0056` is set to ``NEW``, then
 :variable:`CMAKE_EXE_LINKER_FLAGS` is passed in as well.
 
-The current setting of :policy:`CMP0065` is set in the generated project.
+If :policy:`CMP0083` is set to ``NEW``, then in order to obtain correct
+behavior at link time, the ``check_pie_supported()`` command from the
+:module:`CheckPIESupported` module must be called before using the
+:command:`try_compile` command.
+
+The current settings of :policy:`CMP0065` and :policy:`CMP0083` are set in the
+generated project.
 
 Set the :variable:`CMAKE_TRY_COMPILE_CONFIGURATION` variable to choose
 a build configuration.
@@ -153,3 +168,6 @@ then the language standard variables are honored:
 
 Their values are used to set the corresponding target properties in
 the generated project (unless overridden by an explicit option).
+
+For the :generator:`Green Hills MULTI` generator the GHS toolset and target
+system customization cache variables are also propagated into the test project.

@@ -12,8 +12,8 @@ FOR /F "usebackq delims=." %%i IN (`%VSWHERE% -latest -prerelease -requires Micr
 )
 
 IF %VS_VERSION% == 16 (
-    SET CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
-    SET CMAKE_BINARY_DIR=build_vs2019	
+    SET CMAKE_GENERATOR="Visual Studio 16 2019"
+    SET CMAKE_BINARY_DIR=build_vs2019
 ) ELSE IF %VS_VERSION% == 15 (
     SET CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
     SET CMAKE_BINARY_DIR=build_vs2017
