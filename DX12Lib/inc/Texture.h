@@ -83,9 +83,6 @@ public:
 
     /**
     * Get the SRV for a resource.
-    *
-    * @param dxgiFormat The required format of the resource. When accessing a
-    * depth-stencil buffer as a shader resource view, the format will be different.
     */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr) const override;
 

@@ -206,8 +206,6 @@ void CommandList::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY primitiveTopology
 
 void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fileName, TextureUsage textureUsage )
 {
-    auto device = Application::Get().GetDevice();
-
     fs::path filePath( fileName );
     if ( !fs::exists( filePath ) )
     {
@@ -227,7 +225,6 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
     {
         TexMetadata metadata;
         ScratchImage scratchImage;
-        Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
 
         if ( filePath.extension() == ".dds" )
         {
@@ -268,7 +265,10 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
                 break;
         }
 
-        ThrowIfFailed( device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ),
+        auto device = Application::Get().GetDevice();
+        Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
+
+		ThrowIfFailed(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
                                                         D3D12_HEAP_FLAG_NONE,
                                                         &textureDesc,
                                                         D3D12_RESOURCE_STATE_COMMON,
