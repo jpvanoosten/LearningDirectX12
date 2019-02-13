@@ -753,6 +753,7 @@ void CommandList::CopyTextureSubresource( Texture& texture, uint32_t firstSubres
 {
     auto device = Application::Get().GetDevice();
     auto destinationResource = texture.GetD3D12Resource();
+
     if ( destinationResource )
     {
         // Resource must be in the copy-destination state.
