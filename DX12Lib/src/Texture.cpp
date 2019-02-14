@@ -156,18 +156,14 @@ void Texture::CreateViews()
 
         CD3DX12_RESOURCE_DESC desc(m_d3d12Resource->GetDesc());
 
-        D3D12_FEATURE_DATA_FORMAT_SUPPORT formatSupport;
-        formatSupport.Format = desc.Format;
-        ThrowIfFailed(device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &formatSupport, sizeof(D3D12_FEATURE_DATA_FORMAT_SUPPORT) ));
-
         if ((desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) != 0 &&
-            CheckRTVSupport(formatSupport.Support1) )
+            CheckRTVSupport())
         {
             m_RenderTargetView = app.AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
             device->CreateRenderTargetView(m_d3d12Resource.Get(), nullptr, m_RenderTargetView.GetDescriptorHandle());
         }
         if ((desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) != 0 &&
-            CheckDSVSupport(formatSupport.Support1))
+            CheckDSVSupport())
         {
             m_DepthStencilView = app.AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
             device->CreateDepthStencilView(m_d3d12Resource.Get(), nullptr, m_DepthStencilView.GetDescriptorHandle());

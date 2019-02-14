@@ -329,10 +329,10 @@ void CommandList::GenerateMips( Texture& texture )
     // Currently, only 2D textures are supported.
     if ( d3d12ResourceDesc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || d3d12ResourceDesc.DepthOrArraySize != 1 )
     {
-        throw std::exception( "Generate Mips only supports 2D Textures." );
+        throw std::exception( "GenerateMips only supported for 2D Textures." );
     }
 
-    if ( Texture::IsUAVCompatibleFormat( d3d12ResourceDesc.Format ) )
+    if ( texture.CheckUAVSupport() )
     {
         GenerateMips_UAV( texture );
     }
