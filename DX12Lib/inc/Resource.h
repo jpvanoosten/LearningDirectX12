@@ -48,7 +48,7 @@ public:
     Resource(Resource&& copy);
 
     Resource& operator=( const Resource& other);
-    Resource& operator=(Resource&& other);
+    Resource& operator=(Resource&& other) noexcept;
 
     virtual ~Resource();
 
@@ -111,9 +111,22 @@ public:
      */
     virtual void Reset();
 
+    /**
+     * Check if the resource format supports a specific feature.
+     */
+    bool CheckFormatSupport(D3D12_FORMAT_SUPPORT1 formatSupport) const;
+    bool CheckFormatSupport(D3D12_FORMAT_SUPPORT2 formatSupport) const;
+    
+
 protected:
     // The underlying D3D12 resource.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource;
+    D3D12_FEATURE_DATA_FORMAT_SUPPORT m_FormatSupport;
     std::unique_ptr<D3D12_CLEAR_VALUE> m_d3d12ClearValue;
     std::wstring m_ResourceName;
+
+private:
+    // Check the format support and populate the m_FormatSupport structure.
+    void CheckFeatureSupport();
+    
 };
