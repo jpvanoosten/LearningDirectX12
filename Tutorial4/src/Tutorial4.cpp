@@ -655,7 +655,7 @@ void Tutorial4::OnGUI()
 
         {
             char buffer[256];
-            sprintf(buffer, "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
+            sprintf_s(buffer, 256, "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
             auto textSize = ImGui::CalcTextSize(buffer);
             ImGui::SameLine(ImGui::GetWindowWidth() - textSize.x);
             ImGui::Text(buffer);

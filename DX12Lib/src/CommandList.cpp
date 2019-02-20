@@ -46,40 +46,29 @@ CommandList::CommandList( D3D12_COMMAND_LIST_TYPE type )
 CommandList::~CommandList()
 {}
 
-void CommandList::TransitionBarrier( const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subResource, bool flushBarriers )
+void CommandList::TransitionBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource, bool flushBarriers)
 {
-    auto d3d12Resource = resource.GetD3D12Resource();
-    if ( d3d12Resource )
+    if (resource)
     {
         // The "before" state is not important. It will be resolved by the resource state tracker.
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition( d3d12Resource.Get(), D3D12_RESOURCE_STATE_COMMON, stateAfter, subResource );
-        m_ResourceStateTracker->ResourceBarrier( barrier );
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), D3D12_RESOURCE_STATE_COMMON, stateAfter, subresource);
+        m_ResourceStateTracker->ResourceBarrier(barrier);
     }
 
-    if ( flushBarriers )
+    if (flushBarriers)
     {
         FlushResourceBarriers();
     }
 }
 
-void CommandList::UAVBarrier( const Resource& resource, bool flushBarriers )
+void CommandList::TransitionBarrier( const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource, bool flushBarriers )
 {
-    auto d3d12Resource = resource.GetD3D12Resource();
-    auto barrier = CD3DX12_RESOURCE_BARRIER::UAV( d3d12Resource.Get() );
-
-    m_ResourceStateTracker->ResourceBarrier( barrier );
-
-    if ( flushBarriers )
-    {
-        FlushResourceBarriers();
-    }
+    TransitionBarrier(resource.GetD3D12Resource(), stateAfter, subresource, flushBarriers);
 }
 
-void CommandList::AliasingBarrier(const Resource& beforeResource, const Resource& afterResource, bool flushBarriers)
+void CommandList::UAVBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, bool flushBarriers)
 {
-    auto d3d12BeforeResource = beforeResource.GetD3D12Resource();
-    auto d3d12AfterResource = afterResource.GetD3D12Resource();
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Aliasing(d3d12BeforeResource.Get(), d3d12AfterResource.Get() );
+    auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(resource.Get());
 
     m_ResourceStateTracker->ResourceBarrier(barrier);
 
@@ -89,22 +78,49 @@ void CommandList::AliasingBarrier(const Resource& beforeResource, const Resource
     }
 }
 
+void CommandList::UAVBarrier( const Resource& resource, bool flushBarriers )
+{
+    UAVBarrier(resource.GetD3D12Resource());
+}
+
+void CommandList::AliasingBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> beforeResource, Microsoft::WRL::ComPtr<ID3D12Resource> afterResource, bool flushBarriers )
+{
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Aliasing(beforeResource.Get(), afterResource.Get());
+
+    m_ResourceStateTracker->ResourceBarrier(barrier);
+
+    if (flushBarriers)
+    {
+        FlushResourceBarriers();
+    }
+}
+
+void CommandList::AliasingBarrier(const Resource& beforeResource, const Resource& afterResource, bool flushBarriers)
+{
+    AliasingBarrier(beforeResource.GetD3D12Resource(), afterResource.GetD3D12Resource());
+}
+
 void CommandList::FlushResourceBarriers()
 {
     m_ResourceStateTracker->FlushResourceBarriers( *this );
 }
 
-void CommandList::CopyResource( Resource& dstRes, const Resource& srcRes )
+void CommandList::CopyResource(Microsoft::WRL::ComPtr<ID3D12Resource> dstRes, Microsoft::WRL::ComPtr<ID3D12Resource> srcRes)
 {
-    TransitionBarrier( dstRes, D3D12_RESOURCE_STATE_COPY_DEST );
-    TransitionBarrier( srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE );
+    TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_COPY_DEST);
+    TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
     FlushResourceBarriers();
 
-    m_d3d12CommandList->CopyResource( dstRes.GetD3D12Resource().Get(), srcRes.GetD3D12Resource().Get() );
+    m_d3d12CommandList->CopyResource(dstRes.Get(), srcRes.Get());
 
     TrackResource(dstRes);
     TrackResource(srcRes);
+}
+
+void CommandList::CopyResource( Resource& dstRes, const Resource& srcRes )
+{
+    CopyResource(dstRes.GetD3D12Resource(), srcRes.GetD3D12Resource());
 }
 
 void CommandList::ResolveSubresource( Resource& dstRes, const Resource& srcRes, uint32_t dstSubresource, uint32_t srcSubresource )
@@ -169,9 +185,9 @@ void CommandList::CopyBuffer( Buffer& buffer, size_t numElements, size_t element
                 uploadResource.Get(), 0, 0, 1, &subresourceData );
 
             // Add references to resources so they stay in scope until the command list is reset.
-            TrackObject(uploadResource);
+            TrackResource(uploadResource);
         }
-        TrackObject(d3d12Resource);
+        TrackResource(d3d12Resource);
     }
 
     buffer.SetD3D12Resource( d3d12Resource );
@@ -575,7 +591,7 @@ void CommandList::GenerateMips_BGR( Texture& texture )
     CopyResource(texture, aliasTexture);
 
     // Track resource to ensure the lifetime.
-    TrackObject(heap);
+    TrackResource(heap);
     TrackResource(copyTexture);
     TrackResource(aliasTexture);
     TrackResource(texture);
@@ -655,7 +671,7 @@ void CommandList::GenerateMips_sRGB( Texture& texture )
     CopyResource(texture, aliasTexture);
 
     // Track resource to ensure the lifetime.
-    TrackObject(heap);
+    TrackResource(heap);
     TrackResource(copyTexture);
     TrackResource(aliasTexture);
     TrackResource(texture);
@@ -806,8 +822,8 @@ void CommandList::CopyTextureSubresource( Texture& texture, uint32_t firstSubres
 
         UpdateSubresources( m_d3d12CommandList.Get(), destinationResource.Get(), intermediateResource.Get(), 0, firstSubresource, numSubresources, subresourceData );
 
-        TrackObject(intermediateResource);
-        TrackObject(destinationResource);
+        TrackResource(intermediateResource);
+        TrackResource(destinationResource);
     }
 }
 
@@ -921,7 +937,7 @@ void CommandList::SetPipelineState(Microsoft::WRL::ComPtr<ID3D12PipelineState> p
 {
     m_d3d12CommandList->SetPipelineState(pipelineState.Get());
 
-    TrackObject(pipelineState);
+    TrackResource(pipelineState);
 }
 
 void CommandList::SetGraphicsRootSignature( const RootSignature& rootSignature )
@@ -938,7 +954,7 @@ void CommandList::SetGraphicsRootSignature( const RootSignature& rootSignature )
 
         m_d3d12CommandList->SetGraphicsRootSignature(m_RootSignature);
 
-        TrackObject(m_RootSignature);
+        TrackResource(m_RootSignature);
     }
 }
 
@@ -956,7 +972,7 @@ void CommandList::SetComputeRootSignature( const RootSignature& rootSignature )
 
         m_d3d12CommandList->SetComputeRootSignature(m_RootSignature);
 
-        TrackObject(m_RootSignature);
+        TrackResource(m_RootSignature);
     }
 }
 
@@ -1127,14 +1143,14 @@ void CommandList::Reset()
     m_ComputeCommandList = nullptr;
 }
 
-void CommandList::TrackObject(Microsoft::WRL::ComPtr<ID3D12Object> object)
+void CommandList::TrackResource(Microsoft::WRL::ComPtr<ID3D12Object> object)
 {
     m_TrackedObjects.push_back(object);
 }
 
 void CommandList::TrackResource(const Resource& res)
 {
-    TrackObject(res.GetD3D12Resource());
+    TrackResource(res.GetD3D12Resource());
 }
 
 void CommandList::ReleaseTrackedObjects()

@@ -89,6 +89,7 @@ public:
      * @param flushBarriers Force flush any barriers. Resource barriers need to be flushed before a command (draw, dispatch, or copy) that expects the resource to be in a particular state can run.
      */
     void TransitionBarrier( const Resource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false );
+    void TransitionBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false);
 
     /**
      * Add a UAV barrier to ensure that any writes to a resource have completed
@@ -100,6 +101,7 @@ public:
      * to be in a particular state can run.
      */
     void UAVBarrier( const Resource& resource, bool flushBarriers = false );
+    void UAVBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, bool flushBarriers = false);
 
     /**
      * Add an aliasing barrier to indicate a transition between usages of two 
@@ -109,6 +111,7 @@ public:
      * @param afterResource The resource that will occupy the space in the heap.
      */
     void AliasingBarrier( const Resource& beforeResource, const Resource& afterResource, bool flushBarriers = false );
+    void AliasingBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> beforeResource, Microsoft::WRL::ComPtr<ID3D12Resource> afterResource, bool flushBarriers = false);
 
     /**
      * Flush any barriers that have been pushed to the command list.
@@ -119,6 +122,7 @@ public:
 	 * Copy resources.
 	 */
 	void CopyResource(Resource& dstRes, const Resource& srcRes);
+    void CopyResource(Microsoft::WRL::ComPtr<ID3D12Resource> dstRes, Microsoft::WRL::ComPtr<ID3D12Resource> srcRes);
 
     /**
      * Resolve a multisampled resource into a non-multisampled resource.
@@ -391,7 +395,7 @@ public:
 protected:
 
 private:
-    void TrackObject(Microsoft::WRL::ComPtr<ID3D12Object> object);
+    void TrackResource(Microsoft::WRL::ComPtr<ID3D12Object> object);
     void TrackResource(const Resource& res);
 
     // Generate mips for UAV compatible textures.
