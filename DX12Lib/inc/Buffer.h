@@ -35,8 +35,8 @@
 class Buffer : public Resource
 {
 public:
-    Buffer(const std::wstring& name = L"");
-    Buffer( const D3D12_RESOURCE_DESC& resDesc,
+    explicit Buffer(const std::wstring& name = L"");
+    explicit Buffer( const D3D12_RESOURCE_DESC& resDesc,
         size_t numElements, size_t elementSize,
         const std::wstring& name = L"" );
     
