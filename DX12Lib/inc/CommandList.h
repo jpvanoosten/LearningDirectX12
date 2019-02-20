@@ -31,7 +31,6 @@
  *  The CommandList class provides additional functionality that makes working with
  *  DirectX 12 applications easier.
  */
-
 #include "TextureUsage.h"
 
 #include <d3d12.h>
@@ -399,11 +398,7 @@ private:
     void TrackResource(const Resource& res);
 
     // Generate mips for UAV compatible textures.
-    void GenerateMips_UAV(Texture& texture);
-    // Generate mips for BGR textures.
-    void GenerateMips_BGR(Texture& texture);
-    // Generate mips for sRGB textures.
-    void GenerateMips_sRGB(Texture& texture);
+    void GenerateMips_UAV( Texture& texture );
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
     void CopyBuffer( Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
