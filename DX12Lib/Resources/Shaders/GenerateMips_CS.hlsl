@@ -79,22 +79,42 @@ float4 LoadColor( uint Index )
     return float4( gs_R[Index], gs_G[Index], gs_B[Index], gs_A[Index] );
 }
 
-float3 LinearToSRGB( float3 x )
+float3 ConvertToLinear(float3 x)
 {
-    // This is exactly the sRGB curve
-    //return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
-
-    // This is cheaper but nearly equivalent
-    return x < 0.0031308 ? 12.92 * x : 1.13005 * sqrt( abs( x - 0.00228 ) ) - 0.13448 * x + 0.005719;
+    return x < 0.04045f ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
 }
 
-float4 PackColor( float4 Linear )
+float3 ConvertToSRGB( float3 x )
 {
-#if defined(CONVERT_TO_SRGB)
-    return float4( LinearToSRGB( Linear.rgb ), Linear.a );
-#else
-    return Linear;
-#endif
+    return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
+}
+
+// Convert sRGB to linear before blending if the original source is an sRGB 
+// texture.
+float4 UnpackColor(float4 x)
+{
+    if (IsSRGB)
+    {
+        return float4(ConvertToLinear(x.rgb), x.a);
+    }
+    else
+    {
+        return x;
+    }
+}
+
+// Convert linear color to sRGB before storing if the original source is 
+// an sRGB texture.
+float4 PackColor(float4 x)
+{
+    if (IsSRGB)
+    {
+        return float4(ConvertToSRGB(x.rgb), x.a);
+    }
+    else
+    {
+        return x;
+    }
 }
 
 [RootSignature( GenerateMips_RootSignature )]
@@ -122,7 +142,7 @@ void main( ComputeShaderInput IN )
         {
             float2 UV = TexelSize * ( IN.DispatchThreadID.xy + 0.5 );
 
-            Src1 = SrcMip.SampleLevel( LinearClampSampler, UV, SrcMipLevel );
+            Src1 = UnpackColor(SrcMip.SampleLevel( LinearClampSampler, UV, SrcMipLevel ));
         }
         break;
         case WIDTH_ODD_HEIGHT_EVEN:
@@ -133,8 +153,8 @@ void main( ComputeShaderInput IN )
             float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.25, 0.5 ) );
             float2 Off = TexelSize * float2( 0.5, 0.0 );
 
-            Src1 = 0.5 * ( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) +
-                           SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) );
+            Src1 = 0.5 * ( UnpackColor(SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) ) +
+                           UnpackColor(SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) ) );
         }
         break;
         case WIDTH_EVEN_HEIGHT_ODD:
@@ -145,8 +165,8 @@ void main( ComputeShaderInput IN )
             float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.5, 0.25 ) );
             float2 Off = TexelSize * float2( 0.0, 0.5 );
 
-            Src1 = 0.5 * ( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) +
-                           SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) );
+            Src1 = 0.5 * ( UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) ) +
+                           UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) ) );
         }
         break;
         case WIDTH_HEIGHT_ODD:
@@ -157,10 +177,10 @@ void main( ComputeShaderInput IN )
             float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.25, 0.25 ) );
             float2 Off = TexelSize * 0.5;
 
-            Src1 = SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel );
-            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, 0.0   ), SrcMipLevel );
-            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( 0.0,   Off.y ), SrcMipLevel );
-            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, Off.y ), SrcMipLevel );
+            Src1 =  UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) );
+            Src1 += UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, 0.0   ), SrcMipLevel ) );
+            Src1 += UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( 0.0,   Off.y ), SrcMipLevel ) );
+            Src1 += UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, Off.y ), SrcMipLevel ) );
             Src1 *= 0.25;
         }
         break;
