@@ -409,7 +409,7 @@ void CommandList::GenerateMips( Texture& texture )
         CopyResource(uavResource, resource);
     }
 
-    GenerateMips_UAV(Texture(uavResource, texture.GetTextureUsage()));
+    GenerateMips_UAV(Texture(uavResource, texture.GetTextureUsage()), resourceDesc.Format );
 
     if (uavResource != resource)
     {
@@ -418,7 +418,7 @@ void CommandList::GenerateMips( Texture& texture )
     }
 }
 
-void CommandList::GenerateMips_UAV( Texture& texture )
+void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
 {
     if ( !m_GenerateMipsPSO )
     {
@@ -429,6 +429,7 @@ void CommandList::GenerateMips_UAV( Texture& texture )
     SetComputeRootSignature( m_GenerateMipsPSO->GetRootSignature() );
 
     GenerateMipsCB generateMipsCB;
+    generateMipsCB.IsSRGB = Texture::IsSRGBFormat(format);
 
     auto resource = texture.GetD3D12Resource();
     auto resourceDesc = resource->GetDesc();

@@ -31,7 +31,7 @@ cbuffer GenerateMipsCB : register( b0 )
     uint SrcMipLevel;	// Texture level of source mip
     uint NumMipLevels;	// Number of OutMips to write: [1-4]
     uint SrcDimension;  // Width and height of the source texture are even or odd.
-    uint Padding;       // Pad to 16 byte alignment.
+    bool IsSRGB;        // Must apply gamma correction to sRGB textures.
     float2 TexelSize;	// 1.0 / OutMip1.Dimensions
 }
 
