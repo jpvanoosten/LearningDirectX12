@@ -79,11 +79,13 @@ float4 LoadColor( uint Index )
     return float4( gs_R[Index], gs_G[Index], gs_B[Index], gs_A[Index] );
 }
 
+// Source: https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
 float3 ConvertToLinear(float3 x)
 {
     return x < 0.04045f ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
 }
 
+// Source: https://en.wikipedia.org/wiki/SRGB#The_forward_transformation_(CIE_XYZ_to_sRGB)
 float3 ConvertToSRGB( float3 x )
 {
     return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
