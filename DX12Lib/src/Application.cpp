@@ -347,10 +347,10 @@ int Application::Run(std::shared_ptr<Game> pGame)
     MSG msg = { 0 };
     while (msg.message != WM_QUIT)
     {
-        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+        if (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            DispatchMessageW(&msg);
         }
     }
 

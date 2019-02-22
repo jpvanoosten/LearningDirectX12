@@ -386,6 +386,7 @@ void CommandList::GenerateMips( Texture& texture )
     // the mipmap chain.
     if ( !texture.CheckUAVSupport() || ( resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) == 0 )
     {
+        // TODO: Use an aliased resource to perform the copy.
         auto uavDesc = resourceDesc;
 
         uavDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -434,6 +435,13 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
     auto resource = texture.GetD3D12Resource();
     auto resourceDesc = resource->GetDesc();
 
+    // Create an SRV that uses the format of the original texture.
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = format;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;  // Only 2D textures are supported (this was checked in the calling function).
+    srvDesc.Texture2D.MipLevels = resourceDesc.MipLevels;
+
     for ( uint32_t srcMip = 0; srcMip < resourceDesc.MipLevels - 1u; )
     {
         uint64_t srcWidth = resourceDesc.Width >> srcMip;
@@ -477,7 +485,8 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
 
         SetCompute32BitConstants( GenerateMips::GenerateMipsCB, generateMipsCB );
 
-        SetShaderResourceView( GenerateMips::SrcMip, 0, texture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1 );
+        SetShaderResourceView( GenerateMips::SrcMip, 0, texture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1, &srvDesc );
+
         for ( uint32_t mip = 0; mip < mipCount; ++mip )
         {
             D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
