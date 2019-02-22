@@ -89,20 +89,6 @@ float3 ConvertToSRGB( float3 x )
     return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
 }
 
-// Convert sRGB to linear before blending if the original source is an sRGB 
-// texture.
-float4 UnpackColor(float4 x)
-{
-    if (IsSRGB)
-    {
-        return float4(ConvertToLinear(x.rgb), x.a);
-    }
-    else
-    {
-        return x;
-    }
-}
-
 // Convert linear color to sRGB before storing if the original source is 
 // an sRGB texture.
 float4 PackColor(float4 x)
@@ -142,7 +128,7 @@ void main( ComputeShaderInput IN )
         {
             float2 UV = TexelSize * ( IN.DispatchThreadID.xy + 0.5 );
 
-            Src1 = UnpackColor(SrcMip.SampleLevel( LinearClampSampler, UV, SrcMipLevel ));
+            Src1 = SrcMip.SampleLevel( LinearClampSampler, UV, SrcMipLevel );
         }
         break;
         case WIDTH_ODD_HEIGHT_EVEN:
@@ -153,8 +139,8 @@ void main( ComputeShaderInput IN )
             float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.25, 0.5 ) );
             float2 Off = TexelSize * float2( 0.5, 0.0 );
 
-            Src1 = 0.5 * ( UnpackColor(SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) ) +
-                           UnpackColor(SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) ) );
+            Src1 = 0.5 * ( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) +
+                           SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) );
         }
         break;
         case WIDTH_EVEN_HEIGHT_ODD:
@@ -165,8 +151,8 @@ void main( ComputeShaderInput IN )
             float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.5, 0.25 ) );
             float2 Off = TexelSize * float2( 0.0, 0.5 );
 
-            Src1 = 0.5 * ( UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) ) +
-                           UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) ) );
+            Src1 = 0.5 * ( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) +
+                           SrcMip.SampleLevel( LinearClampSampler, UV1 + Off, SrcMipLevel ) );
         }
         break;
         case WIDTH_HEIGHT_ODD:
@@ -177,10 +163,10 @@ void main( ComputeShaderInput IN )
             float2 UV1 = TexelSize * ( IN.DispatchThreadID.xy + float2( 0.25, 0.25 ) );
             float2 Off = TexelSize * 0.5;
 
-            Src1 =  UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel ) );
-            Src1 += UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, 0.0   ), SrcMipLevel ) );
-            Src1 += UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( 0.0,   Off.y ), SrcMipLevel ) );
-            Src1 += UnpackColor( SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, Off.y ), SrcMipLevel ) );
+            Src1 =  SrcMip.SampleLevel( LinearClampSampler, UV1, SrcMipLevel );
+            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, 0.0   ), SrcMipLevel );
+            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( 0.0,   Off.y ), SrcMipLevel );
+            Src1 += SrcMip.SampleLevel( LinearClampSampler, UV1 + float2( Off.x, Off.y ), SrcMipLevel );
             Src1 *= 0.25;
         }
         break;
