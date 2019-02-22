@@ -27,6 +27,34 @@ void RenderTarget::Resize( uint32_t width, uint32_t height )
     }
 }
 
+D3D12_VIEWPORT RenderTarget::GetViewport(DirectX::XMFLOAT2 scale, DirectX::XMFLOAT2 bias, float minDepth, float maxDepth) const
+{
+    UINT64 width = 0;
+    UINT height = 0;
+
+    for (int i = AttachmentPoint::Color0; i <= AttachmentPoint::Color7; ++i)
+    {
+        const Texture& texture = m_Textures[i];
+        if (texture.IsValid())
+        {
+            auto desc = texture.GetD3D12ResourceDesc();
+            width = std::max(width, desc.Width);
+            height = std::max(height, desc.Height);
+        }
+    }
+
+    D3D12_VIEWPORT viewport = {
+        (width * bias.x),       // TopLeftX
+        (height * bias.y),      // TopLeftY
+        (width * scale.x),      // Width
+        (height * scale.y),     // Height
+        minDepth,               // MinDepth
+        maxDepth                // MaxDepth
+    };
+
+    return viewport;
+}
+
 // Get a list of the textures attached to the render target.
 // This method is primarily used by the CommandList when binding the
 // render target to the output merger stage of the rendering pipeline.

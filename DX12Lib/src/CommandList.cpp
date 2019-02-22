@@ -273,11 +273,6 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
                 scratchImage ) );
         }
 
-        if ( textureUsage == TextureUsage::Albedo )
-        {
-            metadata.format = MakeSRGB( metadata.format );
-        }
-
         D3D12_RESOURCE_DESC textureDesc = {};
         switch ( metadata.dimension )
         {
@@ -379,43 +374,100 @@ void CommandList::GenerateMips( Texture& texture )
         throw std::exception( "GenerateMips only supported for 2D Textures." );
     }
 
-    auto uavResource = resource;
+    ComPtr<ID3D12Resource> uavResource = resource;
+    // Create an alias of the original resource.
+    // This is done to perform a GPU copy of resources with different formats.
+    // BGR -> RGB texture copies will fail GPU validation unless performed 
+    // through an alias of the BRG resource in a placed heap.
+    ComPtr<ID3D12Resource> aliasResource;
 
     // If the passed-in resource does not allow for UAV access
     // then create a staging resource that is used to generate
     // the mipmap chain.
     if ( !texture.CheckUAVSupport() || ( resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) == 0 )
     {
-        // TODO: Use an aliased resource to perform the copy.
-        auto uavDesc = resourceDesc;
+        auto device = Application::Get().GetDevice();
 
+        // Describe a UAV compatible resource that is used to perform
+        // mipmapping of the original texture.
+        auto uavDesc = resourceDesc;
         uavDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
         uavDesc.Format = Texture::GetUAVCompatableFormat(resourceDesc.Format);
 
-        auto device = Application::Get().GetDevice();
+        D3D12_RESOURCE_DESC resourceDescs[] = {
+            resourceDesc,
+            uavDesc
+        };
 
-        ThrowIfFailed(device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-            D3D12_HEAP_FLAG_NONE,
-            &uavDesc,
-            D3D12_RESOURCE_STATE_COPY_DEST,
+        // Create a heap that is large enough to store a copy of the original resource.
+        auto allocationInfo = device->GetResourceAllocationInfo(0, _countof(resourceDescs), resourceDescs );
+
+        D3D12_HEAP_DESC heapDesc = {};
+        heapDesc.SizeInBytes = allocationInfo.SizeInBytes;
+        heapDesc.Alignment = allocationInfo.Alignment;
+        heapDesc.Flags = D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES;
+        heapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+        heapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+        heapDesc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+        ComPtr<ID3D12Heap> heap;
+        ThrowIfFailed(device->CreateHeap(&heapDesc, IID_PPV_ARGS(&heap)));
+
+        // Make sure the heap does not go out of scope until the command list
+        // is finished executing on the command queue.
+        TrackResource(heap);
+
+        // Create a placed resource that matches the description of the 
+        // original resource. This resource is used to copy the original 
+        // texture to the UAV compatible resource.
+        ThrowIfFailed(device->CreatePlacedResource(
+            heap.Get(),
+            0,
+            &resourceDesc,
+            D3D12_RESOURCE_STATE_COMMON,
             nullptr,
-            IID_PPV_ARGS(&uavResource)
-
+            IID_PPV_ARGS(&aliasResource)
         ));
 
-        ResourceStateTracker::AddGlobalResourceState(uavResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+        ResourceStateTracker::AddGlobalResourceState(aliasResource.Get(), D3D12_RESOURCE_STATE_COMMON);
+        // Ensure the scope of the alias resource.
+        TrackResource(aliasResource);
 
-        // Copy the original resource to the UAV compatible resource.
-        CopyResource(uavResource, resource);
+        // Create a UAV compatible resource in the same heap as the alias
+        // resource.
+        ThrowIfFailed(device->CreatePlacedResource(
+            heap.Get(),
+            0,
+            &uavDesc,
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr,
+            IID_PPV_ARGS(&uavResource)
+        ));
+
+        ResourceStateTracker::AddGlobalResourceState(uavResource.Get(), D3D12_RESOURCE_STATE_COMMON);
+        // Ensure the scope of the UAV compatible resource.
+        TrackResource(uavResource);
+
+        // Add an aliasing barrier for the alias resource.
+        AliasingBarrier(nullptr, aliasResource);
+
+        // Copy the original resource to the alias resource.
+        // This ensures GPU validation.
+        CopyResource(aliasResource, resource);
+
+        // Add an aliasing barrier for the UAV compatible resource.
+        AliasingBarrier(aliasResource, uavResource);
+
     }
 
+    // Generate mips with the UAV compatible resource.
     GenerateMips_UAV(Texture(uavResource, texture.GetTextureUsage()), resourceDesc.Format );
 
-    if (uavResource != resource)
+    if (aliasResource)
     {
-        // Copy the UAV compatible resource back to the original resource.
-        CopyResource(resource, uavResource);
+        AliasingBarrier(uavResource, aliasResource);
+        // Copy the alias resource back to the original resource.
+        CopyResource(resource, aliasResource);
     }
 }
 

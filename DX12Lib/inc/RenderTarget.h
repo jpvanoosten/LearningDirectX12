@@ -35,7 +35,7 @@
  *  (0 - 7) and one depth-stencil buffer.
  */
 
-
+#include <DirectXMath.h> // For XMFLOAT2
 #include <cstdint>
 #include <vector>
 
@@ -76,6 +76,12 @@ public:
 
     // Resize all of the textures associated with the render target.
     void Resize( uint32_t width, uint32_t height );
+
+    // Get a viewport for this render target.
+    // The scale and bias parameters can be used to specify a split-screen
+    // viewport (the bias parameter is normalized in the range [0...1]).
+    // By default, a fullscreen viewport is returned.
+    D3D12_VIEWPORT GetViewport(DirectX::XMFLOAT2 scale = { 1.0f, 1.0f }, DirectX::XMFLOAT2 bias = { 0.0f, 0.0f }, float minDepth = 0.0f, float maxDepth = 1.0f) const;
 
     // Get a list of the textures attached to the render target.
     // This method is primarily used by the CommandList when binding the

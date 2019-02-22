@@ -31,7 +31,6 @@ struct TonemapParameters
     float Gamma;
 };
 
-
 ConstantBuffer<TonemapParameters> TonemapParametersCB : register( b0 );
 
 // Linear Tonemapping
@@ -70,14 +69,14 @@ float3 ACESFilmic( float3 x, float A, float B, float C, float D, float E, float 
 
 Texture2DMS<float4> HDRTexture : register( t0 );
 
-float4 main( float4 Position : SV_Position ) : SV_Target0
+float4 main( float2 TexCoord : TEXCOORD ) : SV_Target0
 {
     // First perform a MSAA resolve.
     uint width, height, numSamples;
     HDRTexture.GetDimensions( width, height, numSamples );
 
     float3 HDR = (float3)0;
-    int2 texCoord = ( int2 )Position.xy;
+    int2 texCoord = TexCoord * int2(width, height);
     for ( uint i = 0; i < numSamples; ++i )
     {
         HDR += HDRTexture.Load( texCoord, i ).rgb;
@@ -105,6 +104,7 @@ float4 main( float4 Position : SV_Position ) : SV_Target0
               ACESFilmic(TonemapParametersCB.LinearWhite, TonemapParametersCB.A, TonemapParametersCB.B, TonemapParametersCB.C, TonemapParametersCB.D, TonemapParametersCB.E, TonemapParametersCB.F );
         break;
     }
+
 
     return float4( pow( abs(SDR), 1.0f / TonemapParametersCB.Gamma), 1 );
 }

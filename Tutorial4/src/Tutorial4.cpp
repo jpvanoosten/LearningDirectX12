@@ -136,7 +136,6 @@ XMMATRIX XM_CALLCONV LookAtMatrix(FXMVECTOR Position, FXMVECTOR Direction, FXMVE
 Tutorial4::Tutorial4(const std::wstring& name, int width, int height, bool vSync)
     : super(name, width, height, vSync)
     , m_ScissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
-    , m_Viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
     , m_Forward(0)
     , m_Backward(0)
     , m_Left(0)
@@ -149,6 +148,7 @@ Tutorial4::Tutorial4(const std::wstring& name, int width, int height, bool vSync
     , m_Shift(false)
     , m_Width(0)
     , m_Height(0)
+    , m_RenderScale(1.0f)
 {
 
     XMVECTOR cameraPos = XMVectorSet(0, 5, -20, 1);
@@ -156,11 +156,13 @@ Tutorial4::Tutorial4(const std::wstring& name, int width, int height, bool vSync
     XMVECTOR cameraUp = XMVectorSet(0, 1, 0, 0);
 
     m_Camera.set_LookAt(cameraPos, cameraTarget, cameraUp);
+    m_Camera.set_Projection(45.0f, width / (float)height, 0.1f, 100.0f);
 
     m_pAlignedCameraData = (CameraData*)_aligned_malloc(sizeof(CameraData), 16);
 
     m_pAlignedCameraData->m_InitialCamPos = m_Camera.get_Translation();
     m_pAlignedCameraData->m_InitialCamRot = m_Camera.get_Rotation();
+    m_pAlignedCameraData->m_InitialFov = m_Camera.get_FoV();
 }
 
 Tutorial4::~Tutorial4()
@@ -189,7 +191,7 @@ bool Tutorial4::LoadContent()
     commandList->LoadTextureFromFile(m_EarthTexture, L"Assets/Textures/earth.dds");
     commandList->LoadTextureFromFile(m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg");
     commandList->LoadTextureFromFile(m_GraceCathedralTexture, L"Assets/Textures/grace-new.hdr");
-    //commandList->LoadTextureFromFile(m_GraceCathedralTexture, L"Assets/Textures/UV_Test_Pattern.png");
+//    commandList->LoadTextureFromFile(m_GraceCathedralTexture, L"Assets/Textures/UV_Test_Pattern.png");
 
     // Create a cubemap for the HDR panorama.
     auto cubemapDesc = m_GraceCathedralTexture.GetD3D12ResourceDesc();
@@ -421,6 +423,11 @@ bool Tutorial4::LoadContent()
     return true;
 }
 
+void Tutorial4::RescaleHDRRenderTarget(float scale)
+{
+    m_HDRRenderTarget.Resize(m_Width * scale, m_Height * scale);
+}
+
 void Tutorial4::OnResize(ResizeEventArgs& e)
 {
     super::OnResize(e);
@@ -430,13 +437,11 @@ void Tutorial4::OnResize(ResizeEventArgs& e)
         m_Width = std::max(1, e.Width);
         m_Height = std::max(1, e.Height);
 
+        float fov = m_Camera.get_FoV();
         float aspectRatio = m_Width / (float)m_Height;
-        m_Camera.set_Projection(45.0f, aspectRatio, 0.1f, 100.0f);
+        m_Camera.set_Projection(fov, aspectRatio, 0.1f, 100.0f);
 
-        m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f,
-            static_cast<float>(m_Width), static_cast<float>(m_Height));
-
-        m_HDRRenderTarget.Resize(m_Width, m_Height);
+        RescaleHDRRenderTarget(m_RenderScale);
     }
 }
 
@@ -653,11 +658,21 @@ void Tutorial4::OnGUI()
             ImGui::EndMenu();
         }
 
+        char buffer[256];
+        sprintf_s(buffer, 256, "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
+        auto fpsTextSize = ImGui::CalcTextSize(buffer);
+
+        float renderScale = m_RenderScale;
+        ImGui::PushItemWidth(300.0f);
+        ImGui::SliderFloat("Resolution Scale", &renderScale, 0.1f, 1.0f);
+        if (renderScale != m_RenderScale)
         {
-            char buffer[256];
-            sprintf_s(buffer, 256, "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
-            auto textSize = ImGui::CalcTextSize(buffer);
-            ImGui::SameLine(ImGui::GetWindowWidth() - textSize.x);
+            m_RenderScale = renderScale;
+            RescaleHDRRenderTarget(m_RenderScale);
+        }
+
+        {
+            ImGui::SameLine(ImGui::GetWindowWidth() - fpsTextSize.x);
             ImGui::Text(buffer);
         }
 
@@ -755,10 +770,9 @@ void Tutorial4::OnRender(RenderEventArgs& e)
         commandList->ClearDepthStencilTexture(m_HDRRenderTarget.GetTexture(AttachmentPoint::DepthStencil), D3D12_CLEAR_FLAG_DEPTH);
     }
 
-    commandList->SetViewport(m_Viewport);
-    commandList->SetScissorRect(m_ScissorRect);
-
     commandList->SetRenderTarget(m_HDRRenderTarget);
+    commandList->SetViewport(m_HDRRenderTarget.GetViewport());
+    commandList->SetScissorRect(m_ScissorRect);
 
     // Render the skybox.
     {
@@ -954,6 +968,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
 
     // Perform HDR -> SDR tonemapping directly to the Window's render target.
     commandList->SetRenderTarget(m_pWindow->GetRenderTarget());
+    commandList->SetViewport(m_pWindow->GetRenderTarget().GetViewport());
     commandList->SetPipelineState(m_SDRPipelineState);
     commandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList->SetGraphicsRootSignature(m_SDRRootSignature);
@@ -1002,6 +1017,7 @@ void Tutorial4::OnKeyPressed(KeyEventArgs& e)
             // Reset camera transform
             m_Camera.set_Translation(m_pAlignedCameraData->m_InitialCamPos);
             m_Camera.set_Rotation(m_pAlignedCameraData->m_InitialCamRot);
+            m_Camera.set_FoV(m_pAlignedCameraData->m_InitialFov);
             m_Pitch = 0.0f;
             m_Yaw = 0.0f;
             break;

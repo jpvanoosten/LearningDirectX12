@@ -93,7 +93,7 @@ protected:
      */
     virtual void OnMouseWheel(MouseWheelEventArgs& e) override;
 
-
+    void RescaleHDRRenderTarget(float scale);
     virtual void OnResize(ResizeEventArgs& e) override; 
 
 
@@ -131,7 +131,6 @@ private:
     // HDR -> SDR tone mapping PSO.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_SDRPipelineState;
 
-    D3D12_VIEWPORT m_Viewport;
     D3D12_RECT m_ScissorRect;
 
     Camera m_Camera;
@@ -139,6 +138,7 @@ private:
     {
         DirectX::XMVECTOR m_InitialCamPos;
         DirectX::XMVECTOR m_InitialCamRot;
+        float m_InitialFov;
     };
     CameraData* m_pAlignedCameraData;
 
@@ -160,6 +160,9 @@ private:
 
     int m_Width;
     int m_Height;
+
+    // Scale the HDR render target to a fraction of the window size.
+    float m_RenderScale;
 
     // Define some lights.
     std::vector<PointLight> m_PointLights;
