@@ -67,21 +67,12 @@ float3 ACESFilmic( float3 x, float A, float B, float C, float D, float E, float 
     return ( ( x * ( A * x + C * B ) + D * E ) / ( x * ( A * x + B ) + D * F ) ) - ( E / F );
 }
 
-Texture2DMS<float4> HDRTexture : register( t0 );
+Texture2D<float3> HDRTexture : register( t0 );
+SamplerState LinearClampSampler : register(s0);
 
 float4 main( float2 TexCoord : TEXCOORD ) : SV_Target0
 {
-    // First perform a MSAA resolve.
-    uint width, height, numSamples;
-    HDRTexture.GetDimensions( width, height, numSamples );
-
-    float3 HDR = (float3)0;
-    int2 texCoord = TexCoord * int2(width, height);
-    for ( uint i = 0; i < numSamples; ++i )
-    {
-        HDR += HDRTexture.Load( texCoord, i ).rgb;
-    }
-    HDR /= numSamples;
+    float3 HDR = HDRTexture.SampleLevel(LinearClampSampler, TexCoord, 0);
 
     // Add exposure to HDR result.
     HDR *= exp2( TonemapParametersCB.Exposure );

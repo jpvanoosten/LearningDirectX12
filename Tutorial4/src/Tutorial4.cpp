@@ -207,15 +207,10 @@ bool Tutorial4::LoadContent()
     DXGI_FORMAT HDRFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
     DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
-    // Check the best multisample quality level that can be used for the given texture format.
-    DXGI_SAMPLE_DESC sampleDesc = Application::Get().GetMultisampleQualityLevels(HDRFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT);
-
     // Create an off-screen render target with a single color buffer and a depth buffer.
-    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(HDRFormat,
-        m_Width, m_Height,
-        1, 1,
-        sampleDesc.Count, sampleDesc.Quality,
-        D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D(HDRFormat, m_Width, m_Height);
+    colorDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
     D3D12_CLEAR_VALUE colorClearValue;
     colorClearValue.Format = colorDesc.Format;
     colorClearValue.Color[0] = 0.4f;
@@ -228,11 +223,9 @@ bool Tutorial4::LoadContent()
         L"HDR Texture");
 
     // Create a depth buffer for the HDR render target.
-    auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthBufferFormat,
-        m_Width, m_Height,
-        1, 1,
-        sampleDesc.Count, sampleDesc.Quality,
-        D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+    auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthBufferFormat, m_Width, m_Height);
+    depthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
     D3D12_CLEAR_VALUE depthClearValue;
     depthClearValue.Format = depthDesc.Format;
     depthClearValue.DepthStencil = { 1.0f, 0 };
@@ -294,7 +287,6 @@ bool Tutorial4::LoadContent()
             CD3DX12_PIPELINE_STATE_STREAM_VS VS;
             CD3DX12_PIPELINE_STATE_STREAM_PS PS;
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
-            CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
         } skyboxPipelineStateStream;
 
         skyboxPipelineStateStream.pRootSignature = m_SkyboxSignature.GetRootSignature().Get();
@@ -303,7 +295,6 @@ bool Tutorial4::LoadContent()
         skyboxPipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vs.Get());
         skyboxPipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(ps.Get());
         skyboxPipelineStateStream.RTVFormats = m_HDRRenderTarget.GetRenderTargetFormats();
-        skyboxPipelineStateStream.SampleDesc = sampleDesc;
 
         D3D12_PIPELINE_STATE_STREAM_DESC skyboxPipelineStateStreamDesc = {
             sizeof(SkyboxPipelineState), &skyboxPipelineStateStream
@@ -354,7 +345,6 @@ bool Tutorial4::LoadContent()
             CD3DX12_PIPELINE_STATE_STREAM_PS PS;
             CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
-            CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
         } hdrPipelineStateStream;
 
         hdrPipelineStateStream.pRootSignature = m_HDRRootSignature.GetRootSignature().Get();
@@ -364,7 +354,6 @@ bool Tutorial4::LoadContent()
         hdrPipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(ps.Get());
         hdrPipelineStateStream.DSVFormat = m_HDRRenderTarget.GetDepthStencilFormat();
         hdrPipelineStateStream.RTVFormats = m_HDRRenderTarget.GetRenderTargetFormats();
-        hdrPipelineStateStream.SampleDesc = sampleDesc;
 
         D3D12_PIPELINE_STATE_STREAM_DESC hdrPipelineStateStreamDesc = {
             sizeof(HDRPipelineStateStream), &hdrPipelineStateStream
@@ -380,8 +369,10 @@ bool Tutorial4::LoadContent()
         rootParameters[0].InitAsConstants(sizeof(TonemapParameters) / 4, 0, 0, D3D12_SHADER_VISIBILITY_PIXEL);
         rootParameters[1].InitAsDescriptorTable(1, &descriptorRange, D3D12_SHADER_VISIBILITY_PIXEL);
 
+        CD3DX12_STATIC_SAMPLER_DESC linearClampsSampler(0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
+
         CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
-        rootSignatureDescription.Init_1_1(2, rootParameters);
+        rootSignatureDescription.Init_1_1(2, rootParameters, 1, &linearClampsSampler );
 
         m_SDRRootSignature.SetRootSignatureDesc(rootSignatureDescription.Desc_1_1, featureData.HighestVersion);
 
@@ -670,8 +661,10 @@ void Tutorial4::OnGUI()
             // Output a slider to scale the resolution of the HDR render target.
             float renderScale = m_RenderScale;
             ImGui::PushItemWidth(300.0f);
-            ImGui::SliderFloat("Resolution Scale", &renderScale, 0.1f, 1.0f);
-            // Clamp to a sane range.
+            ImGui::SliderFloat("Resolution Scale", &renderScale, 0.1f, 2.0f);
+            // Using Ctrl+Click on the slider, the user can set values outside of the 
+            // specified range. Make sure to clamp to a sane range to avoid creating
+            // giant render targets.
             renderScale = clamp(renderScale, 0.0f, 2.0f);
 
             // Output current resolution of render target.

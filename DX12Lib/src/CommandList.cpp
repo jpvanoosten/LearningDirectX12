@@ -388,14 +388,19 @@ void CommandList::GenerateMips( Texture& texture )
     {
         auto device = Application::Get().GetDevice();
 
+        // Describe an alias resource that is used to copy the original texture.
+        auto aliasDesc = resourceDesc;
+        // Placed resources can't be render targets or depth-stencil views.
+        aliasDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        aliasDesc.Flags &= ~(D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+
         // Describe a UAV compatible resource that is used to perform
         // mipmapping of the original texture.
-        auto uavDesc = resourceDesc;
-        uavDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        auto uavDesc = aliasDesc;   // The flags for the UAV description must match that of the alias description.
         uavDesc.Format = Texture::GetUAVCompatableFormat(resourceDesc.Format);
 
         D3D12_RESOURCE_DESC resourceDescs[] = {
-            resourceDesc,
+            aliasDesc,
             uavDesc
         };
 
@@ -423,7 +428,7 @@ void CommandList::GenerateMips( Texture& texture )
         ThrowIfFailed(device->CreatePlacedResource(
             heap.Get(),
             0,
-            &resourceDesc,
+            &aliasDesc,
             D3D12_RESOURCE_STATE_COMMON,
             nullptr,
             IID_PPV_ARGS(&aliasResource)
@@ -454,6 +459,7 @@ void CommandList::GenerateMips( Texture& texture )
         // Copy the original resource to the alias resource.
         // This ensures GPU validation.
         CopyResource(aliasResource, resource);
+        
 
         // Add an aliasing barrier for the UAV compatible resource.
         AliasingBarrier(aliasResource, uavResource);
@@ -522,8 +528,8 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
         // Maximum number of mips to generate is 4.
         mipCount = std::min<DWORD>( 4, mipCount + 1 );
         // Clamp to total number of mips left over.
-        mipCount = ( srcMip + mipCount ) > resourceDesc.MipLevels ? 
-            resourceDesc.MipLevels - srcMip : mipCount;
+        mipCount = ( srcMip + mipCount ) >= resourceDesc.MipLevels ? 
+            resourceDesc.MipLevels - srcMip - 1 : mipCount;
 
         // Dimensions should not reduce to 0.
         // This can happen if the width and height are not the same.
