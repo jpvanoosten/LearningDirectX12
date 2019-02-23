@@ -425,7 +425,13 @@ bool Tutorial4::LoadContent()
 
 void Tutorial4::RescaleHDRRenderTarget(float scale)
 {
-    m_HDRRenderTarget.Resize(m_Width * scale, m_Height * scale);
+    uint32_t width = static_cast<uint32_t>(m_Width * scale);
+    uint32_t height = static_cast<uint32_t>(m_Height * scale);
+    
+    width = clamp<uint32_t>(width, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION);
+    height = clamp<uint32_t>(height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION);
+
+    m_HDRRenderTarget.Resize(width, height);
 }
 
 void Tutorial4::OnResize(ResizeEventArgs& e)
@@ -659,19 +665,32 @@ void Tutorial4::OnGUI()
         }
 
         char buffer[256];
-        sprintf_s(buffer, 256, "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
-        auto fpsTextSize = ImGui::CalcTextSize(buffer);
 
-        float renderScale = m_RenderScale;
-        ImGui::PushItemWidth(300.0f);
-        ImGui::SliderFloat("Resolution Scale", &renderScale, 0.1f, 1.0f);
-        if (renderScale != m_RenderScale)
         {
-            m_RenderScale = renderScale;
-            RescaleHDRRenderTarget(m_RenderScale);
+            // Output a slider to scale the resolution of the HDR render target.
+            float renderScale = m_RenderScale;
+            ImGui::PushItemWidth(300.0f);
+            ImGui::SliderFloat("Resolution Scale", &renderScale, 0.1f, 1.0f);
+            // Clamp to a sane range.
+            renderScale = clamp(renderScale, 0.0f, 2.0f);
+
+            // Output current resolution of render target.
+            auto size = m_HDRRenderTarget.GetSize();
+            ImGui::SameLine();
+            sprintf_s(buffer, _countof(buffer), "(%ux%u)", size.x, size.y);
+            ImGui::Text(buffer);
+
+            // Resize HDR render target if the scale changed.
+            if (renderScale != m_RenderScale)
+            {
+                m_RenderScale = renderScale;
+                RescaleHDRRenderTarget(m_RenderScale);
+            }
         }
 
         {
+            sprintf_s(buffer, _countof(buffer), "FPS: %.2f (%.2f ms)  ", g_FPS, 1.0 / g_FPS * 1000.0);
+            auto fpsTextSize = ImGui::CalcTextSize(buffer);
             ImGui::SameLine(ImGui::GetWindowWidth() - fpsTextSize.x);
             ImGui::Text(buffer);
         }

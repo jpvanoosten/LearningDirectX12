@@ -75,7 +75,11 @@ public:
     const Texture& GetTexture( AttachmentPoint attachmentPoint ) const;
 
     // Resize all of the textures associated with the render target.
-    void Resize( uint32_t width, uint32_t height );
+    void Resize(DirectX::XMUINT2 size);
+    void Resize(uint32_t width, uint32_t height);
+    DirectX::XMUINT2 GetSize() const;
+    uint32_t GetWidth() const;
+    uint32_t GetHeight() const;
 
     // Get a viewport for this render target.
     // The scale and bias parameters can be used to specify a split-screen
@@ -99,4 +103,5 @@ public:
 private:
     
     std::vector<Texture> m_Textures;
+    DirectX::XMUINT2 m_Size;
 };
