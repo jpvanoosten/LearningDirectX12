@@ -519,7 +519,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
             // For printable characters, the next message will be WM_CHAR.
             // This message contains the character code we need to send the KeyPressed event.
             // Inspired by the SDL 1.2 implementation.
-            if (PeekMessage(&charMsg, hwnd, 0, 0, PM_NOREMOVE ) && charMsg.message == WM_CHAR)
+            if (PeekMessageW(&charMsg, hwnd, 0, 0, PM_NOREMOVE ) && charMsg.message == WM_CHAR)
             {
                 GetMessage(&charMsg, hwnd, 0, 0);
                 c = static_cast<unsigned int>( charMsg.wParam );
