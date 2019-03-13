@@ -362,16 +362,18 @@ void CommandList::GenerateMips( Texture& texture )
     auto resource = texture.GetD3D12Resource();
 
     // If the texture doesn't have a valid resource, do nothing.
-    if ( !resource) return;
+    if ( !resource ) return;
     auto resourceDesc = resource->GetDesc();
 
     // If the texture only has a single mip level (level 0)
     // do nothing.
     if (resourceDesc.MipLevels == 1 ) return;
-    // Currently, only 2D textures are supported.
-    if (resourceDesc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || resourceDesc.DepthOrArraySize != 1 )
+    // Currently, only non-multi-sampled 2D textures are supported.
+    if (resourceDesc.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || 
+        resourceDesc.DepthOrArraySize != 1 ||
+        resourceDesc.SampleDesc.Count > 1 )
     {
-        throw std::exception( "GenerateMips only supported for 2D Textures." );
+        throw std::exception( "GenerateMips is only supported for non-multi-sampled 2D Textures." );
     }
 
     ComPtr<ID3D12Resource> uavResource = resource;
@@ -384,7 +386,8 @@ void CommandList::GenerateMips( Texture& texture )
     // If the passed-in resource does not allow for UAV access
     // then create a staging resource that is used to generate
     // the mipmap chain.
-    if ( !texture.CheckUAVSupport() || ( resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) == 0 )
+    if ( !texture.CheckUAVSupport() || 
+       ( resourceDesc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) == 0 )
     {
         auto device = Application::Get().GetDevice();
 
@@ -463,7 +466,6 @@ void CommandList::GenerateMips( Texture& texture )
 
         // Add an aliasing barrier for the UAV compatible resource.
         AliasingBarrier(aliasResource, uavResource);
-
     }
 
     // Generate mips with the UAV compatible resource.
