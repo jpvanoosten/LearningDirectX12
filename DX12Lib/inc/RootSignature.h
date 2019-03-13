@@ -43,6 +43,7 @@
 class RootSignature
 {
 public:
+    // TODO: Add (deep) copy/move constructors and assignment operators!
     RootSignature();
     RootSignature(
         const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc, 

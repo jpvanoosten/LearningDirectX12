@@ -28,17 +28,23 @@ GenerateMipsPSO::GenerateMipsPSO()
     rootParameters[GenerateMips::SrcMip].InitAsDescriptorTable( 1, &srcMip );
     rootParameters[GenerateMips::OutMip].InitAsDescriptorTable( 1, &outMip );
 
-    CD3DX12_STATIC_SAMPLER_DESC linearClampSampler( 0,
-                                                    D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-                                                    D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-                                                    D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-                                                    D3D12_TEXTURE_ADDRESS_MODE_CLAMP
+    CD3DX12_STATIC_SAMPLER_DESC linearClampSampler( 
+        0,
+        D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+        D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+        D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+        D3D12_TEXTURE_ADDRESS_MODE_CLAMP
     );
 
-    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc( GenerateMips::NumRootParameters,
-                                                             rootParameters, 1, &linearClampSampler );
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc( 
+        GenerateMips::NumRootParameters,
+        rootParameters, 1, &linearClampSampler
+    );
 
-    m_RootSignature.SetRootSignatureDesc( rootSignatureDesc.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature.SetRootSignatureDesc( 
+        rootSignatureDesc.Desc_1_1, 
+        featureData.HighestVersion 
+    );
 
     // Create the PSO for GenerateMips shader.
     struct PipelineStateStream
