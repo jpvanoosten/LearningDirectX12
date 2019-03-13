@@ -73,6 +73,9 @@ GenerateMipsPSO::GenerateMipsPSO()
         uavDesc.Texture2D.MipSlice = i;
         uavDesc.Texture2D.PlaneSlice = 0;
 
-        device->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, m_DefaultUAV.GetDescriptorHandle(i) );
+        device->CreateUnorderedAccessView( 
+            nullptr, nullptr, &uavDesc, 
+            m_DefaultUAV.GetDescriptorHandle(i) 
+        );
     }
 }
