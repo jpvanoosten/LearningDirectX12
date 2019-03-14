@@ -327,6 +327,8 @@ bool Texture::IsDepthFormat(DXGI_FORMAT format)
     }
 }
 
+
+
 DXGI_FORMAT Texture::GetTypelessFormat(DXGI_FORMAT format)
 {
     DXGI_FORMAT typelessFormat = format;
@@ -438,6 +440,37 @@ DXGI_FORMAT Texture::GetTypelessFormat(DXGI_FORMAT format)
     }
 
     return typelessFormat;
+}
+
+DXGI_FORMAT Texture::GetSRGBFormat(DXGI_FORMAT format)
+{
+    DXGI_FORMAT srgbFormat = format;
+    switch ( format )
+    {
+    case DXGI_FORMAT_R8G8B8A8_UNORM:
+        srgbFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+        break;
+    case DXGI_FORMAT_BC1_UNORM:
+        srgbFormat = DXGI_FORMAT_BC1_UNORM_SRGB;
+        break;
+    case DXGI_FORMAT_BC2_UNORM:
+        srgbFormat = DXGI_FORMAT_BC2_UNORM_SRGB;
+        break;
+    case DXGI_FORMAT_BC3_UNORM:
+        srgbFormat = DXGI_FORMAT_BC3_UNORM_SRGB;
+        break;
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+        srgbFormat = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        break;
+    case DXGI_FORMAT_B8G8R8X8_UNORM:
+        srgbFormat = DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+        break;
+    case DXGI_FORMAT_BC7_UNORM:
+        srgbFormat = DXGI_FORMAT_BC7_UNORM_SRGB;
+        break;
+    }
+
+    return srgbFormat;
 }
 
 DXGI_FORMAT Texture::GetUAVCompatableFormat(DXGI_FORMAT format)

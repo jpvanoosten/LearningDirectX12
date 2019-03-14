@@ -497,7 +497,7 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
 
     // Create an SRV that uses the format of the original texture.
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = format;
+    srvDesc.Format = Texture::IsSRGBFormat(format) ? Texture::GetSRGBFormat(resourceDesc.Format) : resourceDesc.Format;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;  // Only 2D textures are supported (this was checked in the calling function).
     srvDesc.Texture2D.MipLevels = resourceDesc.MipLevels;

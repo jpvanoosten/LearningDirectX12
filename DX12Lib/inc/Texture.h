@@ -130,6 +130,8 @@ public:
 
     // Return a typeless format from the given format.
     static DXGI_FORMAT GetTypelessFormat(DXGI_FORMAT format);
+    // Return an sRGB format in the same format family.
+    static DXGI_FORMAT GetSRGBFormat(DXGI_FORMAT format);
     static DXGI_FORMAT GetUAVCompatableFormat(DXGI_FORMAT format);
 
 protected:
