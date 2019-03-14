@@ -509,8 +509,6 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
         uint32_t dstWidth = static_cast<uint32_t>( srcWidth >> 1 );
         uint32_t dstHeight = srcHeight >> 1;
 
-        // Determine the compute shader to use based on the dimension of the 
-        // source texture.
         // 0b00(0): Both width and height are even.
         // 0b01(1): Width is odd, height is even.
         // 0b10(2): Width is even, height is odd.
@@ -556,6 +554,7 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
 
             SetUnorderedAccessView(GenerateMips::OutMip, mip, texture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, srcMip + mip + 1, 1, &uavDesc );
         }
+
         // Pad any unused mip levels with a default UAV. Doing this keeps the DX12 runtime happy.
         if ( mipCount < 4 )
         {
