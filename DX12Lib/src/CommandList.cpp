@@ -246,7 +246,7 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         {
             ThrowIfFailed( LoadFromDDSFile( 
                 fileName.c_str(),
-                DDS_FLAGS_NONE, 
+                DDS_FLAGS_FORCE_RGB,
                 &metadata,
                 scratchImage));
         }
@@ -268,10 +268,13 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         {
             ThrowIfFailed( LoadFromWICFile( 
                 fileName.c_str(), 
-                WIC_FLAGS_NONE, 
+                WIC_FLAGS_FORCE_RGB,
                 &metadata, 
                 scratchImage ) );
         }
+
+        // Force albedo textures to use sRGB
+        metadata.format = (textureUsage == TextureUsage::Albedo) ? Texture::GetSRGBFormat(metadata.format) : metadata.format;
 
         D3D12_RESOURCE_DESC textureDesc = {};
         switch ( metadata.dimension )
@@ -469,7 +472,7 @@ void CommandList::GenerateMips( Texture& texture )
     }
 
     // Generate mips with the UAV compatible resource.
-    GenerateMips_UAV(Texture(uavResource, texture.GetTextureUsage()), resourceDesc.Format );
+    GenerateMips_UAV(Texture(uavResource, texture.GetTextureUsage()), Texture::IsSRGBFormat(resourceDesc.Format) );
 
     if (aliasResource)
     {
@@ -479,7 +482,7 @@ void CommandList::GenerateMips( Texture& texture )
     }
 }
 
-void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
+void CommandList::GenerateMips_UAV( Texture& texture, bool isSRGB )
 {
     if ( !m_GenerateMipsPSO )
     {
@@ -490,14 +493,14 @@ void CommandList::GenerateMips_UAV( Texture& texture, DXGI_FORMAT format )
     SetComputeRootSignature( m_GenerateMipsPSO->GetRootSignature() );
 
     GenerateMipsCB generateMipsCB;
-    generateMipsCB.IsSRGB = Texture::IsSRGBFormat(format);
+    generateMipsCB.IsSRGB = isSRGB;
 
     auto resource = texture.GetD3D12Resource();
     auto resourceDesc = resource->GetDesc();
 
     // Create an SRV that uses the format of the original texture.
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = Texture::IsSRGBFormat(format) ? Texture::GetSRGBFormat(resourceDesc.Format) : resourceDesc.Format;
+    srvDesc.Format = isSRGB ? Texture::GetSRGBFormat(resourceDesc.Format) : resourceDesc.Format;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;  // Only 2D textures are supported (this was checked in the calling function).
     srvDesc.Texture2D.MipLevels = resourceDesc.MipLevels;

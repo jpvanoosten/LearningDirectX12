@@ -719,7 +719,7 @@ void Tutorial4::OnGUI()
             {
             case TonemapMethod::TM_Linear:
                 ImGui::PlotLines("Linear Tonemapping", &LinearTonemappingPlot, nullptr, VALUES_COUNT, 0, nullptr, 0.0f, 1.0f, ImVec2(0, 250));
-                ImGui::SliderFloat("Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, 10.0f);
+                ImGui::SliderFloat("Max Brightness", &g_TonemapParameters.MaxLuminance, 1.0f, HDR_MAX );
                 ImGui::SameLine(); ShowHelpMarker("Linearly scale the HDR image by the maximum brightness.");
                 break;
             case TonemapMethod::TM_Reinhard:

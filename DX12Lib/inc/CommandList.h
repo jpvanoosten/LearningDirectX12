@@ -398,7 +398,7 @@ private:
     void TrackResource(const Resource& res);
 
     // Generate mips for UAV compatible textures.
-    void GenerateMips_UAV( Texture& texture, DXGI_FORMAT format );
+    void GenerateMips_UAV( Texture& texture, bool isSRGB );
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
     void CopyBuffer( Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
