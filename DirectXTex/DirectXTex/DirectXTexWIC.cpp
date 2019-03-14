@@ -163,7 +163,7 @@ namespace
                 if (iswic2)
                 {
                     if (pConvert)
-                        memcpy(pConvert, &GUID_WICPixelFormat96bppRGBFloat, sizeof(WICPixelFormatGUID));
+                        memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat96bppRGBFloat, sizeof(GUID));
                     format = DXGI_FORMAT_R32G32B32_FLOAT;
                 }
                 else
@@ -172,7 +172,7 @@ namespace
 #endif
                 {
                     if (pConvert)
-                        memcpy(pConvert, &GUID_WICPixelFormat128bppRGBAFloat, sizeof(WICPixelFormatGUID));
+                        memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat128bppRGBAFloat, sizeof(GUID));
                     format = DXGI_FORMAT_R32G32B32A32_FLOAT;
                 }
             }
@@ -183,7 +183,7 @@ namespace
                     if (memcmp(&g_WICConvert[i].source, &pixelFormat, sizeof(WICPixelFormatGUID)) == 0)
                     {
                         if (pConvert)
-                            memcpy(pConvert, &g_WICConvert[i].target, sizeof(WICPixelFormatGUID));
+                            memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &g_WICConvert[i].target, sizeof(GUID));
 
                         format = _WICToDXGI(g_WICConvert[i].target);
                         assert(format != DXGI_FORMAT_UNKNOWN);
@@ -202,7 +202,7 @@ namespace
             {
                 format = DXGI_FORMAT_R8G8B8A8_UNORM;
                 if (pConvert)
-                    memcpy(pConvert, &GUID_WICPixelFormat32bppRGBA, sizeof(WICPixelFormatGUID));
+                    memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat32bppRGBA, sizeof(GUID));
             }
             break;
 
@@ -211,7 +211,7 @@ namespace
             {
                 format = DXGI_FORMAT_R10G10B10A2_UNORM;
                 if (pConvert)
-                    memcpy(pConvert, &GUID_WICPixelFormat32bppRGBA1010102, sizeof(WICPixelFormatGUID));
+                    memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat32bppRGBA1010102, sizeof(GUID));
             }
             break;
 
@@ -221,7 +221,7 @@ namespace
             {
                 format = DXGI_FORMAT_R8G8B8A8_UNORM;
                 if (pConvert)
-                    memcpy(pConvert, &GUID_WICPixelFormat32bppRGBA, sizeof(WICPixelFormatGUID));
+                    memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat32bppRGBA, sizeof(GUID));
             }
             break;
 
@@ -231,7 +231,7 @@ namespace
                 // By default we want to promote a black & white to gresycale since R1 is not a generally supported D3D format
                 format = DXGI_FORMAT_R8_UNORM;
                 if (pConvert)
-                    memcpy(pConvert, &GUID_WICPixelFormat8bppGray, sizeof(WICPixelFormatGUID));
+                    memcpy_s(pConvert, sizeof(WICPixelFormatGUID), &GUID_WICPixelFormat8bppGray, sizeof(GUID));
             }
             break;
 
@@ -570,6 +570,7 @@ namespace
     // Encodes image metadata
     //-------------------------------------------------------------------------------------
     HRESULT EncodeMetadata(
+        DWORD flags,
         _In_ IWICBitmapFrameEncode* frame,
         const GUID& containerFormat,
         DXGI_FORMAT format)
@@ -584,7 +585,7 @@ namespace
             PROPVARIANT value;
             PropVariantInit(&value);
 
-            bool sRGB = IsSRGB(format);
+            bool sRGB = ((flags & WIC_FLAGS_FORCE_LINEAR) == 0) && ((flags & WIC_FLAGS_FORCE_SRGB) != 0 || IsSRGB(format));
 
             value.vt = VT_LPSTR;
             value.pszVal = const_cast<char*>("DirectXTex");
@@ -715,7 +716,7 @@ namespace
             return E_FAIL;
         }
 
-        hr = EncodeMetadata(frame, containerFormat, image.format);
+        hr = EncodeMetadata(flags, frame, containerFormat, image.format);
         if (FAILED(hr))
             return hr;
 
