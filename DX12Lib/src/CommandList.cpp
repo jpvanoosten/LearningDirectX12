@@ -274,7 +274,10 @@ void CommandList::LoadTextureFromFile( Texture& texture, const std::wstring& fil
         }
 
         // Force albedo textures to use sRGB
-        metadata.format = (textureUsage == TextureUsage::Albedo) ? Texture::GetSRGBFormat(metadata.format) : metadata.format;
+        if (textureUsage == TextureUsage::Albedo)
+        {
+            metadata.format = MakeSRGB(metadata.format);
+        }
 
         D3D12_RESOURCE_DESC textureDesc = {};
         switch ( metadata.dimension )
