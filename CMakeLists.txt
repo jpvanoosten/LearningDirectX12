@@ -15,6 +15,17 @@ if( MSVC )
     add_compile_options(/MP)
 endif()
 
+set( ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build Assimp Tools" )
+set( ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "Build Assimp Samples" )
+set( ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp Tests" )
+
+add_subdirectory( assimp )
+
+set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDLLs zlib zlibstatic 
+    PROPERTIES
+        FOLDER assimp 
+)
+
 add_subdirectory( DirectXTex )
 add_subdirectory( DX12Lib )
 add_subdirectory( Tutorial1 )
