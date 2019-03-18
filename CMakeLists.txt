@@ -15,9 +15,9 @@ if( MSVC )
     add_compile_options(/MP)
 endif()
 
-set( ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build Assimp Tools" )
-set( ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "Build Assimp Samples" )
-set( ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp Tests" )
+set( ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build Assimp Tools" FORCE )
+set( ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "Build Assimp Samples" FORCE )
+set( ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp Tests" FORCE )
 
 add_subdirectory( assimp )
 
