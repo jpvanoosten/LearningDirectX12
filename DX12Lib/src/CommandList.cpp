@@ -678,6 +678,50 @@ void CommandList::PanoToCubemap(Texture& cubemapTexture, const Texture& panoText
     }
 }
 
+void CommandList::LoadSceneFromFile(Scene& scene, const std::wstring& filname)
+{
+    fs::path filePath = filname;
+    fs::path exportPath = filePath.replace_extension("assbin");
+
+    Assimp::Importer importer;
+    const aiScene* aiScene;
+
+    // Check if a preprocessed file exists.
+    if (fs::exists(exportPath) && fs::is_regular_file(exportPath))
+    {
+        aiScene = importer.ReadFile(exportPath.string(), 0);
+    }
+    else
+    {
+        // File has not been preprocessed yet. Import and processes the file.
+        importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
+        importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
+
+        unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph;
+        aiScene = importer.ReadFile(filePath.string(), preprocessFlags);
+
+        if (aiScene)
+        {
+            // Export the preprocessed scene file for faster loading next time.
+            Assimp::Exporter exporter;
+            exporter.Export(aiScene, "assbin", exportPath.string(), preprocessFlags);
+        }
+    }
+
+    if (!aiScene)
+    {
+        std::string errorMessage = "Could not load file \"";
+        errorMessage += filePath.string() + "\"";
+        throw std::exception(errorMessage.c_str());
+    }
+
+
+
+
+
+
+}
+
 void CommandList::ClearTexture( const Texture& texture, const float clearColor[4])
 {
     TransitionBarrier(texture, D3D12_RESOURCE_STATE_RENDER_TARGET);

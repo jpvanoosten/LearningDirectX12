@@ -26,6 +26,7 @@ set( HEADER_FILES
     inc/Resource.h
     inc/ResourceStateTracker.h
     inc/RootSignature.h
+    inc/Scene.h
     inc/StructuredBuffer.h
     inc/Texture.h
     inc/TextureUsage.h

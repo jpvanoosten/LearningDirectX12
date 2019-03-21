@@ -51,8 +51,9 @@ class PanoToCubemapPSO;
 class RenderTarget;
 class Resource;
 class ResourceStateTracker;
-class StructuredBuffer;
 class RootSignature;
+class Scene;
+class StructuredBuffer;
 class Texture;
 class UploadBuffer;
 class VertexBuffer;
@@ -180,6 +181,11 @@ public:
      * Load a texture by a filename.
      */
     void LoadTextureFromFile( Texture& texture, const std::wstring& fileName, TextureUsage textureUsage = TextureUsage::Albedo );
+
+    /**
+     * Load a scene file.
+     */
+    void LoadSceneFromFile(Scene& scene, const std::wstring& filname);
 
     /**
      * Clear a texture.
