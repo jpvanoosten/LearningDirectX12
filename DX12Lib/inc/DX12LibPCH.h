@@ -80,5 +80,13 @@ using namespace DirectX;
 
 namespace fs = std::experimental::filesystem;
 
+// Assimp header files.
+#include <assimp/Importer.hpp>
+#include <assimp/Exporter.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/mesh.h>
+#include <assimp/anim.h>
+
 // Helper functions
 #include <Helpers.h>

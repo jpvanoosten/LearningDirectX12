@@ -1,8 +1,7 @@
-Title: Preamble
-Shortcut: /***
+#pragma once
 
 /*
- *  Copyright(c) $YEAR$ Jeremiah van Oosten
+ *  Copyright(c) 2019 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -24,13 +23,19 @@ Shortcut: /***
  */
 
 /**
- *  @file $FILE_BASE$.$FILE_EXT$
- *  @date $MONTHLONGNAME$ $DAY$, $YEAR$
+ *  @file Scene.h
+ *  @date March 21, 2019
  *  @author Jeremiah van Oosten
  *
- *  @brief $end$
+ *  @brief Scene file for storing scene data.
  */
 
-$selected$
+class Scene
+{
+public:
 
+protected:
 
+private:
+
+};
