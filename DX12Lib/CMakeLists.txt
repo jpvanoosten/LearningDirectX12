@@ -27,6 +27,7 @@ set( HEADER_FILES
     inc/ResourceStateTracker.h
     inc/RootSignature.h
     inc/Scene.h
+    inc/SceneNode.h
     inc/StructuredBuffer.h
     inc/Texture.h
     inc/TextureUsage.h
@@ -60,6 +61,7 @@ set( SOURCE_FILES
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp
+    src/SceneNode.cpp
     src/StructuredBuffer.cpp
     src/Texture.cpp
     src/UploadBuffer.cpp
