@@ -32,7 +32,7 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include <DirectXMath.h>
@@ -105,7 +105,7 @@ protected:
 private:
     using NodePtr = std::shared_ptr<SceneNode>;
     using NodeList = std::vector<NodePtr>;
-    using NodeNameMap = std::unordered_map<std::string, NodePtr>;
+    using NodeNameMap = std::multimap<std::string, NodePtr>;
     using MeshList = std::vector<std::shared_ptr<Mesh>>;
 
     std::string m_Name;
