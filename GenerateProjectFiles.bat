@@ -50,7 +50,8 @@ IF %ERRORLEVEL% NEQ 0 (
     START LearningDirectX12.sln
 )
 
+POPD
+
 :Exit
 
-POPD
 POPD

@@ -75,7 +75,7 @@ class Mesh
 {
 public:
 
-    void Draw(CommandList& commandList);
+    void Render(CommandList& commandList, uint32_t instanceCount = 1, uint32_t firstInstance = 0);
 
     static std::unique_ptr<Mesh> CreateCube(CommandList& commandList, float size = 1, bool rhcoords = false);
     static std::unique_ptr<Mesh> CreateSphere(CommandList& commandList, float diameter = 1, size_t tessellation = 16, bool rhcoords = false);

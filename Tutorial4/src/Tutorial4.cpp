@@ -807,7 +807,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
         // TODO: Need a better way to bind a cubemap.
         commandList->SetShaderResourceView(1, 0, m_GraceCathedralCubemap, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, 0, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, &srvDesc);
 
-        m_SkyboxMesh->Draw(*commandList);
+        m_SkyboxMesh->Render(*commandList);
     }
 
 
@@ -838,7 +838,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, Material::White);
     commandList->SetShaderResourceView(RootParameters::Textures, 0, m_EarthTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    m_SphereMesh->Draw(*commandList);
+    m_SphereMesh->Render(*commandList);
 
     // Draw a cube
     translationMatrix = XMMatrixTranslation(4.0f, 4.0f, 4.0f);
@@ -852,7 +852,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, Material::White);
     commandList->SetShaderResourceView(RootParameters::Textures, 0, m_MonaLisaTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    m_CubeMesh->Draw(*commandList);
+    m_CubeMesh->Render(*commandList);
 
     // Draw a torus
     translationMatrix = XMMatrixTranslation(4.0f, 0.6f, -4.0f);
@@ -866,7 +866,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, Material::Ruby);
     commandList->SetShaderResourceView(RootParameters::Textures, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    m_TorusMesh->Draw(*commandList);
+    m_TorusMesh->Render(*commandList);
 
     // Floor plane.
     float scalePlane = 20.0f;
@@ -883,7 +883,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, Material::White);
     commandList->SetShaderResourceView(RootParameters::Textures, 0, m_DirectXTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    m_PlaneMesh->Draw(*commandList);
+    m_PlaneMesh->Render(*commandList);
 
     // Back wall
     translationMatrix = XMMatrixTranslation(0, translateOffset, translateOffset);
@@ -894,7 +894,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
 
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MatricesCB, matrices);
 
-    m_PlaneMesh->Draw(*commandList);
+    m_PlaneMesh->Render(*commandList);
 
     // Ceiling plane
     translationMatrix = XMMatrixTranslation(0, translateOffset * 2.0f, 0);
@@ -905,7 +905,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
 
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MatricesCB, matrices);
 
-    m_PlaneMesh->Draw(*commandList);
+    m_PlaneMesh->Render(*commandList);
 
     // Front wall
     translationMatrix = XMMatrixTranslation(0, translateOffset, -translateOffset);
@@ -916,7 +916,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
 
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MatricesCB, matrices);
 
-    m_PlaneMesh->Draw(*commandList);
+    m_PlaneMesh->Render(*commandList);
 
     // Left wall
     translationMatrix = XMMatrixTranslation(-translateOffset, translateOffset, 0);
@@ -929,7 +929,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, Material::Red);
     commandList->SetShaderResourceView(RootParameters::Textures, 0, m_DefaultTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    m_PlaneMesh->Draw(*commandList);
+    m_PlaneMesh->Render(*commandList);
 
     // Right wall
     translationMatrix = XMMatrixTranslation(translateOffset, translateOffset, 0);
@@ -940,7 +940,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
 
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MatricesCB, matrices);
     commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, Material::Blue);
-    m_PlaneMesh->Draw(*commandList);
+    m_PlaneMesh->Render(*commandList);
 
     // Draw shapes to visualize the position of the lights in the scene.
     Material lightMaterial;
@@ -956,7 +956,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
         commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MatricesCB, matrices);
         commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, lightMaterial);
 
-        m_SphereMesh->Draw(*commandList);
+        m_SphereMesh->Render(*commandList);
     }
 
     for (const auto& l : m_SpotLights)
@@ -975,7 +975,7 @@ void Tutorial4::OnRender(RenderEventArgs& e)
         commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MatricesCB, matrices);
         commandList->SetGraphicsDynamicConstantBuffer(RootParameters::MaterialCB, lightMaterial);
 
-        m_ConeMesh->Draw(*commandList);
+        m_ConeMesh->Render(*commandList);
     }
 
     // Perform HDR -> SDR tonemapping directly to the Window's render target.

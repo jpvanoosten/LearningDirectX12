@@ -23,12 +23,19 @@ Mesh::~Mesh()
     // Allocated resources will be cleaned automatically when the pointers go out of scope.
 }
 
-void Mesh::Draw(CommandList& commandList)
+void Mesh::Render(CommandList& commandList, uint32_t instanceCount, uint32_t firstInstance)
 {
     commandList.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     commandList.SetVertexBuffer(0, m_VertexBuffer);
-    commandList.SetIndexBuffer(m_IndexBuffer);
-    commandList.DrawIndexed(m_IndexCount);
+    if ( m_IndexCount > 0 )
+    {
+        commandList.SetIndexBuffer(m_IndexBuffer);
+        commandList.DrawIndexed(m_IndexCount, instanceCount, 0, 0, firstInstance);
+    }
+    else
+    {
+        commandList.Draw(m_VertexBuffer.GetNumVertices(), instanceCount, 0, firstInstance);
+    }
 }
 
 std::unique_ptr<Mesh> Mesh::CreateSphere(CommandList& commandList, float diameter, size_t tessellation, bool rhcoords)
