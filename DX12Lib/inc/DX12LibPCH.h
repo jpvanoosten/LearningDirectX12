@@ -78,7 +78,11 @@ using namespace DirectX;
 #include <thread>
 #include <vector>
 
+#if defined(__cpp_lib_filesystem)
+namespace fs = std::filesystem;
+#else 
 namespace fs = std::experimental::filesystem;
+#endif 
 
 // Assimp header files.
 #include <assimp/Importer.hpp>
