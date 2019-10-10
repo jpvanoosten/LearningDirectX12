@@ -28,7 +28,8 @@ DescriptorAllocation DescriptorAllocator::Allocate(uint32_t numDescriptors)
 
     DescriptorAllocation allocation;
 
-    for ( auto iter = m_AvailableHeaps.begin(); iter != m_AvailableHeaps.end(); ++iter )
+	auto iter = m_AvailableHeaps.begin();
+    while ( iter != m_AvailableHeaps.end() )
     {
         auto allocatorPage = m_HeapPool[*iter];
 
@@ -38,12 +39,17 @@ DescriptorAllocation DescriptorAllocator::Allocate(uint32_t numDescriptors)
         {
             iter = m_AvailableHeaps.erase( iter );
         }
+		else 
+		{
+			++iter;
+		}
 
         // A valid allocation has been found.
         if ( !allocation.IsNull() )
         {
             break;
         }
+
     }
 
     // No available heap could satisfy the requested number of descriptors.
