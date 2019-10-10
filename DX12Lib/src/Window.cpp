@@ -39,6 +39,8 @@ Window::~Window()
     // Window should be destroyed with Application::DestroyWindow before
     // the window goes out of scope.
     assert(!m_hWnd && "Use Application::DestroyWindow before destruction.");
+
+	::CloseHandle(m_SwapChainEvent);
 }
 
 void Window::Initialize()
@@ -185,6 +187,9 @@ void Window::RegisterCallbacks(std::shared_ptr<Game> pGame)
 
 void Window::OnUpdate(UpdateEventArgs& e)
 {
+	// Wait for the swapchain to finish presenting
+	::WaitForSingleObjectEx(m_SwapChainEvent, 100, TRUE);
+
     m_GUI.NewFrame();
 
     m_UpdateClock.Tick();
@@ -328,6 +333,7 @@ Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()
     swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     // It is recommended to always allow tearing if tearing support is available.
     swapChainDesc.Flags = m_IsTearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+	swapChainDesc.Flags |= DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
     ID3D12CommandQueue* pCommandQueue = app.GetCommandQueue()->GetD3D12CommandQueue().Get();
 
     ComPtr<IDXGISwapChain1> swapChain1;
@@ -346,6 +352,8 @@ Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()
     ThrowIfFailed(swapChain1.As(&dxgiSwapChain4));
 
     m_CurrentBackBufferIndex = dxgiSwapChain4->GetCurrentBackBufferIndex();
+	dxgiSwapChain4->SetMaximumFrameLatency(BufferCount-1);
+	m_SwapChainEvent = dxgiSwapChain4->GetFrameLatencyWaitableObject();
 
     return dxgiSwapChain4;
 }
