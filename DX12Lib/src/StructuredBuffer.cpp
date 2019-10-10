@@ -52,16 +52,21 @@ void StructuredBuffer::CreateViews( size_t numElements, size_t elementSize )
                                       &srvDesc, 
                                       m_SRV.GetDescriptorHandle() );
 
-    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-    uavDesc.Buffer.CounterOffsetInBytes = 0;
-    uavDesc.Buffer.NumElements = static_cast<UINT>( m_NumElements );
-    uavDesc.Buffer.StructureByteStride = static_cast<UINT>( m_ElementSize );
-    uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-    device->CreateUnorderedAccessView( m_d3d12Resource.Get(),
-                                       m_CounterBuffer.GetD3D12Resource().Get(),
-                                       &uavDesc, 
-                                       m_UAV.GetDescriptorHandle() );
+	D3D12_RESOURCE_DESC desc = m_d3d12Resource->GetDesc();
+	if ( desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS )
+	{
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uavDesc.Buffer.CounterOffsetInBytes = 0;
+		uavDesc.Buffer.NumElements = static_cast<UINT>(m_NumElements);
+		uavDesc.Buffer.StructureByteStride = static_cast<UINT>(m_ElementSize);
+		uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+		device->CreateUnorderedAccessView(m_d3d12Resource.Get(),
+			m_CounterBuffer.GetD3D12Resource().Get(),
+			&uavDesc,
+			m_UAV.GetDescriptorHandle());
+	}
 }
