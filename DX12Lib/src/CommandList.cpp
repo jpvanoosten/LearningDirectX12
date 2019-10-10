@@ -80,7 +80,7 @@ void CommandList::UAVBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, bo
 
 void CommandList::UAVBarrier( const Resource& resource, bool flushBarriers )
 {
-    UAVBarrier(resource.GetD3D12Resource());
+    UAVBarrier(resource.GetD3D12Resource(), flushBarriers);
 }
 
 void CommandList::AliasingBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> beforeResource, Microsoft::WRL::ComPtr<ID3D12Resource> afterResource, bool flushBarriers )
@@ -97,7 +97,7 @@ void CommandList::AliasingBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> beforeR
 
 void CommandList::AliasingBarrier(const Resource& beforeResource, const Resource& afterResource, bool flushBarriers)
 {
-    AliasingBarrier(beforeResource.GetD3D12Resource(), afterResource.GetD3D12Resource());
+    AliasingBarrier(beforeResource.GetD3D12Resource(), afterResource.GetD3D12Resource(), flushBarriers);
 }
 
 void CommandList::FlushResourceBarriers()
