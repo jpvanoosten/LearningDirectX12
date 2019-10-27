@@ -111,6 +111,11 @@ add_library( DX12Lib STATIC
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
 )
 
+# Enable C++17 compiler features.
+target_compile_features( DX12Lib 
+	PUBLIC cxx_std_17
+)
+
 target_include_directories( DX12Lib
     PUBLIC inc
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"

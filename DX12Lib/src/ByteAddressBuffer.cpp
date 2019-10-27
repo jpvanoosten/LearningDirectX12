@@ -6,15 +6,17 @@
 
 ByteAddressBuffer::ByteAddressBuffer( const std::wstring& name )
     : Buffer(name)
+	, m_BufferSize(0)
 {
     m_SRV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
     m_UAV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 }
 
 ByteAddressBuffer::ByteAddressBuffer(const D3D12_RESOURCE_DESC& resDesc,
-    size_t numElements, size_t elementSize,
-    const std::wstring& name )
-    : Buffer(resDesc, numElements, elementSize, name)
+	size_t numElements, size_t elementSize,
+	const std::wstring& name)
+	: Buffer(resDesc, numElements, elementSize, name)
+	, m_BufferSize(numElements * elementSize)
 {}
 
 void ByteAddressBuffer::CreateViews( size_t numElements, size_t elementSize )
