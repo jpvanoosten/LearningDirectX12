@@ -96,6 +96,7 @@ protected:
     void RescaleHDRRenderTarget(float scale);
     virtual void OnResize(ResizeEventArgs& e) override; 
 
+	virtual void OnDPIScaleChanged(DPIScaleEventArgs& e) override;
 
     void OnGUI();
 

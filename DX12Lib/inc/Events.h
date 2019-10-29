@@ -209,6 +209,17 @@ public:
     uint64_t FrameNumber;
 };
 
+class DPIScaleEventArgs : public EventArgs
+{
+public:
+	typedef EventArgs base;
+	DPIScaleEventArgs(float dpiScale)
+		: DPIScale(dpiScale)
+	{}
+
+	float DPIScale;
+};
+
 class UserEventArgs : public EventArgs
 {
 public:

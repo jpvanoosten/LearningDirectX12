@@ -21,6 +21,8 @@ Window::Window(HWND hWnd, const std::wstring& windowName, int clientWidth, int c
     , m_FenceValues{0}
     , m_FrameValues{0}
 {
+	m_DPIScaling = GetDpiForWindow(hWnd) / 96.0f;
+
     Application& app = Application::Get();
 
     m_IsTearingSupported = app.IsTearingSupported();
@@ -52,6 +54,11 @@ void Window::Initialize()
 HWND Window::GetWindowHandle() const
 {
     return m_hWnd;
+}
+
+float Window::GetDPIScaling() const
+{
+	return m_DPIScaling;
 }
 
 const std::wstring& Window::GetWindowName() const
@@ -307,6 +314,14 @@ void Window::OnResize(ResizeEventArgs& e)
     }
 }
 
+void Window::OnDPIScaleChanged(DPIScaleEventArgs& e)
+{
+	if (auto pGame = m_pGame.lock())
+	{
+		pGame->OnDPIScaleChanged(e);
+	}
+}
+
 Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()
 {
     Application& app = Application::Get();
@@ -370,6 +385,11 @@ void Window::UpdateRenderTargetViews()
         m_BackBufferTextures[i].SetD3D12Resource(backBuffer);
         m_BackBufferTextures[i].CreateViews();
     }
+}
+
+void Window::SetDPIScaling(float dpiScaling)
+{
+	m_DPIScaling = dpiScaling;
 }
 
 const RenderTarget& Window::GetRenderTarget() const

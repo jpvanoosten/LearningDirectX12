@@ -84,6 +84,11 @@ void Game::OnResize(ResizeEventArgs& e)
     m_Height = e.Height;
 }
 
+void Game::OnDPIScaleChanged(DPIScaleEventArgs& e)
+{
+	// By default, do nothing.
+}
+
 void Game::OnWindowDestroy()
 {
     // If the Window which we are registered to is 

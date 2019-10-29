@@ -127,6 +127,11 @@ protected:
      */
     virtual void OnResize(ResizeEventArgs& e);
 
+	/**
+	 * Invoked when the DPI scaling of the window associated with the game has changed.
+	 */
+	virtual void OnDPIScaleChanged(DPIScaleEventArgs& e);
+
     /**
      * Invoked when the registered window instance is destroyed.
      */

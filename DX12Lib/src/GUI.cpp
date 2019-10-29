@@ -56,6 +56,10 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
 
     ImGuiIO& io = ImGui::GetIO();
 
+	io.FontGlobalScale = window->GetDPIScaling();
+	// Allow user UI scaling using CTRL+Mouse Wheel scrolling
+	io.FontAllowUserScaling = true;
+
     // Build texture atlas
     unsigned char* pixelData = nullptr;
     int width, height;
@@ -289,6 +293,11 @@ void GUI::Destroy()
         m_pImGuiCtx = nullptr;
         m_Window.reset();
     }
+}
+
+void GUI::SetScaling(float scale)
+{
+
 }
 
 //--------------------------------------------------------------------------------------

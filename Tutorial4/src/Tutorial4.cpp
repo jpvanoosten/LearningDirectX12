@@ -442,6 +442,11 @@ void Tutorial4::OnResize(ResizeEventArgs& e)
     }
 }
 
+void Tutorial4::OnDPIScaleChanged(DPIScaleEventArgs& e)
+{
+	ImGui::GetIO().FontGlobalScale = e.DPIScale;
+}
+
 void Tutorial4::UnloadContent()
 {
 }

@@ -58,6 +58,9 @@ public:
     // Destroy the ImGui context.
     virtual void Destroy();
 
+	// Set the scaling for this ImGuiContext.
+	void SetScaling(float scale);
+
 protected:
 
 private:

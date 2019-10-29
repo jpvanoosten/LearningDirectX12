@@ -40,7 +40,7 @@ Application::Application(HINSTANCE hInst)
     // Using this awareness context allows the client area of the window 
     // to achieve 100% scaling while still allowing non-client window content to 
     // be rendered in a DPI sensitive fashion.
-    SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
+	SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
 
     WNDCLASSEXW wndClass = { 0 };
 
@@ -498,6 +498,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     {
         switch (message)
         {
+		case WM_DPICHANGED:
+		{
+			float dpiScaling = HIWORD(wParam) / 96.0f;
+			DPIScaleEventArgs dpiScaleEventArgs(dpiScaling);
+			pWindow->OnDPIScaleChanged(dpiScaleEventArgs);
+		}
+		break;
         case WM_PAINT:
         {
             ++Application::ms_FrameCount;
@@ -670,6 +677,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     }
     else
     {
+
         return DefWindowProcW(hwnd, message, wParam, lParam);
     }
 
