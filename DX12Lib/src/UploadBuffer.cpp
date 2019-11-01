@@ -77,6 +77,8 @@ UploadBuffer::Page::Page(size_t sizeInBytes)
         IID_PPV_ARGS(&m_d3d12Resource)
     ));
 
+	m_d3d12Resource->SetName(L"Upload Buffer (Page)");
+
     m_GPUPtr = m_d3d12Resource->GetGPUVirtualAddress();
     m_d3d12Resource->Map(0, nullptr, &m_CPUPtr);
 }
