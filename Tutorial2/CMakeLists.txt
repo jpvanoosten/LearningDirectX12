@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.12.1 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.16.1 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES
     inc/Application.h
