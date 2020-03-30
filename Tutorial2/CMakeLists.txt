@@ -65,6 +65,6 @@ target_link_libraries( Tutorial2
     d3d12.lib
     dxgi.lib
     dxguid.lib
-    D3DCompiler.lib
+    d3dcompiler.lib
     Shlwapi.lib
 )

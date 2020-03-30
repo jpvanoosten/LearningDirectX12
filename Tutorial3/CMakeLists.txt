@@ -50,7 +50,7 @@ target_include_directories( Tutorial3
 
 target_link_libraries( Tutorial3
     DX12Lib
-    D3DCompiler.lib
+    d3dcompiler.lib
     Shlwapi.lib
 )
 
