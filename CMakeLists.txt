@@ -27,11 +27,17 @@ set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDL
 )
 
 add_subdirectory( DirectXTex )
+add_subdirectory( GameFramework )
 add_subdirectory( DX12Lib )
 add_subdirectory( Tutorial1 )
 add_subdirectory( Tutorial2 )
 add_subdirectory( Tutorial3 )
 add_subdirectory( Tutorial4 )
+
+set_target_properties( Tutorial1 Tutorial2 Tutorial3 Tutorial4
+    PROPERTIES
+        FOLDER Samples 
+)
 
 # Set the startup project.
 set_directory_properties( PROPERTIES 
