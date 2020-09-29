@@ -30,6 +30,8 @@
  *  @brief The application class is used to create windows for our application.
  */
 
+#include "Events.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -67,6 +69,17 @@ public:
     static Application& Get();
 
     /**
+     * To support hot-loading support, you can register a directory path
+     * for listening for file change notifications. File change notifications
+     * are set through the Application::FileChange event.
+     *
+     * @param dir The directory to listen for file changes.
+     * @param recursive Whether to listen for file changes in sub-folders.
+     */
+    void RegisterDirectoryChangeListener( const std::wstring& dir,
+                                          bool recursive = true );
+
+    /**
      * Create a render window.
      *
      * @param windowName The name of the window instance. This will also be the
@@ -98,6 +111,11 @@ public:
      * @param windowName The name that was used to create the window.
      */
     std::shared_ptr<Window> GetWindowByName( const std::wstring& windowName );
+
+    /**
+     * Invoked when a file is modified on disk.
+     */
+    FileChangeEvent FileChanged;
 
 protected:
     Application( HINSTANCE hInst );

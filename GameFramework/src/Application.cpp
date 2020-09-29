@@ -1,3 +1,4 @@
+#include <GameFrameworkPCH.h>
 #include <Application.h>
 
 static Application* gs_pSingelton = nullptr;

@@ -1,3 +1,5 @@
+# clang-format style options.
+# see: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language: Cpp
 Standard: c++11
 AccessModifierOffset: -4
@@ -51,6 +53,7 @@ BreakStringLiterals: false
 ColumnLimit: 80
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerIndentWidth: 0
 Cpp11BracedListStyle: false
 FixNamespaceComments: true
 IncludeBlocks: Preserve
@@ -70,7 +73,7 @@ SortIncludes: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
-SpaceAfterTemplateKeyword: true
+SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCpp11BracedList: true
 SpaceBeforeCtorInitializerColon: true

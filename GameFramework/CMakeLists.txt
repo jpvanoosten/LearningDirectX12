@@ -2,12 +2,18 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 
 set( HEADER_FILES
     inc/Application.h
+    inc/Events.h
     inc/GameFrameworkPCH.h
+    inc/KeyCodes.h
+    inc/optional.hpp
+    inc/signals.hpp
+    inc/Window.h
 )
 
 set( SOURCE_FILES
     src/Application.cpp
     src/GameFrameworkPCH.cpp
+    src/Window.cpp
 )
 
 set( RESOURCE_FILES
@@ -16,6 +22,7 @@ set( RESOURCE_FILES
     Resources/Icon/app_icon.ico
 )
 
+source_group( "signals" FILES inc/optional.hpp inc/signals.hpp )
 source_group( "Resources" FILES GameFramework.rc resource.h )
 source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 
