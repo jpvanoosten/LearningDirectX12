@@ -23,6 +23,7 @@ add_library( GameFramework STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
+    ../.clang-format
 )
 
 # Enable C++17 compiler features.

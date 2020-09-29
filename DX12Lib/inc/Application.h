@@ -73,12 +73,11 @@ public:
     DXGI_SAMPLE_DESC GetMultisampleQualityLevels( DXGI_FORMAT format, UINT numSamples, D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE ) const;
 
     /**
-    * Create a new DirectX11 render window instance.
+    * Create a new DirectX12 render window instance.
     * @param windowName The name of the window. This name will appear in the title bar of the window. This name should be unique.
     * @param clientWidth The width (in pixels) of the window's client area.
     * @param clientHeight The height (in pixels) of the window's client area.
     * @param vSync Should the rendering be synchronized with the vertical refresh rate of the screen.
-    * @param windowed If true, the window will be created in windowed mode. If false, the window will be created full-screen.
     * @returns The created window instance. If an error occurred while creating the window an invalid
     * window instance is returned. If a window with the given name already exists, that window will be
     * returned.
