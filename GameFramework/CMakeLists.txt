@@ -11,9 +11,12 @@ set( SOURCE_FILES
 )
 
 set( RESOURCE_FILES
+    GameFramework.rc
+    resource.h
+    Resources/Icon/app_icon.ico
 )
 
-source_group( "Resources" FILES )
+source_group( "Resources" FILES GameFramework.rc resource.h )
 source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 
 add_library( GameFramework STATIC
