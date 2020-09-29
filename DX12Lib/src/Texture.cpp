@@ -75,6 +75,7 @@ void Texture::Resize(uint32_t width, uint32_t height, uint32_t depthOrArraySize 
         resDesc.Width = std::max( width, 1u );
         resDesc.Height = std::max( height, 1u );
         resDesc.DepthOrArraySize = depthOrArraySize;
+        resDesc.MipLevels = 0;
 
         auto device = Application::Get().GetDevice();
 
