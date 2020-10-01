@@ -53,6 +53,7 @@ target_compile_features( GameFramework
 
 target_include_directories( GameFramework
     PUBLIC inc
+    PUBLIC ../extern/spdlog/include
 )
 
 target_link_libraries( GameFramework

@@ -19,20 +19,20 @@ set( ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build Assimp Tools" FORCE )
 set( ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "Build Assimp Samples" FORCE )
 set( ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp Tests" FORCE )
 
-add_subdirectory( assimp )
+add_subdirectory( extern/assimp )
 
 set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDLLs zlib zlibstatic 
     PROPERTIES
         FOLDER assimp 
 )
 
-add_subdirectory( DirectXTex )
+add_subdirectory( extern/DirectXTex )
 add_subdirectory( GameFramework )
 add_subdirectory( DX12Lib )
-add_subdirectory( Tutorial1 )
-add_subdirectory( Tutorial2 )
-add_subdirectory( Tutorial3 )
-add_subdirectory( Tutorial4 )
+add_subdirectory( samples/Tutorial1 )
+add_subdirectory( samples/Tutorial2 )
+add_subdirectory( samples/Tutorial3 )
+add_subdirectory( samples/Tutorial4 )
 
 set_target_properties( Tutorial1 Tutorial2 Tutorial3 Tutorial4
     PROPERTIES
