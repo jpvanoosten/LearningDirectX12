@@ -2,19 +2,32 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 
 set( HEADER_FILES
     inc/Application.h
+    inc/CThreadSafeQueue.h
     inc/Events.h
     inc/GameFrameworkPCH.h
     inc/KeyCodes.h
+    inc/LogManager.h
+    inc/LogStream.h
+    inc/ReadDirectoryChanges.h
+    inc/Window.h
     inc/optional.hpp
     inc/signals.hpp
-    inc/Window.h
 )
+
+source_group( "Header Files" FILES ${HEADER_FILES} )
 
 set( SOURCE_FILES
     src/Application.cpp
     src/GameFrameworkPCH.cpp
+    src/LogManager.cpp
+    src/LogStream.cpp
+    src/ReadDirectoryChanges.cpp
+    src/ReadDirectoryChangesPrivate.h
+    src/ReadDirectoryChangesPrivate.cpp
     src/Window.cpp
 )
+
+source_group( "Source Files" FILES ${SOURCE_FILES} )
 
 set( RESOURCE_FILES
     GameFramework.rc

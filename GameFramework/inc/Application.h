@@ -31,6 +31,7 @@
  */
 
 #include "Events.h"
+#include "ReadDirectoryChanges.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -121,6 +122,10 @@ protected:
     Application( HINSTANCE hInst );
     virtual ~Application() = default;
 
+    // A file modification was detected.
+    virtual void OnFileChange( FileChangeEventArgs& e );
+
+
 private:
     // Private and deleted. Please don't try to create copies
     // of this singleton!
@@ -128,4 +133,18 @@ private:
     Application( Application&& )      = delete;
     Application& operator=( Application& ) = delete;
     Application& operator=( Application&& ) = delete;
+
+    // Directory change listener thread entry point function.
+    void CheckFileChanges();
+
+    // Handle to application instance.
+    HINSTANCE m_hInstance;
+
+    // Directory change listener.
+    CReadDirectoryChanges m_DirectoryChanges;
+    // Thread to run directory change listener.
+    std::thread m_DirectoryChangeListenerThread;
+    std::mutex  m_DirectoryChangeMutex;
+    // Flag to terminate directory change thread.
+    std::atomic<bool> m_bTerminateDirectoryChangeThread;
 };
