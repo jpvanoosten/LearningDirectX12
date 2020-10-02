@@ -38,6 +38,10 @@
 #include <memory>
 #include <string>
 
+// Forward declarations
+LRESULT CALLBACK WndProc( HWND, UINT, WPARAM,
+                          LPARAM );  // Defined in the Application class.
+
 class Window
 {
 public:
@@ -121,7 +125,7 @@ public:
     /**
      * Window close event is fired when the window is about to be closed.
      */
-    WindowCloseEvent WindowClose;
+    WindowCloseEvent Close;
 
     /**
      * Invoked when the window is minimized.
@@ -194,5 +198,61 @@ public:
     ResizeEvent Resize;
 
 protected:
+    friend class Application;
+    // This is needed to allow the WndProc function to call event callbacks on
+    // the window.
+    friend LRESULT CALLBACK ::WndProc( HWND, UINT, WPARAM, LPARAM );
+
+    // Only the Application class can create Windows.
+    Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
+            int clientHeight );
+
+    ~Window() = default;
+
+    // Window was closed
+    virtual void OnClose( WindowCloseEventArgs& e );
+
+    // A keyboard key was pressed
+    virtual void OnKeyPressed( KeyEventArgs& e );
+    // A keyboard key was released
+    virtual void OnKeyReleased( KeyEventArgs& e );
+    // Window gained keyboard focus
+    virtual void OnKeyboardFocus( EventArgs& e );
+    // Window lost keyboard focus
+    virtual void OnKeyboardBlur( EventArgs& e );
+
+    // The mouse was moved
+    virtual void OnMouseMoved( MouseMotionEventArgs& e );
+    // A button on the mouse was pressed
+    virtual void OnMouseButtonPressed( MouseButtonEventArgs& e );
+    // A button on the mouse was released
+    virtual void OnMouseButtonReleased( MouseButtonEventArgs& e );
+    // The mouse wheel was moved.
+    virtual void OnMouseWheel( MouseWheelEventArgs& e );
+    // The mouse left the client are of the window.
+    virtual void OnMouseLeave( EventArgs& e );
+    // The application window has received mouse focus
+    virtual void OnMouseFocus( EventArgs& e );
+    // The application window has lost mouse focus
+    virtual void OnMouseBlur( EventArgs& e );
+
 private:
+    HWND m_hWnd;
+
+    std::string m_Name;
+
+    uint32_t m_ClientWidth;
+    uint32_t m_ClientHeight;
+
+    int32_t m_PreviousMouseX;
+    int32_t m_PreviousMouseY;
+
+    // The current fullscreen state of the window.
+    bool m_IsFullscreen;
+
+    // This is true when the mouse is inside the window's client rect.
+    bool m_bInClientRect;
+
+    // This is set to true when the window receives keyboard focus.
+    bool m_bHasKeyboardFocus;
 };

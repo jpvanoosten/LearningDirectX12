@@ -42,8 +42,11 @@
     #undef CreateWindow
 #endif
 
+#include <cstdint> // for uint32_t
 #include <memory>  // for std::shared_ptr
+#include <mutex>   // for std::mutex
 #include <string>  // for std::wstring
+#include <thread>  // for std::thread
 
 class Window;
 
@@ -68,6 +71,18 @@ public:
      * @returns A reference to the Application instance.
      */
     static Application& Get();
+
+    /**
+     * Start the main application run loop.
+     * 
+     * @returns The error code (if an error occurred).
+     */
+    int32_t Run();
+
+    /**
+     * Stop the application.
+     */
+    void Stop();
 
     /**
      * To support hot-loading support, you can register a directory path
@@ -118,13 +133,20 @@ public:
      */
     FileChangeEvent FileChanged;
 
+    /**
+     * Application is exiting.
+     */
+    Event Exit;
+
 protected:
     Application( HINSTANCE hInst );
-    virtual ~Application() = default;
+    virtual ~Application();
 
     // A file modification was detected.
     virtual void OnFileChange( FileChangeEventArgs& e );
 
+    // Application is going to close
+    virtual void OnExit( EventArgs& e );
 
 private:
     // Private and deleted. Please don't try to create copies
@@ -140,11 +162,16 @@ private:
     // Handle to application instance.
     HINSTANCE m_hInstance;
 
+    // Set to true while the application is running.
+    std::atomic_bool m_bIsRunning;
+    // Should the application quit?
+    std::atomic_bool m_RequestQuit;
+
     // Directory change listener.
     CReadDirectoryChanges m_DirectoryChanges;
     // Thread to run directory change listener.
     std::thread m_DirectoryChangeListenerThread;
     std::mutex  m_DirectoryChangeMutex;
     // Flag to terminate directory change thread.
-    std::atomic<bool> m_bTerminateDirectoryChangeThread;
+    std::atomic_bool m_bTerminateDirectoryChangeThread;
 };
