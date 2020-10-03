@@ -31,6 +31,7 @@
  */
 
 #include "Events.h"
+#include "HighResolutionTimer.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -123,9 +124,24 @@ public:
     void Hide();
 
     /**
+     * Invoked when the game should be updated.
+     */
+    UpdateEvent Update;
+
+    /**
+     * The DPI scaling of the window has changed.
+     */
+    DPIScaleEvent DPIScaleChanged;
+
+    /**
      * Window close event is fired when the window is about to be closed.
      */
     WindowCloseEvent Close;
+
+    /**
+     * Invoked when the window is resized.
+     */
+    ResizeEvent Resize;
 
     /**
      * Invoked when the window is minimized.
@@ -192,11 +208,6 @@ public:
      */
     Event MouseBlur;
 
-    /**
-     * Invoked when the window is resized.
-     */
-    ResizeEvent Resize;
-
 protected:
     friend class Application;
     // This is needed to allow the WndProc function to call event callbacks on
@@ -207,10 +218,19 @@ protected:
     Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
             int clientHeight );
 
-    ~Window() = default;
+    ~Window();
+
+    // Update game
+    virtual void OnUpdate( UpdateEventArgs& e );
+
+   	// The DPI scaling of the window has changed.
+    virtual void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
     // Window was closed
     virtual void OnClose( WindowCloseEventArgs& e );
+
+    // Window was resized
+    virtual void OnResize( ResizeEventArgs& e );
 
     // A keyboard key was pressed
     virtual void OnKeyPressed( KeyEventArgs& e );
@@ -252,7 +272,11 @@ private:
 
     // This is true when the mouse is inside the window's client rect.
     bool m_bInClientRect;
+    RECT m_WindowRect;
+
 
     // This is set to true when the window receives keyboard focus.
     bool m_bHasKeyboardFocus;
+
+    HighResolutionTimer m_Timer;
 };

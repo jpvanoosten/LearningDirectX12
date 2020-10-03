@@ -6,6 +6,7 @@ set( HEADER_FILES
     inc/CThreadSafeQueue.h
     inc/Events.h
     inc/GameFrameworkPCH.h
+    inc/HighResolutionTimer.h
     inc/KeyCodes.h
     inc/ReadDirectoryChanges.h
     inc/Window.h
@@ -19,6 +20,7 @@ source_group( "signals" FILES inc/optional.hpp inc/signals.hpp )
 set( SOURCE_FILES
     src/Application.cpp
     src/GameFrameworkPCH.cpp
+    src/HighResolutionTimer.cpp
     src/ReadDirectoryChanges.cpp
     src/ReadDirectoryChangesPrivate.h
     src/ReadDirectoryChangesPrivate.cpp

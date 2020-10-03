@@ -174,7 +174,7 @@ void Application::Destroy()
 
 Application& Application::Get()
 {
-    assert( gs_pSingelton != nullptr ); 
+    assert( gs_pSingelton != nullptr );
     return *gs_pSingelton;
 }
 
@@ -183,24 +183,22 @@ int32_t Application::Run()
     assert( !m_bIsRunning );
 
     m_bIsRunning = true;
+
     MSG msg      = {};
-    while ( msg.message != WM_QUIT )
+    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) && msg.message != WM_QUIT )
     {
+        ::TranslateMessage( &msg );
+        ::DispatchMessage( &msg );
+
         // Check to see of the application wants to quit.
         if ( m_RequestQuit )
         {
             ::PostQuitMessage( 0 );
             m_RequestQuit = false;
         }
-
-        while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
-        {
-            ::TranslateMessage( &msg );
-            ::DispatchMessage( &msg );
-        }
-
-        std::this_thread::yield();
     }
+
+    m_bIsRunning = false;
 
     return static_cast<int32_t>( msg.wParam );
 }
@@ -243,8 +241,7 @@ std::shared_ptr<Window>
     }
 
     auto pWindow = std::make_shared<MakeWindow>( hWindow, windowName,
-                                                 clientWidth,
-                                             clientHeight );
+                                                 clientWidth, clientHeight );
 
     gs_WindowMap.insert( WindowMap::value_type( hWindow, pWindow ) );
 
@@ -378,6 +375,20 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
 
         switch ( message )
         {
+        case WM_DPICHANGED:
+        {
+            float             dpiScaling = HIWORD( wParam ) / 96.0f;
+            DPIScaleEventArgs dpiScaleEventArgs( dpiScaling );
+            pWindow->OnDPIScaleChanged( dpiScaleEventArgs );
+        }
+        break;
+        case WM_PAINT:
+        {
+            // Delta and total time will be filled in by the Window.
+            UpdateEventArgs updateEventArgs( 0.0, 0.0 );
+            pWindow->OnUpdate( updateEventArgs );
+        }
+        break;
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
         {
@@ -441,9 +452,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             int height = ( (int)(short)HIWORD( lParam ) );
 
             ResizeEventArgs resizeEventArgs( width, height );
-            
-            //gs_MessageQueue.Push( std::bind(
-            //    &Window::OnResize, pRenderWindow.get(), resizeEventArgs ) );
+            pWindow->OnResize( resizeEventArgs );
         }
         break;
         case WM_CLOSE:
@@ -466,7 +475,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
         case WM_DESTROY:
         {
             std::lock_guard<std::mutex> lock( gs_WindowHandlesMutex );
-            WindowMap::iterator   iter = gs_WindowMap.find( hwnd );
+            WindowMap::iterator         iter = gs_WindowMap.find( hwnd );
             if ( iter != gs_WindowMap.end() )
             {
                 gs_WindowMap.erase( iter );

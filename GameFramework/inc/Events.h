@@ -97,6 +97,38 @@ public:
 using Event = Delegate<EventArgs&>;
 
 /**
+ * Update event args.
+ */
+class UpdateEventArgs : public EventArgs
+{
+public:
+    UpdateEventArgs( double deltaTime, double totalTime )
+    : DeltaTime( deltaTime )
+    , TotalTime( totalTime )
+    {}
+
+    // The elapsed time (in seconds)
+    double DeltaTime;
+    // Total time the application has been running (in seconds).
+    double TotalTime;
+};
+
+using UpdateEvent = Delegate<UpdateEventArgs&>;
+
+class DPIScaleEventArgs : public EventArgs
+{
+public:
+    typedef EventArgs base;
+    DPIScaleEventArgs( float dpiScale )
+    : DPIScale( dpiScale )
+    {}
+
+    float DPIScale;
+};
+
+using DPIScaleEvent = Delegate<DPIScaleEventArgs&>;
+
+/**
  * EventArgs for a WindowClosing event.
  */
 class WindowCloseEventArgs : public EventArgs
