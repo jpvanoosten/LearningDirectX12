@@ -70,7 +70,7 @@ void OnKeyPressed( KeyEventArgs& e )
     case KeyCode::Enter:
         if ( e.Alt )
         {
-        case KeyCode::F11:
+    case KeyCode::F11:
             pGameWindow->ToggleFullscreen();
             break;
         }

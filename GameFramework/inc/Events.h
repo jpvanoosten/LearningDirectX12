@@ -44,8 +44,8 @@ class Delegate
 {
 public:
     using signal            = sig::signal<void( Args... )>;
-    using connection        = typename signal::connection_type;
-    using scoped_connection = typename signal::scoped_connection_type;
+    using connection        = sig::connection;
+    using scoped_connection = sig::scoped_connection;
 
     /**
      * Add function callback to the delegate.

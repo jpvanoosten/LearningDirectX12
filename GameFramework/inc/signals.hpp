@@ -1219,8 +1219,14 @@ namespace sig
             // The signal class needs access to the index method.
             template<typename, typename>
             friend class sig::signal;
-
             virtual std::size_t& index() = 0;
+
+        public:
+            virtual void block() = 0;
+            virtual void unblock() = 0;
+            virtual bool connected() const noexcept = 0;
+            virtual bool blocked() const noexcept = 0;
+            virtual bool disconnect() = 0;
         };
 
         // Base type for the signal class.
@@ -1241,7 +1247,7 @@ namespace sig
     // TODO: Refactor slot to derive from detail::slot_state
     // Specialization for function objects.
     template<typename R, typename... Args>
-    class slot<R(Args...)> : detail::slot_base
+    class slot<R(Args...)> : public detail::slot_base
     {
         using impl = detail::slot_impl<R, Args...>;
 
@@ -1403,21 +1409,18 @@ namespace sig
     };
 
     // Shared pointer to a slot.
-    template<typename T>
-    using slot_ptr = std::shared_ptr<slot<T>>;
+    using slot_ptr = std::shared_ptr<detail::slot_base>;
 
     // Weak pointer to a slot.
-    template<typename T>
-    using slot_wptr = std::weak_ptr<slot<T>>;
+    using slot_wptr = std::weak_ptr<detail::slot_base>;
 
     /**
      * An RAII object that blocks connections until destruction.
      */
-    template<typename Func>
     class connection_blocker
     {
     public:
-        using slot_type = slot_wptr<Func>;
+        using slot_type = slot_wptr;
 
         connection_blocker() noexcept = default;
         ~connection_blocker() noexcept
@@ -1438,13 +1441,12 @@ namespace sig
             return *this;
         }
 
-        constexpr void swap(connection_blocker& other) noexcept
+        void swap(connection_blocker& other) noexcept
         {
             std::swap(m_Slot, other.m_Slot);
         }
 
     private:
-        template<typename>
         friend class connection;
 
         explicit connection_blocker(slot_type slot) noexcept
@@ -1467,8 +1469,7 @@ namespace sig
         slot_type m_Slot;
     };
 
-    template<typename Func>
-    inline void swap(connection_blocker<Func>& cb1, connection_blocker<Func>& cb2) noexcept
+    inline void swap(connection_blocker& cb1, connection_blocker& cb2) noexcept
     {
         cb1.swap(cb2);
     }
@@ -1476,11 +1477,10 @@ namespace sig
     /**
      * Connection object allows for managing slot connections.
      */
-    template<typename Func>
     class connection
     {
     public:
-        using slot_type = slot_wptr<Func>;
+        using slot_type = slot_wptr;
 
         connection() noexcept = default;
         virtual ~connection() = default;
@@ -1529,12 +1529,12 @@ namespace sig
             }
         }
 
-        connection_blocker<Func> blocker() const noexcept
+        connection_blocker blocker() const noexcept
         {
-            return connection_blocker<Func>(m_Slot);
+            return connection_blocker(m_Slot);
         }
 
-        constexpr void swap(connection& other) noexcept
+        void swap(connection& other) noexcept
         {
             std::swap(m_Slot, other.m_Slot);
         }
@@ -1543,7 +1543,6 @@ namespace sig
         template<typename, typename>
         friend class signal;
 
-        template<typename>
         friend class scoped_connection;
 
         explicit connection(slot_type&& s) noexcept
@@ -1553,8 +1552,7 @@ namespace sig
         slot_type m_Slot;
     };
 
-    template<typename Func>
-    void swap(connection<Func>& c1, connection<Func>& c2)
+    inline void swap(connection& c1, connection& c2)
     {
         c1.swap(c2);
     }
@@ -1563,12 +1561,11 @@ namespace sig
     /**
      * An RAII version of connection which disconnects it's slot on destruction.
      */
-    template<typename Func>
-    class scoped_connection : public connection<Func>
+    class scoped_connection : public connection
     {
     public:
-        using base = connection<Func>;
-        using slot_type = slot_wptr<Func>;
+        using base = connection;
+        using slot_type = slot_wptr;
 
         scoped_connection() = default;
         virtual ~scoped_connection() override
@@ -1599,9 +1596,9 @@ namespace sig
             return *this;
         }
 
-        connection<Func> release()
+        connection release()
         {
-            return connection<Func>(std::move(this->m_Slot));
+            return connection(std::move(this->m_Slot));
         }
 
     private:
@@ -1610,8 +1607,7 @@ namespace sig
         {}
     };
 
-    template<typename Func>
-    inline void swap(scoped_connection<Func>& c1, scoped_connection<Func>& c2)
+    inline void swap(scoped_connection& c1, scoped_connection& c2)
     {
         c1.swap(c2);
     }
@@ -1652,9 +1648,6 @@ namespace sig
     public:
         using slot_type = slot<R(Args...)>;
         using slot_ptr_type = std::shared_ptr<slot_type>;
-        using connection_type = connection<R(Args...)>;
-        using connection_blocker_type = connection_blocker<R(Args...)>;
-        using scoped_connection_type = scoped_connection<R(Args...)>;
         using list_type = std::vector<slot_ptr_type>;
         using list_iterator = typename list_type::const_iterator;
         using cow_type = detail::cow_ptr<list_type>;
@@ -1693,10 +1686,10 @@ namespace sig
         }
 
         // Connect a previously created slot
-        connection_type connect(const slot_type& slot)
+        connection connect(const slot_type& slot)
         {
             auto s = slot_ptr_type(new slot_type(slot, static_cast<detail::signal_base*>(this)));
-            connection_type c(s);
+            connection c(s);
             add_slot(std::move(s));
             return c;
         }
@@ -1705,10 +1698,10 @@ namespace sig
         template<typename Func,
             typename = detail::traits::enable_if_t<detail::traits::is_invocable_r<R, detail::traits::remove_cvref_t<Func>, Args...>::value>,
             typename = detail::traits::enable_if_t<!std::is_base_of<detail::slot_base, detail::traits::remove_cvref_t<Func>>::value>>
-        connection_type connect(Func&& f)
+        connection connect(Func&& f)
         {
             auto s = slot_ptr_type(new slot_type(std::forward<Func>(f), static_cast<detail::signal_base*>(this)));
-            connection_type c(s);
+            connection c(s);
             add_slot(std::move(s));
             return c;
         }
@@ -1718,19 +1711,19 @@ namespace sig
         template<typename Func, typename Ptr, 
             typename = detail::traits::enable_if_t<detail::traits::is_invocable_r<R, detail::traits::remove_cvref_t<Func>, Ptr, Args...>::value>,
             typename = detail::traits::enable_if_t<!std::is_base_of<detail::slot_base, detail::traits::remove_cvref_t<Func>>::value>>
-        connection_type connect(Func&& f, Ptr&& p)
+        connection connect(Func&& f, Ptr&& p)
         {
             auto s = slot_ptr_type(new slot_type(std::forward<Func>(f), std::forward<Ptr>(p), static_cast<detail::signal_base*>(this)));
-            connection_type c(s);
+            connection c(s);
             add_slot(std::move(s));
             return c;
         }
 
         // Connect a previously created slot.
         // Returns a scoped_connection.
-        scoped_connection_type connect_scoped(const slot_type& slot)
+        scoped_connection connect_scoped(const slot_type& slot)
         {
-            return scoped_connection_type(connect(slot));
+            return scoped_connection(connect(slot));
         }
 
         // Connect a slot with a callable function object.
@@ -1738,9 +1731,9 @@ namespace sig
         template<typename Func, 
             typename = detail::traits::enable_if_t<detail::traits::is_invocable_r<R, detail::traits::remove_cvref_t<Func>, Args...>::value>,
             typename = detail::traits::enable_if_t<!std::is_base_of<detail::slot_base, detail::traits::remove_cvref_t<Func>>::value>>
-        scoped_connection_type connect_scoped(Func&& f)
+        scoped_connection connect_scoped(Func&& f)
         {
-            return scoped_connection_type(connect<Func>(std::forward<Func>(f)));
+            return scoped_connection(connect<Func>(std::forward<Func>(f)));
         }
 
         // Connect a slot with a pointer to member function
@@ -1749,9 +1742,9 @@ namespace sig
         template<typename Func, typename Ptr, 
             typename = detail::traits::enable_if_t<detail::traits::is_invocable_r<R, Func, Ptr, Args...>::value>,
             typename = detail::traits::enable_if_t<!std::is_base_of<detail::slot_base, detail::traits::remove_cvref_t<Func>>::value>>
-        scoped_connection_type connect_scoped(Func&& f, Ptr&& p)
+        scoped_connection connect_scoped(Func&& f, Ptr&& p)
         {
-            return scoped_connection_type(connect<Func>(std::forward<Func>(f), std::forward<Ptr>(p)));
+            return scoped_connection(connect<Func>(std::forward<Func>(f), std::forward<Ptr>(p)));
         }
 
         // Disconnect a slot.
