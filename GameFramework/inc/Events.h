@@ -385,12 +385,12 @@ enum class FileAction
     RenameNew,  // The file was renamed and this event stores the new name.
 };
 
-class FileChangeEventArgs : public EventArgs
+class FileChangedEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
 
-    FileChangeEventArgs( FileAction action, const std::wstring& path )
+    FileChangedEventArgs( FileAction action, const std::wstring& path )
     : base()
     , Action( action )
     , Path( path )
@@ -399,4 +399,4 @@ public:
     FileAction   Action;  // The action that triggered this event.
     std::wstring Path;    // The file or directory path that was modified.
 };
-using FileChangeEvent = Delegate<FileChangeEventArgs&>;
+using FileChangeEvent = Delegate<FileChangedEventArgs&>;

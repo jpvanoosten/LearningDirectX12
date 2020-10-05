@@ -143,7 +143,7 @@ protected:
     virtual ~Application();
 
     // A file modification was detected.
-    virtual void OnFileChange( FileChangeEventArgs& e );
+    virtual void OnFileChange( FileChangedEventArgs& e );
 
     // Application is going to close
     virtual void OnExit( EventArgs& e );

@@ -21,3 +21,7 @@ target_include_directories( ${TARGET_NAME}
 target_link_libraries( ${TARGET_NAME}
     GameFramework
 )
+
+# Set Local Debugger Settings (Command Arguments and Environment Variables)
+set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
+configure_file( 01-ClearScreen.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/01-ClearScreen.vcxproj.user @ONLY )

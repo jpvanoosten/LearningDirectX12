@@ -302,7 +302,7 @@ void Application::CheckFileChanges()
                     break;
                 }
 
-                FileChangeEventArgs fileChangedEventArgs( fileAction,
+                FileChangedEventArgs fileChangedEventArgs( fileAction,
                                                           fileName );
                 OnFileChange( fileChangedEventArgs );
             }
@@ -316,39 +316,8 @@ void Application::CheckFileChanges()
     }
 }
 
-// Convert FileAction to string (for logging)
-std::ostream& operator<<( std::ostream& os, FileAction fa )
+void Application::OnFileChange( FileChangedEventArgs& e )
 {
-    switch ( fa )
-    {
-    case FileAction::Unknown:
-        os << "Unknown";
-        break;
-    case FileAction::Added:
-        os << "Added";
-        break;
-    case FileAction::Removed:
-        os << "Removed";
-        break;
-    case FileAction::Modified:
-        os << "Modified";
-        break;
-    case FileAction::RenameOld:
-        os << "RenameOld";
-        break;
-    case FileAction::RenameNew:
-        os << "RenameNew";
-        break;
-    default:
-        break;
-    }
-
-    return os;
-}
-
-void Application::OnFileChange( FileChangeEventArgs& e )
-{
-    spdlog::info( L"File changed: {}: {}", e.Action, e.Path );
     FileChanged( e );
 }
 

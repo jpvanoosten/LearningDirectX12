@@ -16,3 +16,4 @@ CTestTestfile.cmake
 imgui.ini
 *.nsight-gfxproj
 /out
+/logs
