@@ -146,12 +146,17 @@ public:
     /**
      * Invoked when the window is minimized.
      */
-    Event Minimize;
+    ResizeEvent Minimized;
+
+    /**
+     * Invoked when the window is maximized.
+     */
+    ResizeEvent Maximized;
 
     /**
      * Invoked when the window is restored.
      */
-    Event Restore;
+    ResizeEvent Restored;
 
     /**
      * Invoked when a keyboard key is pressed while the window has focus.
@@ -177,6 +182,11 @@ public:
      * Invoked when the mouse is moved over the window.
      */
     MouseMotionEvent MouseMoved;
+
+    /**
+     * Invoked when the mouse enters the client area.
+     */
+    MouseMotionEvent MouseEnter;
 
     /**
      * Invoked when the mouse button is pressed over the window.
@@ -223,16 +233,25 @@ protected:
     // Update game
     virtual void OnUpdate( UpdateEventArgs& e );
 
-   	// The DPI scaling of the window has changed.
+    // The DPI scaling of the window has changed.
     virtual void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
-    // Window was closed
+    // Window was closed.
     virtual void OnClose( WindowCloseEventArgs& e );
 
-    // Window was resized
+    // Window was resized.
     virtual void OnResize( ResizeEventArgs& e );
 
-    // A keyboard key was pressed
+    // Window was minimized.
+    virtual void OnMinimized( ResizeEventArgs& e );
+
+    // Window was maximized.
+    virtual void OnMaximized( ResizeEventArgs& e );
+
+    // Window was restored.
+    virtual void OnRestored( ResizeEventArgs& e );
+
+    // A keyboard key was pressed.
     virtual void OnKeyPressed( KeyEventArgs& e );
     // A keyboard key was released
     virtual void OnKeyReleased( KeyEventArgs& e );
@@ -249,6 +268,9 @@ protected:
     virtual void OnMouseButtonReleased( MouseButtonEventArgs& e );
     // The mouse wheel was moved.
     virtual void OnMouseWheel( MouseWheelEventArgs& e );
+
+    // The mouse entered the client area.
+    virtual void OnMouseEnter( MouseMotionEventArgs& e );
     // The mouse left the client are of the window.
     virtual void OnMouseLeave( EventArgs& e );
     // The application window has received mouse focus
@@ -270,10 +292,15 @@ private:
     // The current fullscreen state of the window.
     bool m_IsFullscreen;
 
+    // True if the window is maximized.
+    bool m_IsMaximized;
+
+    // True if the window is minimized.
+    bool m_IsMinimized;
+
     // This is true when the mouse is inside the window's client rect.
     bool m_bInClientRect;
     RECT m_WindowRect;
-
 
     // This is set to true when the window receives keyboard focus.
     bool m_bHasKeyboardFocus;

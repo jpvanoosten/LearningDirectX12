@@ -229,7 +229,7 @@ enum class MouseButton
     None   = 0,
     Left   = 1,
     Right  = 2,
-    Middel = 3
+    Middle = 3
 };
 
 enum class ButtonState
@@ -312,6 +312,13 @@ public:
 };
 using MouseWheelEvent = Delegate<MouseWheelEventArgs&>;
 
+enum class WindowState
+{
+    Restored  = 0,  // The window has been resized.
+    Minimized = 1,  // The window has been minimized.
+    Maximized = 2,  // The window has been maximized.
+};
+
 /**
  * Event args to indicate the window has been resized.
  */
@@ -320,16 +327,19 @@ class ResizeEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    ResizeEventArgs( int width, int height )
+    ResizeEventArgs( int width, int height, WindowState state )
     : base()
     , Width( width )
     , Height( height )
+    , State( state )
     {}
 
     // The new width of the window
     int Width;
     // The new height of the window.
     int Height;
+    // If the window was minimized or maximized.
+    WindowState State;
 };
 using ResizeEvent = Delegate<ResizeEventArgs&>;
 

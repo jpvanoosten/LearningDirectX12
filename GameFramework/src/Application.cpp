@@ -184,8 +184,9 @@ int32_t Application::Run()
 
     m_bIsRunning = true;
 
-    MSG msg      = {};
-    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) && msg.message != WM_QUIT )
+    MSG msg = {};
+    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) &&
+            msg.message != WM_QUIT )
     {
         ::TranslateMessage( &msg );
         ::DispatchMessage( &msg );
@@ -303,7 +304,7 @@ void Application::CheckFileChanges()
                 }
 
                 FileChangedEventArgs fileChangedEventArgs( fileAction,
-                                                          fileName );
+                                                           fileName );
                 OnFileChange( fileChangedEventArgs );
             }
 
@@ -325,6 +326,85 @@ void Application::OnExit( EventArgs& e )
 {
     // Invoke the Exit event.
     Exit( e );
+}
+
+// Convert the message ID into a MouseButton ID
+static MouseButton DecodeMouseButton( UINT messageID )
+{
+    MouseButton mouseButton = MouseButton::None;
+    switch ( messageID )
+    {
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_LBUTTONDBLCLK:
+    {
+        mouseButton = MouseButton::Left;
+    }
+    break;
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_RBUTTONDBLCLK:
+    {
+        mouseButton = MouseButton::Right;
+    }
+    break;
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_MBUTTONDBLCLK:
+    {
+        mouseButton = MouseButton::Middle;
+    }
+    break;
+    }
+
+    return mouseButton;
+}
+
+// Convert the message ID into a ButtonState.
+static ButtonState DecodeButtonState( UINT messageID )
+{
+    ButtonState buttonState = ButtonState::Pressed;
+
+    switch ( messageID )
+    {
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_XBUTTONUP:
+        buttonState = ButtonState::Released;
+        break;
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_MBUTTONDOWN:
+    case WM_XBUTTONDOWN:
+        buttonState = ButtonState::Pressed;
+        break;
+    }
+
+    return buttonState;
+}
+
+// Convert wParam of the WM_SIZE events to a WindowState.
+static WindowState DecodeWindowState( WPARAM wParam )
+{
+    WindowState windowState = WindowState::Restored;
+
+    switch ( wParam )
+    {
+    case SIZE_RESTORED:
+        windowState = WindowState::Restored;
+        break;
+    case SIZE_MINIMIZED:
+        windowState = WindowState::Minimized;
+        break;
+    case SIZE_MAXIMIZED:
+        windowState = WindowState::Maximized;
+        break;
+    default:
+        break;
+    }
+
+    return windowState;
 }
 
 static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
@@ -415,23 +495,153 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             pWindow->OnKeyReleased( keyEventArgs );
         }
         break;
+        // The default window procedure will play a system notification sound
+        // when pressing the Alt+Enter keyboard combination if this message is
+        // not handled.
+        case WM_SYSCHAR:
+            break;
+        case WM_KILLFOCUS:
+        {
+            // Window lost keyboard focus.
+            EventArgs eventArgs;
+            pWindow->OnKeyboardBlur( eventArgs );
+        }
+        break;
+        case WM_SETFOCUS:
+        {
+            EventArgs eventArgs;
+            pWindow->OnKeyboardFocus( eventArgs );
+        }
+        break;
+        case WM_MOUSEMOVE:
+        {
+            bool lButton = ( wParam & MK_LBUTTON ) != 0;
+            bool rButton = ( wParam & MK_RBUTTON ) != 0;
+            bool mButton = ( wParam & MK_MBUTTON ) != 0;
+            bool shift   = ( wParam & MK_SHIFT ) != 0;
+            bool control = ( wParam & MK_CONTROL ) != 0;
+
+            int x = ( (int)(short)LOWORD( lParam ) );
+            int y = ( (int)(short)HIWORD( lParam ) );
+
+            MouseMotionEventArgs mouseMotionEventArgs(
+                lButton, mButton, rButton, control, shift, x, y );
+            pWindow->OnMouseMoved( mouseMotionEventArgs );
+        }
+        break;
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        {
+            bool lButton = ( wParam & MK_LBUTTON ) != 0;
+            bool rButton = ( wParam & MK_RBUTTON ) != 0;
+            bool mButton = ( wParam & MK_MBUTTON ) != 0;
+            bool shift   = ( wParam & MK_SHIFT ) != 0;
+            bool control = ( wParam & MK_CONTROL ) != 0;
+
+            int x = ( (int)(short)LOWORD( lParam ) );
+            int y = ( (int)(short)HIWORD( lParam ) );
+
+            // Capture mouse movement until the button is released.
+            SetCapture( hwnd );
+
+            MouseButtonEventArgs mouseButtonEventArgs(
+                DecodeMouseButton( message ), ButtonState::Pressed, lButton,
+                mButton, rButton, control, shift, x, y );
+            pWindow->OnMouseButtonPressed( mouseButtonEventArgs );
+        }
+        break;
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+        {
+            bool lButton = ( wParam & MK_LBUTTON ) != 0;
+            bool rButton = ( wParam & MK_RBUTTON ) != 0;
+            bool mButton = ( wParam & MK_MBUTTON ) != 0;
+            bool shift   = ( wParam & MK_SHIFT ) != 0;
+            bool control = ( wParam & MK_CONTROL ) != 0;
+
+            int x = ( (int)(short)LOWORD( lParam ) );
+            int y = ( (int)(short)HIWORD( lParam ) );
+
+            // Stop capturing the mouse.
+            ReleaseCapture();
+
+            MouseButtonEventArgs mouseButtonEventArgs(
+                DecodeMouseButton( message ), ButtonState::Released, lButton,
+                mButton, rButton, control, shift, x, y );
+            pWindow->OnMouseButtonReleased( mouseButtonEventArgs );
+        }
+        break;
+        case WM_MOUSEWHEEL:
+        {
+            // The distance the mouse wheel is rotated.
+            // A positive value indicates the wheel was rotated forwards (away
+            //  the user). A negative value indicates the wheel was rotated
+            //  backwards (toward the user).
+            float zDelta =
+                ( (int)(short)HIWORD( wParam ) ) / (float)WHEEL_DELTA;
+            short keyStates = (short)LOWORD( wParam );
+
+            bool lButton = ( keyStates & MK_LBUTTON ) != 0;
+            bool rButton = ( keyStates & MK_RBUTTON ) != 0;
+            bool mButton = ( keyStates & MK_MBUTTON ) != 0;
+            bool shift   = ( keyStates & MK_SHIFT ) != 0;
+            bool control = ( keyStates & MK_CONTROL ) != 0;
+
+            int x = ( (int)(short)LOWORD( lParam ) );
+            int y = ( (int)(short)HIWORD( lParam ) );
+
+            // Convert the screen coordinates to client coordinates.
+            POINT screenToClientPoint;
+            screenToClientPoint.x = x;
+            screenToClientPoint.y = y;
+            ::ScreenToClient( hwnd, &screenToClientPoint );
+
+            MouseWheelEventArgs mouseWheelEventArgs(
+                zDelta, lButton, mButton, rButton, control, shift,
+                (int)screenToClientPoint.x, (int)screenToClientPoint.y );
+            pWindow->OnMouseWheel( mouseWheelEventArgs );
+        }
+        break;
+        // NOTE: Not really sure if these next set of messages are working
+        // correctly. Not really sure HOW to get them to work correctly.
+        // TODO: Try to fix these if I need them ;)
+        case WM_CAPTURECHANGED:
+        {
+            EventArgs mouseBlurEventArgs;
+            pWindow->OnMouseBlur( mouseBlurEventArgs );
+        }
+        break;
+        case WM_MOUSEACTIVATE:
+        {
+            EventArgs mouseFocusEventArgs;
+            pWindow->OnMouseFocus( mouseFocusEventArgs );
+        }
+        break;
+        case WM_MOUSELEAVE:
+        {
+            EventArgs mouseLeaveEventArgs;
+            pWindow->OnMouseLeave( mouseLeaveEventArgs );
+        }
+        break;
         case WM_SIZE:
         {
+            WindowState windowState = DecodeWindowState( wParam );
+
             int width  = ( (int)(short)LOWORD( lParam ) );
             int height = ( (int)(short)HIWORD( lParam ) );
 
-            ResizeEventArgs resizeEventArgs( width, height );
+            ResizeEventArgs resizeEventArgs( width, height, windowState );
             pWindow->OnResize( resizeEventArgs );
         }
         break;
         case WM_CLOSE:
         {
-            // This message cannot be queued on the message queue because we
-            // need the response from the event arguments to determine if the
-            // window should really be closed or not.
             WindowCloseEventArgs windowCloseEventArgs;
             pWindow->OnClose( windowCloseEventArgs );
 
+            // Check to see if the user canceled the close event.
             if ( windowCloseEventArgs.ConfirmClose )
             {
                 // DestroyWindow( hwnd );

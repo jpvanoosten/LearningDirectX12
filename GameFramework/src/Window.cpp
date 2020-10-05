@@ -9,6 +9,8 @@ Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
 , m_PreviousMouseX( 0 )
 , m_PreviousMouseY( 0 )
 , m_IsFullscreen( false )
+, m_IsMinimized( false )
+, m_IsMaximized( false )
 , m_bInClientRect( false )
 , m_bHasKeyboardFocus( false )
 {}
@@ -48,7 +50,42 @@ void Window::OnResize( ResizeEventArgs& e )
     m_ClientWidth  = e.Width;
     m_ClientHeight = e.Height;
 
+    if ( ( m_IsMinimized || m_IsMaximized ) &&
+         e.State == WindowState::Restored )
+    {
+        m_IsMaximized = false;
+        m_IsMinimized = false;
+        OnRestored( e );
+    }
+    if ( !m_IsMinimized && e.State == WindowState::Minimized )
+    {
+        m_IsMinimized = true;
+        m_IsMaximized = false;
+        OnMinimized( e );
+    }
+    if ( !m_IsMaximized && e.State == WindowState::Maximized )
+    {
+        m_IsMaximized = true;
+        m_IsMinimized = false;
+        OnMaximized( e );
+    }
+
     Resize( e );
+}
+
+void Window::OnMinimized( ResizeEventArgs& e )
+{
+    Minimized( e );
+}
+
+void Window::OnMaximized( ResizeEventArgs& e )
+{
+    Maximized( e );
+}
+
+void Window::OnRestored( ResizeEventArgs& e )
+{
+    Restored( e );
 }
 
 // The DPI scaling of the window has changed.
@@ -91,6 +128,8 @@ void Window::OnMouseMoved( MouseMotionEventArgs& e )
         m_PreviousMouseX = e.X;
         m_PreviousMouseY = e.Y;
         m_bInClientRect  = true;
+        // Mouse re-entered the client area.
+        OnMouseEnter( e );
     }
 
     e.RelX = e.X - m_PreviousMouseX;
@@ -117,6 +156,19 @@ void Window::OnMouseButtonReleased( MouseButtonEventArgs& e )
 void Window::OnMouseWheel( MouseWheelEventArgs& e )
 {
     MouseWheel( e );
+}
+
+void Window::OnMouseEnter( MouseMotionEventArgs& e )
+{
+    // Track mouse leave events.
+    TRACKMOUSEEVENT trackMouseEvent = {};
+    trackMouseEvent.cbSize          = sizeof( TRACKMOUSEEVENT );
+    trackMouseEvent.hwndTrack       = m_hWnd;
+    trackMouseEvent.dwFlags         = TME_LEAVE;
+    TrackMouseEvent( &trackMouseEvent );
+
+    m_bInClientRect = true;
+    MouseEnter( e );
 }
 
 void Window::OnMouseLeave( EventArgs& e )
