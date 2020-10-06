@@ -10,6 +10,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory f
 
 project( LearningDirectX12 LANGUAGES CXX )
 
+# Enable to build shared libraries.
+option(BUILD_SHARED_LIBS "Create shared libraries." OFF)
+
 # Enable multithreaded builds
 if( MSVC )
     add_compile_options(/MP)
@@ -18,6 +21,8 @@ endif()
 set( ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "Build Assimp Tools" FORCE )
 set( ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "Build Assimp Samples" FORCE )
 set( ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp Tests" FORCE )
+set( GAINPUT_SAMPLES OFF CACHE BOOL "Build Samples for Gainput" FORCE )
+set( GAINPUT_TESTS OFF CACHE BOOL "Build Tests for Gainput" FORCE)
 
 add_subdirectory( extern/assimp )
 
@@ -25,6 +30,8 @@ set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDL
     PROPERTIES
         FOLDER assimp 
 )
+
+add_subdirectory( extern/gainput )
 
 add_subdirectory( extern/DirectXTex )
 add_subdirectory( GameFramework )
