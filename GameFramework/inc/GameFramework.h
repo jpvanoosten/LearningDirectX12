@@ -33,6 +33,8 @@
 #include "Events.h"
 #include "ReadDirectoryChanges.h"
 
+#include <gainput/gainput.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -50,7 +52,7 @@
 
 class Window;
 
-class Application
+class GameFramework
 {
 public:
     /**
@@ -59,7 +61,7 @@ public:
      * @parm hInst The application instance.
      * @returns A reference to the created instance.
      */
-    static Application& Create( HINSTANCE hInst );
+    static GameFramework& Create( HINSTANCE hInst );
 
     /**
      * Destroy the Application instance.
@@ -70,7 +72,7 @@ public:
      * Get a reference to the application instance.
      * @returns A reference to the Application instance.
      */
-    static Application& Get();
+    static GameFramework& Get();
 
     /**
      * Start the main application run loop.
@@ -139,8 +141,8 @@ public:
     Event Exit;
 
 protected:
-    Application( HINSTANCE hInst );
-    virtual ~Application();
+    GameFramework( HINSTANCE hInst );
+    virtual ~GameFramework();
 
     // A file modification was detected.
     virtual void OnFileChange( FileChangedEventArgs& e );
@@ -151,16 +153,19 @@ protected:
 private:
     // Private and deleted. Please don't try to create copies
     // of this singleton!
-    Application( const Application& ) = delete;
-    Application( Application&& )      = delete;
-    Application& operator=( Application& ) = delete;
-    Application& operator=( Application&& ) = delete;
+    GameFramework( const GameFramework& ) = delete;
+    GameFramework( GameFramework&& )      = delete;
+    GameFramework& operator=( GameFramework& ) = delete;
+    GameFramework& operator=( GameFramework&& ) = delete;
 
     // Directory change listener thread entry point function.
     void CheckFileChanges();
 
     // Handle to application instance.
     HINSTANCE m_hInstance;
+
+    // Gainput input manager.
+    gainput::InputManager m_InputManager;
 
     // Set to true while the application is running.
     std::atomic_bool m_bIsRunning;

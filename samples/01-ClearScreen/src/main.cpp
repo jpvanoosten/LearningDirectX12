@@ -1,4 +1,4 @@
-#include <Application.h>
+#include <GameFramework.h>
 #include <Window.h>
 
 #include <spdlog/fmt/ostr.h>
@@ -52,14 +52,14 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
         LocalFree( argv );
     }
 
-    auto& app = Application::Create( hInstance );
+    auto& gf = GameFramework::Create( hInstance );
     {
         // Listen for file changes in the "Assets" folder.
-        app.RegisterDirectoryChangeListener( L"Assets" );
-        app.FileChanged += &OnFileChanged;
+        gf.RegisterDirectoryChangeListener( L"Assets" );
+        gf.FileChanged += &OnFileChanged;
 
         // Create a window:
-        pGameWindow = app.CreateWindow( L"Clear Screen", 1920, 1080 );
+        pGameWindow = gf.CreateWindow( L"Clear Screen", 1920, 1080 );
 
         // Register events.
         pGameWindow->KeyPressed += &OnKeyPressed;
@@ -81,11 +81,11 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         pGameWindow->Show();
 
-        retCode = Application::Get().Run();
+        retCode = GameFramework::Get().Run();
 
         pGameWindow.reset();
     }
-    Application::Destroy();
+    GameFramework::Destroy();
 
     return retCode;
 }
@@ -116,7 +116,7 @@ void OnKeyPressed( KeyEventArgs& e )
     {
     case KeyCode::Escape:
         // Stop the application if the Escape key is pressed.
-        Application::Get().Stop();
+        GameFramework::Get().Stop();
         break;
     case KeyCode::Enter:
         if ( e.Alt )
@@ -187,12 +187,12 @@ void OnMouseWheel( MouseWheelEventArgs& e )
 
 void OnMouseLeave( EventArgs& e )
 {
-//    spdlog::info( "MouseLeave" );
+    spdlog::info( "MouseLeave" );
 }
 
 void OnMouseEnter( MouseMotionEventArgs& e )
 {
-//    spdlog::info( "MouseEnter: {}, {}", e.X, e.Y );
+    spdlog::info( "MouseEnter: {}, {}", e.X, e.Y );
 }
 
 void OnMouseFocus( EventArgs& e )
@@ -228,7 +228,7 @@ void OnWindowRestored( ResizeEventArgs& e )
 void OnWindowClose( WindowCloseEventArgs& e )
 {
     // Stop the application if the window is closed.
-    Application::Get().Stop();
+    GameFramework::Get().Stop();
 }
 
 // Convert FileAction to string (for logging purposes)

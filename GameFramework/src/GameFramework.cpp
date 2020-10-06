@@ -1,10 +1,10 @@
 #include <GameFrameworkPCH.h>
 
-#include <Application.h>
+#include <GameFramework.h>
 
 #include <Window.h>
 
-static Application* gs_pSingelton       = nullptr;
+static GameFramework* gs_pSingelton       = nullptr;
 constexpr wchar_t   WINDOW_CLASS_NAME[] = L"RenderWindowClass";
 
 static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
@@ -80,7 +80,7 @@ static void CreateConsole()
     }
 }
 
-Application::Application( HINSTANCE hInst )
+GameFramework::GameFramework( HINSTANCE hInst )
 : m_hInstance( hInst )
 , m_bIsRunning( false )
 , m_RequestQuit( false )
@@ -136,10 +136,10 @@ Application::Application( HINSTANCE hInst )
 
     // Create a thread to listen for file changes.
     m_DirectoryChangeListenerThread =
-        std::thread( &Application::CheckFileChanges, this );
+        std::thread( &GameFramework::CheckFileChanges, this );
 }
 
-Application::~Application()
+GameFramework::~GameFramework()
 {
     // Close the thread listening for file changes.
     m_bTerminateDirectoryChangeThread = true;
@@ -151,18 +151,18 @@ Application::~Application()
     gs_WindowMap.clear();
 }
 
-Application& Application::Create( HINSTANCE hInst )
+GameFramework& GameFramework::Create( HINSTANCE hInst )
 {
     if ( !gs_pSingelton )
     {
-        gs_pSingelton = new Application( hInst );
+        gs_pSingelton = new GameFramework( hInst );
         spdlog::info( "Application class created." );
     }
 
     return *gs_pSingelton;
 }
 
-void Application::Destroy()
+void GameFramework::Destroy()
 {
     if ( gs_pSingelton )
     {
@@ -172,13 +172,13 @@ void Application::Destroy()
     }
 }
 
-Application& Application::Get()
+GameFramework& GameFramework::Get()
 {
     assert( gs_pSingelton != nullptr );
     return *gs_pSingelton;
 }
 
-int32_t Application::Run()
+int32_t GameFramework::Run()
 {
     assert( !m_bIsRunning );
 
@@ -190,6 +190,8 @@ int32_t Application::Run()
     {
         ::TranslateMessage( &msg );
         ::DispatchMessage( &msg );
+
+        m_InputManager.HandleMessage( msg );
 
         // Check to see of the application wants to quit.
         if ( m_RequestQuit )
@@ -204,7 +206,7 @@ int32_t Application::Run()
     return static_cast<int32_t>( msg.wParam );
 }
 
-void Application::Stop()
+void GameFramework::Stop()
 {
     // When called from another thread other than the main thread,
     // the WM_QUIT message goes to that thread and will not be handled
@@ -214,7 +216,7 @@ void Application::Stop()
 }
 
 std::shared_ptr<Window>
-    Application::CreateWindow( const std::wstring& windowName, int clientWidth,
+    GameFramework::CreateWindow( const std::wstring& windowName, int clientWidth,
                                int clientHeight )
 {
     int screenWidth  = ::GetSystemMetrics( SM_CXSCREEN );
@@ -249,7 +251,7 @@ std::shared_ptr<Window>
     return pWindow;
 }
 
-void Application::RegisterDirectoryChangeListener( const std::wstring& dir,
+void GameFramework::RegisterDirectoryChangeListener( const std::wstring& dir,
                                                    bool recursive )
 {
     scoped_lock lock( m_DirectoryChangeMutex );
@@ -258,7 +260,7 @@ void Application::RegisterDirectoryChangeListener( const std::wstring& dir,
 }
 
 // This is the directory change listener thread entry point.
-void Application::CheckFileChanges()
+void GameFramework::CheckFileChanges()
 {
     while ( !m_bTerminateDirectoryChangeThread )
     {
@@ -317,12 +319,12 @@ void Application::CheckFileChanges()
     }
 }
 
-void Application::OnFileChange( FileChangedEventArgs& e )
+void GameFramework::OnFileChange( FileChangedEventArgs& e )
 {
     FileChanged( e );
 }
 
-void Application::OnExit( EventArgs& e )
+void GameFramework::OnExit( EventArgs& e )
 {
     // Invoke the Exit event.
     Exit( e );

@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES
-    inc/Application.h
+    inc/GameFramework.h
     inc/bitmask_operators.hpp
     inc/CThreadSafeQueue.h
     inc/Events.h
@@ -18,7 +18,7 @@ source_group( "Header Files" FILES ${HEADER_FILES} )
 source_group( "signals" FILES inc/optional.hpp inc/signals.hpp )
 
 set( SOURCE_FILES
-    src/Application.cpp
+    src/GameFramework.cpp
     src/GameFrameworkPCH.cpp
     src/HighResolutionTimer.cpp
     src/ReadDirectoryChanges.cpp

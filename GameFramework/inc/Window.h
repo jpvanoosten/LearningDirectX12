@@ -219,7 +219,7 @@ public:
     Event MouseBlur;
 
 protected:
-    friend class Application;
+    friend class GameFramework;
     // This is needed to allow the WndProc function to call event callbacks on
     // the window.
     friend LRESULT CALLBACK ::WndProc( HWND, UINT, WPARAM, LPARAM );
