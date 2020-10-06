@@ -59,6 +59,9 @@ namespace fs = std::filesystem;
 // Common lock type
 using scoped_lock = std::lock_guard<std::mutex>;
 
+// gainput
+#include <gainput/gainput.h>
+
 // spdlog
 #include <spdlog/async.h>
 #include <spdlog/sinks/msvc_sink.h>
