@@ -44,11 +44,11 @@
     #undef CreateWindow
 #endif
 
-#include <cstdint> // for uint32_t
-#include <memory>  // for std::shared_ptr
-#include <mutex>   // for std::mutex
-#include <string>  // for std::wstring
-#include <thread>  // for std::thread
+#include <cstdint>  // for uint32_t
+#include <memory>   // for std::shared_ptr
+#include <mutex>    // for std::mutex
+#include <string>   // for std::wstring
+#include <thread>   // for std::thread
 
 class Window;
 
@@ -76,10 +76,16 @@ public:
 
     /**
      * Start the main application run loop.
-     * 
+     *
      * @returns The error code (if an error occurred).
      */
     int32_t Run();
+
+    /**
+     * Process joystick and keyboard events. This should be called once per
+     * frame before updating the game logic.
+     */
+    void ProcessInput();
 
     /**
      * Stop the application.
@@ -87,9 +93,9 @@ public:
     void Stop();
 
     /**
-     * To support hot-loading support, you can register a directory path
-     * for listening for file change notifications. File change notifications
-     * are set through the Application::FileChange event.
+     * To support hot-loading of modified files, you can register a directory
+     * path for listening for file change notifications. File change
+     * notifications are set through the Application::FileChange event.
      *
      * @param dir The directory to listen for file changes.
      * @param recursive Whether to listen for file changes in sub-folders.

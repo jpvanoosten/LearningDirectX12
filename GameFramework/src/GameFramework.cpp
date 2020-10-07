@@ -5,7 +5,7 @@
 #include <Window.h>
 
 static GameFramework* gs_pSingelton       = nullptr;
-constexpr wchar_t   WINDOW_CLASS_NAME[] = L"RenderWindowClass";
+constexpr wchar_t     WINDOW_CLASS_NAME[] = L"RenderWindowClass";
 
 static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
                                  LPARAM lParam );
@@ -206,6 +206,11 @@ int32_t GameFramework::Run()
     return static_cast<int32_t>( msg.wParam );
 }
 
+void GameFramework::ProcessInput()
+{
+    m_InputManager.Update();
+}
+
 void GameFramework::Stop()
 {
     // When called from another thread other than the main thread,
@@ -216,8 +221,8 @@ void GameFramework::Stop()
 }
 
 std::shared_ptr<Window>
-    GameFramework::CreateWindow( const std::wstring& windowName, int clientWidth,
-                               int clientHeight )
+    GameFramework::CreateWindow( const std::wstring& windowName,
+                                 int clientWidth, int clientHeight )
 {
     int screenWidth  = ::GetSystemMetrics( SM_CXSCREEN );
     int screenHeight = ::GetSystemMetrics( SM_CYSCREEN );
@@ -252,7 +257,7 @@ std::shared_ptr<Window>
 }
 
 void GameFramework::RegisterDirectoryChangeListener( const std::wstring& dir,
-                                                   bool recursive )
+                                                     bool recursive )
 {
     scoped_lock lock( m_DirectoryChangeMutex );
     m_DirectoryChanges.AddDirectory( dir, recursive,

@@ -98,6 +98,8 @@ void OnUpdate( UpdateEventArgs& e )
     totalTime += e.DeltaTime;
     frameCount++;
 
+    GameFramework::Get().ProcessInput();
+
     if ( totalTime > 1.0 )
     {
         auto fps   = frameCount / totalTime;
