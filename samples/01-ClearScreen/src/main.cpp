@@ -29,6 +29,7 @@ void OnWindowRestored( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
 
 std::shared_ptr<Window> pGameWindow = nullptr;
+Logger                  logger;
 
 int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                        PWSTR lpCmdLine, int nCmdShow )
@@ -54,6 +55,9 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     auto& gf = GameFramework::Create( hInstance );
     {
+        // Create a logger for logging messages.
+        logger = gf.CreateLogger( "ClearScreen" );
+
         // Listen for file changes in the "Assets" folder.
         gf.RegisterDirectoryChangeListener( L"Assets" );
         gf.FileChanged += &OnFileChanged;
@@ -98,6 +102,7 @@ void OnUpdate( UpdateEventArgs& e )
     totalTime += e.DeltaTime;
     frameCount++;
 
+    // Process controller input.
     GameFramework::Get().ProcessInput();
 
     if ( totalTime > 1.0 )
@@ -106,8 +111,10 @@ void OnUpdate( UpdateEventArgs& e )
         frameCount = 0;
         totalTime -= 1.0;
 
-        //        spdlog::info( "FPS: {:.7}", fps );
+        logger->info( "FPS: {:.7}", fps );
     }
+
+
 }
 
 void OnKeyPressed( KeyEventArgs& e )
@@ -132,22 +139,22 @@ void OnKeyPressed( KeyEventArgs& e )
 
 void OnKeyReleased( KeyEventArgs& e )
 {
-//    spdlog::info( L"KeyReleased: {}", (wchar_t)e.Char );
+    logger->info( L"KeyReleased: {}", (wchar_t)e.Char );
 }
 
 void OnKeyboardFocus( EventArgs& e )
 {
-//    spdlog::info( "KeyboardFocus" );
+    logger->info( "KeyboardFocus" );
 }
 
 void OnKeyboardBlur( EventArgs& e )
 {
-//    spdlog::info( "KeyboardBlur" );
+    logger->info( "KeyboardBlur" );
 }
 
 void OnMouseMoved( MouseMotionEventArgs& e )
 {
-    // spdlog::info( "MouseMoved: {}, {} ({}, {})", e.X, e.Y, e.RelX, e.RelY );
+    logger->info( "MouseMoved: {}, {} ({}, {})", e.X, e.Y, e.RelX, e.RelY );
 }
 
 // Convert MouseButton to string (for logging purposes)
@@ -174,57 +181,58 @@ OStream& operator<<( OStream& os, MouseButton mb )
 
 void OnMouseButtonPressed( MouseButtonEventArgs& e )
 {
-    //    spdlog::info( "MouseButtonPressed: {}", e.Button );
+    logger->info( "MouseButtonPressed: {}", e.Button );
 }
 
 void OnMouseButtonReleased( MouseButtonEventArgs& e )
 {
-    //    spdlog::info( "MouseButtonReleased: {}", e.Button );
+    logger->info( "MouseButtonReleased: {}", e.Button );
 }
 
 void OnMouseWheel( MouseWheelEventArgs& e )
 {
-//    spdlog::info( "MouseWheel: {}", e.WheelDelta );
+    logger->info( "MouseWheel: {}", e.WheelDelta );
 }
 
 void OnMouseLeave( EventArgs& e )
 {
-    spdlog::info( "MouseLeave" );
+    logger->info( "MouseLeave" );
 }
 
 void OnMouseEnter( MouseMotionEventArgs& e )
 {
-    spdlog::info( "MouseEnter: {}, {}", e.X, e.Y );
+    logger->info( "MouseEnter: {}, {}", e.X, e.Y );
 }
 
 void OnMouseFocus( EventArgs& e )
 {
-//    spdlog::info( "MouseFocus" );
+    logger->info( "MouseFocus" );
 }
 
 void OnMouseBlur( EventArgs& e )
 {
-//    spdlog::info( "MouseBlur" );
+    logger->info( "MouseBlur" );
 }
 
 void OnWindowResized( ResizeEventArgs& e )
 {
-    //spdlog::info( "Window Resize: {}, {}", e.Width, e.Height );
+    logger->info( "Window Resize: {}, {}", e.Width, e.Height );
+    GameFramework::Get().SetDisplaySize( e.Width, e.Height );
 }
 
 void OnWindowMinimized( ResizeEventArgs& e )
 {
-    spdlog::info( "Window Minimized" );
+    logger->info( "Window Minimized" );
 }
 
 void OnWindowMaximized( ResizeEventArgs& e )
 {
-    spdlog::info( "Window Maximized" );
+    logger->info( "Window Maximized" );
 }
 
 void OnWindowRestored( ResizeEventArgs& e )
 {
-    spdlog::info( "Window Restored" );
+    logger->info( "Window Restored" );
 }
 
 void OnWindowClose( WindowCloseEventArgs& e )
@@ -266,5 +274,5 @@ OStream& operator<<( OStream& os, FileAction fa )
 
 void OnFileChanged( FileChangedEventArgs& e )
 {
-    spdlog::info( L"File changed: [{}]: {}", e.Action, e.Path );
+    logger->info( L"File changed: [{}]: {}", e.Action, e.Path );
 }

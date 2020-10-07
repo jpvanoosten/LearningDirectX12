@@ -34,6 +34,7 @@
 #include "ReadDirectoryChanges.h"
 
 #include <gainput/gainput.h>
+#include <spdlog/logger.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -45,12 +46,15 @@
 #endif
 
 #include <cstdint>  // for uint32_t
+#include <limits>   // for std::numeric_limits
 #include <memory>   // for std::shared_ptr
 #include <mutex>    // for std::mutex
 #include <string>   // for std::wstring
 #include <thread>   // for std::thread
 
 class Window;
+
+using Logger = std::shared_ptr<spdlog::logger>;
 
 class GameFramework
 {
@@ -75,6 +79,12 @@ public:
     static GameFramework& Get();
 
     /**
+     * Create a named logger or get a previously created logger with the same
+     * name.
+     */
+    Logger CreateLogger( const std::string& name );
+
+    /**
      * Start the main application run loop.
      *
      * @returns The error code (if an error occurred).
@@ -82,10 +92,26 @@ public:
     int32_t Run();
 
     /**
+     * Inform the input manager of changes to the size of the display.
+     * This is needed for gainput to normalize mouse inputs.
+     * NOTE: Only use this on a single window's Resize event!
+     *
+     * @param width The width of the window's client area (in pixels).
+     * @param height The height of the window's client area (in pixels).
+     */
+    void SetDisplaySize( int width, int height );
+
+    /**
      * Process joystick and keyboard events. This should be called once per
      * frame before updating the game logic.
+     *
+     * @param deltaTime The time (in milliseconds) elapsed since the previous
+     * call to ProcessInput. Only provide the deltaTime value if
+     * gainput::InputManager was initialized with `useSystemTime` set to
+     * `false`.
      */
-    void ProcessInput();
+    void ProcessInput(
+        uint64_t deltaTime = std::numeric_limits<uint64_t>::max() );
 
     /**
      * Stop the application.
@@ -116,25 +142,12 @@ public:
                                           int clientWidth, int clientHeight );
 
     /**
-     * Destroy a window by it's name.
-     *
-     * @param windowName The name that was used to create the window.
-     */
-    void DestroyWindow( const std::wstring& windowName );
-
-    /**
-     * Destroy a window instance.
-     *
-     * @param pWindow A pointer to the window instance to destroy.
-     */
-    void DestroyWindow( std::shared_ptr<Window> pWindow );
-
-    /**
      * Get a window by name.
      *
      * @param windowName The name that was used to create the window.
      */
-    std::shared_ptr<Window> GetWindowByName( const std::wstring& windowName );
+    std::shared_ptr<Window>
+        GetWindowByName( const std::wstring& windowName ) const;
 
     /**
      * Invoked when a file is modified on disk.
@@ -170,8 +183,13 @@ private:
     // Handle to application instance.
     HINSTANCE m_hInstance;
 
+    Logger m_Logger;
+
     // Gainput input manager.
     gainput::InputManager m_InputManager;
+    gainput::DeviceId     m_KeyboardDevice;
+    gainput::DeviceId     m_MouseDevice;
+    gainput::DeviceId     m_GamepadDevice;
 
     // Set to true while the application is running.
     std::atomic_bool m_bIsRunning;

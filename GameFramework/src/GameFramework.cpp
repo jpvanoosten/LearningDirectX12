@@ -12,9 +12,12 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
 
 constexpr int MAX_CONSOLE_LINES = 500;
 
-using WindowMap = std::map<HWND, std::weak_ptr<Window>>;
-static WindowMap gs_WindowMap;
-std::mutex       gs_WindowHandlesMutex;
+using WindowMap       = std::map<HWND, std::weak_ptr<Window>>;
+using WindowMapByName = std::map<std::wstring, std::weak_ptr<Window>>;
+static WindowMap       gs_WindowMap;
+static WindowMapByName gs_WindowMapByName;
+
+std::mutex gs_WindowHandlesMutex;
 
 // A wrapper struct to allow shared pointers for the window class.
 // This is needed because the constructor and destructor for the Window
@@ -94,9 +97,6 @@ GameFramework::GameFramework( HINSTANCE hInst )
 
     CreateConsole();
 
-    // Create loggers
-    // @see
-    // https://github.com/gabime/spdlog#asynchronous-logger-with-multi-sinks
     spdlog::init_thread_pool( 8192, 1 );
     auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
@@ -106,14 +106,11 @@ GameFramework::GameFramework( HINSTANCE hInst )
 
     std::vector<spdlog::sink_ptr> sinks { stdout_sink, rotating_sink,
                                           msvc_sink };
-    auto logger = std::make_shared<spdlog::async_logger>(
-        "Application", sinks.begin(), sinks.end(), spdlog::thread_pool(),
+    m_Logger = std::make_shared<spdlog::async_logger>(
+        "GameFramework", sinks.begin(), sinks.end(), spdlog::thread_pool(),
         spdlog::async_overflow_policy::block );
-    spdlog::register_logger( logger );
-    spdlog::set_default_logger( logger );
-
-    spdlog::info( L"Wide charcter format string: {}",
-                  L"Wide character string" );
+    spdlog::register_logger( m_Logger );
+    spdlog::set_default_logger( m_Logger );
 
     WNDCLASSEXW wndClass = { 0 };
 
@@ -149,6 +146,7 @@ GameFramework::~GameFramework()
     }
 
     gs_WindowMap.clear();
+    gs_WindowMapByName.clear();
 }
 
 GameFramework& GameFramework::Create( HINSTANCE hInst )
@@ -156,7 +154,7 @@ GameFramework& GameFramework::Create( HINSTANCE hInst )
     if ( !gs_pSingelton )
     {
         gs_pSingelton = new GameFramework( hInst );
-        spdlog::info( "Application class created." );
+        spdlog::info( "GameFramework class created." );
     }
 
     return *gs_pSingelton;
@@ -176,6 +174,20 @@ GameFramework& GameFramework::Get()
 {
     assert( gs_pSingelton != nullptr );
     return *gs_pSingelton;
+}
+
+// Create loggers
+// @see https://github.com/gabime/spdlog#asynchronous-logger-with-multi-sinks
+Logger GameFramework::CreateLogger( const std::string& name )
+{
+    Logger logger = spdlog::get( name );
+    if ( !logger )
+    {
+        logger = m_Logger->clone( name );
+        spdlog::register_logger( logger );
+    }
+
+    return logger;
 }
 
 int32_t GameFramework::Run()
@@ -206,9 +218,21 @@ int32_t GameFramework::Run()
     return static_cast<int32_t>( msg.wParam );
 }
 
-void GameFramework::ProcessInput()
+void GameFramework::SetDisplaySize( int width, int height )
 {
-    m_InputManager.Update();
+    m_InputManager.SetDisplaySize( width, height );
+}
+
+void GameFramework::ProcessInput( uint64_t deltaTime )
+{
+    if ( deltaTime < std::numeric_limits<uint64_t>::max() )
+    {
+        m_InputManager.Update( deltaTime );
+    }
+    else
+    {
+        m_InputManager.Update();
+    }
 }
 
 void GameFramework::Stop()
@@ -252,8 +276,17 @@ std::shared_ptr<Window>
                                                  clientWidth, clientHeight );
 
     gs_WindowMap.insert( WindowMap::value_type( hWindow, pWindow ) );
+    gs_WindowMapByName.insert(
+        WindowMapByName::value_type( windowName, pWindow ) );
 
     return pWindow;
+}
+
+std::shared_ptr<Window>
+    GameFramework::GetWindowByName( const std::wstring& windowName ) const
+{
+    auto iter = gs_WindowMapByName.find( windowName );
+    return ( iter != gs_WindowMapByName.end() ) ? iter->second.lock() : nullptr;
 }
 
 void GameFramework::RegisterDirectoryChangeListener( const std::wstring& dir,
@@ -419,7 +452,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
 {
     std::shared_ptr<Window> pWindow;
     {
-        WindowMap::const_iterator iter = gs_WindowMap.find( hwnd );
+        auto iter = gs_WindowMap.find( hwnd );
         if ( iter != gs_WindowMap.end() )
         {
             pWindow = iter->second.lock();

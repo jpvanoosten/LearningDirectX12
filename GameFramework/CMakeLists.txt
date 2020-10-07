@@ -50,6 +50,9 @@ target_compile_features( GameFramework
     PUBLIC cxx_std_17
 )
 
+# Remove those pesky min/max macros defined in global scope.
+target_compile_definitions( GameFramework PUBLIC NOMINMAX )
+
 target_include_directories( GameFramework
     PUBLIC inc
 )
