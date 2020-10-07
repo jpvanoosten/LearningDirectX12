@@ -45,12 +45,13 @@
     #undef CreateWindow
 #endif
 
-#include <cstdint>  // for uint32_t
-#include <limits>   // for std::numeric_limits
-#include <memory>   // for std::shared_ptr
-#include <mutex>    // for std::mutex
-#include <string>   // for std::wstring
-#include <thread>   // for std::thread
+#include <cstdint>      // for uint32_t
+#include <limits>       // for std::numeric_limits
+#include <memory>       // for std::shared_ptr
+#include <mutex>        // for std::mutex
+#include <string>       // for std::wstring
+#include <thread>       // for std::thread
+#include <type_traits>  // for std::enable_if
 
 class Window;
 
@@ -83,6 +84,42 @@ public:
      * name.
      */
     Logger CreateLogger( const std::string& name );
+
+    /**
+     * Get the keyboard device ID.
+     */
+    gainput::DeviceId GetKeyboardId() const;
+
+    /**
+     * Get the mouse device ID.
+     */
+    gainput::DeviceId GetMouseId() const;
+
+    /**
+     * Get a gamepad device ID.
+     *
+     * @param index The index of the connected pad [0 ... gainput::MaxPadCount)
+     */
+    gainput::DeviceId GetPadId( unsigned index = 0 ) const;
+
+    /**
+     * Get a device.
+     *
+     * @param InputDevice the Type of device to retrieve. (Must be derived from
+     * gainput::InputDevice)
+     */
+    template<class T>
+    T* GetDevice( gainput::DeviceId deviceId ) const
+    {
+        static_assert( std::is_base_of_v<gainput::InputDevice, T> );
+        return static_cast<T*>( m_InputManager.GetDevice( deviceId ) );
+    }
+
+    /**
+     * Create a gainput input map.
+     * @see http://gainput.johanneskuhlmann.de/api/classgainput_1_1InputMap.html
+     */
+    std::shared_ptr<gainput::InputMap> CreateInputMap();
 
     /**
      * Start the main application run loop.
@@ -189,7 +226,7 @@ private:
     gainput::InputManager m_InputManager;
     gainput::DeviceId     m_KeyboardDevice;
     gainput::DeviceId     m_MouseDevice;
-    gainput::DeviceId     m_GamepadDevice;
+    gainput::DeviceId     m_GamepadDevice[gainput::MaxPadCount];
 
     // Set to true while the application is running.
     std::atomic_bool m_bIsRunning;

@@ -6,6 +6,22 @@
 
 #include <shellapi.h>  // for CommandLineToArgvW
 
+// These are the actions that the user can perform.
+// Don't map multiple actions to the same device button.
+namespace Buttons
+{
+enum
+{
+    Menu,  // The menu button on the game pad [Enter].
+    Back,  // The back button on the game pad [ESC].
+    A,     // The A button the game pad [space].
+    B,     // The B button on the game pad [C].
+    X,     // The X button on the game pad [F].
+    Y,     // The Y button on the game pad [Q].
+    // ...etc
+};
+}
+
 void OnFileChanged( FileChangedEventArgs& e );
 void OnUpdate( UpdateEventArgs& e );
 void OnKeyPressed( KeyEventArgs& e );
@@ -28,8 +44,10 @@ void OnWindowMaximized( ResizeEventArgs& e );
 void OnWindowRestored( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
 
-std::shared_ptr<Window> pGameWindow = nullptr;
-Logger                  logger;
+std::shared_ptr<Window>            pGameWindow = nullptr;
+std::shared_ptr<gainput::InputMap> pInputMap   = nullptr;
+
+Logger logger;
 
 int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                        PWSTR lpCmdLine, int nCmdShow )
@@ -57,6 +75,27 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
     {
         // Create a logger for logging messages.
         logger = gf.CreateLogger( "ClearScreen" );
+
+        // Create an input map and map user buttons to device buttons.
+        auto keyboardId = gf.GetKeyboardId();
+        auto mouseId    = gf.GetMouseId();
+        auto gamepad0   = gf.GetPadId( 0 );
+
+        pInputMap = gf.CreateInputMap();
+        // Map keyboard keys.
+        pInputMap->MapBool( Buttons::Menu, keyboardId, gainput::KeyReturn );
+        pInputMap->MapBool( Buttons::Back, keyboardId, gainput::KeyEscape );
+        pInputMap->MapBool( Buttons::A, keyboardId, gainput::KeySpace );
+        pInputMap->MapBool( Buttons::B, keyboardId, gainput::KeyC );
+        pInputMap->MapBool( Buttons::X, keyboardId, gainput::KeyF );
+        pInputMap->MapBool( Buttons::Y, keyboardId, gainput::KeyQ );
+        // Map gamepad buttons
+        pInputMap->MapBool( Buttons::Menu, gamepad0, gainput::PadButtonStart );
+        pInputMap->MapBool( Buttons::Menu, gamepad0, gainput::PadButtonSelect );
+        pInputMap->MapBool( Buttons::A, gamepad0, gainput::PadButtonA );
+        pInputMap->MapBool( Buttons::B, gamepad0, gainput::PadButtonB );
+        pInputMap->MapBool( Buttons::X, gamepad0, gainput::PadButtonX );
+        pInputMap->MapBool( Buttons::Y, gamepad0, gainput::PadButtonY );
 
         // Listen for file changes in the "Assets" folder.
         gf.RegisterDirectoryChangeListener( L"Assets" );
@@ -103,6 +142,7 @@ void OnUpdate( UpdateEventArgs& e )
     frameCount++;
 
     // Process controller input.
+    // This should be called each update and before handling input logic.
     GameFramework::Get().ProcessInput();
 
     if ( totalTime > 1.0 )
@@ -114,12 +154,36 @@ void OnUpdate( UpdateEventArgs& e )
         logger->info( "FPS: {:.7}", fps );
     }
 
-
+    // Check button actions.
+    if ( pInputMap->GetBoolIsNew( Buttons::Menu ) )
+    {
+        logger->info( "Menu button pressed." );
+    }
+    if (pInputMap->GetBoolIsNew(Buttons::Back)) 
+    {
+        logger->info( "Back button pressed." );
+    }
+    if ( pInputMap->GetBoolIsNew( Buttons::A ) )
+    {
+        logger->info( "A button pressed." );
+    }
+    if ( pInputMap->GetBoolIsNew( Buttons::B ) )
+    {
+        logger->info( "B button pressed." );
+    }
+    if ( pInputMap->GetBoolIsNew( Buttons::X ) )
+    {
+        logger->info( "X button pressed." );
+    }
+    if ( pInputMap->GetBoolIsNew( Buttons::Y ) )
+    {
+        logger->info( "Y button pressed." );
+    }
 }
 
 void OnKeyPressed( KeyEventArgs& e )
 {
-    spdlog::info( L"KeyPressed: {}", (wchar_t)e.Char );
+    logger->info( L"KeyPressed: {}", (wchar_t)e.Char );
 
     switch ( e.Key )
     {

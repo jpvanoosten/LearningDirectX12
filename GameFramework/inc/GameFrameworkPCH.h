@@ -53,6 +53,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <type_traits>
 
 namespace fs = std::filesystem;
 

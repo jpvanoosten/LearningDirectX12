@@ -95,8 +95,10 @@ GameFramework::GameFramework( HINSTANCE hInst )
     // be rendered in a DPI sensitive fashion.
     SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
 
+    // Create a console window for std::cout
     CreateConsole();
 
+    // Init spdlog.
     spdlog::init_thread_pool( 8192, 1 );
     auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
@@ -111,6 +113,16 @@ GameFramework::GameFramework( HINSTANCE hInst )
         spdlog::async_overflow_policy::block );
     spdlog::register_logger( m_Logger );
     spdlog::set_default_logger( m_Logger );
+
+    // Init gainput.
+    m_KeyboardDevice =
+        m_InputManager.CreateDevice<gainput::InputDeviceKeyboard>();
+    m_MouseDevice = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();
+    for ( unsigned i = 0; i < gainput::MaxPadCount; ++i )
+    {
+        m_GamepadDevice[i] =
+            m_InputManager.CreateDevice<gainput::InputDevicePad>( i );
+    }
 
     WNDCLASSEXW wndClass = { 0 };
 
@@ -166,7 +178,7 @@ void GameFramework::Destroy()
     {
         delete gs_pSingelton;
         gs_pSingelton = nullptr;
-        spdlog::info( "Application class destroyed." );
+        spdlog::info( "GameFramework class destroyed." );
     }
 }
 
@@ -188,6 +200,27 @@ Logger GameFramework::CreateLogger( const std::string& name )
     }
 
     return logger;
+}
+
+gainput::DeviceId GameFramework::GetKeyboardId() const
+{
+    return m_KeyboardDevice;
+}
+
+gainput::DeviceId GameFramework::GetMouseId() const
+{
+    return m_MouseDevice;
+}
+
+gainput::DeviceId GameFramework::GetPadId( unsigned index /*= 0 */ ) const
+{
+    assert( index >= 0 && index < gainput::MaxPadCount );
+    return m_GamepadDevice[index];
+}
+
+std::shared_ptr<gainput::InputMap> GameFramework::CreateInputMap()
+{
+    return std::make_shared<gainput::InputMap>( m_InputManager );
 }
 
 int32_t GameFramework::Run()
