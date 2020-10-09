@@ -1,15 +1,15 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <Window.h>
+#include <dx12lib/Window.h>
 
-#include <Application.h>
-#include <CommandList.h>
-#include <CommandQueue.h>
-#include <GUI.h>
-#include <Game.h>
-#include <RenderTarget.h>
-#include <ResourceStateTracker.h>
-#include <Texture.h>
+#include <dx12lib/Application.h>
+#include <dx12lib/CommandList.h>
+#include <dx12lib/CommandQueue.h>
+#include <dx12lib/GUI.h>
+#include <dx12lib/Game.h>
+#include <dx12lib/RenderTarget.h>
+#include <dx12lib/ResourceStateTracker.h>
+#include <dx12lib/Texture.h>
 
 Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
 : m_hWnd( hWnd )

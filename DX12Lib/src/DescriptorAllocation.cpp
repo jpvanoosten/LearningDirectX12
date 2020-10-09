@@ -1,9 +1,9 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <DescriptorAllocation.h>
+#include <dx12lib/DescriptorAllocation.h>
 
-#include <Application.h>
-#include <DescriptorAllocatorPage.h>
+#include <dx12lib/Application.h>
+#include <dx12lib/DescriptorAllocatorPage.h>
 
 DescriptorAllocation::DescriptorAllocation()
     : m_Descriptor{ 0 }

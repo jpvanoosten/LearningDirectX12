@@ -1,14 +1,13 @@
-#include <GameFrameworkPCH.h>
+#include "GameFrameworkPCH.h"
 
-#include <GameFramework.h>
+#include <GameFramework/GameFramework.h>
 
-#include <Window.h>
+#include <GameFramework/Window.h>
 
 static GameFramework* gs_pSingelton       = nullptr;
 constexpr wchar_t     WINDOW_CLASS_NAME[] = L"RenderWindowClass";
 
-static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
-                                 LPARAM lParam );
+static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
 constexpr int MAX_CONSOLE_LINES = 500;
 
@@ -24,8 +23,7 @@ std::mutex gs_WindowHandlesMutex;
 // class are protected and not accessible by the std::make_shared method.
 struct MakeWindow : public Window
 {
-    MakeWindow( HWND hWnd, const std::wstring& windowName, int clientWidth,
-                int clientHeight )
+    MakeWindow( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight )
     : Window( hWnd, windowName, clientWidth, clientHeight )
     {}
 };
@@ -100,52 +98,44 @@ GameFramework::GameFramework( HINSTANCE hInst )
 
     // Init spdlog.
     spdlog::init_thread_pool( 8192, 1 );
-    auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    auto stdout_sink   = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
         "logs/log.txt", 1024 * 1024 * 5, 3,
         true );  // Max size: 5MB, Max files: 3, Rotate on open: true
     auto msvc_sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
 
-    std::vector<spdlog::sink_ptr> sinks { stdout_sink, rotating_sink,
-                                          msvc_sink };
-    m_Logger = std::make_shared<spdlog::async_logger>(
-        "GameFramework", sinks.begin(), sinks.end(), spdlog::thread_pool(),
-        spdlog::async_overflow_policy::block );
+    std::vector<spdlog::sink_ptr> sinks { stdout_sink, rotating_sink, msvc_sink };
+    m_Logger = std::make_shared<spdlog::async_logger>( "GameFramework", sinks.begin(), sinks.end(),
+                                                       spdlog::thread_pool(), spdlog::async_overflow_policy::block );
     spdlog::register_logger( m_Logger );
     spdlog::set_default_logger( m_Logger );
 
     // Init gainput.
-    m_KeyboardDevice =
-        m_InputManager.CreateDevice<gainput::InputDeviceKeyboard>();
-    m_MouseDevice = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();
+    m_KeyboardDevice = m_InputManager.CreateDevice<gainput::InputDeviceKeyboard>();
+    m_MouseDevice    = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();
     for ( unsigned i = 0; i < gainput::MaxPadCount; ++i )
-    {
-        m_GamepadDevice[i] =
-            m_InputManager.CreateDevice<gainput::InputDevicePad>( i );
-    }
+    { m_GamepadDevice[i] = m_InputManager.CreateDevice<gainput::InputDevicePad>( i ); }
 
     WNDCLASSEXW wndClass = { 0 };
 
-    wndClass.cbSize      = sizeof( WNDCLASSEX );
-    wndClass.style       = CS_HREDRAW | CS_VREDRAW;
-    wndClass.lpfnWndProc = &WndProc;
-    wndClass.hInstance   = m_hInstance;
-    wndClass.hCursor     = LoadCursor( nullptr, IDC_ARROW );
-    wndClass.hIcon       = LoadIcon( m_hInstance, MAKEINTRESOURCE( APP_ICON ) );
+    wndClass.cbSize        = sizeof( WNDCLASSEX );
+    wndClass.style         = CS_HREDRAW | CS_VREDRAW;
+    wndClass.lpfnWndProc   = &WndProc;
+    wndClass.hInstance     = m_hInstance;
+    wndClass.hCursor       = LoadCursor( nullptr, IDC_ARROW );
+    wndClass.hIcon         = LoadIcon( m_hInstance, MAKEINTRESOURCE( APP_ICON ) );
     wndClass.hbrBackground = ( HBRUSH )( COLOR_WINDOW + 1 );
     wndClass.lpszMenuName  = nullptr;
     wndClass.lpszClassName = WINDOW_CLASS_NAME;
-    wndClass.hIconSm = LoadIcon( m_hInstance, MAKEINTRESOURCE( APP_ICON ) );
+    wndClass.hIconSm       = LoadIcon( m_hInstance, MAKEINTRESOURCE( APP_ICON ) );
 
     if ( !RegisterClassExW( &wndClass ) )
     {
-        MessageBoxA( NULL, "Unable to register the window class.", "Error",
-                     MB_OK | MB_ICONERROR );
+        MessageBoxA( NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR );
     }
 
     // Create a thread to listen for file changes.
-    m_DirectoryChangeListenerThread =
-        std::thread( &GameFramework::CheckFileChanges, this );
+    m_DirectoryChangeListenerThread = std::thread( &GameFramework::CheckFileChanges, this );
 }
 
 GameFramework::~GameFramework()
@@ -230,8 +220,7 @@ int32_t GameFramework::Run()
     m_bIsRunning = true;
 
     MSG msg = {};
-    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) &&
-            msg.message != WM_QUIT )
+    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) && msg.message != WM_QUIT )
     {
         ::TranslateMessage( &msg );
         ::DispatchMessage( &msg );
@@ -277,15 +266,12 @@ void GameFramework::Stop()
     m_RequestQuit = true;
 }
 
-std::shared_ptr<Window>
-    GameFramework::CreateWindow( const std::wstring& windowName,
-                                 int clientWidth, int clientHeight )
+std::shared_ptr<Window> GameFramework::CreateWindow( const std::wstring& windowName, int clientWidth, int clientHeight )
 {
     int screenWidth  = ::GetSystemMetrics( SM_CXSCREEN );
     int screenHeight = ::GetSystemMetrics( SM_CYSCREEN );
 
-    RECT windowRect = { 0, 0, static_cast<LONG>( clientWidth ),
-                        static_cast<LONG>( clientHeight ) };
+    RECT windowRect = { 0, 0, static_cast<LONG>( clientWidth ), static_cast<LONG>( clientHeight ) };
 
     ::AdjustWindowRect( &windowRect, WS_OVERLAPPEDWINDOW, FALSE );
 
@@ -295,9 +281,8 @@ std::shared_ptr<Window>
     int windowX = std::max<int>( 0, ( screenWidth - (int)width ) / 2 );
     int windowY = std::max<int>( 0, ( screenHeight - (int)height ) / 2 );
 
-    HWND hWindow = ::CreateWindowExW(
-        NULL, WINDOW_CLASS_NAME, windowName.c_str(), WS_OVERLAPPEDWINDOW,
-        windowX, windowY, width, height, NULL, NULL, m_hInstance, NULL );
+    HWND hWindow = ::CreateWindowExW( NULL, WINDOW_CLASS_NAME, windowName.c_str(), WS_OVERLAPPEDWINDOW, windowX,
+                                      windowY, width, height, NULL, NULL, m_hInstance, NULL );
 
     if ( !hWindow )
     {
@@ -305,29 +290,24 @@ std::shared_ptr<Window>
         return nullptr;
     }
 
-    auto pWindow = std::make_shared<MakeWindow>( hWindow, windowName,
-                                                 clientWidth, clientHeight );
+    auto pWindow = std::make_shared<MakeWindow>( hWindow, windowName, clientWidth, clientHeight );
 
     gs_WindowMap.insert( WindowMap::value_type( hWindow, pWindow ) );
-    gs_WindowMapByName.insert(
-        WindowMapByName::value_type( windowName, pWindow ) );
+    gs_WindowMapByName.insert( WindowMapByName::value_type( windowName, pWindow ) );
 
     return pWindow;
 }
 
-std::shared_ptr<Window>
-    GameFramework::GetWindowByName( const std::wstring& windowName ) const
+std::shared_ptr<Window> GameFramework::GetWindowByName( const std::wstring& windowName ) const
 {
     auto iter = gs_WindowMapByName.find( windowName );
     return ( iter != gs_WindowMapByName.end() ) ? iter->second.lock() : nullptr;
 }
 
-void GameFramework::RegisterDirectoryChangeListener( const std::wstring& dir,
-                                                     bool recursive )
+void GameFramework::RegisterDirectoryChangeListener( const std::wstring& dir, bool recursive )
 {
     scoped_lock lock( m_DirectoryChangeMutex );
-    m_DirectoryChanges.AddDirectory( dir, recursive,
-                                     FILE_NOTIFY_CHANGE_LAST_WRITE );
+    m_DirectoryChanges.AddDirectory( dir, recursive, FILE_NOTIFY_CHANGE_LAST_WRITE );
 }
 
 // This is the directory change listener thread entry point.
@@ -337,8 +317,7 @@ void GameFramework::CheckFileChanges()
     {
         scoped_lock lock( m_DirectoryChangeMutex );
 
-        DWORD waitSignal =
-            ::WaitForSingleObject( m_DirectoryChanges.GetWaitHandle(), 0 );
+        DWORD waitSignal = ::WaitForSingleObject( m_DirectoryChanges.GetWaitHandle(), 0 );
         switch ( waitSignal )
         {
         case WAIT_OBJECT_0:
@@ -376,8 +355,7 @@ void GameFramework::CheckFileChanges()
                     break;
                 }
 
-                FileChangedEventArgs fileChangedEventArgs( fileAction,
-                                                           fileName );
+                FileChangedEventArgs fileChangedEventArgs( fileAction, fileName );
                 OnFileChange( fileChangedEventArgs );
             }
 
@@ -480,8 +458,7 @@ static WindowState DecodeWindowState( WPARAM wParam )
     return windowState;
 }
 
-static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
-                                 LPARAM lParam )
+static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
     std::shared_ptr<Window> pWindow;
     {
@@ -521,8 +498,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             // For printable characters, the next message will be WM_CHAR.
             // This message contains the character code we need to send the
             // KeyPressed event. Inspired by the SDL 1.2 implementation.
-            if ( PeekMessage( &charMsg, hwnd, 0, 0, PM_NOREMOVE ) &&
-                 charMsg.message == WM_CHAR )
+            if ( PeekMessage( &charMsg, hwnd, 0, 0, PM_NOREMOVE ) && charMsg.message == WM_CHAR )
             {
                 GetMessage( &charMsg, hwnd, 0, 0 );
                 c = static_cast<unsigned int>( charMsg.wParam );
@@ -532,9 +508,8 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             bool control = ( GetAsyncKeyState( VK_CONTROL ) & 0x8000 ) != 0;
             bool alt     = ( GetAsyncKeyState( VK_MENU ) & 0x8000 ) != 0;
 
-            KeyCode      key      = (KeyCode)wParam;
-            KeyEventArgs keyEventArgs( key, c, KeyState::Pressed, control,
-                                       shift, alt );
+            KeyCode      key = (KeyCode)wParam;
+            KeyEventArgs keyEventArgs( key, c, KeyState::Pressed, control, shift, alt );
             pWindow->OnKeyPressed( keyEventArgs );
         }
         break;
@@ -556,14 +531,12 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             GetKeyboardState( keyboardState );
             wchar_t translatedCharacters[4];
             if ( int result =
-                     ToUnicodeEx( (UINT)wParam, scanCode, keyboardState,
-                                  translatedCharacters, 4, 0, NULL ) > 0 )
+                     ToUnicodeEx( (UINT)wParam, scanCode, keyboardState, translatedCharacters, 4, 0, NULL ) > 0 )
             {
                 c = translatedCharacters[0];
             }
 
-            KeyEventArgs keyEventArgs( key, c, KeyState::Released, control,
-                                       shift, alt );
+            KeyEventArgs keyEventArgs( key, c, KeyState::Released, control, shift, alt );
             pWindow->OnKeyReleased( keyEventArgs );
         }
         break;
@@ -596,8 +569,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             int x = ( (int)(short)LOWORD( lParam ) );
             int y = ( (int)(short)HIWORD( lParam ) );
 
-            MouseMotionEventArgs mouseMotionEventArgs(
-                lButton, mButton, rButton, control, shift, x, y );
+            MouseMotionEventArgs mouseMotionEventArgs( lButton, mButton, rButton, control, shift, x, y );
             pWindow->OnMouseMoved( mouseMotionEventArgs );
         }
         break;
@@ -617,9 +589,8 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             // Capture mouse movement until the button is released.
             SetCapture( hwnd );
 
-            MouseButtonEventArgs mouseButtonEventArgs(
-                DecodeMouseButton( message ), ButtonState::Pressed, lButton,
-                mButton, rButton, control, shift, x, y );
+            MouseButtonEventArgs mouseButtonEventArgs( DecodeMouseButton( message ), ButtonState::Pressed, lButton,
+                                                       mButton, rButton, control, shift, x, y );
             pWindow->OnMouseButtonPressed( mouseButtonEventArgs );
         }
         break;
@@ -639,9 +610,8 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             // Stop capturing the mouse.
             ReleaseCapture();
 
-            MouseButtonEventArgs mouseButtonEventArgs(
-                DecodeMouseButton( message ), ButtonState::Released, lButton,
-                mButton, rButton, control, shift, x, y );
+            MouseButtonEventArgs mouseButtonEventArgs( DecodeMouseButton( message ), ButtonState::Released, lButton,
+                                                       mButton, rButton, control, shift, x, y );
             pWindow->OnMouseButtonReleased( mouseButtonEventArgs );
         }
         break;
@@ -651,8 +621,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             // A positive value indicates the wheel was rotated forwards (away
             //  the user). A negative value indicates the wheel was rotated
             //  backwards (toward the user).
-            float zDelta =
-                ( (int)(short)HIWORD( wParam ) ) / (float)WHEEL_DELTA;
+            float zDelta    = ( (int)(short)HIWORD( wParam ) ) / (float)WHEEL_DELTA;
             short keyStates = (short)LOWORD( wParam );
 
             bool lButton = ( keyStates & MK_LBUTTON ) != 0;
@@ -670,9 +639,8 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             screenToClientPoint.y = y;
             ::ScreenToClient( hwnd, &screenToClientPoint );
 
-            MouseWheelEventArgs mouseWheelEventArgs(
-                zDelta, lButton, mButton, rButton, control, shift,
-                (int)screenToClientPoint.x, (int)screenToClientPoint.y );
+            MouseWheelEventArgs mouseWheelEventArgs( zDelta, lButton, mButton, rButton, control, shift,
+                                                     (int)screenToClientPoint.x, (int)screenToClientPoint.y );
             pWindow->OnMouseWheel( mouseWheelEventArgs );
         }
         break;

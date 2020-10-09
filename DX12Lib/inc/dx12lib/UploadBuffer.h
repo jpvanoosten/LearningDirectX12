@@ -30,7 +30,7 @@
  *  @brief An UploadBuffer provides a convenient method to upload resources to the GPU.
  */
 
-#include <Defines.h>
+#include "Defines.h"
 
 #include <wrl.h>
 #include <d3d12.h>

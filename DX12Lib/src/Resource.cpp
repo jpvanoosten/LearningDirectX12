@@ -1,9 +1,9 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <Resource.h>
+#include <dx12lib/Resource.h>
 
-#include <Application.h>
-#include <ResourceStateTracker.h>
+#include <dx12lib/Application.h>
+#include <dx12lib/ResourceStateTracker.h>
 
 Resource::Resource(const std::wstring& name)
     : m_ResourceName(name)

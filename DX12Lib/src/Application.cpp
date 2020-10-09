@@ -1,11 +1,12 @@
-#include <DX12LibPCH.h>
-#include <Application.h>
+#include "DX12LibPCH.h"
+
+#include <dx12lib/Application.h>
 #include "..\resource.h"
 
-#include <CommandQueue.h>
-#include <Game.h>
-#include <DescriptorAllocator.h>
-#include <Window.h>
+#include <dx12lib/CommandQueue.h>
+#include <dx12lib/Game.h>
+#include <dx12lib/DescriptorAllocator.h>
+#include <dx12lib/Window.h>
 
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
 

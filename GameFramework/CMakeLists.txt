@@ -1,24 +1,27 @@
 cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this file was created.
 
 set( HEADER_FILES
-    inc/GameFramework.h
-    inc/bitmask_operators.hpp
-    inc/CThreadSafeQueue.h
-    inc/Events.h
-    inc/GameFrameworkPCH.h
-    inc/HighResolutionTimer.h
-    inc/KeyCodes.h
-    inc/ReadDirectoryChanges.h
-    inc/Window.h
-    inc/optional.hpp
-    inc/signals.hpp
+    inc/GameFramework/bitmask_operators.hpp
+    inc/GameFramework/CThreadSafeQueue.h
+    inc/GameFramework/Events.h
+    inc/GameFramework/GameFramework.h
+    inc/GameFramework/HighResolutionTimer.h
+    inc/GameFramework/KeyCodes.h
+    inc/GameFramework/ReadDirectoryChanges.h
+    inc/GameFramework/Window.h
+)
+
+set( SIGNALS_HEADER_FILES
+    inc/signals/optional.hpp
+    inc/signals/signals.hpp
 )
 
 source_group( "Header Files" FILES ${HEADER_FILES} )
-source_group( "signals" FILES inc/optional.hpp inc/signals.hpp )
+source_group( "signals" FILES ${SIGNALS_HEADER_FILES} )
 
 set( SOURCE_FILES
     src/GameFramework.cpp
+    src/GameFrameworkPCH.h
     src/GameFrameworkPCH.cpp
     src/HighResolutionTimer.cpp
     src/ReadDirectoryChanges.cpp
@@ -40,6 +43,7 @@ source_group( "Resources\\Icon" FILES Resources/Icon/app_icon.ico )
 
 add_library( GameFramework STATIC
     ${HEADER_FILES}
+    ${SIGNALS_HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ../.clang-format
@@ -51,7 +55,9 @@ target_compile_features( GameFramework
 )
 
 # Remove those pesky min/max macros defined in global scope.
-target_compile_definitions( GameFramework PUBLIC NOMINMAX )
+target_compile_definitions( GameFramework
+    PUBLIC NOMINMAX 
+)
 
 target_include_directories( GameFramework
     PUBLIC inc

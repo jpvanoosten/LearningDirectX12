@@ -1,6 +1,6 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <Adapter.h>
+#include <dx12lib/Adapter.h>
 
 // Provide an adapter that can be used by make_shared
 class MakeAdapter : public Adapter

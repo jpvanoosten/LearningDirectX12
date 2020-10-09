@@ -30,17 +30,17 @@
  *  @brief Tutorial 4.
  */
 
+#include "Camera.h"
+#include "Light.h"
 
-#include <Camera.h>
-#include <Game.h>
-#include <IndexBuffer.h>
-#include <Light.h>
-#include <Window.h>
-#include <Mesh.h>
-#include <RenderTarget.h>
-#include <RootSignature.h>
-#include <Texture.h>
-#include <VertexBuffer.h>
+#include <dx12lib/Game.h>
+#include <dx12lib/IndexBuffer.h>
+#include <dx12lib/Mesh.h>
+#include <dx12lib/RenderTarget.h>
+#include <dx12lib/RootSignature.h>
+#include <dx12lib/Texture.h>
+#include <dx12lib/VertexBuffer.h>
+#include <dx12lib/Window.h>
 
 #include <DirectXMath.h>
 
@@ -49,7 +49,7 @@ class Tutorial4 : public Game
 public:
     using super = Game;
 
-    Tutorial4(const std::wstring& name, int width, int height, bool vSync = false);
+    Tutorial4( const std::wstring& name, int width, int height, bool vSync = false );
     virtual ~Tutorial4();
 
     /**
@@ -61,42 +61,43 @@ public:
      *  Unload demo specific content that was loaded in LoadContent.
      */
     virtual void UnloadContent() override;
+
 protected:
     /**
      *  Update the game logic.
      */
-    virtual void OnUpdate(UpdateEventArgs& e) override;
+    virtual void OnUpdate( UpdateEventArgs& e ) override;
 
     /**
      *  Render stuff.
      */
-    virtual void OnRender(RenderEventArgs& e) override;
+    virtual void OnRender( RenderEventArgs& e ) override;
 
     /**
      * Invoked by the registered window when a key is pressed
      * while the window has focus.
      */
-    virtual void OnKeyPressed(KeyEventArgs& e) override;
+    virtual void OnKeyPressed( KeyEventArgs& e ) override;
 
     /**
      * Invoked when a key on the keyboard is released.
      */
-    virtual void OnKeyReleased(KeyEventArgs& e);
+    virtual void OnKeyReleased( KeyEventArgs& e );
 
     /**
      * Invoked when the mouse is moved over the registered window.
      */
-    virtual void OnMouseMoved(MouseMotionEventArgs& e);
+    virtual void OnMouseMoved( MouseMotionEventArgs& e );
 
     /**
      * Invoked when the mouse wheel is scrolled while the registered window has focus.
      */
-    virtual void OnMouseWheel(MouseWheelEventArgs& e) override;
+    virtual void OnMouseWheel( MouseWheelEventArgs& e ) override;
 
-    void RescaleHDRRenderTarget(float scale);
-    virtual void OnResize(ResizeEventArgs& e) override; 
+    void         RescaleHDRRenderTarget( float scale );
+    virtual void OnResize( ResizeEventArgs& e ) override;
 
-	virtual void OnDPIScaleChanged(DPIScaleEventArgs& e) override;
+    virtual void OnDPIScaleChanged( DPIScaleEventArgs& e ) override;
 
     void OnGUI();
 
@@ -139,7 +140,7 @@ private:
     {
         DirectX::XMVECTOR m_InitialCamPos;
         DirectX::XMVECTOR m_InitialCamRot;
-        float m_InitialFov;
+        float             m_InitialFov;
     };
     CameraData* m_pAlignedCameraData;
 
@@ -167,5 +168,5 @@ private:
 
     // Define some lights.
     std::vector<PointLight> m_PointLights;
-    std::vector<SpotLight> m_SpotLights;
+    std::vector<SpotLight>  m_SpotLights;
 };

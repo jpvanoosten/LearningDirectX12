@@ -1,13 +1,12 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <PanoToCubemapPSO.h>
+#include <dx12lib/PanoToCubemapPSO.h>
+
+#include <dx12lib/Application.h>
+#include <dx12lib/d3dx12.h>
 
 // Compiled shader
 #include <PanoToCubemap_CS.h>
-
-#include <Application.h>
-
-#include <d3dx12.h>
 
 PanoToCubemapPSO::PanoToCubemapPSO()
 {

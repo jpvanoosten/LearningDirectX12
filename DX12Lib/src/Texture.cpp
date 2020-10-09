@@ -1,10 +1,10 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <Texture.h>
+#include <dx12lib/Texture.h>
 
-#include <Application.h>
-#include <Helpers.h>
-#include <ResourceStateTracker.h>
+#include <dx12lib/Application.h>
+#include <dx12lib/Helpers.h>
+#include <dx12lib/ResourceStateTracker.h>
 
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)

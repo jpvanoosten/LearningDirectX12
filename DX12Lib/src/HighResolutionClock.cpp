@@ -1,5 +1,6 @@
-#include <DX12LibPCH.h>
-#include <HighResolutionClock.h>
+#include "DX12LibPCH.h"
+
+#include <dx12lib/HighResolutionClock.h>
 
 HighResolutionClock::HighResolutionClock()
     : m_DeltaTime(0)

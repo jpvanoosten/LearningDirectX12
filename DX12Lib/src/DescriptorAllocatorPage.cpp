@@ -1,23 +1,23 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <DescriptorAllocatorPage.h>
-#include <Application.h>
+#include <dx12lib/Application.h>
+#include <dx12lib/DescriptorAllocatorPage.h>
 
 DescriptorAllocatorPage::DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )
-    : m_HeapType( type )
-    , m_NumDescriptorsInHeap( numDescriptors )
+: m_HeapType( type )
+, m_NumDescriptorsInHeap( numDescriptors )
 {
     auto device = Application::Get().GetDevice();
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.Type = m_HeapType;
-    heapDesc.NumDescriptors = m_NumDescriptorsInHeap;
+    heapDesc.Type                       = m_HeapType;
+    heapDesc.NumDescriptors             = m_NumDescriptorsInHeap;
 
     ThrowIfFailed( device->CreateDescriptorHeap( &heapDesc, IID_PPV_ARGS( &m_d3d12DescriptorHeap ) ) );
 
-    m_BaseDescriptor = m_d3d12DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    m_BaseDescriptor                = m_d3d12DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     m_DescriptorHandleIncrementSize = device->GetDescriptorHandleIncrementSize( m_HeapType );
-    m_NumFreeHandles = m_NumDescriptorsInHeap;
+    m_NumFreeHandles                = m_NumDescriptorsInHeap;
 
     // Initialize the free lists
     AddNewBlock( 0, m_NumFreeHandles );
@@ -35,13 +35,13 @@ uint32_t DescriptorAllocatorPage::NumFreeHandles() const
 
 bool DescriptorAllocatorPage::HasSpace( uint32_t numDescriptors ) const
 {
-    return m_FreeListBySize.lower_bound(numDescriptors) != m_FreeListBySize.end();
+    return m_FreeListBySize.lower_bound( numDescriptors ) != m_FreeListBySize.end();
 }
 
 void DescriptorAllocatorPage::AddNewBlock( uint32_t offset, uint32_t numDescriptors )
 {
-    auto offsetIt = m_FreeListByOffset.emplace( offset, numDescriptors );
-    auto sizeIt = m_FreeListBySize.emplace( numDescriptors, offsetIt.first );
+    auto offsetIt                           = m_FreeListByOffset.emplace( offset, numDescriptors );
+    auto sizeIt                             = m_FreeListBySize.emplace( numDescriptors, offsetIt.first );
     offsetIt.first->second.FreeListBySizeIt = sizeIt;
 }
 
@@ -79,7 +79,7 @@ DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors 
 
     // Compute the new free block that results from splitting this block.
     auto newOffset = offset + numDescriptors;
-    auto newSize = blockSize - numDescriptors;
+    auto newSize   = blockSize - numDescriptors;
 
     if ( newSize > 0 )
     {
@@ -92,8 +92,8 @@ DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors 
     m_NumFreeHandles -= numDescriptors;
 
     return DescriptorAllocation(
-        CD3DX12_CPU_DESCRIPTOR_HANDLE( m_BaseDescriptor, offset, m_DescriptorHandleIncrementSize ),
-        numDescriptors, m_DescriptorHandleIncrementSize, shared_from_this() );
+        CD3DX12_CPU_DESCRIPTOR_HANDLE( m_BaseDescriptor, offset, m_DescriptorHandleIncrementSize ), numDescriptors,
+        m_DescriptorHandleIncrementSize, shared_from_this() );
 }
 
 uint32_t DescriptorAllocatorPage::ComputeOffset( D3D12_CPU_DESCRIPTOR_HANDLE handle )
@@ -138,8 +138,7 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
     // blocks modifies the numDescriptors variable.
     m_NumFreeHandles += numDescriptors;
 
-    if ( prevBlockIt != m_FreeListByOffset.end() &&
-         offset == prevBlockIt->first + prevBlockIt->second.Size )
+    if ( prevBlockIt != m_FreeListByOffset.end() && offset == prevBlockIt->first + prevBlockIt->second.Size )
     {
         // The previous block is exactly behind the block that is to be freed.
         //
@@ -157,12 +156,11 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
         m_FreeListByOffset.erase( prevBlockIt );
     }
 
-    if ( nextBlockIt != m_FreeListByOffset.end() &&
-         offset + numDescriptors == nextBlockIt->first )
+    if ( nextBlockIt != m_FreeListByOffset.end() && offset + numDescriptors == nextBlockIt->first )
     {
         // The next block is exactly in front of the block that is to be freed.
         //
-        // Offset               NextBlock.Offset 
+        // Offset               NextBlock.Offset
         // |                    |
         // |<------Size-------->|<-----NextBlock.Size----->|
 

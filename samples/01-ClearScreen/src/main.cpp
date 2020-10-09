@@ -1,16 +1,15 @@
-#include <GameFramework.h>
-#include <Window.h>
+#include <GameFramework/GameFramework.h>
+#include <GameFramework/Window.h>
 
-#include <Adapter.h>
-#include <Device.h>
+#include <dx12lib/Adapter.h>
+#include <dx12lib/Device.h>
 
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
 #include <shellapi.h>  // for CommandLineToArgvW
 
-#include <dxgidebug.h> // For ReportLiveObjects.
-
+#include <dxgidebug.h>  // For ReportLiveObjects.
 
 // These are the actions that the user can perform.
 // Don't map multiple actions to the same device button.
@@ -60,13 +59,11 @@ void ReportLiveObjects()
     IDXGIDebug1* dxgiDebug;
     DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
 
-    dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL,
-                                  DXGI_DEBUG_RLO_IGNORE_INTERNAL );
+    dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
     dxgiDebug->Release();
 }
 
-int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                       PWSTR lpCmdLine, int nCmdShow )
+int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
     int retCode = 0;
 
@@ -95,7 +92,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
         // Create a default adapter using the default preference.
         auto device = Device::Create();
 
-        if (device) {
+        if ( device )
+        {
             auto description = device->GetDescription();
             logger->info( L"Device Created: {}", description );
         }
@@ -189,7 +187,7 @@ void OnUpdate( UpdateEventArgs& e )
     {
         logger->info( "Menu button pressed." );
     }
-    if (pInputMap->GetBoolIsNew(Buttons::Back)) 
+    if ( pInputMap->GetBoolIsNew( Buttons::Back ) )
     {
         logger->info( "Back button pressed." );
     }

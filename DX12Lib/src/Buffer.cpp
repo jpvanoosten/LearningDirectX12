@@ -1,6 +1,6 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <Buffer.h>
+#include <dx12lib/Buffer.h>
 
 Buffer::Buffer(const std::wstring& name)
     : Resource(name)

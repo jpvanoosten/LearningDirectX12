@@ -1,8 +1,8 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <Adapter.h>
-#include <DescriptorAllocator.h>
-#include <Device.h>
+#include <dx12lib/Adapter.h>
+#include <dx12lib/DescriptorAllocator.h>
+#include <dx12lib/Device.h>
 
 // An adapter for std::make_shared
 class MakeDevice : public Device
@@ -29,7 +29,7 @@ std::shared_ptr<Device> Device::Create( std::shared_ptr<Adapter> adapter )
     return device;
 }
 
-std::wstring Device::GetDescription() const 
+std::wstring Device::GetDescription() const
 {
     return m_Adapter->GetDescription();
 }

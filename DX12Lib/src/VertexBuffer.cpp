@@ -1,6 +1,6 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <VertexBuffer.h>
+#include <dx12lib/VertexBuffer.h>
 
 VertexBuffer::VertexBuffer(const std::wstring& name)
     : Buffer(name)

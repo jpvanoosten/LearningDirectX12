@@ -1,46 +1,47 @@
-cmake_minimum_required( VERSION 3.16.1 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this file was created.
 
-set( HEADER_FILES 
-    inc/DX12LibPCH.h
-    inc/Application.h
-    inc/Adapter.h
-    inc/Buffer.h
-    inc/ByteAddressBuffer.h
-    inc/CommandList.h
-    inc/CommandQueue.h
-    inc/ConstantBuffer.h
-    inc/DescriptorAllocation.h
-    inc/DescriptorAllocator.h
-    inc/DescriptorAllocatorPage.h
-    inc/Device.h
-    inc/DynamicDescriptorHeap.h
-    inc/Events.h
-    inc/Game.h
-    inc/GenerateMipsPSO.h
-    inc/GUI.h
-    inc/Helpers.h
-    inc/HighResolutionClock.h
-    inc/IndexBuffer.h
-    inc/KeyCodes.h
-    inc/Mesh.h
-    inc/PanoToCubemapPSO.h
-    inc/RenderTarget.h
-    inc/Resource.h
-    inc/ResourceStateTracker.h
-    inc/RootSignature.h
-    inc/Scene.h
-    inc/SceneNode.h
-    inc/StructuredBuffer.h
-    inc/Texture.h
-    inc/TextureUsage.h
-    inc/ThreadSafeQueue.h
-    inc/UploadBuffer.h
-    inc/VertexBuffer.h
-    inc/Window.h
-    inc/d3dx12.h
+set( HEADER_FILES
+    inc/dx12lib/Adapter.h
+    inc/dx12lib/Application.h
+    inc/dx12lib/Buffer.h
+    inc/dx12lib/ByteAddressBuffer.h
+    inc/dx12lib/CommandList.h
+    inc/dx12lib/CommandQueue.h
+    inc/dx12lib/ConstantBuffer.h
+    inc/dx12lib/d3dx12.h
+    inc/dx12lib/Defines.h
+    inc/dx12lib/DescriptorAllocation.h
+    inc/dx12lib/DescriptorAllocator.h
+    inc/dx12lib/DescriptorAllocatorPage.h
+    inc/dx12lib/Device.h
+    inc/dx12lib/DynamicDescriptorHeap.h
+    inc/dx12lib/Events.h
+    inc/dx12lib/Game.h
+    inc/dx12lib/GenerateMipsPSO.h
+    inc/dx12lib/GUI.h
+    inc/dx12lib/Helpers.h
+    inc/dx12lib/HighResolutionClock.h
+    inc/dx12lib/IndexBuffer.h
+    inc/dx12lib/KeyCodes.h
+    inc/dx12lib/Mesh.h
+    inc/dx12lib/PanoToCubemapPSO.h
+    inc/dx12lib/RenderTarget.h
+    inc/dx12lib/Resource.h
+    inc/dx12lib/ResourceStateTracker.h
+    inc/dx12lib/RootSignature.h
+    inc/dx12lib/Scene.h
+    inc/dx12lib/SceneNode.h
+    inc/dx12lib/StructuredBuffer.h
+    inc/dx12lib/Texture.h
+    inc/dx12lib/TextureUsage.h
+    inc/dx12lib/ThreadSafeQueue.h
+    inc/dx12lib/UploadBuffer.h
+    inc/dx12lib/VertexBuffer.h
+    inc/dx12lib/Window.h
 )
 
 set( SOURCE_FILES
+    src/DX12LibPCH.h
     src/DX12LibPCH.cpp
     src/Adapter.cpp
     src/Application.cpp

@@ -1,10 +1,10 @@
-#include <DX12LibPCH.h>
+#include "DX12LibPCH.h"
 
-#include <RenderTarget.h>
+#include <dx12lib/RenderTarget.h>
 
 RenderTarget::RenderTarget()
-    : m_Textures(AttachmentPoint::NumAttachmentPoints)
-    , m_Size(0,0)
+: m_Textures( AttachmentPoint::NumAttachmentPoints )
+, m_Size( 0, 0 )
 {}
 
 // Attach a texture to the render target.
@@ -13,11 +13,12 @@ void RenderTarget::AttachTexture( AttachmentPoint attachmentPoint, const Texture
 {
     m_Textures[attachmentPoint] = texture;
 
-    if (texture.GetD3D12Resource())
+    if ( texture.GetD3D12Resource() )
     {
         auto desc = texture.GetD3D12Resource()->GetDesc();
-        m_Size.x = static_cast<uint32_t>(desc.Width);
-        m_Size.y = static_cast<uint32_t>(desc.Height);
+
+        m_Size.x = static_cast<uint32_t>( desc.Width );
+        m_Size.y = static_cast<uint32_t>( desc.Height );
     }
 }
 
@@ -27,18 +28,14 @@ const Texture& RenderTarget::GetTexture( AttachmentPoint attachmentPoint ) const
 }
 
 // Resize all of the textures associated with the render target.
-void RenderTarget::Resize(DirectX::XMUINT2 size)
+void RenderTarget::Resize( DirectX::XMUINT2 size )
 {
     m_Size = size;
-    for (auto& texture : m_Textures)
-    {
-        texture.Resize(m_Size.x, m_Size.y);
-    }
-
+    for ( auto& texture: m_Textures ) { texture.Resize( m_Size.x, m_Size.y ); }
 }
 void RenderTarget::Resize( uint32_t width, uint32_t height )
 {
-    Resize(XMUINT2(width, height));
+    Resize( XMUINT2( width, height ) );
 }
 
 DirectX::XMUINT2 RenderTarget::GetSize() const
@@ -56,29 +53,30 @@ uint32_t RenderTarget::GetHeight() const
     return m_Size.y;
 }
 
-D3D12_VIEWPORT RenderTarget::GetViewport(DirectX::XMFLOAT2 scale, DirectX::XMFLOAT2 bias, float minDepth, float maxDepth) const
+D3D12_VIEWPORT RenderTarget::GetViewport( DirectX::XMFLOAT2 scale, DirectX::XMFLOAT2 bias, float minDepth,
+                                          float maxDepth ) const
 {
-    UINT64 width = 0;
-    UINT height = 0;
+    UINT64 width  = 0;
+    UINT   height = 0;
 
-    for (int i = AttachmentPoint::Color0; i <= AttachmentPoint::Color7; ++i)
+    for ( int i = AttachmentPoint::Color0; i <= AttachmentPoint::Color7; ++i )
     {
         const Texture& texture = m_Textures[i];
-        if (texture.IsValid())
+        if ( texture.IsValid() )
         {
             auto desc = texture.GetD3D12ResourceDesc();
-            width = std::max(width, desc.Width);
-            height = std::max(height, desc.Height);
+            width     = std::max( width, desc.Width );
+            height    = std::max( height, desc.Height );
         }
     }
 
     D3D12_VIEWPORT viewport = {
-        (width * bias.x),       // TopLeftX
-        (height * bias.y),      // TopLeftY
-        (width * scale.x),      // Width
-        (height * scale.y),     // Height
-        minDepth,               // MinDepth
-        maxDepth                // MaxDepth
+        ( width * bias.x ),    // TopLeftX
+        ( height * bias.y ),   // TopLeftY
+        ( width * scale.x ),   // Width
+        ( height * scale.y ),  // Height
+        minDepth,              // MinDepth
+        maxDepth               // MaxDepth
     };
 
     return viewport;
@@ -96,7 +94,6 @@ D3D12_RT_FORMAT_ARRAY RenderTarget::GetRenderTargetFormats() const
 {
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
 
-
     for ( int i = AttachmentPoint::Color0; i <= AttachmentPoint::Color7; ++i )
     {
         const Texture& texture = m_Textures[i];
@@ -111,7 +108,7 @@ D3D12_RT_FORMAT_ARRAY RenderTarget::GetRenderTargetFormats() const
 
 DXGI_FORMAT RenderTarget::GetDepthStencilFormat() const
 {
-    DXGI_FORMAT dsvFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT    dsvFormat           = DXGI_FORMAT_UNKNOWN;
     const Texture& depthStencilTexture = m_Textures[AttachmentPoint::DepthStencil];
     if ( depthStencilTexture.IsValid() )
     {
@@ -120,4 +117,3 @@ DXGI_FORMAT RenderTarget::GetDepthStencilFormat() const
 
     return dsvFormat;
 }
-

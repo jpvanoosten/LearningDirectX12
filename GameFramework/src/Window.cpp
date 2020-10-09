@@ -1,8 +1,8 @@
-#include <GameFrameworkPCH.h>
-#include <Window.h>
+#include "GameFrameworkPCH.h"
 
-Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
-                int clientHeight )
+#include <GameFramework/Window.h>
+
+Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight )
 : m_hWnd( hWnd )
 , m_Name( windowName )
 , m_Title( windowName )
@@ -64,8 +64,7 @@ void Window::OnResize( ResizeEventArgs& e )
     m_ClientWidth  = e.Width;
     m_ClientHeight = e.Height;
 
-    if ( ( m_IsMinimized || m_IsMaximized ) &&
-         e.State == WindowState::Restored )
+    if ( ( m_IsMinimized || m_IsMaximized ) && e.State == WindowState::Restored )
     {
         m_IsMaximized = false;
         m_IsMinimized = false;
@@ -235,27 +234,23 @@ void Window::SetFullscreen( bool fullscreen )
 
             // Set the window style to a borderless fullscreen window so the
             // client area fills the entire screen.
-            UINT windowStyle = WS_OVERLAPPEDWINDOW &
-                               ~( WS_CAPTION | WS_SYSMENU | WS_THICKFRAME |
-                                  WS_MINIMIZEBOX | WS_MAXIMIZEBOX );
+            UINT windowStyle =
+                WS_OVERLAPPEDWINDOW & ~( WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX );
 
             ::SetWindowLongW( m_hWnd, GWL_STYLE, windowStyle );
 
             // Query the name of the nearest display device for the window.
             // This is required to set the fullscreen dimensions of the window
             // when using a multi-monitor setup.
-            HMONITOR hMonitor =
-                ::MonitorFromWindow( m_hWnd, MONITOR_DEFAULTTONEAREST );
+            HMONITOR      hMonitor    = ::MonitorFromWindow( m_hWnd, MONITOR_DEFAULTTONEAREST );
             MONITORINFOEX monitorInfo = {};
             monitorInfo.cbSize        = sizeof( MONITORINFOEX );
             ::GetMonitorInfo( hMonitor, &monitorInfo );
 
-            ::SetWindowPos(
-                m_hWnd, HWND_TOP, monitorInfo.rcMonitor.left,
-                monitorInfo.rcMonitor.top,
-                monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
-                monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
-                SWP_FRAMECHANGED | SWP_NOACTIVATE );
+            ::SetWindowPos( m_hWnd, HWND_TOP, monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top,
+                            monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+                            monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+                            SWP_FRAMECHANGED | SWP_NOACTIVATE );
 
             ::ShowWindow( m_hWnd, SW_MAXIMIZE );
         }
@@ -264,10 +259,8 @@ void Window::SetFullscreen( bool fullscreen )
             // Restore all the window decorators.
             ::SetWindowLong( m_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW );
 
-            ::SetWindowPos( m_hWnd, HWND_NOTOPMOST, m_WindowRect.left,
-                            m_WindowRect.top,
-                            m_WindowRect.right - m_WindowRect.left,
-                            m_WindowRect.bottom - m_WindowRect.top,
+            ::SetWindowPos( m_hWnd, HWND_NOTOPMOST, m_WindowRect.left, m_WindowRect.top,
+                            m_WindowRect.right - m_WindowRect.left, m_WindowRect.bottom - m_WindowRect.top,
                             SWP_FRAMECHANGED | SWP_NOACTIVATE );
 
             ::ShowWindow( m_hWnd, SW_NORMAL );

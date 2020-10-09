@@ -31,7 +31,8 @@
  */
 
 #include "KeyCodes.h"
-#include "signals.hpp"
+
+#include "../signals/signals.hpp"
 
 #include <string>
 
