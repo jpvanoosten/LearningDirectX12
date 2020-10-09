@@ -44,10 +44,10 @@
 
 #include <DirectXMath.h>
 
-class Tutorial4 : public Game
+class Tutorial4 : public dx12lib::Game
 {
 public:
-    using super = Game;
+    using super = dx12lib::Game;
 
     Tutorial4( const std::wstring& name, int width, int height, bool vSync = false );
     virtual ~Tutorial4();
@@ -103,28 +103,28 @@ protected:
 
 private:
     // Some geometry to render.
-    std::unique_ptr<Mesh> m_CubeMesh;
-    std::unique_ptr<Mesh> m_SphereMesh;
-    std::unique_ptr<Mesh> m_ConeMesh;
-    std::unique_ptr<Mesh> m_TorusMesh;
-    std::unique_ptr<Mesh> m_PlaneMesh;
+    std::unique_ptr<dx12lib::Mesh> m_CubeMesh;
+    std::unique_ptr<dx12lib::Mesh> m_SphereMesh;
+    std::unique_ptr<dx12lib::Mesh> m_ConeMesh;
+    std::unique_ptr<dx12lib::Mesh> m_TorusMesh;
+    std::unique_ptr<dx12lib::Mesh> m_PlaneMesh;
 
-    std::unique_ptr<Mesh> m_SkyboxMesh;
+    std::unique_ptr<dx12lib::Mesh> m_SkyboxMesh;
 
-    Texture m_DefaultTexture;
-    Texture m_DirectXTexture;
-    Texture m_EarthTexture;
-    Texture m_MonaLisaTexture;
-    Texture m_GraceCathedralTexture;
-    Texture m_GraceCathedralCubemap;
+    dx12lib::Texture m_DefaultTexture;
+    dx12lib::Texture m_DirectXTexture;
+    dx12lib::Texture m_EarthTexture;
+    dx12lib::Texture m_MonaLisaTexture;
+    dx12lib::Texture m_GraceCathedralTexture;
+    dx12lib::Texture m_GraceCathedralCubemap;
 
     // HDR Render target
-    RenderTarget m_HDRRenderTarget;
+    dx12lib::RenderTarget m_HDRRenderTarget;
 
     // Root signatures
-    RootSignature m_SkyboxSignature;
-    RootSignature m_HDRRootSignature;
-    RootSignature m_SDRRootSignature;
+    dx12lib::RootSignature m_SkyboxSignature;
+    dx12lib::RootSignature m_HDRRootSignature;
+    dx12lib::RootSignature m_SDRRootSignature;
 
     // Pipeline state object.
     // Skybox PSO

@@ -5,6 +5,8 @@
 #include <dx12lib/Application.h>
 #include <dx12lib/DescriptorAllocatorPage.h>
 
+using namespace dx12lib;
+
 DescriptorAllocation::DescriptorAllocation()
     : m_Descriptor{ 0 }
     , m_NumHandles( 0 )

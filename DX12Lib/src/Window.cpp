@@ -11,6 +11,8 @@
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/Texture.h>
 
+using namespace dx12lib;
+
 Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync )
 : m_hWnd( hWnd )
 , m_WindowName( windowName )

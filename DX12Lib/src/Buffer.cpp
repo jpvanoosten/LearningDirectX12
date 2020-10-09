@@ -2,6 +2,8 @@
 
 #include <dx12lib/Buffer.h>
 
+using namespace dx12lib;
+
 Buffer::Buffer(const std::wstring& name)
     : Resource(name)
 {}

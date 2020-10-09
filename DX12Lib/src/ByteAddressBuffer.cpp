@@ -3,6 +3,8 @@
 #include <dx12lib/Application.h>
 #include <dx12lib/ByteAddressBuffer.h>
 
+using namespace dx12lib;
+
 ByteAddressBuffer::ByteAddressBuffer( const std::wstring& name )
 : Buffer( name )
 , m_BufferSize( 0 )

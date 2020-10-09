@@ -5,6 +5,8 @@
 #include <dx12lib/Application.h>
 #include <dx12lib/Helpers.h>
 
+using namespace dx12lib;
+
 UploadBuffer::UploadBuffer( size_t pageSize )
 : m_PageSize( pageSize )
 {}

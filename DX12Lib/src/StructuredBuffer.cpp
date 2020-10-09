@@ -6,6 +6,8 @@
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/d3dx12.h>
 
+using namespace dx12lib;
+
 StructuredBuffer::StructuredBuffer( const std::wstring& name )
 : Buffer( name )
 , m_CounterBuffer( CD3DX12_RESOURCE_DESC::Buffer( 4, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ), 1, 4,

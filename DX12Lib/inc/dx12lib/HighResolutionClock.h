@@ -33,6 +33,8 @@
 
 #include <chrono>
 
+namespace dx12lib
+{
 class HighResolutionClock
 {
 public:
@@ -64,3 +66,4 @@ private:
     std::chrono::high_resolution_clock::duration m_DeltaTime;
     std::chrono::high_resolution_clock::duration m_TotalTime;
 };
+}  // namespace dx12lib

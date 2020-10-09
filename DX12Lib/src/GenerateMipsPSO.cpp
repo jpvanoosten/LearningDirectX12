@@ -8,6 +8,8 @@
 
 #include <GenerateMips_CS.h>
 
+using namespace dx12lib;
+
 GenerateMipsPSO::GenerateMipsPSO()
 {
     auto device = Application::Get().GetDevice();

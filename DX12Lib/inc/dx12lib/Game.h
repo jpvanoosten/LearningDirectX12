@@ -37,6 +37,8 @@
 
 #include <imgui.h>
 
+namespace dx12lib
+{
 class Window;
 
 class Game : public std::enable_shared_from_this<Game>
@@ -45,7 +47,7 @@ public:
     /**
      * Create the DirectX demo using the specified window dimensions.
      */
-    Game(const std::wstring& name, int width, int height, bool vSync);
+    Game( const std::wstring& name, int width, int height, bool vSync );
     virtual ~Game();
 
     int GetClientWidth() const
@@ -84,53 +86,53 @@ protected:
     /**
      *  Update the game logic.
      */
-    virtual void OnUpdate(UpdateEventArgs& e);
+    virtual void OnUpdate( UpdateEventArgs& e );
 
     /**
      *  Render stuff.
      */
-    virtual void OnRender(RenderEventArgs& e);
+    virtual void OnRender( RenderEventArgs& e );
 
     /**
      * Invoked by the registered window when a key is pressed
      * while the window has focus.
      */
-    virtual void OnKeyPressed(KeyEventArgs& e);
+    virtual void OnKeyPressed( KeyEventArgs& e );
 
     /**
      * Invoked when a key on the keyboard is released.
      */
-    virtual void OnKeyReleased(KeyEventArgs& e);
+    virtual void OnKeyReleased( KeyEventArgs& e );
 
     /**
      * Invoked when the mouse is moved over the registered window.
      */
-    virtual void OnMouseMoved(MouseMotionEventArgs& e);
+    virtual void OnMouseMoved( MouseMotionEventArgs& e );
 
     /**
      * Invoked when a mouse button is pressed over the registered window.
      */
-    virtual void OnMouseButtonPressed(MouseButtonEventArgs& e);
+    virtual void OnMouseButtonPressed( MouseButtonEventArgs& e );
 
     /**
      * Invoked when a mouse button is released over the registered window.
      */
-    virtual void OnMouseButtonReleased(MouseButtonEventArgs& e);
+    virtual void OnMouseButtonReleased( MouseButtonEventArgs& e );
 
     /**
      * Invoked when the mouse wheel is scrolled while the registered window has focus.
      */
-    virtual void OnMouseWheel(MouseWheelEventArgs& e);
+    virtual void OnMouseWheel( MouseWheelEventArgs& e );
 
     /**
      * Invoked when the attached window is resized.
      */
-    virtual void OnResize(ResizeEventArgs& e);
+    virtual void OnResize( ResizeEventArgs& e );
 
-	/**
-	 * Invoked when the DPI scaling of the window associated with the game has changed.
-	 */
-	virtual void OnDPIScaleChanged(DPIScaleEventArgs& e);
+    /**
+     * Invoked when the DPI scaling of the window associated with the game has changed.
+     */
+    virtual void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
     /**
      * Invoked when the registered window instance is destroyed.
@@ -141,7 +143,8 @@ protected:
 
 private:
     std::wstring m_Name;
-    int m_Width;
-    int m_Height;
-    bool m_vSync;
+    int          m_Width;
+    int          m_Height;
+    bool         m_vSync;
 };
+}  // namespace dx12lib

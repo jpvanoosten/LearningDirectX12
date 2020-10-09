@@ -4,6 +4,8 @@
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
 
+using namespace dx12lib;
+
 // An adapter for std::make_shared
 class MakeDevice : public Device
 {

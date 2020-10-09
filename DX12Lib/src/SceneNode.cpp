@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 
+using namespace dx12lib;
 using namespace DirectX;
 
 SceneNode::SceneNode( const DirectX::XMMATRIX& localTransform )

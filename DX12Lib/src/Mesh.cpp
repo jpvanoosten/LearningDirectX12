@@ -5,6 +5,7 @@
 #include <dx12lib/Application.h>
 #include <dx12lib/CommandList.h>
 
+using namespace dx12lib;
 using namespace DirectX;
 using namespace Microsoft::WRL;
 

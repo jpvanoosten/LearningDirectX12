@@ -45,174 +45,180 @@
 
 #include <memory>
 
-class Game;
-class Texture;
+// Forward declaration of function outside of namespace.
+LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
-class Window : public std::enable_shared_from_this<Window>
+namespace dx12lib
 {
-public:
-    // Number of swapchain back buffers.
-    static const UINT BufferCount = 3;
+    class Game;
+    class Texture;
 
-    /**
-     * Get a handle to this window's instance.
-     * @returns The handle to the window instance or nullptr if this is not a valid window.
-     */
-    HWND GetWindowHandle() const;
+    class Window : public std::enable_shared_from_this<dx12lib::Window>
+    {
+    public:
+        // Number of swapchain back buffers.
+        static const UINT BufferCount = 3;
 
-    /**
-     * Get the current DPI scaling for this window.
-     */
-    float GetDPIScaling() const;
+        /**
+         * Get a handle to this window's instance.
+         * @returns The handle to the window instance or nullptr if this is not a valid window.
+         */
+        HWND GetWindowHandle() const;
 
-    /**
-     * Initialize the window.
-     */
-    void Initialize();
+        /**
+         * Get the current DPI scaling for this window.
+         */
+        float GetDPIScaling() const;
 
-    /**
-     * Destroy this window.
-     */
-    void Destroy();
+        /**
+         * Initialize the window.
+         */
+        void Initialize();
 
-    const std::wstring& GetWindowName() const;
+        /**
+         * Destroy this window.
+         */
+        void Destroy();
 
-    int GetClientWidth() const;
-    int GetClientHeight() const;
+        const std::wstring& GetWindowName() const;
 
-    /**
-     * Should this window be rendered with vertical refresh synchronization.
-     */
-    bool IsVSync() const;
-    void SetVSync( bool vSync );
-    void ToggleVSync();
+        int GetClientWidth() const;
+        int GetClientHeight() const;
 
-    /**
-     * Is this a windowed window or full-screen?
-     */
-    bool IsFullScreen() const;
+        /**
+         * Should this window be rendered with vertical refresh synchronization.
+         */
+        bool IsVSync() const;
+        void SetVSync( bool vSync );
+        void ToggleVSync();
 
-    // Set the fullscreen state of the window.
-    void SetFullscreen( bool fullscreen );
-    void ToggleFullscreen();
+        /**
+         * Is this a windowed window or full-screen?
+         */
+        bool IsFullScreen() const;
 
-    /**
-     * Show this window.
-     */
-    void Show();
+        // Set the fullscreen state of the window.
+        void SetFullscreen( bool fullscreen );
+        void ToggleFullscreen();
 
-    /**
-     * Hide the window.
-     */
-    void Hide();
+        /**
+         * Show this window.
+         */
+        void Show();
 
-    /**
-     * Get the render target of the window. This method should be called every
-     * frame since the color attachment point changes depending on the window's
-     * current back buffer.
-     */
-    const RenderTarget& GetRenderTarget() const;
+        /**
+         * Hide the window.
+         */
+        void Hide();
 
-    /**
-     * Present the swapchain's back buffer to the screen.
-     * Returns the current back buffer index after the present.
-     *
-     * @param texture The texture to copy to the swap chain's backbuffer before
-     * presenting. By default, this is an empty texture. In this case, no copy
-     * will be performed. Use the Window::GetRenderTarget method to get a render
-     * target for the window's color buffer.
-     */
-    UINT Present( const Texture& texture = Texture() );
+        /**
+         * Get the render target of the window. This method should be called every
+         * frame since the color attachment point changes depending on the window's
+         * current back buffer.
+         */
+        const RenderTarget& GetRenderTarget() const;
 
-protected:
-    // The Window procedure needs to call protected methods of this class.
-    friend LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
+        /**
+         * Present the swapchain's back buffer to the screen.
+         * Returns the current back buffer index after the present.
+         *
+         * @param texture The texture to copy to the swap chain's backbuffer before
+         * presenting. By default, this is an empty texture. In this case, no copy
+         * will be performed. Use the Window::GetRenderTarget method to get a render
+         * target for the window's color buffer.
+         */
+        UINT Present( const Texture& texture = Texture() );
 
-    // Only the application can create a window.
-    friend class Application;
-    // The DirectXTemplate class needs to register itself with a window.
-    friend class Game;
+    protected:
+        // The Window procedure needs to call protected methods of this class.
+        friend LRESULT CALLBACK ::WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
-    Window() = delete;
-    Window( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync );
-    virtual ~Window();
+        // Only the application can create a window.
+        friend class Application;
+        // The DirectXTemplate class needs to register itself with a window.
+        friend class Game;
 
-    // Register a Game with this window. This allows
-    // the window to callback functions in the Game class.
-    void RegisterCallbacks( std::shared_ptr<Game> pGame );
+        Window() = delete;
+        Window( HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync );
+        virtual ~Window();
 
-    // Update and Draw can only be called by the application.
-    virtual void OnUpdate( UpdateEventArgs& e );
-    virtual void OnRender( RenderEventArgs& e );
+        // Register a Game with this window. This allows
+        // the window to callback functions in the Game class.
+        void RegisterCallbacks( std::shared_ptr<Game> pGame );
 
-    // A keyboard key was pressed
-    virtual void OnKeyPressed( KeyEventArgs& e );
-    // A keyboard key was released
-    virtual void OnKeyReleased( KeyEventArgs& e );
+        // Update and Draw can only be called by the application.
+        virtual void OnUpdate( UpdateEventArgs& e );
+        virtual void OnRender( RenderEventArgs& e );
 
-    // The mouse was moved
-    virtual void OnMouseMoved( MouseMotionEventArgs& e );
-    // A button on the mouse was pressed
-    virtual void OnMouseButtonPressed( MouseButtonEventArgs& e );
-    // A button on the mouse was released
-    virtual void OnMouseButtonReleased( MouseButtonEventArgs& e );
-    // The mouse wheel was moved.
-    virtual void OnMouseWheel( MouseWheelEventArgs& e );
+        // A keyboard key was pressed
+        virtual void OnKeyPressed( KeyEventArgs& e );
+        // A keyboard key was released
+        virtual void OnKeyReleased( KeyEventArgs& e );
 
-    // The window was resized.
-    virtual void OnResize( ResizeEventArgs& e );
+        // The mouse was moved
+        virtual void OnMouseMoved( MouseMotionEventArgs& e );
+        // A button on the mouse was pressed
+        virtual void OnMouseButtonPressed( MouseButtonEventArgs& e );
+        // A button on the mouse was released
+        virtual void OnMouseButtonReleased( MouseButtonEventArgs& e );
+        // The mouse wheel was moved.
+        virtual void OnMouseWheel( MouseWheelEventArgs& e );
 
-    // The DPI scaling has changed.
-    virtual void OnDPIScaleChanged( DPIScaleEventArgs& e );
+        // The window was resized.
+        virtual void OnResize( ResizeEventArgs& e );
 
-    // Create the swapchian.
-    Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain();
+        // The DPI scaling has changed.
+        virtual void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
-    // Update the render target views for the swapchain back buffers.
-    void UpdateRenderTargetViews();
+        // Create the swapchian.
+        Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain();
 
-    // Update DPI scaling (can only be called from WndProc)
-    void SetDPIScaling( float dpiScaling );
+        // Update the render target views for the swapchain back buffers.
+        void UpdateRenderTargetViews();
 
-private:
-    // Windows should not be copied.
-    Window( const Window& copy ) = delete;
-    Window& operator=( const Window& other ) = delete;
+        // Update DPI scaling (can only be called from WndProc)
+        void SetDPIScaling( float dpiScaling );
 
-    HWND m_hWnd;
+    private:
+        // Windows should not be copied.
+        Window( const Window& copy ) = delete;
+        Window& operator=( const Window& other ) = delete;
 
-    std::wstring m_WindowName;
+        HWND m_hWnd;
 
-    int  m_ClientWidth;
-    int  m_ClientHeight;
-    bool m_VSync;
-    bool m_Fullscreen;
+        std::wstring m_WindowName;
 
-    HighResolutionClock m_UpdateClock;
-    HighResolutionClock m_RenderClock;
+        int  m_ClientWidth;
+        int  m_ClientHeight;
+        bool m_VSync;
+        bool m_Fullscreen;
 
-    UINT64   m_FenceValues[BufferCount];
-    uint64_t m_FrameValues[BufferCount];
+        HighResolutionClock m_UpdateClock;
+        HighResolutionClock m_RenderClock;
 
-    std::weak_ptr<Game> m_pGame;
+        UINT64   m_FenceValues[BufferCount];
+        uint64_t m_FrameValues[BufferCount];
 
-    Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
-    HANDLE                                  m_SwapChainEvent;
-    Texture                                 m_BackBufferTextures[BufferCount];
+        std::weak_ptr<Game> m_pGame;
 
-    // Marked mutable to allow modification in a const function.
-    mutable RenderTarget m_RenderTarget;
+        Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
+        HANDLE                                  m_SwapChainEvent;
+        Texture                                 m_BackBufferTextures[BufferCount];
 
-    UINT m_CurrentBackBufferIndex;
+        // Marked mutable to allow modification in a const function.
+        mutable RenderTarget m_RenderTarget;
 
-    RECT m_WindowRect;
-    bool m_IsTearingSupported;
+        UINT m_CurrentBackBufferIndex;
 
-    int m_PreviousMouseX;
-    int m_PreviousMouseY;
+        RECT m_WindowRect;
+        bool m_IsTearingSupported;
 
-    GUI m_GUI;
+        int m_PreviousMouseX;
+        int m_PreviousMouseY;
 
-    // Per-window DPI scaling.
-    float m_DPIScaling;
-};
+        GUI m_GUI;
+
+        // Per-window DPI scaling.
+        float m_DPIScaling;
+    };
+}

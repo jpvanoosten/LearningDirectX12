@@ -8,6 +8,8 @@
 // Compiled shader
 #include <PanoToCubemap_CS.h>
 
+using namespace dx12lib;
+
 PanoToCubemapPSO::PanoToCubemapPSO()
 {
     auto device = Application::Get().GetDevice();

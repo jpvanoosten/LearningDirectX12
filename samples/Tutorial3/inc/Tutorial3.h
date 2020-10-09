@@ -31,22 +31,23 @@
  */
 
 #include <Camera.h>
-#include <Game.h>
-#include <IndexBuffer.h>
 #include <Light.h>
-#include <Window.h>
-#include <Mesh.h>
-#include <RenderTarget.h>
-#include <RootSignature.h>
-#include <Texture.h>
-#include <VertexBuffer.h>
+
+#include <dx12lib/Game.h>
+#include <dx12lib/IndexBuffer.h>
+#include <dx12lib/Window.h>
+#include <dx12lib/Mesh.h>
+#include <dx12lib/RenderTarget.h>
+#include <dx12lib/RootSignature.h>
+#include <dx12lib/Texture.h>
+#include <dx12lib/VertexBuffer.h>
 
 #include <DirectXMath.h>
 
-class Tutorial3 : public Game
+class Tutorial3 : public dx12lib::Game
 {
 public:
-    using super = Game;
+    using super = dx12lib::Game;
 
     Tutorial3(const std::wstring& name, int width, int height, bool vSync = false);
     virtual ~Tutorial3();
@@ -97,22 +98,22 @@ protected:
 
 private:
     // Some geometry to render.
-    std::unique_ptr<Mesh> m_CubeMesh;
-    std::unique_ptr<Mesh> m_SphereMesh;
-    std::unique_ptr<Mesh> m_ConeMesh;
-    std::unique_ptr<Mesh> m_TorusMesh;
-    std::unique_ptr<Mesh> m_PlaneMesh;
+    std::unique_ptr<dx12lib::Mesh> m_CubeMesh;
+    std::unique_ptr<dx12lib::Mesh> m_SphereMesh;
+    std::unique_ptr<dx12lib::Mesh> m_ConeMesh;
+    std::unique_ptr<dx12lib::Mesh> m_TorusMesh;
+    std::unique_ptr<dx12lib::Mesh> m_PlaneMesh;
 
-    Texture m_DefaultTexture;
-    Texture m_DirectXTexture;
-    Texture m_EarthTexture;
-    Texture m_MonaLisaTexture;
+    dx12lib::Texture m_DefaultTexture;
+    dx12lib::Texture m_DirectXTexture;
+    dx12lib::Texture m_EarthTexture;
+    dx12lib::Texture m_MonaLisaTexture;
 
     // Render target
-    RenderTarget m_RenderTarget;
+    dx12lib::RenderTarget m_RenderTarget;
 
     // Root signature
-    RootSignature m_RootSignature;
+    dx12lib::RootSignature m_RootSignature;
 
     // Pipeline state object.
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;

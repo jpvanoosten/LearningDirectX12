@@ -38,6 +38,8 @@
 
 #include <memory>
 
+namespace dx12lib
+{
 class Adapter;
 class CommandQueue;
 class DescriptorAllocator;
@@ -83,3 +85,4 @@ private:
     // Descriptor allocators.
     std::unique_ptr<DescriptorAllocator> m_DescriptorAllocators[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 };
+}  // namespace dx12lib

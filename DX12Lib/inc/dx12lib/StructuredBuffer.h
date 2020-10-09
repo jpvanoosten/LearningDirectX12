@@ -35,25 +35,26 @@
 
 #include "ByteAddressBuffer.h"
 
+namespace dx12lib
+{
 class StructuredBuffer : public Buffer
 {
 public:
     StructuredBuffer( const std::wstring& name = L"" );
-    StructuredBuffer( const D3D12_RESOURCE_DESC& resDesc, 
-        size_t numElements, size_t elementSize,
-        const std::wstring& name = L"");
+    StructuredBuffer( const D3D12_RESOURCE_DESC& resDesc, size_t numElements, size_t elementSize,
+                      const std::wstring& name = L"" );
 
     /**
-    * Get the number of elements contained in this buffer.
-    */
+     * Get the number of elements contained in this buffer.
+     */
     virtual size_t GetNumElements() const
     {
         return m_NumElements;
     }
 
     /**
-    * Get the size in bytes of each element in this buffer.
-    */
+     * Get the size in bytes of each element in this buffer.
+     */
     virtual size_t GetElementSize() const
     {
         return m_ElementSize;
@@ -68,7 +69,8 @@ public:
     /**
      * Get the SRV for a resource.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr) const
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE
+        GetShaderResourceView( const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr ) const
     {
         return m_SRV.GetDescriptorHandle();
     }
@@ -76,7 +78,8 @@ public:
     /**
      * Get the UAV for a (sub)resource.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr) const override
+    virtual D3D12_CPU_DESCRIPTOR_HANDLE
+        GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override
     {
         // Buffers don't have subresources.
         return m_UAV.GetDescriptorHandle();
@@ -97,3 +100,4 @@ private:
     // A buffer to store the internal counter for the structured buffer.
     ByteAddressBuffer m_CounterBuffer;
 };
+}  // namespace dx12lib

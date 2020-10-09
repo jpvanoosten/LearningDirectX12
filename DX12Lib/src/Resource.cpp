@@ -5,6 +5,8 @@
 #include <dx12lib/Application.h>
 #include <dx12lib/ResourceStateTracker.h>
 
+using namespace dx12lib;
+
 Resource::Resource(const std::wstring& name)
     : m_ResourceName(name)
     , m_FormatSupport({})

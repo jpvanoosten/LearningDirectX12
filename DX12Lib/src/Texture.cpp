@@ -6,6 +6,8 @@
 #include <dx12lib/Helpers.h>
 #include <dx12lib/ResourceStateTracker.h>
 
+using namespace dx12lib;
+
 Texture::Texture( TextureUsage textureUsage, const std::wstring& name )
     : Resource(name)
     , m_TextureUsage(textureUsage)

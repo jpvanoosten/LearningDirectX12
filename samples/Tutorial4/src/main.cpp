@@ -9,6 +9,8 @@
 
 #include <dxgidebug.h>
 
+using namespace dx12lib;
+
 void ReportLiveObjects()
 {
     IDXGIDebug1* dxgiDebug;

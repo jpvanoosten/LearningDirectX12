@@ -35,12 +35,14 @@
 #include <memory>
 #include <string>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 class aiMaterial;
 class aiMesh;
 class aiNode;
 
+namespace dx12lib
+{
 class CommandList;
 class SceneNode;
 class Mesh;
@@ -55,7 +57,7 @@ public:
     /**
      * Load a scene from a file on disc.
      */
-    virtual bool LoadFromFile(CommandList& commandList, const std::wstring& fileName);
+    virtual bool LoadFromFile( CommandList& commandList, const std::wstring& fileName );
 
     /**
      * Load a scene from a string.
@@ -65,27 +67,28 @@ public:
      * @param scene The byte encoded scene file.
      * @param format The format of the scene file.
      */
-    virtual bool LoadFromString(CommandList& commandList, const std::string& scene, const std::string& format);
-    virtual void Render(CommandList& commandList);
+    virtual bool LoadFromString( CommandList& commandList, const std::string& scene, const std::string& format );
+    virtual void Render( CommandList& commandList );
 
     virtual std::shared_ptr<SceneNode> GetRootNode() const;
 
 protected:
-
 private:
-    void ImportMaterial(CommandList& commandList, const aiMaterial& material, fs::path parentPath);
-    void ImportMesh(CommandList& commandList, const aiMesh& mesh);
-    std::shared_ptr<SceneNode> ImportSceneNode(CommandList& commandList, std::shared_ptr<SceneNode> parent, aiNode* aiNode);
+    void ImportMaterial( CommandList& commandList, const aiMaterial& material, fs::path parentPath );
+    void ImportMesh( CommandList& commandList, const aiMesh& mesh );
+    std::shared_ptr<SceneNode> ImportSceneNode( CommandList& commandList, std::shared_ptr<SceneNode> parent,
+                                                aiNode* aiNode );
 
-    using MaterialMap = std::map<std::string, std::shared_ptr<Material> >;
-    using MaterialList = std::vector < std::shared_ptr<Material> >;
-    using MeshList = std::vector< std::shared_ptr<Mesh> >;
+    using MaterialMap  = std::map<std::string, std::shared_ptr<Material>>;
+    using MaterialList = std::vector<std::shared_ptr<Material>>;
+    using MeshList     = std::vector<std::shared_ptr<Mesh>>;
 
-    MaterialMap m_MaterialMap;
+    MaterialMap  m_MaterialMap;
     MaterialList m_Materials;
-    MeshList m_Meshes;
+    MeshList     m_Meshes;
 
     std::shared_ptr<SceneNode> m_RootNode;
 
     std::wstring m_SceneFile;
 };
+}  // namespace dx12lib

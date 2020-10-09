@@ -15,6 +15,8 @@
 #include <ImGUI_VS.h>
 #include <imgui_impl_win32.h>
 
+using namespace dx12lib;
+
 // Root parameters for the ImGui root signature.
 enum RootParameters
 {

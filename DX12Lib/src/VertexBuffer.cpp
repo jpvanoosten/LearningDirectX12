@@ -2,6 +2,8 @@
 
 #include <dx12lib/VertexBuffer.h>
 
+using namespace dx12lib;
+
 VertexBuffer::VertexBuffer(const std::wstring& name)
     : Buffer(name)
     , m_NumVertices(0)

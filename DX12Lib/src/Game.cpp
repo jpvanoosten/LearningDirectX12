@@ -5,6 +5,8 @@
 #include <dx12lib/Game.h>
 #include <dx12lib/Window.h>
 
+using namespace dx12lib;
+
 Game::Game( const std::wstring& name, int width, int height, bool vSync )
 : m_Name( name )
 , m_Width( width )

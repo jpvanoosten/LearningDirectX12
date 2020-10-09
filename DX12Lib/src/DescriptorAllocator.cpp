@@ -4,6 +4,8 @@
 
 #include <dx12lib/DescriptorAllocatorPage.h>
 
+using namespace dx12lib;
+
 DescriptorAllocator::DescriptorAllocator( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptorsPerHeap )
 : m_HeapType( type )
 , m_NumDescriptorsPerHeap( numDescriptorsPerHeap )
@@ -11,7 +13,7 @@ DescriptorAllocator::DescriptorAllocator( D3D12_DESCRIPTOR_HEAP_TYPE type, uint3
 
 DescriptorAllocator::~DescriptorAllocator() {}
 
-std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
+std::shared_ptr<dx12lib::DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
 {
     auto newPage = std::make_shared<DescriptorAllocatorPage>( m_HeapType, m_NumDescriptorsPerHeap );
 

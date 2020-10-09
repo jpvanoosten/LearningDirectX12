@@ -2,6 +2,8 @@
 
 #include <dx12lib/RenderTarget.h>
 
+using namespace dx12lib;
+
 RenderTarget::RenderTarget()
 : m_Textures( AttachmentPoint::NumAttachmentPoints )
 , m_Size( 0, 0 )

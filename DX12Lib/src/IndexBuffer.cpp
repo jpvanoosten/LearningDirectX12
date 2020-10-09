@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+using namespace dx12lib;
+
 IndexBuffer::IndexBuffer(const std::wstring& name)
     : Buffer(name)
     , m_NumIndicies(0)

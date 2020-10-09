@@ -11,6 +11,8 @@
 
 #include <dxgidebug.h>  // For ReportLiveObjects.
 
+using namespace dx12lib;
+
 // These are the actions that the user can perform.
 // Don't map multiple actions to the same device button.
 namespace Buttons

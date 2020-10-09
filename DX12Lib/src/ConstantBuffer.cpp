@@ -4,6 +4,8 @@
 #include <dx12lib/ConstantBuffer.h>
 #include <dx12lib/d3dx12.h>
 
+using namespace dx12lib;
+
 ConstantBuffer::ConstantBuffer( const std::wstring& name )
 : Buffer( name )
 , m_SizeInBytes( 0 )

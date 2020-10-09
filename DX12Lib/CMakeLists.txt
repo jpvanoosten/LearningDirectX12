@@ -122,6 +122,10 @@ target_compile_features( DX12Lib
 	PUBLIC cxx_std_17
 )
 
+target_compile_definitions( DX12Lib
+    PUBLIC NOMINMAX
+)
+
 target_include_directories( DX12Lib
     PUBLIC inc
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"

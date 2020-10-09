@@ -37,26 +37,29 @@
 
 #include <DirectXMath.h>
 
+namespace dx12lib
+{
+
 class Mesh;
 class CommandList;
 
 class SceneNode : public std::enable_shared_from_this<SceneNode>
 {
 public:
-    explicit SceneNode(const DirectX::XMMATRIX& localTransform = DirectX::XMMatrixIdentity());
+    explicit SceneNode( const DirectX::XMMATRIX& localTransform = DirectX::XMMatrixIdentity() );
     virtual ~SceneNode();
 
     /**
      * Assign a name to the scene node so it can be searched for later.
      */
     const std::string& GetName() const;
-    void SetName(const std::string& name);
+    void               SetName( const std::string& name );
 
     /**
      * Get the scene nodes local (relative to its parent's transform).
      */
     DirectX::XMMATRIX GetLocalTransform() const;
-    void SetLocalTransform(const DirectX::XMMATRIX& localTransform);
+    void              SetLocalTransform( const DirectX::XMMATRIX& localTransform );
 
     /**
      * Get the inverse of the local transform.
@@ -68,7 +71,7 @@ public:
      * world transform).
      */
     DirectX::XMMATRIX GetWorldTransform() const;
-    void SetWorldTransform(const DirectX::XMMATRIX& worldTransform);
+    void              SetWorldTransform( const DirectX::XMMATRIX& worldTransform );
 
     /**
      * Get the inverse of the world transform (concatenated with its parent's
@@ -83,44 +86,44 @@ public:
      * is deleted, all of its children are deleted if nothing
      * else is referencing them.
      */
-    void AddChild(std::shared_ptr<SceneNode> childNode);
-    void RemoveChild(std::shared_ptr<SceneNode> childNode);
-    void SetParent(std::weak_ptr<SceneNode> parentNode);
+    void AddChild( std::shared_ptr<SceneNode> childNode );
+    void RemoveChild( std::shared_ptr<SceneNode> childNode );
+    void SetParent( std::weak_ptr<SceneNode> parentNode );
 
     /**
      * Add a mesh to this scene node.
      */
-    void AddMesh(std::shared_ptr<Mesh> mesh);
-    void RemoveMesh(std::shared_ptr<Mesh> mesh);
+    void AddMesh( std::shared_ptr<Mesh> mesh );
+    void RemoveMesh( std::shared_ptr<Mesh> mesh );
 
     /**
      * Render this node and all nodes in the scene graph.
      */
-    void Render(CommandList& commandList);
-
+    void Render( CommandList& commandList );
 
 protected:
     DirectX::XMMATRIX GetParentWorldTransform() const;
 
 private:
-    using NodePtr = std::shared_ptr<SceneNode>;
-    using NodeList = std::vector<NodePtr>;
+    using NodePtr     = std::shared_ptr<SceneNode>;
+    using NodeList    = std::vector<NodePtr>;
     using NodeNameMap = std::multimap<std::string, NodePtr>;
-    using MeshList = std::vector<std::shared_ptr<Mesh>>;
+    using MeshList    = std::vector<std::shared_ptr<Mesh>>;
 
     std::string m_Name;
 
-    // This data must be aligned to a 16-byte boundary. 
+    // This data must be aligned to a 16-byte boundary.
     // The only way to guarantee this, is to allocate this
     // structure in aligned memory.
-    struct alignas(16) AlignedData
+    struct alignas( 16 ) AlignedData
     {
         DirectX::XMMATRIX m_LocalTransform;
         DirectX::XMMATRIX m_InverseTransform;
-    } *m_AlignedData;
+    } * m_AlignedData;
 
     std::weak_ptr<SceneNode> m_ParentNode;
-    NodeList m_Children;
-    NodeNameMap m_ChildrenByName;
-    MeshList m_Meshes;
+    NodeList                 m_Children;
+    NodeNameMap              m_ChildrenByName;
+    MeshList                 m_Meshes;
 };
+}  // namespace dx12lib

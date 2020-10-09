@@ -4,6 +4,8 @@
 
 #include <dx12lib/Application.h>
 
+using namespace dx12lib;
+
 RootSignature::RootSignature()
 : m_RootSignatureDesc {}
 , m_NumDescriptorsPerTable { 0 }

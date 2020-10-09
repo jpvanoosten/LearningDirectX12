@@ -39,6 +39,8 @@
 #include <cstdint>
 #include <memory>
 
+namespace dx12lib
+{
 class DescriptorAllocatorPage;
 
 class DescriptorAllocation
@@ -47,7 +49,8 @@ public:
     // Creates a NULL descriptor.
     DescriptorAllocation();
 
-    DescriptorAllocation( D3D12_CPU_DESCRIPTOR_HANDLE descriptor, uint32_t numHandles, uint32_t descriptorSize, std::shared_ptr<DescriptorAllocatorPage> page );
+    DescriptorAllocation( D3D12_CPU_DESCRIPTOR_HANDLE descriptor, uint32_t numHandles, uint32_t descriptorSize,
+                          std::shared_ptr<dx12lib::DescriptorAllocatorPage> page );
 
     // The destructor will automatically free the allocation.
     ~DescriptorAllocation();
@@ -71,7 +74,7 @@ public:
 
     // Get the heap that this allocation came from.
     // (For internal use only).
-    std::shared_ptr<DescriptorAllocatorPage> GetDescriptorAllocatorPage() const;
+    std::shared_ptr<dx12lib::DescriptorAllocatorPage> GetDescriptorAllocatorPage() const;
 
 private:
     // Free the descriptor back to the heap it came from.
@@ -85,5 +88,6 @@ private:
     uint32_t m_DescriptorSize;
 
     // A pointer back to the original page where this allocation came from.
-    std::shared_ptr<DescriptorAllocatorPage> m_Page;
+    std::shared_ptr<dx12lib::DescriptorAllocatorPage> m_Page;
 };
+}  // namespace dx12lib

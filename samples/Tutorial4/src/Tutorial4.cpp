@@ -18,6 +18,7 @@ using namespace Microsoft::WRL;
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 
+using namespace dx12lib;
 using namespace DirectX;
 
 #include <algorithm>  // For std::min and std::max.

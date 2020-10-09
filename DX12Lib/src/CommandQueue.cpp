@@ -6,6 +6,8 @@
 #include <dx12lib/CommandList.h>
 #include <dx12lib/ResourceStateTracker.h>
 
+using namespace dx12lib;
+
 CommandQueue::CommandQueue( D3D12_COMMAND_LIST_TYPE type )
 : m_FenceValue( 0 )
 , m_CommandListType( type )

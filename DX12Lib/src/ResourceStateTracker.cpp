@@ -5,6 +5,8 @@
 #include <dx12lib/CommandList.h>
 #include <dx12lib/Resource.h>
 
+using namespace dx12lib;
+
 // Static definitions.
 std::mutex ResourceStateTracker::ms_GlobalMutex;
 bool ResourceStateTracker::ms_IsLocked = false;

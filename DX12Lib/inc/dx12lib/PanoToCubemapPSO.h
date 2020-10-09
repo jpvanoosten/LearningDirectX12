@@ -27,15 +27,17 @@
  *  @date October 24, 2018
  *  @author Jeremiah van Oosten
  *
- *  @brief Pipeline State Object and root signature for the conversion of a 
+ *  @brief Pipeline State Object and root signature for the conversion of a
  *  panoramic texture to a cubemap texture.
  */
 
-
-#include "RootSignature.h"
 #include "DescriptorAllocation.h"
+#include "RootSignature.h"
 
 #include <cstdint>
+
+namespace dx12lib
+{
 
 // Struct used in the PanoToCubemap_CS compute shader.
 struct PanoToCubemapCB
@@ -48,17 +50,17 @@ struct PanoToCubemapCB
     uint32_t NumMips;
 };
 
-// I don't use scoped enums to avoid the explicit cast that is required to 
+// I don't use scoped enums to avoid the explicit cast that is required to
 // treat these as root indices into the root signature.
 namespace PanoToCubemapRS
 {
-    enum
-    {
-        PanoToCubemapCB,
-        SrcTexture,
-        DstMips,
-        NumRootParameters
-    };
+enum
+{
+    PanoToCubemapCB,
+    SrcTexture,
+    DstMips,
+    NumRootParameters
+};
 }
 
 class PanoToCubemapPSO
@@ -82,10 +84,11 @@ public:
     }
 
 private:
-    RootSignature m_RootSignature;
+    RootSignature                               m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
     // Default (no resource) UAV's to pad the unused UAV descriptors.
     // If generating less than 5 mip map levels, the unused mip maps
     // need to be padded with default UAVs (to keep the DX12 runtime happy).
     DescriptorAllocation m_DefaultUAV;
 };
+}  // namespace dx12lib

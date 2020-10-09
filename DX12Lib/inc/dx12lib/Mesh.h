@@ -39,6 +39,8 @@
 #include <memory>  // For std::unique_ptr
 #include <vector>
 
+namespace dx12lib
+{
 class CommandList;
 
 // Vertex struct holding position, normal vector, and texture mapping information.
@@ -102,3 +104,4 @@ private:
 
     UINT m_IndexCount;
 };
+}  // namespace dx12lib

@@ -45,7 +45,9 @@
 #include <mutex>
 #include <queue>
 
-class DescriptorAllocatorPage : public std::enable_shared_from_this<DescriptorAllocatorPage>
+namespace dx12lib
+{
+class DescriptorAllocatorPage : public std::enable_shared_from_this<dx12lib::DescriptorAllocatorPage>
 {
 public:
     DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
@@ -53,38 +55,37 @@ public:
     D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const;
 
     /**
-    * Check to see if this descriptor page has a contiguous block of descriptors
-    * large enough to satisfy the request.
-    */
+     * Check to see if this descriptor page has a contiguous block of descriptors
+     * large enough to satisfy the request.
+     */
     bool HasSpace( uint32_t numDescriptors ) const;
 
     /**
-    * Get the number of available handles in the heap.
-    */
+     * Get the number of available handles in the heap.
+     */
     uint32_t NumFreeHandles() const;
 
     /**
-    * Allocate a number of descriptors from this descriptor heap.
-    * If the allocation cannot be satisfied, then a NULL descriptor
-    * is returned.
-    */
-    DescriptorAllocation Allocate( uint32_t numDescriptors );
+     * Allocate a number of descriptors from this descriptor heap.
+     * If the allocation cannot be satisfied, then a NULL descriptor
+     * is returned.
+     */
+    dx12lib::DescriptorAllocation Allocate( uint32_t numDescriptors );
 
     /**
-    * Return a descriptor back to the heap.
-    * @param frameNumber Stale descriptors are not freed directly, but put
-    * on a stale allocations queue. Stale allocations are returned to the heap
-    * using the DescriptorAllocatorPage::ReleaseStaleAllocations method.
-    */
-    void Free( DescriptorAllocation&& descriptorHandle, uint64_t frameNumber );
+     * Return a descriptor back to the heap.
+     * @param frameNumber Stale descriptors are not freed directly, but put
+     * on a stale allocations queue. Stale allocations are returned to the heap
+     * using the DescriptorAllocatorPage::ReleaseStaleAllocations method.
+     */
+    void Free( dx12lib::DescriptorAllocation&& descriptorHandle, uint64_t frameNumber );
 
     /**
-    * Returned the stale descriptors back to the descriptor heap.
-    */
+     * Returned the stale descriptors back to the descriptor heap.
+     */
     void ReleaseStaleDescriptors( uint64_t frameNumber );
 
 protected:
-
     // Compute the offset of the descriptor handle from the start of the heap.
     uint32_t ComputeOffset( D3D12_CPU_DESCRIPTOR_HANDLE handle );
 
@@ -113,19 +114,19 @@ private:
     struct FreeBlockInfo
     {
         FreeBlockInfo( SizeType size )
-            : Size( size )
+        : Size( size )
         {}
 
-        SizeType Size;
+        SizeType                 Size;
         FreeListBySize::iterator FreeListBySizeIt;
     };
 
     struct StaleDescriptorInfo
     {
         StaleDescriptorInfo( OffsetType offset, SizeType size, uint64_t frame )
-            : Offset( offset )
-            , Size( size )
-            , FrameNumber( frame )
+        : Offset( offset )
+        , Size( size )
+        , FrameNumber( frame )
         {}
 
         // The offset within the descriptor heap.
@@ -140,16 +141,17 @@ private:
     // has completed.
     using StaleDescriptorQueue = std::queue<StaleDescriptorInfo>;
 
-    FreeListByOffset m_FreeListByOffset;
-    FreeListBySize m_FreeListBySize;
+    FreeListByOffset     m_FreeListByOffset;
+    FreeListBySize       m_FreeListBySize;
     StaleDescriptorQueue m_StaleDescriptors;
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_d3d12DescriptorHeap;
-    D3D12_DESCRIPTOR_HEAP_TYPE m_HeapType;
-    CD3DX12_CPU_DESCRIPTOR_HANDLE m_BaseDescriptor;
-    uint32_t m_DescriptorHandleIncrementSize;
-    uint32_t m_NumDescriptorsInHeap;
-    uint32_t m_NumFreeHandles;
+    D3D12_DESCRIPTOR_HEAP_TYPE                   m_HeapType;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE                m_BaseDescriptor;
+    uint32_t                                     m_DescriptorHandleIncrementSize;
+    uint32_t                                     m_NumDescriptorsInHeap;
+    uint32_t                                     m_NumFreeHandles;
 
     std::mutex m_AllocationMutex;
 };
+}  // namespace dx12lib

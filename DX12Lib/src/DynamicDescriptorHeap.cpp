@@ -6,6 +6,8 @@
 #include <dx12lib/CommandList.h>
 #include <dx12lib/RootSignature.h>
 
+using namespace dx12lib;
+
 DynamicDescriptorHeap::DynamicDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptorsPerHeap )
 : m_DescriptorHeapType( heapType )
 , m_NumDescriptorsPerHeap( numDescriptorsPerHeap )

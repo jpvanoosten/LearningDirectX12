@@ -2,6 +2,8 @@
 
 #include <dx12lib/HighResolutionClock.h>
 
+using namespace dx12lib;
+
 HighResolutionClock::HighResolutionClock()
     : m_DeltaTime(0)
     , m_TotalTime(0)

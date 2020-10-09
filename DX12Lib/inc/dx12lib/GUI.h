@@ -35,12 +35,13 @@
 #include <d3dx12.h>
 #include <wrl.h>
 
+namespace dx12lib
+{
 class CommandList;
 class Texture;
 class RenderTarget;
 class RootSignature;
 class Window;
-
 
 class GUI
 {
@@ -58,15 +59,15 @@ public:
     // Destroy the ImGui context.
     virtual void Destroy();
 
-	// Set the scaling for this ImGuiContext.
-	void SetScaling(float scale);
+    // Set the scaling for this ImGuiContext.
+    void SetScaling( float scale );
 
 protected:
-
 private:
-    ImGuiContext* m_pImGuiCtx;
-    std::unique_ptr<Texture> m_FontTexture;
-    std::unique_ptr<RootSignature> m_RootSignature;
+    ImGuiContext*                               m_pImGuiCtx;
+    std::unique_ptr<Texture>                    m_FontTexture;
+    std::unique_ptr<RootSignature>              m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
-    std::shared_ptr<Window> m_Window;
+    std::shared_ptr<Window>                     m_Window;
 };
+}  // namespace dx12lib

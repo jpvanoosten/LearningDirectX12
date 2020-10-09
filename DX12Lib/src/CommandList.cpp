@@ -19,6 +19,8 @@
 #include <dx12lib/UploadBuffer.h>
 #include <dx12lib/VertexBuffer.h>
 
+using namespace dx12lib;
+
 std::map<std::wstring, ID3D12Resource*> CommandList::ms_TextureCache;
 std::mutex                              CommandList::ms_TextureCacheMutex;
 

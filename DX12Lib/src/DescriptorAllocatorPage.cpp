@@ -3,6 +3,8 @@
 #include <dx12lib/Application.h>
 #include <dx12lib/DescriptorAllocatorPage.h>
 
+using namespace dx12lib;
+
 DescriptorAllocatorPage::DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )
 : m_HeapType( type )
 , m_NumDescriptorsInHeap( numDescriptors )
@@ -45,7 +47,7 @@ void DescriptorAllocatorPage::AddNewBlock( uint32_t offset, uint32_t numDescript
     offsetIt.first->second.FreeListBySizeIt = sizeIt;
 }
 
-DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors )
+dx12lib::DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors )
 {
     std::lock_guard<std::mutex> lock( m_AllocationMutex );
 
@@ -53,7 +55,7 @@ DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors 
     // Return a NULL descriptor and try another heap.
     if ( numDescriptors > m_NumFreeHandles )
     {
-        return DescriptorAllocation();
+        return dx12lib::DescriptorAllocation();
     }
 
     // Get the first block that is large enough to satisfy the request.
@@ -61,7 +63,7 @@ DescriptorAllocation DescriptorAllocatorPage::Allocate( uint32_t numDescriptors 
     if ( smallestBlockIt == m_FreeListBySize.end() )
     {
         // There was no free block that could satisfy the request.
-        return DescriptorAllocation();
+        return dx12lib::DescriptorAllocation();
     }
 
     // The size of the smallest block that satisfies the request.

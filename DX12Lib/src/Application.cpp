@@ -8,17 +8,19 @@
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Window.h>
 
+using namespace dx12lib;
+
 constexpr wchar_t WINDOW_CLASS_NAME[] = L"DX12RenderWindowClass";
 
-using WindowPtr = std::shared_ptr<Window>;
+using WindowPtr = std::shared_ptr<dx12lib::Window>;
 using WindowMap = std::map< HWND, WindowPtr >;
 using WindowNameMap = std::map< std::wstring, WindowPtr >;
 
-static Application* gs_pSingelton = nullptr;
+static dx12lib::Application* gs_pSingelton = nullptr;
 static WindowMap gs_Windows;
 static WindowNameMap gs_WindowByName;
 
-uint64_t Application::ms_FrameCount = 0;
+uint64_t dx12lib::Application::ms_FrameCount = 0;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 extern LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
@@ -26,10 +28,10 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wPara
 // A wrapper struct to allow shared pointers for the window class.
 // This is needed because the constructor and destructor for the Window
 // class are protected and not accessible by the std::make_shared method.
-struct MakeWindow : public Window 
+struct MakeWindow : public dx12lib::Window
 {
     MakeWindow(HWND hWnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync)
-        : Window(hWnd, windowName, clientWidth, clientHeight, vSync)
+    : dx12lib::Window( hWnd, windowName, clientWidth, clientHeight, vSync )
     {}
 };
 
