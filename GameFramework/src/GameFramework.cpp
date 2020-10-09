@@ -533,7 +533,6 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam,
             bool alt     = ( GetAsyncKeyState( VK_MENU ) & 0x8000 ) != 0;
 
             KeyCode      key      = (KeyCode)wParam;
-            unsigned int scanCode = ( lParam & 0x00FF0000 ) >> 16;
             KeyEventArgs keyEventArgs( key, c, KeyState::Pressed, control,
                                        shift, alt );
             pWindow->OnKeyPressed( keyEventArgs );

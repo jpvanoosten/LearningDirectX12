@@ -228,7 +228,7 @@ protected:
     Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
             int clientHeight );
 
-    ~Window();
+    virtual ~Window();
 
     // Update game
     virtual void OnUpdate( UpdateEventArgs& e );
@@ -281,7 +281,8 @@ protected:
 private:
     HWND m_hWnd;
 
-    std::string m_Name;
+    std::wstring m_Name;
+    std::wstring m_Title;
 
     uint32_t m_ClientWidth;
     uint32_t m_ClientHeight;
@@ -289,14 +290,17 @@ private:
     int32_t m_PreviousMouseX;
     int32_t m_PreviousMouseY;
 
+    // Get the current dpi scaling of the window.
+    float m_DPIScaling;
+
     // The current fullscreen state of the window.
     bool m_IsFullscreen;
 
-    // True if the window is maximized.
-    bool m_IsMaximized;
-
     // True if the window is minimized.
     bool m_IsMinimized;
+
+    // True if the window is maximized.
+    bool m_IsMaximized;
 
     // This is true when the mouse is inside the window's client rect.
     bool m_bInClientRect;

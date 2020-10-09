@@ -4,6 +4,8 @@
 Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
                 int clientHeight )
 : m_hWnd( hWnd )
+, m_Name( windowName )
+, m_Title( windowName )
 , m_ClientWidth( clientWidth )
 , m_ClientHeight( clientHeight )
 , m_PreviousMouseX( 0 )
@@ -13,11 +15,23 @@ Window::Window( HWND hWnd, const std::wstring& windowName, int clientWidth,
 , m_IsMaximized( false )
 , m_bInClientRect( false )
 , m_bHasKeyboardFocus( false )
-{}
+{
+    m_DPIScaling = ::GetDpiForWindow( hWnd ) / 96.0f;
+}
 
 Window::~Window()
 {
     ::DestroyWindow( m_hWnd );
+}
+
+HWND Window::GetWindowHandle() const
+{
+    return m_hWnd;
+}
+
+float Window::GetDPIScaling() const
+{
+    return m_DPIScaling;
 }
 
 void Window::Show()
@@ -91,6 +105,7 @@ void Window::OnRestored( ResizeEventArgs& e )
 // The DPI scaling of the window has changed.
 void Window::OnDPIScaleChanged( DPIScaleEventArgs& e )
 {
+    m_DPIScaling = e.DPIScale;
     DPIScaleChanged( e );
 }
 
@@ -187,6 +202,17 @@ void Window::OnMouseFocus( EventArgs& e )
 void Window::OnMouseBlur( EventArgs& e )
 {
     MouseBlur( e );
+}
+
+void Window::SetWindowTitle( const std::wstring& windowTitle )
+{
+    m_Title = windowTitle;
+    ::SetWindowTextW( m_hWnd, m_Title.c_str() );
+}
+
+const std::wstring& Window::GetWindowTitle() const
+{
+    return m_Title;
 }
 
 bool Window::IsFullscreen() const

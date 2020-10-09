@@ -103,7 +103,7 @@ void CReadChangesRequest::BeginRead()
 	DWORD dwBytes=0;
 
 	// This call needs to be reissued after every APC.
-	BOOL success = ::ReadDirectoryChangesW(
+	::ReadDirectoryChangesW(
 		m_hDirectory,                       // handle to directory
 		&m_Buffer[0],                       // read results buffer
 		(DWORD)m_Buffer.size(),             // length of buffer

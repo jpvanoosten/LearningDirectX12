@@ -20,6 +20,7 @@ target_include_directories( ${TARGET_NAME}
 
 target_link_libraries( ${TARGET_NAME}
     GameFramework
+    DX12Lib
 )
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)

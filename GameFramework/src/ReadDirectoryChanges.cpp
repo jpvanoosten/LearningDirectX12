@@ -1,113 +1,106 @@
 //
-//	The MIT License
+// The MIT License
 //
-//	Copyright (c) 2010 James E Beveridge
+// Copyright (c) 2010 James E Beveridge
 //
-//	Permission is hereby granted, free of charge, to any person obtaining a copy
-//	of this software and associated documentation files (the "Software"), to deal
-//	in the Software without restriction, including without limitation the rights
-//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//	copies of the Software, and to permit persons to whom the Software is
-//	furnished to do so, subject to the following conditions:
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
 //
-//	The above copyright notice and this permission notice shall be included in
-//	all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
 //
-//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//	THE SOFTWARE.
-
-
-//	This sample code is for my blog entry titled, "Understanding ReadDirectoryChangesW"
-//	http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
-//	See ReadMe.txt for overview information.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// This sample code is for my blog entry titled, "Understanding ReadDirectoryChangesW"
+// http://qualapps.blogspot.com/2010/05/understanding-readdirectorychangesw.html
+// See ReadMe.txt for overview information.
 
 #include <GameFrameworkPCH.h>
 
-#include <ReadDirectoryChanges.h>
 #include "ReadDirectoryChangesPrivate.h"
+#include <ReadDirectoryChanges.h>
 
 using namespace ReadDirectoryChangesPrivate;
 
 ///////////////////////////////////////////////////////////////////////////
 // CReadDirectoryChanges
 
-CReadDirectoryChanges::CReadDirectoryChanges(int nMaxCount)
-	: m_Notifications(nMaxCount)
+CReadDirectoryChanges::CReadDirectoryChanges( int nMaxCount )
+: m_Notifications( nMaxCount )
 {
-	m_hThread	= NULL;
-	m_dwThreadId= 0;
-	m_pServer	= new CReadChangesServer(this);
+    m_hThread    = NULL;
+    m_dwThreadId = 0;
+    m_pServer    = new CReadChangesServer( this );
 }
 
 CReadDirectoryChanges::~CReadDirectoryChanges()
 {
-	Terminate();
-	delete m_pServer;
+    Terminate();
+    delete m_pServer;
 }
 
-void CReadDirectoryChanges::Init() 
+void CReadDirectoryChanges::Init()
 {
-	//
-	// Kick off the worker thread, which will be
-	// managed by CReadChangesServer.
-	//
-	m_hThread = (HANDLE)_beginthreadex(NULL,
-		0,
-		CReadChangesServer::ThreadStartProc,
-		m_pServer,
-		0,
-		&m_dwThreadId
-		);
+    //
+    // Kick off the worker thread, which will be
+    // managed by CReadChangesServer.
+    //
+    m_hThread = (HANDLE)_beginthreadex( NULL, 0, CReadChangesServer::ThreadStartProc, m_pServer, 0, &m_dwThreadId );
 }
 
-void CReadDirectoryChanges::Terminate() 
+void CReadDirectoryChanges::Terminate()
 {
-	if (m_hThread)
-	{
-		::QueueUserAPC(CReadChangesServer::TerminateProc, m_hThread, (ULONG_PTR)m_pServer);
-		::WaitForSingleObjectEx(m_hThread, 10000, true);
-		::CloseHandle(m_hThread);
+    if ( m_hThread )
+    {
+        ::QueueUserAPC( CReadChangesServer::TerminateProc, m_hThread, (ULONG_PTR)m_pServer );
+        ::WaitForSingleObjectEx( m_hThread, 10000, true );
+        ::CloseHandle( m_hThread );
 
-		m_hThread = NULL;
-		m_dwThreadId = 0;
-	}
+        m_hThread    = NULL;
+        m_dwThreadId = 0;
+    }
 }
 
-void CReadDirectoryChanges::AddDirectory( const std::wstring& szDirectory, BOOL bWatchSubtree, DWORD dwNotifyFilter, DWORD dwBufferSize ) 
+void CReadDirectoryChanges::AddDirectory( const std::wstring& szDirectory, BOOL bWatchSubtree, DWORD dwNotifyFilter,
+                                          DWORD dwBufferSize )
 {
-	if (!m_hThread)
-		Init();
+    if ( !m_hThread )
+        Init();
 
-	CReadChangesRequest* pRequest = new CReadChangesRequest(m_pServer, szDirectory, bWatchSubtree, dwNotifyFilter, dwBufferSize);
-	QueueUserAPC(CReadChangesServer::AddDirectoryProc, m_hThread, (ULONG_PTR)pRequest);
+    if ( m_hThread )
+    {
+        CReadChangesRequest* pRequest =
+            new CReadChangesRequest( m_pServer, szDirectory, bWatchSubtree, dwNotifyFilter, dwBufferSize );
+        ::QueueUserAPC( CReadChangesServer::AddDirectoryProc, m_hThread, (ULONG_PTR)pRequest );
+    }
 }
 
-void CReadDirectoryChanges::Push( DWORD dwAction, const std::wstring &wstrFilename )
+void CReadDirectoryChanges::Push( DWORD dwAction, const std::wstring& wstrFilename )
 {
-	m_Notifications.push( TDirectoryChangeNotification(dwAction, wstrFilename) );
+    m_Notifications.push( TDirectoryChangeNotification( dwAction, wstrFilename ) );
 }
 
-bool  CReadDirectoryChanges::Pop(DWORD& dwAction, std::wstring& wstrFilename) 
+bool CReadDirectoryChanges::Pop( DWORD& dwAction, std::wstring& wstrFilename )
 {
-	TDirectoryChangeNotification pair;
-	if (!m_Notifications.pop(pair))
-		return false;
+    TDirectoryChangeNotification pair;
+    if ( !m_Notifications.pop( pair ) )
+        return false;
 
-	dwAction = pair.first;
-	wstrFilename = pair.second;
+    dwAction     = pair.first;
+    wstrFilename = pair.second;
 
-	return true;
+    return true;
 }
 
 bool CReadDirectoryChanges::CheckOverflow()
 {
-	bool b = m_Notifications.overflow();
-	if (b)
-		m_Notifications.clear();
-	return b;
+    bool b = m_Notifications.overflow();
+    if ( b )
+        m_Notifications.clear();
+    return b;
 }

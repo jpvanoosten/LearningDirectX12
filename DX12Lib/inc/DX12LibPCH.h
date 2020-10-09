@@ -50,7 +50,7 @@
 #endif
 
 // Windows Runtime Library. Needed for Microsoft::WRL::ComPtr<> template class.
-#include <wrl.h>
+#include <wrl/client.h>
 using namespace Microsoft::WRL;
 
 // DirectX 12 specific headers.

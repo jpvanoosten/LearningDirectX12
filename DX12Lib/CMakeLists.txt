@@ -3,6 +3,7 @@ cmake_minimum_required( VERSION 3.16.1 ) # Latest version of CMake when this fil
 set( HEADER_FILES 
     inc/DX12LibPCH.h
     inc/Application.h
+    inc/Adapter.h
     inc/Buffer.h
     inc/ByteAddressBuffer.h
     inc/CommandList.h
@@ -11,6 +12,7 @@ set( HEADER_FILES
     inc/DescriptorAllocation.h
     inc/DescriptorAllocator.h
     inc/DescriptorAllocatorPage.h
+    inc/Device.h
     inc/DynamicDescriptorHeap.h
     inc/Events.h
     inc/Game.h
@@ -40,6 +42,7 @@ set( HEADER_FILES
 
 set( SOURCE_FILES
     src/DX12LibPCH.cpp
+    src/Adapter.cpp
     src/Application.cpp
     src/Buffer.cpp
     src/ByteAddressBuffer.cpp
@@ -49,6 +52,7 @@ set( SOURCE_FILES
     src/DescriptorAllocation.cpp
     src/DescriptorAllocator.cpp
     src/DescriptorAllocatorPage.cpp
+    src/Device.cpp
     src/DynamicDescriptorHeap.cpp
     src/Game.cpp
     src/GenerateMipsPSO.cpp
@@ -109,6 +113,7 @@ add_library( DX12Lib STATIC
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
     ${IMGUI_HEADERS} ${IMGUI_SOURCE}
+    ../.clang-format
 )
 
 # Enable C++17 compiler features.
@@ -127,7 +132,7 @@ target_link_libraries( DX12Lib
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/DX12Lib.dir/${CMAKE_CFG_INTDIR}/DX12Lib.res # This is the only way I could figure out how to link the compiled resource file.
+#    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/DX12Lib.dir/${CMAKE_CFG_INTDIR}/DX12Lib.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
 # Enable precompiled header files.

@@ -1,10 +1,16 @@
 #include <GameFramework.h>
 #include <Window.h>
 
+#include <Adapter.h>
+#include <Device.h>
+
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
 #include <shellapi.h>  // for CommandLineToArgvW
+
+#include <dxgidebug.h> // For ReportLiveObjects.
+
 
 // These are the actions that the user can perform.
 // Don't map multiple actions to the same device button.
@@ -49,7 +55,17 @@ std::shared_ptr<gainput::InputMap> pInputMap   = nullptr;
 
 Logger logger;
 
-int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
+void ReportLiveObjects()
+{
+    IDXGIDebug1* dxgiDebug;
+    DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
+
+    dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL,
+                                  DXGI_DEBUG_RLO_IGNORE_INTERNAL );
+    dxgiDebug->Release();
+}
+
+int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                        PWSTR lpCmdLine, int nCmdShow )
 {
     int retCode = 0;
@@ -64,8 +80,8 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
             // -wd Specify the Working Directory.
             if ( wcscmp( argv[i], L"-wd" ) == 0 )
             {
-                wcscpy_s( path, argv[++i] );
-                SetCurrentDirectoryW( path );
+                ::wcscpy_s( path, argv[++i] );
+                ::SetCurrentDirectoryW( path );
             }
         }
         LocalFree( argv );
@@ -75,6 +91,14 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
     {
         // Create a logger for logging messages.
         logger = gf.CreateLogger( "ClearScreen" );
+
+        // Create a default adapter using the default preference.
+        auto device = Device::Create();
+
+        if (device) {
+            auto description = device->GetDescription();
+            logger->info( L"Device Created: {}", description );
+        }
 
         // Create an input map and map user buttons to device buttons.
         auto keyboardId = gf.GetKeyboardId();
@@ -91,7 +115,7 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
         pInputMap->MapBool( Buttons::Y, keyboardId, gainput::KeyQ );
         // Map gamepad buttons
         pInputMap->MapBool( Buttons::Menu, gamepad0, gainput::PadButtonStart );
-        pInputMap->MapBool( Buttons::Menu, gamepad0, gainput::PadButtonSelect );
+        pInputMap->MapBool( Buttons::Back, gamepad0, gainput::PadButtonSelect );
         pInputMap->MapBool( Buttons::A, gamepad0, gainput::PadButtonA );
         pInputMap->MapBool( Buttons::B, gamepad0, gainput::PadButtonB );
         pInputMap->MapBool( Buttons::X, gamepad0, gainput::PadButtonX );
@@ -130,6 +154,8 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     GameFramework::Destroy();
 
+    atexit( &ReportLiveObjects );
+
     return retCode;
 }
 
@@ -152,6 +178,10 @@ void OnUpdate( UpdateEventArgs& e )
         totalTime -= 1.0;
 
         logger->info( "FPS: {:.7}", fps );
+
+        wchar_t buffer[256];
+        ::swprintf_s( buffer, L"Clear Screen [FPS: %f]", fps );
+        pGameWindow->SetWindowTitle( buffer );
     }
 
     // Check button actions.
