@@ -38,23 +38,16 @@
 
 namespace dx12lib
 {
+
+class Device;
+
 class ByteAddressBuffer : public Buffer
 {
 public:
-    ByteAddressBuffer( const std::wstring& name = L"" );
-    ByteAddressBuffer( const D3D12_RESOURCE_DESC& resDesc, size_t numElements, size_t elementSize,
-                       const std::wstring& name = L"" );
-
     size_t GetBufferSize() const
     {
         return m_BufferSize;
     }
-
-    /**
-     * Create the views for the buffer resource.
-     * Used by the CommandList when setting the buffer contents.
-     */
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
 
     /**
      * Get the SRV for a resource.
@@ -76,6 +69,15 @@ public:
     }
 
 protected:
+    ByteAddressBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc );
+    virtual ~ByteAddressBuffer() = default;
+
+    /**
+     * Create the views for the buffer resource.
+     * Used by the CommandList when setting the buffer contents.
+     */
+    void CreateViews();
+
 private:
     size_t m_BufferSize;
 

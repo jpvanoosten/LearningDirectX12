@@ -4,21 +4,20 @@
 
 using namespace dx12lib;
 
-VertexBuffer::VertexBuffer(const std::wstring& name)
-    : Buffer(name)
-    , m_NumVertices(0)
-    , m_VertexStride(0)
+VertexBuffer::VertexBuffer( std::shared_ptr<Device> device, size_t numVertices, size_t vertexStride )
+    : Buffer(device, CD3DX12_RESOURCE_DESC::Buffer( numVertices * vertexStride ) )
+    , m_NumVertices(numVertices)
+    , m_VertexStride(vertexStride)
     , m_VertexBufferView({})
-{}
+{
+    CreateViews();
+}
 
 VertexBuffer::~VertexBuffer()
 {}
 
-void VertexBuffer::CreateViews(size_t numElements, size_t elementSize)
+void VertexBuffer::CreateViews()
 {
-    m_NumVertices = numElements;
-    m_VertexStride = elementSize;
-
     m_VertexBufferView.BufferLocation = m_d3d12Resource->GetGPUVirtualAddress();
     m_VertexBufferView.SizeInBytes = static_cast<UINT>(m_NumVertices * m_VertexStride);
     m_VertexBufferView.StrideInBytes = static_cast<UINT>(m_VertexStride);

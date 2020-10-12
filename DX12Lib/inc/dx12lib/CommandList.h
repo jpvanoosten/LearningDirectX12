@@ -43,6 +43,7 @@
 
 namespace dx12lib
 {
+
 class Buffer;
 class ByteAddressBuffer;
 class ConstantBuffer;

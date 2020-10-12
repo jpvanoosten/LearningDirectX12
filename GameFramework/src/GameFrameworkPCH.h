@@ -33,6 +33,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <comdef.h> // For _com_error class (used to decode HR result codes).
+
 #include <fcntl.h> // For Translation mode constants _O_TEXT (https://docs.microsoft.com/en-us/cpp/c-runtime-library/translation-mode-constants)
 #include <Shlwapi.h>  // For PathFindFileNameW (used in ReadDirectoryChanges.cpp)
 

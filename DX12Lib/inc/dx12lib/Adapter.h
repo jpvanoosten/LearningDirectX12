@@ -41,6 +41,7 @@
 
 namespace dx12lib
 {
+
 class Adapter;
 using AdapterList = std::vector<std::shared_ptr<Adapter>>;
 

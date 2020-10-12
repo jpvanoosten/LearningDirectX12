@@ -4,16 +4,20 @@
 
 #include <dx12lib/Application.h>
 #include <dx12lib/CommandList.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/ResourceStateTracker.h>
 
 using namespace dx12lib;
 
-CommandQueue::CommandQueue( D3D12_COMMAND_LIST_TYPE type )
-: m_FenceValue( 0 )
+CommandQueue::CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type )
+: m_Device( device )
 , m_CommandListType( type )
+, m_FenceValue( 0 )
 , m_bProcessInFlightCommandLists( true )
 {
-    auto device = Application::Get().GetDevice();
+    assert( device ); // Device must be valid!
+
+    auto d3d12Device = device->GetD3D12Device();
 
     D3D12_COMMAND_QUEUE_DESC desc = {};
     desc.Type                     = type;
@@ -21,8 +25,8 @@ CommandQueue::CommandQueue( D3D12_COMMAND_LIST_TYPE type )
     desc.Flags                    = D3D12_COMMAND_QUEUE_FLAG_NONE;
     desc.NodeMask                 = 0;
 
-    ThrowIfFailed( device->CreateCommandQueue( &desc, IID_PPV_ARGS( &m_d3d12CommandQueue ) ) );
-    ThrowIfFailed( device->CreateFence( m_FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( &m_d3d12Fence ) ) );
+    ThrowIfFailed( d3d12Device->CreateCommandQueue( &desc, IID_PPV_ARGS( &m_d3d12CommandQueue ) ) );
+    ThrowIfFailed( d3d12Device->CreateFence( m_FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( &m_d3d12Fence ) ) );
 
     switch ( type )
     {

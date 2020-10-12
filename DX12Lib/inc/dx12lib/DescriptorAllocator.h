@@ -49,14 +49,13 @@
 
 namespace dx12lib
 {
-class DescriptorAllocatorPage;
+
+    class DescriptorAllocatorPage;
+class Device;
 
 class DescriptorAllocator
 {
 public:
-    DescriptorAllocator( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptorsPerHeap = 256 );
-    virtual ~DescriptorAllocator();
-
     /**
      * Allocate a number of contiguous descriptors from a CPU visible descriptor heap.
      *
@@ -70,8 +69,18 @@ public:
      */
     void ReleaseStaleDescriptors( uint64_t frameNumber );
 
+protected:
+    friend class std::default_delete<DescriptorAllocator>;
+
+    // Can only be created by the Device.
+    DescriptorAllocator( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptorsPerHeap = 256 );
+    virtual ~DescriptorAllocator();
+
 private:
     using DescriptorHeapPool = std::vector<std::shared_ptr<DescriptorAllocatorPage>>;
+
+    // The device that was use to create this DescriptorAllocator.
+    std::weak_ptr<Device> m_Device;
 
     // Create a new heap with a specific number of descriptors.
     std::shared_ptr<DescriptorAllocatorPage> CreateAllocatorPage();

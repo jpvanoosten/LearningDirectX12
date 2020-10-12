@@ -38,12 +38,6 @@ namespace dx12lib
 class VertexBuffer : public Buffer
 {
 public:
-    VertexBuffer( const std::wstring& name = L"" );
-    virtual ~VertexBuffer();
-
-    // Inherited from Buffer
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
-
     /**
      * Get the vertex buffer view for binding to the Input Assembler stage.
      */
@@ -75,6 +69,11 @@ public:
         GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
 
 protected:
+    VertexBuffer( std::shared_ptr<Device> device, size_t numVertices, size_t vertexStride );
+    virtual ~VertexBuffer();
+
+    void CreateViews();
+
 private:
     size_t m_NumVertices;
     size_t m_VertexStride;

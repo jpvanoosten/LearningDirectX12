@@ -41,14 +41,13 @@
 
 namespace dx12lib
 {
+
 class CommandList;
+class Device;
 
 class CommandQueue
 {
 public:
-    CommandQueue( D3D12_COMMAND_LIST_TYPE type );
-    virtual ~CommandQueue();
-
     // Get an available command list from the command queue.
     std::shared_ptr<CommandList> GetCommandList();
 
@@ -67,6 +66,11 @@ public:
 
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetD3D12CommandQueue() const;
 
+protected:
+    // Only the device can create command queues.
+    CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type );
+    virtual ~CommandQueue();
+
 private:
     // Free any command lists that are finished processing on the command queue.
     void ProccessInFlightCommandLists();
@@ -76,6 +80,7 @@ private:
     // a shared pointer to the "in-flight" command list.
     using CommandListEntry = std::tuple<uint64_t, std::shared_ptr<CommandList>>;
 
+    std::weak_ptr<Device>                      m_Device; // The device that was used to create this command queue.
     D3D12_COMMAND_LIST_TYPE                    m_CommandListType;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_d3d12CommandQueue;
     Microsoft::WRL::ComPtr<ID3D12Fence>        m_d3d12Fence;

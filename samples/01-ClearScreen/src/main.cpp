@@ -3,6 +3,7 @@
 
 #include <dx12lib/Adapter.h>
 #include <dx12lib/Device.h>
+#include <dx12lib/SwapChain.h>
 
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
@@ -53,6 +54,7 @@ void OnWindowClose( WindowCloseEventArgs& e );
 
 std::shared_ptr<Window>            pGameWindow = nullptr;
 std::shared_ptr<gainput::InputMap> pInputMap   = nullptr;
+std::shared_ptr<SwapChain>         pSwapChain  = nullptr;
 
 Logger logger;
 
@@ -127,6 +129,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 
         // Create a window:
         pGameWindow = gf.CreateWindow( L"Clear Screen", 1920, 1080 );
+
+        // Create a swapchain for the window
+        pSwapChain = device->CreateSwapChain( pGameWindow->GetWindowHandle() );
 
         // Register events.
         pGameWindow->KeyPressed += &OnKeyPressed;
@@ -209,6 +214,8 @@ void OnUpdate( UpdateEventArgs& e )
     {
         logger->info( "Y button pressed." );
     }
+
+    pSwapChain->Present();
 }
 
 void OnKeyPressed( KeyEventArgs& e )
@@ -312,6 +319,8 @@ void OnWindowResized( ResizeEventArgs& e )
 {
     logger->info( "Window Resize: {}, {}", e.Width, e.Height );
     GameFramework::Get().SetDisplaySize( e.Width, e.Height );
+
+    pSwapChain->Resize( e.Width, e.Height );
 }
 
 void OnWindowMinimized( ResizeEventArgs& e )

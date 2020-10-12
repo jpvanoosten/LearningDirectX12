@@ -32,14 +32,16 @@
 
 #include "Defines.h"
 
-#include <wrl.h>
 #include <d3d12.h>
+#include <wrl.h>
 
-#include <memory>
 #include <deque>
+#include <memory>
 
 namespace dx12lib
 {
+
+class Device;
 
 class UploadBuffer
 {
@@ -50,13 +52,6 @@ public:
         void*                     CPU;
         D3D12_GPU_VIRTUAL_ADDRESS GPU;
     };
-
-    /**
-     * @param pageSize The size to use to allocate new pages in GPU memory.
-     */
-    explicit UploadBuffer( size_t pageSize = _2MB );
-
-    virtual ~UploadBuffer();
 
     /**
      * The maximum size of an allocation is the size of a single page.
@@ -81,11 +76,19 @@ public:
      */
     void Reset();
 
+protected:
+    /**
+     * @param pageSize The size to use to allocate new pages in GPU memory.
+     */
+    explicit UploadBuffer( std::shared_ptr<Device> device, size_t pageSize = _2MB );
+
+    virtual ~UploadBuffer();
+
 private:
     // A single page for the allocator.
     struct Page
     {
-        Page( size_t sizeInBytes );
+        Page( std::shared_ptr<Device> device, size_t sizeInBytes );
         ~Page();
 
         // Check to see if the page has room to satisfy the requested
@@ -102,6 +105,7 @@ private:
         void Reset();
 
     private:
+        std::shared_ptr<Device>                m_Device;
         Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource;
 
         // Base pointer.
@@ -116,6 +120,9 @@ private:
 
     // A pool of memory pages.
     using PagePool = std::deque<std::shared_ptr<Page>>;
+
+    // The device that was used to create this upload buffer.
+    std::shared_ptr<Device> m_Device;
 
     // Request a page from the pool of available pages
     // or create a new page if there are no available pages.

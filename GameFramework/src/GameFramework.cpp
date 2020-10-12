@@ -91,6 +91,7 @@ GameFramework::GameFramework( HINSTANCE hInst )
     // Using this awareness context allows the client area of the window
     // to achieve 100% scaling while still allowing non-client window content to
     // be rendered in a DPI sensitive fashion.
+    // @see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setthreaddpiawarenesscontext
     SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
 
     // Create a console window for std::cout
@@ -115,6 +116,17 @@ GameFramework::GameFramework( HINSTANCE hInst )
     m_MouseDevice    = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();
     for ( unsigned i = 0; i < gainput::MaxPadCount; ++i )
     { m_GamepadDevice[i] = m_InputManager.CreateDevice<gainput::InputDevicePad>( i ); }
+
+    // Initializes the COM library for use by the calling thread, sets the thread's concurrency model, and creates a new
+    // apartment for the thread if one is required.
+    // This must be called at least once for each thread that uses the COM library.
+    // @see https://docs.microsoft.com/en-us/windows/win32/api/objbase/nf-objbase-coinitialize
+    HRESULT hr = CoInitialize( NULL );
+    if ( FAILED( hr ) ) {
+        _com_error err( hr );   // I hope this never happens.
+        spdlog::critical( "CoInitialize failed: {}", err.ErrorMessage() );
+        throw new std::exception( err.ErrorMessage() );
+    }
 
     WNDCLASSEXW wndClass = { 0 };
 

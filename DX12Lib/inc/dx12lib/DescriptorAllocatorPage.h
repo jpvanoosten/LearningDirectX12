@@ -47,11 +47,12 @@
 
 namespace dx12lib
 {
-class DescriptorAllocatorPage : public std::enable_shared_from_this<dx12lib::DescriptorAllocatorPage>
+
+class Device;
+
+class DescriptorAllocatorPage : public std::enable_shared_from_this<DescriptorAllocatorPage>
 {
 public:
-    DescriptorAllocatorPage( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
-
     D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType() const;
 
     /**
@@ -70,7 +71,7 @@ public:
      * If the allocation cannot be satisfied, then a NULL descriptor
      * is returned.
      */
-    dx12lib::DescriptorAllocation Allocate( uint32_t numDescriptors );
+    DescriptorAllocation Allocate( uint32_t numDescriptors );
 
     /**
      * Return a descriptor back to the heap.
@@ -78,7 +79,7 @@ public:
      * on a stale allocations queue. Stale allocations are returned to the heap
      * using the DescriptorAllocatorPage::ReleaseStaleAllocations method.
      */
-    void Free( dx12lib::DescriptorAllocation&& descriptorHandle, uint64_t frameNumber );
+    void Free( DescriptorAllocation&& descriptorHandle, uint64_t frameNumber );
 
     /**
      * Returned the stale descriptors back to the descriptor heap.
@@ -86,6 +87,9 @@ public:
     void ReleaseStaleDescriptors( uint64_t frameNumber );
 
 protected:
+    DescriptorAllocatorPage( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
+    virtual ~DescriptorAllocatorPage() = default;
+
     // Compute the offset of the descriptor handle from the start of the heap.
     uint32_t ComputeOffset( D3D12_CPU_DESCRIPTOR_HANDLE handle );
 
@@ -136,6 +140,9 @@ private:
         // The frame number that the descriptor was freed.
         uint64_t FrameNumber;
     };
+
+    // Device that was used to create the descriptor heap.
+    std::weak_ptr<Device> m_Device;
 
     // Stale descriptors are queued for release until the frame that they were freed
     // has completed.

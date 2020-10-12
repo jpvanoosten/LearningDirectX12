@@ -30,20 +30,19 @@
  *  @brief Structured buffer resource.
  */
 
-
 #include "Buffer.h"
 
 #include "ByteAddressBuffer.h"
 
 namespace dx12lib
 {
+
+class Device;
+
 class StructuredBuffer : public Buffer
 {
-public:
-    StructuredBuffer( const std::wstring& name = L"" );
-    StructuredBuffer( const D3D12_RESOURCE_DESC& resDesc, size_t numElements, size_t elementSize,
-                      const std::wstring& name = L"" );
 
+public:
     /**
      * Get the number of elements contained in this buffer.
      */
@@ -59,12 +58,6 @@ public:
     {
         return m_ElementSize;
     }
-
-    /**
-     * Create the views for the buffer resource.
-     * Used by the CommandList when setting the buffer contents.
-     */
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
 
     /**
      * Get the SRV for a resource.
@@ -85,10 +78,22 @@ public:
         return m_UAV.GetDescriptorHandle();
     }
 
-    const ByteAddressBuffer& GetCounterBuffer() const
+    std::shared_ptr<ByteAddressBuffer> GetCounterBuffer() const
     {
         return m_CounterBuffer;
     }
+
+protected:
+    StructuredBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc, size_t numElements,
+                      size_t elementSize );
+
+    /**
+     * Create the views for the buffer resource.
+     * Used by the CommandList when setting the buffer contents.
+     */
+    void CreateViews();
+
+    virtual ~StructuredBuffer() = default;
 
 private:
     size_t m_NumElements;
@@ -98,6 +103,6 @@ private:
     DescriptorAllocation m_UAV;
 
     // A buffer to store the internal counter for the structured buffer.
-    ByteAddressBuffer m_CounterBuffer;
+    std::shared_ptr<ByteAddressBuffer> m_CounterBuffer;
 };
 }  // namespace dx12lib

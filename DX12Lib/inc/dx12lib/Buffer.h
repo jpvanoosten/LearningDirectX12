@@ -34,20 +34,16 @@
 
 namespace dx12lib
 {
+
+class Device;
+
 class Buffer : public Resource
 {
 public:
-    explicit Buffer( const std::wstring& name = L"" );
-    explicit Buffer( const D3D12_RESOURCE_DESC& resDesc, size_t numElements, size_t elementSize,
-                     const std::wstring& name = L"" );
-
-    /**
-     * Create the views for the buffer resource.
-     * Used by the CommandList when setting the buffer contents.
-     */
-    virtual void CreateViews( size_t numElements, size_t elementSize ) = 0;
 
 protected:
-private:
+    friend class CommandList;
+
+    explicit Buffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc );
 };
 }  // namespace dx12lib

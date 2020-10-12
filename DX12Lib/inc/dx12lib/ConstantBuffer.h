@@ -38,11 +38,6 @@ namespace dx12lib
 class ConstantBuffer : public Buffer
 {
 public:
-    ConstantBuffer( const std::wstring& name = L"" );
-    virtual ~ConstantBuffer();
-
-    // Inherited from Buffer
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
 
     size_t GetSizeInBytes() const
     {
@@ -67,6 +62,14 @@ public:
         GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
 
 protected:
+    friend class CommandList;
+
+    ConstantBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc );
+    virtual ~ConstantBuffer();
+
+    // Inherited from Buffer
+    void CreateViews();
+
 private:
     size_t               m_SizeInBytes;
     DescriptorAllocation m_ConstantBufferView;

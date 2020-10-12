@@ -2,7 +2,6 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 
 set( HEADER_FILES
     inc/dx12lib/Adapter.h
-    inc/dx12lib/Application.h
     inc/dx12lib/Buffer.h
     inc/dx12lib/ByteAddressBuffer.h
     inc/dx12lib/CommandList.h
@@ -16,7 +15,6 @@ set( HEADER_FILES
     inc/dx12lib/Device.h
     inc/dx12lib/DynamicDescriptorHeap.h
     inc/dx12lib/Events.h
-    inc/dx12lib/Game.h
     inc/dx12lib/GenerateMipsPSO.h
     inc/dx12lib/GUI.h
     inc/dx12lib/Helpers.h
@@ -32,18 +30,17 @@ set( HEADER_FILES
     inc/dx12lib/Scene.h
     inc/dx12lib/SceneNode.h
     inc/dx12lib/StructuredBuffer.h
+    inc/dx12lib/SwapChain.h
     inc/dx12lib/Texture.h
     inc/dx12lib/TextureUsage.h
     inc/dx12lib/ThreadSafeQueue.h
     inc/dx12lib/UploadBuffer.h
     inc/dx12lib/VertexBuffer.h
-    inc/dx12lib/Window.h
 )
 
 set( SOURCE_FILES
     src/DX12LibPCH.h
     src/DX12LibPCH.cpp
-    src/Adapter.cpp
     src/Application.cpp
     src/Buffer.cpp
     src/ByteAddressBuffer.cpp
@@ -55,7 +52,6 @@ set( SOURCE_FILES
     src/DescriptorAllocatorPage.cpp
     src/Device.cpp
     src/DynamicDescriptorHeap.cpp
-    src/Game.cpp
     src/GenerateMipsPSO.cpp
     src/GUI.cpp
     src/HighResolutionClock.cpp
@@ -68,10 +64,10 @@ set( SOURCE_FILES
     src/RootSignature.cpp
     src/SceneNode.cpp
     src/StructuredBuffer.cpp
+    src/SwapChain.cpp
     src/Texture.cpp
     src/UploadBuffer.cpp
     src/VertexBuffer.cpp
-    src/Window.cpp
 )
 
 set( IMGUI_HEADERS
