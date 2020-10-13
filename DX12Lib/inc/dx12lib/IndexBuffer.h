@@ -73,8 +73,7 @@ protected:
                  DXGI_FORMAT indexFormat );
     virtual ~IndexBuffer();
 
-    // Inherited from Buffer
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
+    void CreateViews();
 
 private:
     size_t      m_NumIndicies;

@@ -27,12 +27,11 @@
  *  @date October 24, 2018
  *  @author Jeremiah van Oosten
  *
- *  @brief The RootSignature class encapsulates both the ID3D12RootSignature and 
- *  the D3D12_ROOT_SIGNATURE_DESC used to create it. This provides the 
- *  functionality necessary for the DynamicDescriptorHeap to determine the 
+ *  @brief The RootSignature class encapsulates both the ID3D12RootSignature and
+ *  the D3D12_ROOT_SIGNATURE_DESC used to create it. This provides the
+ *  functionality necessary for the DynamicDescriptorHeap to determine the
  *  layout of the root signature at runtime.
  */
-
 
 #include "d3dx12.h"
 
@@ -42,25 +41,16 @@
 
 namespace dx12lib
 {
+
+class Device;
+
 class RootSignature
 {
 public:
-    // TODO: Add (deep) copy/move constructors and assignment operators!
-    RootSignature();
-    RootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                   D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
-
-    virtual ~RootSignature();
-
-    void Destroy();
-
     Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature() const
     {
         return m_RootSignature;
     }
-
-    void SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                               D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
 
     const D3D12_ROOT_SIGNATURE_DESC1& GetRootSignatureDesc() const
     {
@@ -71,7 +61,17 @@ public:
     uint32_t GetNumDescriptors( uint32_t rootIndex ) const;
 
 protected:
+    RootSignature( std::shared_ptr<Device> device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+                   D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion );
+
+    virtual ~RootSignature();
+
 private:
+    void Destroy();
+    void SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+                               D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
+
+    std::weak_ptr<Device>                       m_Device;
     D3D12_ROOT_SIGNATURE_DESC1                  m_RootSignatureDesc;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
 

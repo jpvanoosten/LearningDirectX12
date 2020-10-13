@@ -32,12 +32,14 @@
  */
 
 #include "DescriptorAllocation.h"
-#include "RootSignature.h"
 
 #include <cstdint>
 
 namespace dx12lib
 {
+
+class Device;
+class RootSignature;
 
 // Struct used in the PanoToCubemap_CS compute shader.
 struct PanoToCubemapCB
@@ -66,9 +68,9 @@ enum
 class PanoToCubemapPSO
 {
 public:
-    PanoToCubemapPSO();
+    PanoToCubemapPSO(std::shared_ptr<Device> device );
 
-    const RootSignature& GetRootSignature() const
+    std::shared_ptr<RootSignature> GetRootSignature() const
     {
         return m_RootSignature;
     }
@@ -84,7 +86,7 @@ public:
     }
 
 private:
-    RootSignature                               m_RootSignature;
+    std::shared_ptr<RootSignature>              m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
     // Default (no resource) UAV's to pad the unused UAV descriptors.
     // If generating less than 5 mip map levels, the unused mip maps

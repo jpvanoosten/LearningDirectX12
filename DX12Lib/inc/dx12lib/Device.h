@@ -33,6 +33,7 @@
  */
 
 #include "DescriptorAllocation.h"
+#include "TextureUsage.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -46,8 +47,10 @@ namespace dx12lib
 class Adapter;
 class ByteAddressBuffer;
 class CommandQueue;
+class CommandList;
 class DescriptorAllocator;
 class IndexBuffer;
+class RootSignature;
 class StructuredBuffer;
 class SwapChain;
 class Texture;
@@ -61,7 +64,7 @@ public:
      * If no adapter is specified, then the highest performance adapter will be
      * chosen.
      */
-    static std::shared_ptr<Device> Create( std::shared_ptr<Adapter> adapter = nullptr );
+    static std::shared_ptr<Device> CreateDevice( std::shared_ptr<Adapter> adapter = nullptr );
 
     /**
      * Allocate a number of CPU visible descriptors.
@@ -75,11 +78,6 @@ public:
     {
         return m_d3d12Device->GetDescriptorHandleIncrementSize( type );
     }
-
-    /**
-     * Release stale descriptors. This should only be called with a completed frame counter.
-     */
-    void ReleaseStaleDescriptors( uint64_t finishedFrame );
 
     /**
      * Create a swapchain using the provided OS window handle.
@@ -106,6 +104,7 @@ public:
      *
      * @param resourceDesc A description of the texture to create.
      * @param [clearVlue] Optional optimized clear value for the texture.
+     * @param [textureUsage] Optional texture usage flag provides a hint about how the texture will be used.
      *
      * @returns A pointer to the created texture.
      */
@@ -123,10 +122,18 @@ public:
     std::shared_ptr<VertexBuffer> CreateVertexBuffer( size_t numVertices, size_t vertexStride );
     std::shared_ptr<VertexBuffer> CreateVertexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
                                                       size_t numVertices, size_t vertexStride );
+
+    std::shared_ptr<RootSignature> CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+                                                        D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
     /**
      * Flush all command queues.
      */
     void Flush();
+
+    /**
+     * Release stale descriptors. This should only be called with a completed frame counter.
+     */
+    void ReleaseStaleDescriptors( uint64_t finishedFrame );
 
     /**
      * Get the adapter that was used to create this device.
@@ -160,11 +167,18 @@ public:
     }
 
 protected:
+    friend class CommandQueue;
+
     explicit Device( std::shared_ptr<Adapter> adapter );
     virtual ~Device();
 
     // Init after creation.
     void Init();
+
+    /**
+     * Create a command list for use by a CommandQueue.
+     */
+    std::shared_ptr<CommandList> CreateCommandList( D3D12_COMMAND_LIST_TYPE type );
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Device8> m_d3d12Device;

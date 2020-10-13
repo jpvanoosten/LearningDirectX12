@@ -67,8 +67,7 @@ protected:
     ConstantBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc );
     virtual ~ConstantBuffer();
 
-    // Inherited from Buffer
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
+    void CreateViews();
 
 private:
     size_t               m_SizeInBytes;

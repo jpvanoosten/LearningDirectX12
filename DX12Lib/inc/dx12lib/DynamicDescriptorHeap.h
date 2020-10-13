@@ -101,7 +101,7 @@ public:
      * descriptor tables and determine the number of descriptors needed for
      * each table.
      */
-    void ParseRootSignature( const RootSignature& rootSignature );
+    void ParseRootSignature( std::shared_ptr<RootSignature> rootSignature );
 
     /**
      * Reset used descriptors. This should only be done if any descriptors

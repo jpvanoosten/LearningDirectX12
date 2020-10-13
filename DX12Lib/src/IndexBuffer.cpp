@@ -13,7 +13,7 @@ IndexBuffer::IndexBuffer( std::shared_ptr<Device> device, size_t numIndicies, DX
 , m_IndexBufferView {}
 {
     assert( indexFormat == DXGI_FORMAT_R16_UINT || indexFormat == DXGI_FORMAT_R32_UINT );
-    CreateViews( numIndicies, indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4 );
+    CreateViews();
 }
 
 dx12lib::IndexBuffer::IndexBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
@@ -24,20 +24,17 @@ dx12lib::IndexBuffer::IndexBuffer( std::shared_ptr<Device> device, Microsoft::WR
 , m_IndexBufferView {}
 {
     assert( indexFormat == DXGI_FORMAT_R16_UINT || indexFormat == DXGI_FORMAT_R32_UINT );
-    CreateViews( numIndicies, indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4 );
+    CreateViews();
 }
 
 IndexBuffer::~IndexBuffer() {}
 
-void IndexBuffer::CreateViews( size_t numElements, size_t elementSize )
+void IndexBuffer::CreateViews()
 {
-    assert( elementSize == 2 || elementSize == 4 && "Indices must be 16, or 32-bit integers." );
-
-    m_NumIndicies = numElements;
-    m_IndexFormat = ( elementSize == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
+    UINT bufferSize = m_NumIndicies * ( m_IndexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4 );
 
     m_IndexBufferView.BufferLocation = m_d3d12Resource->GetGPUVirtualAddress();
-    m_IndexBufferView.SizeInBytes    = static_cast<UINT>( numElements * elementSize );
+    m_IndexBufferView.SizeInBytes    = bufferSize;
     m_IndexBufferView.Format         = m_IndexFormat;
 }
 

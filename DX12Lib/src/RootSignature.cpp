@@ -2,20 +2,14 @@
 
 #include <dx12lib/RootSignature.h>
 
-#include <dx12lib/Application.h>
+#include <dx12lib/Device.h>
 
 using namespace dx12lib;
 
-RootSignature::RootSignature()
-: m_RootSignatureDesc {}
-, m_NumDescriptorsPerTable { 0 }
-, m_SamplerTableBitMask( 0 )
-, m_DescriptorTableBitMask( 0 )
-{}
-
-RootSignature::RootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                              D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion )
-: m_RootSignatureDesc {}
+RootSignature::RootSignature( std::shared_ptr<Device> device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+                              D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
+: m_Device( device )
+, m_RootSignatureDesc {}
 , m_NumDescriptorsPerTable { 0 }
 , m_SamplerTableBitMask( 0 )
 , m_DescriptorTableBitMask( 0 )
@@ -59,8 +53,6 @@ void RootSignature::SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& root
     // Make sure any previously allocated root signature description is cleaned
     // up first.
     Destroy();
-
-    auto device = Application::Get().GetDevice();
 
     UINT                   numParameters = rootSignatureDesc.NumParameters;
     D3D12_ROOT_PARAMETER1* pParameters   = numParameters > 0 ? new D3D12_ROOT_PARAMETER1[numParameters] : nullptr;
@@ -132,10 +124,13 @@ void RootSignature::SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& root
     ThrowIfFailed( D3DX12SerializeVersionedRootSignature( &versionRootSignatureDesc, rootSignatureVersion,
                                                           &rootSignatureBlob, &errorBlob ) );
 
+    auto device      = m_Device.lock();
+    auto d3d12Device = device->GetD3D12Device();
+
     // Create the root signature.
-    ThrowIfFailed( device->CreateRootSignature( 0, rootSignatureBlob->GetBufferPointer(),
-                                                rootSignatureBlob->GetBufferSize(),
-                                                IID_PPV_ARGS( &m_RootSignature ) ) );
+    ThrowIfFailed( d3d12Device->CreateRootSignature( 0, rootSignatureBlob->GetBufferPointer(),
+                                                     rootSignatureBlob->GetBufferSize(),
+                                                     IID_PPV_ARGS( &m_RootSignature ) ) );
 }
 
 uint32_t RootSignature::GetDescriptorTableBitMask( D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType ) const

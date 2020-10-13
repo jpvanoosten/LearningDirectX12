@@ -155,12 +155,12 @@ public:
     std::shared_ptr<IndexBuffer> CopyIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat,
                                                   const void* indexBufferData );
     template<typename T>
-    std::shared_ptr<IndexBuffer> CopyIndexBuffer( IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData )
+    std::shared_ptr<IndexBuffer> CopyIndexBuffer( const std::vector<T>& indexBufferData )
     {
         assert( sizeof( T ) == 2 || sizeof( T ) == 4 );
 
         DXGI_FORMAT indexFormat = ( sizeof( T ) == 2 ) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
-        CopyIndexBuffer( indexBuffer, indexBufferData.size(), indexFormat, indexBufferData.data() );
+        return CopyIndexBuffer( indexBufferData.size(), indexFormat, indexBufferData.data() );
     }
 
     /**
@@ -418,7 +418,7 @@ private:
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
     Microsoft::WRL::ComPtr<ID3D12Resource> CopyBuffer( size_t bufferSize, const void* bufferData,
-                     D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
+                                                       D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
 
     // Binds the current descriptor heaps to the command list.
     void BindDescriptorHeaps();
@@ -426,7 +426,7 @@ private:
     using TrackedObjects = std::vector<Microsoft::WRL::ComPtr<ID3D12Object>>;
 
     // The device that is used to create this command list.
-    std::shared_ptr<Device>                            m_Device;
+    std::weak_ptr<Device>                              m_Device; // weak_ptr to break circular references.
     D3D12_COMMAND_LIST_TYPE                            m_d3d12CommandListType;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_d3d12CommandList;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator>     m_d3d12CommandAllocator;

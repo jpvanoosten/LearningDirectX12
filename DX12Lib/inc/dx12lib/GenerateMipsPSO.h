@@ -31,7 +31,6 @@
  */
 
 #include "DescriptorAllocation.h"
-#include "RootSignature.h"
 
 #include <DirectXMath.h>
 #include <d3d12.h>
@@ -39,6 +38,9 @@
 
 namespace dx12lib
 {
+
+class Device;
+class RootSignature;
 
 struct alignas( 16 ) GenerateMipsCB
 {
@@ -65,9 +67,9 @@ enum
 class GenerateMipsPSO
 {
 public:
-    GenerateMipsPSO();
+    GenerateMipsPSO(std::shared_ptr<Device> device);
 
-    const RootSignature& GetRootSignature() const
+    std::shared_ptr<RootSignature> GetRootSignature() const
     {
         return m_RootSignature;
     }
@@ -83,7 +85,7 @@ public:
     }
 
 private:
-    RootSignature                               m_RootSignature;
+    std::shared_ptr<RootSignature>              m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
     // Default (no resource) UAV's to pad the unused UAV descriptors.
     // If generating less than 4 mip map levels, the unused mip maps

@@ -2,16 +2,39 @@
 
 #include <dx12lib/Adapter.h>
 #include <dx12lib/ByteAddressBuffer.h>
+#include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/RootSignature.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/Texture.h>
 #include <dx12lib/VertexBuffer.h>
 
 using namespace dx12lib;
+
+class MakeRootSignature : public RootSignature
+{
+public:
+    MakeRootSignature( std::shared_ptr<Device> device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+                       D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
+    : RootSignature(device, rootSignatureDesc, rootSignatureVersion )
+    {}
+
+    virtual ~MakeRootSignature() {}
+};
+
+class MakeCommandList : public CommandList
+{
+public:
+    MakeCommandList(std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type)
+        : CommandList(device, type)
+    {}
+
+    virtual ~MakeCommandList() {}
+};
 
 // Adapter for std::make_shared
 class MakeTexture : public Texture
@@ -122,7 +145,7 @@ public:
     virtual ~MakeDevice() {}
 };
 
-std::shared_ptr<Device> Device::Create( std::shared_ptr<Adapter> adapter )
+std::shared_ptr<Device> Device::CreateDevice( std::shared_ptr<Adapter> adapter )
 {
     std::shared_ptr<Device> device;
 
@@ -354,4 +377,21 @@ std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Res
         std::make_shared<MakeTexture>( shared_from_this(), resource, clearValue, textureUsage );
 
     return texture;
+}
+
+std::shared_ptr<CommandList> Device::CreateCommandList( D3D12_COMMAND_LIST_TYPE type ) 
+{
+    std::shared_ptr<CommandList> commandList = std::make_shared<MakeCommandList>( shared_from_this(), type );
+
+    return commandList;
+}
+
+std::shared_ptr<dx12lib::RootSignature>
+    dx12lib::Device::CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+                                          D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion )
+{
+    std::shared_ptr<RootSignature> rootSignature =
+        std::make_shared<MakeRootSignature>( shared_from_this(), rootSignatureDesc, rootSignatureVersion );
+
+    return rootSignature;
 }

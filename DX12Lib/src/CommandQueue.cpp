@@ -15,7 +15,7 @@ CommandQueue::CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_T
 , m_FenceValue( 0 )
 , m_bProcessInFlightCommandLists( true )
 {
-    assert( device ); // Device must be valid!
+    assert( device );  // Device must be valid!
 
     auto d3d12Device = device->GetD3D12Device();
 
@@ -93,6 +93,8 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
 {
     std::shared_ptr<CommandList> commandList;
 
+    auto device = m_Device.lock();
+
     // If there is a command list on the queue.
     if ( !m_AvailableCommandLists.Empty() )
     {
@@ -101,7 +103,8 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
     else
     {
         // Otherwise create a new command list.
-        commandList = std::make_shared<CommandList>( m_CommandListType );
+        commandList =
+            device->CreateCommandList( m_CommandListType );
     }
 
     return commandList;
@@ -140,7 +143,7 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
         // execute an empty command list on the command queue.
         if ( hasPendingBarriers )
         {
-            d3d12CommandLists.push_back( pendingCommandList->GetGraphicsCommandList().Get() );
+            d3d12CommandLists.push_back( pendingCommandList->GetD3D12CommandList().Get() );
         }
         d3d12CommandLists.push_back( commandList->GetD3D12CommandList().Get() );
 
@@ -167,7 +170,8 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
     // after the initial resource command lists have finished.
     if ( generateMipsCommandLists.size() > 0 )
     {
-        auto computeQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE );
+        auto device       = m_Device.lock();
+        auto computeQueue = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE );
         computeQueue->Wait( *this );
         computeQueue->ExecuteCommandLists( generateMipsCommandLists );
     }

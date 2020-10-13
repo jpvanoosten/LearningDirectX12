@@ -2,21 +2,24 @@
 
 #include <dx12lib/GenerateMipsPSO.h>
 
-#include <dx12lib/Application.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/Helpers.h>
+#include <dx12lib/RootSignature.h>
+
 #include <dx12lib/d3dx12.h>
 
 #include <GenerateMips_CS.h>
 
 using namespace dx12lib;
 
-GenerateMipsPSO::GenerateMipsPSO()
+GenerateMipsPSO::GenerateMipsPSO( std::shared_ptr<Device> device )
 {
-    auto device = Application::Get().GetDevice();
+    auto d3d12Device = device->GetD3D12Device();
 
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
     featureData.HighestVersion                    = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if ( FAILED( device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
+    if ( FAILED(
+             d3d12Device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
     {
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -38,7 +41,7 @@ GenerateMipsPSO::GenerateMipsPSO()
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc( GenerateMips::NumRootParameters, rootParameters, 1,
                                                              &linearClampSampler );
 
-    m_RootSignature.SetRootSignatureDesc( rootSignatureDesc.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature = device->CreateRootSignature( rootSignatureDesc.Desc_1_1, featureData.HighestVersion );
 
     // Create the PSO for GenerateMips shader.
     struct PipelineStateStream
@@ -47,15 +50,15 @@ GenerateMipsPSO::GenerateMipsPSO()
         CD3DX12_PIPELINE_STATE_STREAM_CS             CS;
     } pipelineStateStream;
 
-    pipelineStateStream.pRootSignature = m_RootSignature.GetRootSignature().Get();
+    pipelineStateStream.pRootSignature = m_RootSignature->GetRootSignature().Get();
     pipelineStateStream.CS             = { g_GenerateMips_CS, sizeof( g_GenerateMips_CS ) };
 
     D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = { sizeof( PipelineStateStream ), &pipelineStateStream };
 
-    ThrowIfFailed( device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+    ThrowIfFailed( d3d12Device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
 
     // Create some default texture UAV's to pad any unused UAV's during mip map generation.
-    m_DefaultUAV = Application::Get().AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4 );
+    m_DefaultUAV = device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4 );
 
     for ( UINT i = 0; i < 4; ++i )
     {
@@ -65,6 +68,6 @@ GenerateMipsPSO::GenerateMipsPSO()
         uavDesc.Texture2D.MipSlice               = i;
         uavDesc.Texture2D.PlaneSlice             = 0;
 
-        device->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, m_DefaultUAV.GetDescriptorHandle( i ) );
+        d3d12Device->CreateUnorderedAccessView( nullptr, nullptr, &uavDesc, m_DefaultUAV.GetDescriptorHandle( i ) );
     }
 }

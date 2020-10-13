@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 #pragma once
 /*
@@ -29,20 +29,22 @@
  *  @date October 24, 2018
  *  @author Jeremiah van Oosten
  *
- *  @brief A render target is used to store a set of textures that are the 
+ *  @brief A render target is used to store a set of textures that are the
  *  target for rendering.
  *  Maximum number of color textures that can be bound to the render target is 8
  *  (0 - 7) and one depth-stencil buffer.
  */
 
-#include <DirectXMath.h> // For XMFLOAT2
+#include <DirectXMath.h>  // For XMFLOAT2
 #include <cstdint>
+#include <memory>  // for std::shared_ptr
 #include <vector>
-
-#include "Texture.h"
 
 namespace dx12lib
 {
+
+class Texture;
+
 // Don't use scoped enums to avoid the explicit cast required to use these as
 // array indices.
 enum AttachmentPoint
@@ -73,8 +75,8 @@ public:
 
     // Attach a texture to the render target.
     // The texture will be copied into the texture array.
-    void           AttachTexture( AttachmentPoint attachmentPoint, const Texture& texture );
-    const Texture& GetTexture( AttachmentPoint attachmentPoint ) const;
+    void           AttachTexture( AttachmentPoint attachmentPoint, std::shared_ptr<Texture> texture );
+    std::shared_ptr<Texture> GetTexture( AttachmentPoint attachmentPoint ) const;
 
     // Resize all of the textures associated with the render target.
     void             Resize( DirectX::XMUINT2 size );
@@ -93,7 +95,7 @@ public:
     // Get a list of the textures attached to the render target.
     // This method is primarily used by the CommandList when binding the
     // render target to the output merger stage of the rendering pipeline.
-    const std::vector<Texture>& GetTextures() const;
+    const std::vector<std::shared_ptr<Texture>>& GetTextures() const;
 
     // Get the render target formats of the textures currently
     // attached to this render target object.
@@ -104,7 +106,7 @@ public:
     DXGI_FORMAT GetDepthStencilFormat() const;
 
 private:
-    std::vector<Texture> m_Textures;
-    DirectX::XMUINT2     m_Size;
+    std::vector<std::shared_ptr<Texture>> m_Textures;
+    DirectX::XMUINT2                      m_Size;
 };
 }  // namespace dx12lib

@@ -10,14 +10,13 @@ ConstantBuffer::ConstantBuffer( std::shared_ptr<Device> device, const D3D12_RESO
 : Buffer( device, resourceDesc )
 , m_SizeInBytes( resourceDesc.Width )
 {
-    CreateViews( 1, m_SizeInBytes );
+    CreateViews();
 }
 
 ConstantBuffer::~ConstantBuffer() {}
 
-void ConstantBuffer::CreateViews( size_t numElements, size_t elementSize )
+void ConstantBuffer::CreateViews()
 {
-    m_SizeInBytes    = numElements * elementSize;
     auto d3d12Device = m_Device->GetD3D12Device();
 
     m_ConstantBufferView = m_Device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );

@@ -80,7 +80,7 @@ private:
     // a shared pointer to the "in-flight" command list.
     using CommandListEntry = std::tuple<uint64_t, std::shared_ptr<CommandList>>;
 
-    std::weak_ptr<Device>                      m_Device; // The device that was used to create this command queue.
+    std::weak_ptr<Device>                      m_Device; // The device that was used to create this command queue. Using a weak_ptr to break the circular reference.
     D3D12_COMMAND_LIST_TYPE                    m_CommandListType;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_d3d12CommandQueue;
     Microsoft::WRL::ComPtr<ID3D12Fence>        m_d3d12Fence;
