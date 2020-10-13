@@ -11,14 +11,12 @@ Resource::Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& r
                     const D3D12_CLEAR_VALUE* clearValue )
 : m_Device( device )
 {
-    assert( device );  // Device should be valid!
+    auto d3d12Device = device->GetD3D12Device();
 
     if ( clearValue )
     {
         m_d3d12ClearValue = std::make_unique<D3D12_CLEAR_VALUE>( *clearValue );
     }
-
-    auto d3d12Device = device->GetD3D12Device();
 
     ThrowIfFailed( d3d12Device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE, &resourceDesc,
@@ -29,7 +27,17 @@ Resource::Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& r
     CheckFeatureSupport();
 }
 
-Resource::~Resource() {}
+Resource::Resource( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                    const D3D12_CLEAR_VALUE* clearValue )
+: m_Device( device )
+, m_d3d12Resource( resource )
+{
+    if ( clearValue )
+    {
+        m_d3d12ClearValue = std::make_unique<D3D12_CLEAR_VALUE>( *clearValue );
+    }
+    CheckFeatureSupport();
+}
 
 void Resource::SetName( const std::wstring& name )
 {
@@ -56,5 +64,11 @@ void Resource::CheckFeatureSupport()
     auto desc              = m_d3d12Resource->GetDesc();
     m_FormatSupport.Format = desc.Format;
     ThrowIfFailed( d3d12Device->CheckFeatureSupport( D3D12_FEATURE_FORMAT_SUPPORT, &m_FormatSupport,
-                                                        sizeof( D3D12_FEATURE_DATA_FORMAT_SUPPORT ) ) );
+                                                     sizeof( D3D12_FEATURE_DATA_FORMAT_SUPPORT ) ) );
+}
+
+void dx12lib::Resource::SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource ) 
+{
+    m_d3d12Resource = d3d12Resource;
+    CheckFeatureSupport();
 }

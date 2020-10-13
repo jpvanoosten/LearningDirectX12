@@ -11,6 +11,12 @@ ByteAddressBuffer::ByteAddressBuffer( std::shared_ptr<Device> device, const D3D1
     CreateViews();
 }
 
+ByteAddressBuffer::ByteAddressBuffer(std::shared_ptr<Device> device, ComPtr<ID3D12Resource> resource)
+    : Buffer(device, resource)
+{
+    CreateViews();
+}
+
 void ByteAddressBuffer::CreateViews()
 {
     if ( m_d3d12Resource )

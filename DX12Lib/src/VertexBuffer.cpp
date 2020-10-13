@@ -13,6 +13,16 @@ VertexBuffer::VertexBuffer( std::shared_ptr<Device> device, size_t numVertices, 
     CreateViews();
 }
 
+VertexBuffer::VertexBuffer(std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
+    size_t vertexStride)
+    : Buffer(device, resource)
+    , m_NumVertices(numVertices)
+    , m_VertexStride(vertexStride)
+{
+    CreateViews();
+}
+
+
 VertexBuffer::~VertexBuffer()
 {}
 

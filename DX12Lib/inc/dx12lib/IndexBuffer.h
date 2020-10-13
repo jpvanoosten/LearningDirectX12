@@ -37,12 +37,6 @@ namespace dx12lib
 class IndexBuffer : public Buffer
 {
 public:
-    IndexBuffer( const std::wstring& name = L"" );
-    virtual ~IndexBuffer();
-
-    // Inherited from Buffer
-    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
-
     size_t GetNumIndicies() const
     {
         return m_NumIndicies;
@@ -74,6 +68,14 @@ public:
         GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
 
 protected:
+    IndexBuffer( std::shared_ptr<Device> device, size_t numIndicies, DXGI_FORMAT indexFormat );
+    IndexBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
+                 DXGI_FORMAT indexFormat );
+    virtual ~IndexBuffer();
+
+    // Inherited from Buffer
+    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
+
 private:
     size_t      m_NumIndicies;
     DXGI_FORMAT m_IndexFormat;

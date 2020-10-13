@@ -5,16 +5,73 @@
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
+#include <dx12lib/IndexBuffer.h>
+#include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/SwapChain.h>
+#include <dx12lib/Texture.h>
+#include <dx12lib/VertexBuffer.h>
 
 using namespace dx12lib;
+
+// Adapter for std::make_shared
+class MakeTexture : public Texture
+{
+public:
+    MakeTexture( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc,
+                 const D3D12_CLEAR_VALUE* clearValue, TextureUsage texturUsage )
+    : Texture( device, resourceDesc, clearValue, texturUsage )
+    {}
+
+    MakeTexture( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                 const D3D12_CLEAR_VALUE* clearValue, TextureUsage textureUsage )
+    : Texture( device, resource, clearValue, textureUsage )
+    {}
+
+    virtual ~MakeTexture() {}
+};
+
+// Adapter for std::make_shared
+class MakeStructuredBuffer : public StructuredBuffer
+{
+public:
+    MakeStructuredBuffer( std::shared_ptr<Device> device, size_t numElements, size_t elementSize )
+    : StructuredBuffer( device, numElements, elementSize )
+    {}
+
+    MakeStructuredBuffer( std::shared_ptr<Device> device, ComPtr<ID3D12Resource> resource, size_t numElements,
+                          size_t elementSize )
+    : StructuredBuffer( device, resource, numElements, elementSize )
+    {}
+
+    virtual ~MakeStructuredBuffer() {}
+};
+
+// Adapter for std::make_shared
+class MakeVertexBuffer : public VertexBuffer
+{
+public:
+    MakeVertexBuffer( std::shared_ptr<Device> device, size_t numVertices, size_t vertexStride )
+    : VertexBuffer( device, numVertices, vertexStride )
+    {}
+
+    MakeVertexBuffer( std::shared_ptr<Device> device, ComPtr<ID3D12Resource> resource, size_t numVertices,
+                      size_t vertexStride )
+    : VertexBuffer( device, resource, numVertices, vertexStride )
+    {}
+
+    virtual ~MakeVertexBuffer() {}
+};
 
 // Adapter for std::make_shared
 class MakeByteAddressBuffer : public ByteAddressBuffer
 {
 public:
-    MakeByteAddressBuffer(std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& desc )
-    : ByteAddressBuffer(device, desc )
+    MakeByteAddressBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& desc )
+    : ByteAddressBuffer( device, desc )
+    {}
+
+    MakeByteAddressBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resoruce )
+    : ByteAddressBuffer( device, resoruce )
     {}
 
     virtual ~MakeByteAddressBuffer() {}
@@ -26,7 +83,7 @@ class MakeDescriptorAllocator : public DescriptorAllocator
 public:
     MakeDescriptorAllocator( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type,
                              uint32_t numDescriptorsPerHeap = 256 )
-    : DescriptorAllocator(device, type, numDescriptorsPerHeap )
+    : DescriptorAllocator( device, type, numDescriptorsPerHeap )
     {}
 
     virtual ~MakeDescriptorAllocator() {}
@@ -146,7 +203,7 @@ void Device::Init()
     m_ComputeCommandQueue = std::make_shared<MakeCommandQueue>( shared_this, D3D12_COMMAND_LIST_TYPE_COMPUTE );
     m_CopyCommandQueue    = std::make_shared<MakeCommandQueue>( shared_this, D3D12_COMMAND_LIST_TYPE_COPY );
 
-        // Create descriptor allocators
+    // Create descriptor allocators
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
     {
         m_DescriptorAllocators[i] =
@@ -215,11 +272,86 @@ std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND hWnd )
     return swapChain;
 }
 
-std::shared_ptr<ByteAddressBuffer>
-    Device::CreateByteAddressBuffer( const D3D12_RESOURCE_DESC& resDesc )
+std::shared_ptr<ByteAddressBuffer> Device::CreateByteAddressBuffer( size_t bufferSize )
 {
-    std::shared_ptr<ByteAddressBuffer> buffer =
-        std::make_shared<MakeByteAddressBuffer>( shared_from_this(), resDesc );
+    // Align-up to 4-bytes
+    bufferSize = Math::AlignUp( bufferSize, 4 );
+
+    std::shared_ptr<ByteAddressBuffer> buffer = std::make_shared<MakeByteAddressBuffer>(
+        shared_from_this(), CD3DX12_RESOURCE_DESC::Buffer( bufferSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) );
 
     return buffer;
+}
+
+std::shared_ptr<ByteAddressBuffer> Device::CreateByteAddressBuffer( ComPtr<ID3D12Resource> resource )
+{
+    std::shared_ptr<ByteAddressBuffer> buffer = std::make_shared<MakeByteAddressBuffer>( shared_from_this(), resource );
+
+    return buffer;
+}
+
+std::shared_ptr<StructuredBuffer> Device::CreateStructuredBuffer( size_t numElements, size_t elementSize )
+{
+    std::shared_ptr<StructuredBuffer> structuredBuffer =
+        std::make_shared<MakeStructuredBuffer>( shared_from_this(), numElements, elementSize );
+
+    return structuredBuffer;
+}
+
+std::shared_ptr<StructuredBuffer> Device::CreateStructuredBuffer( ComPtr<ID3D12Resource> resource, size_t numElements,
+                                                                  size_t elementSize )
+{
+    std::shared_ptr<StructuredBuffer> structuredBuffer =
+        std::make_shared<MakeStructuredBuffer>( shared_from_this(), resource, numElements, elementSize );
+
+    return structuredBuffer;
+}
+
+std::shared_ptr<IndexBuffer> Device::CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat )
+{
+    std::shared_ptr<IndexBuffer> indexBuffer =
+        std::make_shared<IndexBuffer>( shared_from_this(), numIndicies, indexFormat );
+
+    return indexBuffer;
+}
+
+std::shared_ptr<VertexBuffer> Device::CreateVertexBuffer( size_t numVertices, size_t vertexStride )
+{
+    std::shared_ptr<VertexBuffer> vertexBuffer =
+        std::make_shared<MakeVertexBuffer>( shared_from_this(), numVertices, vertexStride );
+
+    return vertexBuffer;
+}
+
+std::shared_ptr<dx12lib::IndexBuffer>
+    dx12lib::Device::CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
+                                        DXGI_FORMAT indexFormat )
+{}
+
+std::shared_ptr<dx12lib::VertexBuffer>
+    dx12lib::Device::CreateVertexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
+                                         size_t vertexStride )
+{
+    std::shared_ptr<VertexBuffer> vertexBuffer =
+        std::make_shared<MakeVertexBuffer>( shared_from_this(), resource, numVertices, vertexStride );
+
+    return vertexBuffer;
+}
+
+std::shared_ptr<Texture> Device::CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc,
+                                                const D3D12_CLEAR_VALUE* clearValue, TextureUsage textureUsage )
+{
+    std::shared_ptr<Texture> texture =
+        std::make_shared<MakeTexture>( shared_from_this(), resourceDesc, clearValue, textureUsage );
+
+    return texture;
+}
+
+std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                                                const D3D12_CLEAR_VALUE* clearValue, TextureUsage textureUsage )
+{
+    std::shared_ptr<Texture> texture =
+        std::make_shared<MakeTexture>( shared_from_this(), resource, clearValue, textureUsage );
+
+    return texture;
 }

@@ -145,7 +145,7 @@ void DynamicDescriptorHeap::CommitStagedDescriptors(
     if ( numDescriptorsToCommit > 0 )
     {
         auto device                   = Application::Get().GetDevice();
-        auto d3d12GraphicsCommandList = commandList.GetGraphicsCommandList().Get();
+        auto d3d12GraphicsCommandList = commandList.GetD3D12CommandList().Get();
         assert( d3d12GraphicsCommandList != nullptr );
 
         if ( !m_CurrentDescriptorHeap || m_NumFreeHandles < numDescriptorsToCommit )

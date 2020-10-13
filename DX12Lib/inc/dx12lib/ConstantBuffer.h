@@ -68,7 +68,7 @@ protected:
     virtual ~ConstantBuffer();
 
     // Inherited from Buffer
-    void CreateViews();
+    virtual void CreateViews( size_t numElements, size_t elementSize ) override;
 
 private:
     size_t               m_SizeInBytes;

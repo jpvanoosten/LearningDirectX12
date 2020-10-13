@@ -40,10 +40,8 @@ class Device;
 class Buffer : public Resource
 {
 public:
-
 protected:
-    friend class CommandList;
-
-    explicit Buffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc );
+    Buffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc );
+    Buffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
 };
 }  // namespace dx12lib

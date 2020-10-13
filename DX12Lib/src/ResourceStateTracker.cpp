@@ -109,7 +109,7 @@ void ResourceStateTracker::FlushResourceBarriers(CommandList& commandList)
     UINT numBarriers = static_cast<UINT>(m_ResourceBarriers.size());
     if (numBarriers > 0 )
     {
-        auto d3d12CommandList = commandList.GetGraphicsCommandList();
+        auto d3d12CommandList = commandList.GetD3D12CommandList();
         d3d12CommandList->ResourceBarrier(numBarriers, m_ResourceBarriers.data());
         m_ResourceBarriers.clear();
     }
@@ -171,7 +171,7 @@ uint32_t ResourceStateTracker::FlushPendingResourceBarriers(CommandList& command
     UINT numBarriers = static_cast<UINT>(resourceBarriers.size());
     if (numBarriers > 0 )
     {
-        auto d3d12CommandList = commandList.GetGraphicsCommandList();
+        auto d3d12CommandList = commandList.GetD3D12CommandList();
         d3d12CommandList->ResourceBarrier(numBarriers, resourceBarriers.data());
     }
 

@@ -142,7 +142,7 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
         {
             d3d12CommandLists.push_back( pendingCommandList->GetGraphicsCommandList().Get() );
         }
-        d3d12CommandLists.push_back( commandList->GetGraphicsCommandList().Get() );
+        d3d12CommandLists.push_back( commandList->GetD3D12CommandList().Get() );
 
         toBeQueued.push_back( pendingCommandList );
         toBeQueued.push_back( commandList );

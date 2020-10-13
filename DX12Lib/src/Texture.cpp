@@ -16,6 +16,14 @@ Texture::Texture( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& res
     CreateViews();
 }
 
+Texture::Texture( std::shared_ptr<Device> device, ComPtr<ID3D12Resource> resource,
+                  const D3D12_CLEAR_VALUE* clearValue, TextureUsage textureUsage )
+: Resource( device, resource, clearValue )
+, m_TextureUsage( textureUsage )
+{
+    CreateViews();
+}
+
 Texture::~Texture() {}
 
 void Texture::Resize( uint32_t width, uint32_t height, uint32_t depthOrArraySize )

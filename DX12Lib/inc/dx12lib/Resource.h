@@ -97,11 +97,17 @@ public:
     bool CheckFormatSupport( D3D12_FORMAT_SUPPORT2 formatSupport ) const;
 
 protected:
+    friend class CommandList;
+
     // Resource creation should go through the device.
-    explicit Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc,
+    Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc,
                        const D3D12_CLEAR_VALUE* clearValue = nullptr );
+    Resource( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+              const D3D12_CLEAR_VALUE* clearValue = nullptr );
 
     virtual ~Resource() = default;
+
+    virtual void SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource );
 
     // The device that is used to create this resource.
     std::shared_ptr<Device> m_Device;

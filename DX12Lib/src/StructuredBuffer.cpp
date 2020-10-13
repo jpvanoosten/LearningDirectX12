@@ -8,17 +8,28 @@
 
 using namespace dx12lib;
 
-StructuredBuffer::StructuredBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc,
+StructuredBuffer::StructuredBuffer( std::shared_ptr<Device> device,
                                     size_t numElements, size_t elementSize )
-: Buffer( device, resDesc )
+: Buffer( device, CD3DX12_RESOURCE_DESC::Buffer( numElements * elementSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) )
 , m_NumElements( numElements )
 , m_ElementSize( elementSize )
 {
-    m_CounterBuffer = device->CreateByteAddressBuffer(
-        CD3DX12_RESOURCE_DESC::Buffer( 4ull, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) );
+    m_CounterBuffer = device->CreateByteAddressBuffer( 4 );
 
     CreateViews();
 }
+
+StructuredBuffer::StructuredBuffer(std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numElements,
+    size_t elementSize)
+    : Buffer(device, resource)
+    , m_NumElements(numElements)
+    , m_ElementSize(elementSize)
+{
+    m_CounterBuffer = device->CreateByteAddressBuffer( 4 );
+
+    CreateViews();
+}
+
 
 void StructuredBuffer::CreateViews()
 {

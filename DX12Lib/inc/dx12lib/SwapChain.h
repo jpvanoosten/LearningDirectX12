@@ -113,7 +113,7 @@ public:
      *
      * @returns The current backbuffer index after the present.
      */
-    UINT Present( const Texture& texture = Texture() );
+    UINT Present( std::shared_ptr<Texture> = nullptr );
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> GetDXGISwapChain() const;
 

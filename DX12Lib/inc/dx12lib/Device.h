@@ -47,7 +47,11 @@ class Adapter;
 class ByteAddressBuffer;
 class CommandQueue;
 class DescriptorAllocator;
+class IndexBuffer;
+class StructuredBuffer;
 class SwapChain;
+class Texture;
+class VertexBuffer;
 
 class Device : public std::enable_shared_from_this<Device>
 {
@@ -83,12 +87,42 @@ public:
     std::shared_ptr<SwapChain> CreateSwapChain( HWND hWnd );
 
     /**
-     * Create a ByteAddressBuffer
-     * 
+     * Create a ByteAddressBuffer resource.
+     *
      * @param resDesc A description of the resource.
      */
-    std::shared_ptr<ByteAddressBuffer> CreateByteAddressBuffer( const D3D12_RESOURCE_DESC& resDesc );
+    std::shared_ptr<ByteAddressBuffer> CreateByteAddressBuffer( size_t bufferSize );
+    std::shared_ptr<ByteAddressBuffer> CreateByteAddressBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource );
 
+    /**
+     * Create a structured buffer resource.
+     */
+    std::shared_ptr<StructuredBuffer> CreateStructuredBuffer( size_t numElements, size_t elementSize );
+    std::shared_ptr<StructuredBuffer> CreateStructuredBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                                                              size_t numElements, size_t elementSize );
+
+    /**
+     * Create a Texture resource.
+     *
+     * @param resourceDesc A description of the texture to create.
+     * @param [clearVlue] Optional optimized clear value for the texture.
+     *
+     * @returns A pointer to the created texture.
+     */
+    std::shared_ptr<Texture> CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc,
+                                            const D3D12_CLEAR_VALUE*   clearValue   = nullptr,
+                                            TextureUsage               textureUsage = TextureUsage::Albedo );
+    std::shared_ptr<Texture> CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                                            const D3D12_CLEAR_VALUE*               clearValue = nullptr,
+                                            TextureUsage textureUsage                         = TextureUsage::Albedo );
+
+    std::shared_ptr<IndexBuffer> CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat );
+    std::shared_ptr<IndexBuffer> CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
+                                                    DXGI_FORMAT indexFormat );
+
+    std::shared_ptr<VertexBuffer> CreateVertexBuffer( size_t numVertices, size_t vertexStride );
+    std::shared_ptr<VertexBuffer> CreateVertexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                                                      size_t numVertices, size_t vertexStride );
     /**
      * Flush all command queues.
      */

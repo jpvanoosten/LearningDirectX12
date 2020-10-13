@@ -14,13 +14,11 @@ set( HEADER_FILES
     inc/dx12lib/DescriptorAllocatorPage.h
     inc/dx12lib/Device.h
     inc/dx12lib/DynamicDescriptorHeap.h
-    inc/dx12lib/Events.h
     inc/dx12lib/GenerateMipsPSO.h
     inc/dx12lib/GUI.h
     inc/dx12lib/Helpers.h
     inc/dx12lib/HighResolutionClock.h
     inc/dx12lib/IndexBuffer.h
-    inc/dx12lib/KeyCodes.h
     inc/dx12lib/Mesh.h
     inc/dx12lib/PanoToCubemapPSO.h
     inc/dx12lib/RenderTarget.h
@@ -41,7 +39,6 @@ set( HEADER_FILES
 set( SOURCE_FILES
     src/DX12LibPCH.h
     src/DX12LibPCH.cpp
-    src/Application.cpp
     src/Buffer.cpp
     src/ByteAddressBuffer.cpp
     src/CommandQueue.cpp

@@ -84,8 +84,10 @@ public:
     }
 
 protected:
-    StructuredBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc, size_t numElements,
+    StructuredBuffer( std::shared_ptr<Device> device, size_t numElements,
                       size_t elementSize );
+    StructuredBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                      size_t numElements, size_t elementSize );
 
     /**
      * Create the views for the buffer resource.

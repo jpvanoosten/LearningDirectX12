@@ -162,15 +162,15 @@ const dx12lib::RenderTarget& dx12lib::SwapChain::GetRenderTarget() const
     return m_RenderTarget;
 }
 
-UINT dx12lib::SwapChain::Present( const Texture& texture )
+UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
 {
     auto commandList = m_CommandQueue->GetCommandList();
 
     auto& backBuffer = m_BackBufferTextures[m_CurrentBackBufferIndex];
 
-    if ( texture.IsValid() )
+    if ( texture )
     {
-        if ( texture.GetD3D12ResourceDesc().SampleDesc.Count > 1 )
+        if ( texture->GetD3D12ResourceDesc().SampleDesc.Count > 1 )
         {
             commandList->ResolveSubresource( backBuffer, texture );
         }

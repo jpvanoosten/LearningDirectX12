@@ -124,8 +124,9 @@ public:
     static DXGI_FORMAT GetUAVCompatableFormat( DXGI_FORMAT format );
 
 protected:
-    explicit Texture( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue = nullptr,
-                      TextureUsage textureUsage = TextureUsage::Albedo );
+    Texture( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue = nullptr, TextureUsage texturUsage = TextureUsage::Albedo );
+    Texture( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+             const D3D12_CLEAR_VALUE* clearValue = nullptr, TextureUsage textureUsage = TextureUsage::Albedo );
     virtual ~Texture();
 
 private:

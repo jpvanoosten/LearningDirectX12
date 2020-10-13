@@ -36,10 +36,10 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include <map> // for std::map
-#include <memory> // for std::unique_ptr
-#include <mutex> // for std::mutex
-#include <vector> // for std::vector
+#include <map>     // for std::map
+#include <memory>  // for std::unique_ptr
+#include <mutex>   // for std::mutex
+#include <vector>  // for std::vector
 
 namespace dx12lib
 {
@@ -47,6 +47,7 @@ namespace dx12lib
 class Buffer;
 class ByteAddressBuffer;
 class ConstantBuffer;
+class Device;
 class DynamicDescriptorHeap;
 class GenerateMipsPSO;
 class IndexBuffer;
@@ -64,9 +65,6 @@ class VertexBuffer;
 class CommandList
 {
 public:
-    CommandList( D3D12_COMMAND_LIST_TYPE type );
-    virtual ~CommandList();
-
     /**
      * Get the type of command list.
      */
@@ -78,7 +76,7 @@ public:
     /**
      * Get direct access to the ID3D12GraphicsCommandList2 interface.
      */
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetGraphicsCommandList() const
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetD3D12CommandList() const
     {
         return m_d3d12CommandList;
     }
@@ -94,7 +92,7 @@ public:
      * @param flushBarriers Force flush any barriers. Resource barriers need to be flushed before a command (draw,
      * dispatch, or copy) that expects the resource to be in a particular state can run.
      */
-    void TransitionBarrier( const Resource& resource, D3D12_RESOURCE_STATES stateAfter,
+    void TransitionBarrier( std::shared_ptr<Resource> resource, D3D12_RESOURCE_STATES stateAfter,
                             UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false );
     void TransitionBarrier( Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter,
                             UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false );
@@ -108,7 +106,7 @@ public:
      * flushed before a command (draw, dispatch, or copy) that expects the resource
      * to be in a particular state can run.
      */
-    void UAVBarrier( const Resource& resource, bool flushBarriers = false );
+    void UAVBarrier( std::shared_ptr<Resource> resource, bool flushBarriers = false );
     void UAVBarrier( Microsoft::WRL::ComPtr<ID3D12Resource> resource, bool flushBarriers = false );
 
     /**
@@ -118,7 +116,8 @@ public:
      * @param beforeResource The resource that currently occupies the heap.
      * @param afterResource The resource that will occupy the space in the heap.
      */
-    void AliasingBarrier( const Resource& beforeResource, const Resource& afterResource, bool flushBarriers = false );
+    void AliasingBarrier( std::shared_ptr<Resource> beforeResource, std::shared_ptr<Resource> afterResource,
+                          bool flushBarriers = false );
     void AliasingBarrier( Microsoft::WRL::ComPtr<ID3D12Resource> beforeResource,
                           Microsoft::WRL::ComPtr<ID3D12Resource> afterResource, bool flushBarriers = false );
 
@@ -130,33 +129,33 @@ public:
     /**
      * Copy resources.
      */
-    void CopyResource( Resource& dstRes, const Resource& srcRes );
+    void CopyResource( std::shared_ptr<Resource> dstRes, std::shared_ptr<Resource> srcRes );
     void CopyResource( Microsoft::WRL::ComPtr<ID3D12Resource> dstRes, Microsoft::WRL::ComPtr<ID3D12Resource> srcRes );
 
     /**
      * Resolve a multisampled resource into a non-multisampled resource.
      */
-    void ResolveSubresource( Resource& dstRes, const Resource& srcRes, uint32_t dstSubresource = 0,
-                             uint32_t srcSubresource = 0 );
+    void ResolveSubresource( std::shared_ptr<Resource> dstRes, std::shared_ptr<Resource> srcRes,
+                             uint32_t dstSubresource = 0, uint32_t srcSubresource = 0 );
 
     /**
      * Copy the contents to a vertex buffer in GPU memory.
      */
-    void CopyVertexBuffer( VertexBuffer& vertexBuffer, size_t numVertices, size_t vertexStride,
-                           const void* vertexBufferData );
+    std::shared_ptr<VertexBuffer> CopyVertexBuffer( size_t numVertices, size_t vertexStride,
+                                                    const void* vertexBufferData );
     template<typename T>
-    void CopyVertexBuffer( VertexBuffer& vertexBuffer, const std::vector<T>& vertexBufferData )
+    std::shared_ptr<VertexBuffer> CopyVertexBuffer( const std::vector<T>& vertexBufferData )
     {
-        CopyVertexBuffer( vertexBuffer, vertexBufferData.size(), sizeof( T ), vertexBufferData.data() );
+        return CopyVertexBuffer( vertexBufferData.size(), sizeof( T ), vertexBufferData.data() );
     }
 
     /**
      * Copy the contents to a index buffer in GPU memory.
      */
-    void CopyIndexBuffer( IndexBuffer& indexBuffer, size_t numIndicies, DXGI_FORMAT indexFormat,
-                          const void* indexBufferData );
+    std::shared_ptr<IndexBuffer> CopyIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat,
+                                                  const void* indexBufferData );
     template<typename T>
-    void CopyIndexBuffer( IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData )
+    std::shared_ptr<IndexBuffer> CopyIndexBuffer( IndexBuffer& indexBuffer, const std::vector<T>& indexBufferData )
     {
         assert( sizeof( T ) == 2 || sizeof( T ) == 4 );
 
@@ -167,9 +166,9 @@ public:
     /**
      * Copy the contents to a byte address buffer in GPU memory.
      */
-    void CopyByteAddressBuffer( ByteAddressBuffer& byteAddressBuffer, size_t bufferSize, const void* bufferData );
+    std::shared_ptr<ByteAddressBuffer> CopyByteAddressBuffer( size_t bufferSize, const void* bufferData );
     template<typename T>
-    void CopyByteAddressBuffer( ByteAddressBuffer& byteAddressBuffer, const T& data )
+    std::shared_ptr<ByteAddressBuffer> CopyByteAddressBuffer( const T& data )
     {
         CopyByteAddressBuffer( byteAddressBuffer, sizeof( T ), &data );
     }
@@ -177,10 +176,10 @@ public:
     /**
      * Copy the contents to a structured buffer in GPU memory.
      */
-    void CopyStructuredBuffer( StructuredBuffer& structuredBuffer, size_t numElements, size_t elementSize,
-                               const void* bufferData );
+    std::shared_ptr<StructuredBuffer> CopyStructuredBuffer( size_t numElements, size_t elementSize,
+                                                            const void* bufferData );
     template<typename T>
-    void CopyStructuredBuffer( StructuredBuffer& structuredBuffer, const std::vector<T>& bufferData )
+    std::shared_ptr<StructuredBuffer> CopyStructuredBuffer( const std::vector<T>& bufferData )
     {
         CopyStructuredBuffer( structuredBuffer, bufferData.size(), sizeof( T ), bufferData.data() );
     }
@@ -193,23 +192,23 @@ public:
     /**
      * Load a texture by a filename.
      */
-    void LoadTextureFromFile( Texture& texture, const std::wstring& fileName,
-                              TextureUsage textureUsage = TextureUsage::Albedo );
+    std::shared_ptr<Texture> LoadTextureFromFile( const std::wstring& fileName,
+                                                  TextureUsage        textureUsage = TextureUsage::Albedo );
 
     /**
      * Load a scene file.
      */
-    void LoadSceneFromFile( Scene& scene, const std::wstring& filname );
+    std::shared_ptr<Scene> LoadSceneFromFile( const std::wstring& filname );
 
     /**
      * Clear a texture.
      */
-    void ClearTexture( const Texture& texture, const float clearColor[4] );
+    void ClearTexture( std::shared_ptr<Texture> texture, const float clearColor[4] );
 
     /**
      * Clear depth/stencil texture.
      */
-    void ClearDepthStencilTexture( const Texture& texture, D3D12_CLEAR_FLAGS clearFlags, float depth = 1.0f,
+    void ClearDepthStencilTexture( std::shared_ptr<Texture> texture, D3D12_CLEAR_FLAGS clearFlags, float depth = 1.0f,
                                    uint8_t stencil = 0 );
 
     /**
@@ -217,17 +216,17 @@ public:
      * The first subresource is used to generate the mip chain.
      * Mips are automatically generated for textures loaded from files.
      */
-    void GenerateMips( Texture& texture );
+    void GenerateMips( std::shared_ptr<Texture> texture );
 
     /**
      * Generate a cubemap texture from a panoramic (equirectangular) texture.
      */
-    void PanoToCubemap( Texture& cubemap, const Texture& pano );
+    void PanoToCubemap( std::shared_ptr<Texture> cubemap, std::shared_ptr<Texture> pano );
 
     /**
      * Copy subresource data to a texture.
      */
-    void CopyTextureSubresource( Texture& texture, uint32_t firstSubresource, uint32_t numSubresources,
+    void CopyTextureSubresource( std::shared_ptr<Texture> texture, uint32_t firstSubresource, uint32_t numSubresources,
                                  D3D12_SUBRESOURCE_DATA* subresourceData );
 
     /**
@@ -266,7 +265,7 @@ public:
     /**
      * Set the vertex buffer to the rendering pipeline.
      */
-    void SetVertexBuffer( uint32_t slot, const VertexBuffer& vertexBuffer );
+    void SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBuffer> vertexBuffer );
 
     /**
      * Set dynamic vertex buffer data to the rendering pipeline.
@@ -281,7 +280,7 @@ public:
     /**
      * Bind the index buffer to the rendering pipeline.
      */
-    void SetIndexBuffer( const IndexBuffer& indexBuffer );
+    void SetIndexBuffer( std::shared_ptr<IndexBuffer>& indexBuffer );
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
@@ -327,8 +326,8 @@ public:
     /**
      * Set the current root signature on the command list.
      */
-    void SetGraphicsRootSignature( const RootSignature& rootSignature );
-    void SetComputeRootSignature( const RootSignature& rootSignature );
+    void SetGraphicsRootSignature( std::shared_ptr<RootSignature> rootSignature );
+    void SetComputeRootSignature( std::shared_ptr<RootSignature> rootSignature );
 
     /**
      * Set the SRV on the graphics pipeline.
@@ -352,7 +351,7 @@ public:
     /**
      * Set the render targets for the graphics rendering pipeline.
      */
-    void SetRenderTarget( const RenderTarget& renderTarget );
+    void SetRenderTarget( std::shared_ptr<RenderTarget> renderTarget );
 
     /**
      * Draw geometry.
@@ -407,15 +406,18 @@ public:
     }
 
 protected:
+    CommandList( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type );
+    virtual ~CommandList();
+
 private:
     void TrackResource( Microsoft::WRL::ComPtr<ID3D12Object> object );
-    void TrackResource( const Resource& res );
+    void TrackResource( std::shared_ptr<Resource> res );
 
     // Generate mips for UAV compatible textures.
-    void GenerateMips_UAV( Texture& texture, bool isSRGB );
+    void GenerateMips_UAV( std::shared_ptr<Texture> texture, bool isSRGB );
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
-    void CopyBuffer( Buffer& buffer, size_t numElements, size_t elementSize, const void* bufferData,
+    Microsoft::WRL::ComPtr<ID3D12Resource> CopyBuffer( size_t bufferSize, const void* bufferData,
                      D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE );
 
     // Binds the current descriptor heaps to the command list.
@@ -423,6 +425,8 @@ private:
 
     using TrackedObjects = std::vector<Microsoft::WRL::ComPtr<ID3D12Object>>;
 
+    // The device that is used to create this command list.
+    std::shared_ptr<Device>                            m_Device;
     D3D12_COMMAND_LIST_TYPE                            m_d3d12CommandListType;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_d3d12CommandList;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator>     m_d3d12CommandAllocator;
