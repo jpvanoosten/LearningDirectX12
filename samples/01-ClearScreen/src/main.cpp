@@ -1,7 +1,10 @@
 #include <GameFramework/GameFramework.h>
 #include <GameFramework/Window.h>
 
+#include <dx12lib/Helpers.h>
 #include <dx12lib/Adapter.h>
+#include <dx12lib/CommandList.h>
+#include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>
 
@@ -52,6 +55,7 @@ void OnWindowMaximized( ResizeEventArgs& e );
 void OnWindowRestored( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
 
+std::shared_ptr<Device>            pDevice     = nullptr;
 std::shared_ptr<Window>            pGameWindow = nullptr;
 std::shared_ptr<gainput::InputMap> pInputMap   = nullptr;
 std::shared_ptr<SwapChain>         pSwapChain  = nullptr;
@@ -70,6 +74,16 @@ void ReportLiveObjects()
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
     int retCode = 0;
+
+#if defined( _DEBUG )
+    // Always enable the debug layer before doing anything DX12 related
+    // so all possible errors generated while creating DX12 objects
+    // are caught by the debug layer.
+    Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+    ThrowIfFailed( D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) ) );
+    debugInterface->EnableDebugLayer();
+#endif
+
 
     WCHAR   path[MAX_PATH];
     int     argc = 0;
@@ -93,12 +107,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         // Create a logger for logging messages.
         logger = gf.CreateLogger( "ClearScreen" );
 
-        // Create a default adapter using the default preference.
-        auto device = Device::Create();
+        // Create a GPU device using the default adapter selection.
+        pDevice = Device::CreateDevice();
 
-        if ( device )
+        if ( pDevice )
         {
-            auto description = device->GetDescription();
+            auto description = pDevice->GetDescription();
             logger->info( L"Device Created: {}", description );
         }
 
@@ -131,7 +145,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pGameWindow = gf.CreateWindow( L"Clear Screen", 1920, 1080 );
 
         // Create a swapchain for the window
-        pSwapChain = device->CreateSwapChain( pGameWindow->GetWindowHandle() );
+        pSwapChain = pDevice->CreateSwapChain( pGameWindow->GetWindowHandle() );
 
         // Register events.
         pGameWindow->KeyPressed += &OnKeyPressed;
@@ -155,6 +169,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 
         retCode = GameFramework::Get().Run();
 
+        // Release globals.
+        pInputMap.reset();
+        pSwapChain.reset();
+        pDevice.reset();
         pGameWindow.reset();
     }
     GameFramework::Destroy();
@@ -215,6 +233,16 @@ void OnUpdate( UpdateEventArgs& e )
         logger->info( "Y button pressed." );
     }
 
+    auto commandQueue = pDevice->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
+    auto commandList  = commandQueue->GetCommandList();
+
+    auto& renderTarget = pSwapChain->GetRenderTarget();
+
+    const FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+    commandList->ClearTexture( renderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
+
+    commandQueue->ExecuteCommandList( commandList );
+
     pSwapChain->Present();
 }
 
@@ -224,6 +252,9 @@ void OnKeyPressed( KeyEventArgs& e )
 
     switch ( e.Key )
     {
+    case KeyCode::V:
+        pSwapChain->ToggleVSync();
+        break;
     case KeyCode::Escape:
         // Stop the application if the Escape key is pressed.
         GameFramework::Get().Stop();
@@ -231,6 +262,7 @@ void OnKeyPressed( KeyEventArgs& e )
     case KeyCode::Enter:
         if ( e.Alt )
         {
+            [[fallthrough]];
         case KeyCode::F11:
             pGameWindow->ToggleFullscreen();
             break;

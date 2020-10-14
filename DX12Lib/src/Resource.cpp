@@ -60,14 +60,16 @@ bool Resource::CheckFormatSupport( D3D12_FORMAT_SUPPORT2 formatSupport ) const
 
 void Resource::CheckFeatureSupport()
 {
-    auto d3d12Device       = m_Device->GetD3D12Device();
+    auto device      = m_Device.lock();
+    auto d3d12Device = device->GetD3D12Device();
+
     auto desc              = m_d3d12Resource->GetDesc();
     m_FormatSupport.Format = desc.Format;
     ThrowIfFailed( d3d12Device->CheckFeatureSupport( D3D12_FEATURE_FORMAT_SUPPORT, &m_FormatSupport,
                                                      sizeof( D3D12_FEATURE_DATA_FORMAT_SUPPORT ) ) );
 }
 
-void dx12lib::Resource::SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource ) 
+void dx12lib::Resource::SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource )
 {
     m_d3d12Resource = d3d12Resource;
     CheckFeatureSupport();

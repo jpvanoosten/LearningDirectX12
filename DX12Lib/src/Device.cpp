@@ -20,7 +20,7 @@ class MakeRootSignature : public RootSignature
 public:
     MakeRootSignature( std::shared_ptr<Device> device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
                        D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
-    : RootSignature(device, rootSignatureDesc, rootSignatureVersion )
+    : RootSignature( device, rootSignatureDesc, rootSignatureVersion )
     {}
 
     virtual ~MakeRootSignature() {}
@@ -29,8 +29,8 @@ public:
 class MakeCommandList : public CommandList
 {
 public:
-    MakeCommandList(std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type)
-        : CommandList(device, type)
+    MakeCommandList( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type )
+    : CommandList( device, type )
     {}
 
     virtual ~MakeCommandList() {}
@@ -83,6 +83,22 @@ public:
     {}
 
     virtual ~MakeVertexBuffer() {}
+};
+
+// Adapter for std::make_shared
+class MakeIndexBuffer : public IndexBuffer
+{
+public:
+    MakeIndexBuffer( std::shared_ptr<Device> device, size_t numIndicies, DXGI_FORMAT indexFormat )
+    : IndexBuffer( device, numIndicies, indexFormat )
+    {}
+
+    MakeIndexBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                     size_t numIndicies, DXGI_FORMAT indexFormat )
+    : IndexBuffer( device, resource, numIndicies, indexFormat )
+    {}
+
+    virtual ~MakeIndexBuffer() {}
 };
 
 // Adapter for std::make_shared
@@ -281,10 +297,10 @@ DescriptorAllocation Device::AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE typ
     return m_DescriptorAllocators[type]->Allocate( numDescriptors );
 }
 
-void Device::ReleaseStaleDescriptors( uint64_t finishedFrame )
+void Device::ReleaseStaleDescriptors( uint64_t fenceValue )
 {
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-    { m_DescriptorAllocators[i]->ReleaseStaleDescriptors( finishedFrame ); }
+    { m_DescriptorAllocators[i]->ReleaseStaleDescriptors( fenceValue ); }
 }
 
 std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND hWnd )
@@ -333,7 +349,17 @@ std::shared_ptr<StructuredBuffer> Device::CreateStructuredBuffer( ComPtr<ID3D12R
 std::shared_ptr<IndexBuffer> Device::CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat )
 {
     std::shared_ptr<IndexBuffer> indexBuffer =
-        std::make_shared<IndexBuffer>( shared_from_this(), numIndicies, indexFormat );
+        std::make_shared<MakeIndexBuffer>( shared_from_this(), numIndicies, indexFormat );
+
+    return indexBuffer;
+}
+
+std::shared_ptr<dx12lib::IndexBuffer>
+    dx12lib::Device::CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
+                                        DXGI_FORMAT indexFormat )
+{
+    std::shared_ptr<IndexBuffer> indexBuffer =
+        std::make_shared<MakeIndexBuffer>( shared_from_this(), resource, numIndices, indexFormat );
 
     return indexBuffer;
 }
@@ -345,11 +371,6 @@ std::shared_ptr<VertexBuffer> Device::CreateVertexBuffer( size_t numVertices, si
 
     return vertexBuffer;
 }
-
-std::shared_ptr<dx12lib::IndexBuffer>
-    dx12lib::Device::CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
-                                        DXGI_FORMAT indexFormat )
-{}
 
 std::shared_ptr<dx12lib::VertexBuffer>
     dx12lib::Device::CreateVertexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
@@ -379,7 +400,7 @@ std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Res
     return texture;
 }
 
-std::shared_ptr<CommandList> Device::CreateCommandList( D3D12_COMMAND_LIST_TYPE type ) 
+std::shared_ptr<CommandList> Device::CreateCommandList( D3D12_COMMAND_LIST_TYPE type )
 {
     std::shared_ptr<CommandList> commandList = std::make_shared<MakeCommandList>( shared_from_this(), type );
 

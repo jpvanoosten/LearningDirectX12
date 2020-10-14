@@ -2,7 +2,6 @@
 
 #include <dx12lib/DescriptorAllocation.h>
 
-#include <dx12lib/Application.h>
 #include <dx12lib/DescriptorAllocatorPage.h>
 
 using namespace dx12lib;
@@ -59,7 +58,7 @@ void DescriptorAllocation::Free()
 {
     if ( !IsNull() && m_Page )
     {
-        m_Page->Free( std::move( *this ), Application::GetFrameCount() );
+        m_Page->Free( std::move( *this ) );
         
         m_Descriptor.ptr = 0;
         m_NumHandles = 0;

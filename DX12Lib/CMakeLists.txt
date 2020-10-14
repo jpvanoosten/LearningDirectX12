@@ -39,6 +39,7 @@ set( HEADER_FILES
 set( SOURCE_FILES
     src/DX12LibPCH.h
     src/DX12LibPCH.cpp
+    src/Adapter.cpp
     src/Buffer.cpp
     src/ByteAddressBuffer.cpp
     src/CommandQueue.cpp

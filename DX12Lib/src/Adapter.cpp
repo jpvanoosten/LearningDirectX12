@@ -11,6 +11,8 @@ public:
     MakeAdapter( Microsoft::WRL::ComPtr<IDXGIAdapter4> dxgiAdapter )
     : Adapter( dxgiAdapter )
     {}
+
+    virtual ~MakeAdapter() {}
 };
 
 AdapterList Adapter::GetAdapters( DXGI_GPU_PREFERENCE gpuPreference )

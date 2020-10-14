@@ -95,7 +95,7 @@ void SceneNode::RemoveChild( std::shared_ptr<SceneNode> childNode )
         NodeList::const_iterator iter = std::find( m_Children.begin(), m_Children.end(), childNode );
         if ( iter != m_Children.cend() )
         {
-            childNode->SetParent( std::weak_ptr<SceneNode>() );
+            childNode->SetParent( nullptr );
             m_Children.erase( iter );
 
             // Also remove it from the name map.
@@ -113,7 +113,7 @@ void SceneNode::RemoveChild( std::shared_ptr<SceneNode> childNode )
     }
 }
 
-void SceneNode::SetParent( std::weak_ptr<SceneNode> parentNode )
+void SceneNode::SetParent( std::shared_ptr<SceneNode> parentNode )
 {
     // Parents own their children.. If this node is not owned
     // by anyone else, it will cease to exist if we remove it from it's parent.
@@ -122,13 +122,11 @@ void SceneNode::SetParent( std::weak_ptr<SceneNode> parentNode )
     // Technically self deletion shouldn't occur because the thing invoking this function
     // should have a shared_ptr to it.
     std::shared_ptr<SceneNode> me = shared_from_this();
-    std::shared_ptr<SceneNode> parent;
-
-    if ( parent = parentNode.lock() )
+    if ( parentNode )
     {
-        parent->AddChild( me );
+        parentNode->AddChild( me );
     }
-    else if ( parent = m_ParentNode.lock() )
+    else if ( auto parent = m_ParentNode.lock() )
     {
         // Setting parent to NULL.. remove from current parent and reset parent node.
         auto worldTransform = GetWorldTransform();
@@ -162,7 +160,7 @@ void SceneNode::RemoveMesh( std::shared_ptr<Mesh> mesh )
     }
 }
 
-void SceneNode::Render( CommandList& commandList )
+void SceneNode::Render( std::shared_ptr<CommandList> commandList )
 {
     // First render meshes attached to this node
     for ( auto mesh: m_Meshes ) { mesh->Render( commandList ); }

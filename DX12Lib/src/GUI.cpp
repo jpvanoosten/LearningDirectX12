@@ -2,13 +2,12 @@
 
 #include <dx12lib/GUI.h>
 
-#include <dx12lib/Application.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/Texture.h>
-#include <dx12lib/Window.h>
 
 // Include compiled shaders for ImGui.
 #include <ImGUI_PS.h>
@@ -31,28 +30,21 @@ enum RootParameters
 void GetSurfaceInfo( _In_ size_t width, _In_ size_t height, _In_ DXGI_FORMAT fmt, size_t* outNumBytes,
                      _Out_opt_ size_t* outRowBytes, _Out_opt_ size_t* outNumRows );
 
-GUI::GUI()
-: m_pImGuiCtx( nullptr )
-{}
-
-GUI::~GUI()
+GUI::GUI( std::shared_ptr<Device> device, HWND hWnd )
+: m_Device( device )
+, m_pImGuiCtx( nullptr )
+, m_hWnd(hWnd)
 {
-    Destroy();
-}
-
-bool GUI::Initialize( std::shared_ptr<Window> window )
-{
-    m_Window    = window;
     m_pImGuiCtx = ImGui::CreateContext();
     ImGui::SetCurrentContext( m_pImGuiCtx );
-    if ( !m_Window || !ImGui_ImplWin32_Init( m_Window->GetWindowHandle() ) )
+    if ( !ImGui_ImplWin32_Init( m_hWnd ) )
     {
-        return false;
+        throw std::exception( "Failed to initialize ImGui" );
     }
 
     ImGuiIO& io = ImGui::GetIO();
 
-    io.FontGlobalScale = window->GetDPIScaling();
+    io.FontGlobalScale = ::GetDpiForWindow( m_hWnd ) / 96.0f;
     // Allow user UI scaling using CTRL+Mouse Wheel scrolling
     io.FontAllowUserScaling = true;
 
@@ -61,13 +53,12 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     int            width, height;
     io.Fonts->GetTexDataAsRGBA32( &pixelData, &width, &height );
 
-    auto device       = Application::Get().GetDevice();
-    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto commandQueue = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto commandList  = commandQueue->GetCommandList();
 
     auto fontTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_R8G8B8A8_UNORM, width, height );
 
-    m_FontTexture = std::make_unique<Texture>( fontTextureDesc );
+    m_FontTexture = device->CreateTexture( fontTextureDesc );
     m_FontTexture->SetName( L"ImGui Font Texture" );
 
     size_t rowPitch, slicePitch;
@@ -78,15 +69,18 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     subresourceData.RowPitch   = rowPitch;
     subresourceData.SlicePitch = slicePitch;
 
-    commandList->CopyTextureSubresource( *m_FontTexture, 0, 1, &subresourceData );
-    commandList->GenerateMips( *m_FontTexture );
+    commandList->CopyTextureSubresource( m_FontTexture, 0, 1, &subresourceData );
+    commandList->GenerateMips( m_FontTexture );
 
     commandQueue->ExecuteCommandList( commandList );
+
+    auto d3d12Device = device->GetD3D12Device();
 
     // Create the root signature for the ImGUI shaders.
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
     featureData.HighestVersion                    = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if ( FAILED( device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
+    if ( FAILED(
+             d3d12Device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
     {
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -112,7 +106,7 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
                                        rootSignatureFlags );
 
-    m_RootSignature = std::make_unique<RootSignature>( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature = device->CreateRootSignature( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
     const D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, pos ),
@@ -181,9 +175,12 @@ bool GUI::Initialize( std::shared_ptr<Window> window )
     pipelineStateStream.DepthStencilState     = CD3DX12_DEPTH_STENCIL_DESC( depthStencilDesc );
 
     D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = { sizeof( PipelineStateStream ), &pipelineStateStream };
-    ThrowIfFailed( device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+    ThrowIfFailed( d3d12Device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+}
 
-    return true;
+GUI::~GUI()
+{
+    Destroy();
 }
 
 void GUI::NewFrame()
@@ -207,7 +204,7 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
 
     ImVec2 displayPos = drawData->DisplayPos;
 
-    commandList->SetGraphicsRootSignature( *m_RootSignature );
+    commandList->SetGraphicsRootSignature( m_RootSignature );
     commandList->SetPipelineState( m_PipelineState );
     commandList->SetRenderTarget( renderTarget );
 
@@ -226,7 +223,7 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     };
 
     commandList->SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
-    commandList->SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontTexture,
+    commandList->SetShaderResourceView( RootParameters::FontTexture, 0, m_FontTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     D3D12_VIEWPORT viewport = {};
@@ -285,13 +282,10 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
 
 void GUI::Destroy()
 {
-    if ( m_Window )
-    {
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext( m_pImGuiCtx );
-        m_pImGuiCtx = nullptr;
-        m_Window.reset();
-    }
+    ImGui::EndFrame();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext( m_pImGuiCtx );
+    m_pImGuiCtx = nullptr;
 }
 
 void GUI::SetScaling( float scale ) {}

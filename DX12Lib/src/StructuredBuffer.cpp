@@ -33,7 +33,8 @@ StructuredBuffer::StructuredBuffer(std::shared_ptr<Device> device, Microsoft::WR
 
 void StructuredBuffer::CreateViews()
 {
-    auto d3d12Device = m_Device->GetD3D12Device();
+    auto device      = m_Device.lock();
+    auto d3d12Device = device->GetD3D12Device();
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.ViewDimension                   = D3D12_SRV_DIMENSION_BUFFER;
@@ -43,7 +44,7 @@ void StructuredBuffer::CreateViews()
     srvDesc.Buffer.StructureByteStride      = static_cast<UINT>( m_ElementSize );
     srvDesc.Buffer.Flags                    = D3D12_BUFFER_SRV_FLAG_NONE;
 
-    m_SRV = m_Device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+    m_SRV = device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
     d3d12Device->CreateShaderResourceView( m_d3d12Resource.Get(), &srvDesc, m_SRV.GetDescriptorHandle() );
 
     D3D12_RESOURCE_DESC desc = GetD3D12ResourceDesc();
@@ -57,7 +58,7 @@ void StructuredBuffer::CreateViews()
         uavDesc.Buffer.StructureByteStride       = static_cast<UINT>( m_ElementSize );
         uavDesc.Buffer.Flags                     = D3D12_BUFFER_UAV_FLAG_NONE;
 
-        m_UAV = m_Device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+        m_UAV = device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
         d3d12Device->CreateUnorderedAccessView( m_d3d12Resource.Get(), m_CounterBuffer->GetD3D12Resource().Get(),
                                                 &uavDesc, m_UAV.GetDescriptorHandle() );
     }

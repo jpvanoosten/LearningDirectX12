@@ -67,7 +67,7 @@ public:
     /**
      * When the frame has completed, the stale descriptors can be released.
      */
-    void ReleaseStaleDescriptors( uint64_t frameNumber );
+    void ReleaseStaleDescriptors( uint64_t fenceValue );
 
 protected:
     friend class std::default_delete<DescriptorAllocator>;

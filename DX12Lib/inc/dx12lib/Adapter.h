@@ -71,7 +71,7 @@ public:
     /**
      * Get the IDXGIAdapter
      */
-    Microsoft::WRL::ComPtr<IDXGIAdapter> GetDXGIAdapter() const
+    Microsoft::WRL::ComPtr<IDXGIAdapter4> GetDXGIAdapter() const
     {
         return m_dxgiAdapter;
     }

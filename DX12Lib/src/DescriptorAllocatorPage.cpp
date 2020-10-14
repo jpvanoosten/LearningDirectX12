@@ -1,17 +1,18 @@
 #include "DX12LibPCH.h"
 
-#include <dx12lib/Device.h>
+#include <dx12lib/CommandQueue.h>
 #include <dx12lib/DescriptorAllocatorPage.h>
+#include <dx12lib/Device.h>
 
 using namespace dx12lib;
 
 DescriptorAllocatorPage::DescriptorAllocatorPage( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type,
                                                   uint32_t numDescriptors )
-: m_Device(device)
+: m_Device( device )
 , m_HeapType( type )
 , m_NumDescriptorsInHeap( numDescriptors )
 {
-    assert( device ); // Device must be valid!
+    assert( device );  // Device must be valid!
 
     auto d3d12Device = device->GetD3D12Device();
 
@@ -107,15 +108,20 @@ uint32_t DescriptorAllocatorPage::ComputeOffset( D3D12_CPU_DESCRIPTOR_HANDLE han
     return static_cast<uint32_t>( handle.ptr - m_BaseDescriptor.ptr ) / m_DescriptorHandleIncrementSize;
 }
 
-void DescriptorAllocatorPage::Free( DescriptorAllocation&& descriptor, uint64_t frameNumber )
+void DescriptorAllocatorPage::Free( DescriptorAllocation&& descriptor )
 {
     // Compute the offset of the descriptor within the descriptor heap.
     auto offset = ComputeOffset( descriptor.GetDescriptorHandle() );
 
-    std::lock_guard<std::mutex> lock( m_AllocationMutex );
+    uint64_t fenceValue = 0;
+    if ( auto device = m_Device.lock() )
+    {
+        fenceValue = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT )->Signal();
+    }
 
+    std::lock_guard<std::mutex> lock( m_AllocationMutex );
     // Don't add the block directly to the free list until the frame has completed.
-    m_StaleDescriptors.emplace( offset, descriptor.GetNumHandles(), frameNumber );
+    m_StaleDescriptors.emplace( offset, descriptor.GetNumHandles(), fenceValue );
 }
 
 void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptors )
@@ -182,11 +188,11 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
     AddNewBlock( offset, numDescriptors );
 }
 
-void DescriptorAllocatorPage::ReleaseStaleDescriptors( uint64_t frameNumber )
+void DescriptorAllocatorPage::ReleaseStaleDescriptors( uint64_t fenceValue )
 {
     std::lock_guard<std::mutex> lock( m_AllocationMutex );
 
-    while ( !m_StaleDescriptors.empty() && m_StaleDescriptors.front().FrameNumber <= frameNumber )
+    while ( !m_StaleDescriptors.empty() && m_StaleDescriptors.front().FenceValue <= fenceValue )
     {
         auto& staleDescriptor = m_StaleDescriptors.front();
 

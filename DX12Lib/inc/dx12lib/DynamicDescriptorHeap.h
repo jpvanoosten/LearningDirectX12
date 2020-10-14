@@ -44,13 +44,15 @@
 
 namespace dx12lib
 {
+
+class Device;
 class CommandList;
 class RootSignature;
 
 class DynamicDescriptorHeap
 {
 public:
-    DynamicDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptorsPerHeap = 1024 );
+    DynamicDescriptorHeap( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptorsPerHeap = 1024 );
 
     virtual ~DynamicDescriptorHeap();
 
@@ -112,6 +114,8 @@ public:
 
 protected:
 private:
+    std::weak_ptr<Device> m_Device;
+
     // Request a descriptor heap if one is available.
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RequestDescriptorHeap();
     // Create a new descriptor heap of no descriptor heap is available.

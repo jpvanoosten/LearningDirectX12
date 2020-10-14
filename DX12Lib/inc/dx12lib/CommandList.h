@@ -280,7 +280,7 @@ public:
     /**
      * Bind the index buffer to the rendering pipeline.
      */
-    void SetIndexBuffer( std::shared_ptr<IndexBuffer>& indexBuffer );
+    void SetIndexBuffer( std::shared_ptr<IndexBuffer> indexBuffer );
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
@@ -332,8 +332,9 @@ public:
     /**
      * Set the SRV on the graphics pipeline.
      */
-    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource,
-                                D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
+                                std::shared_ptr<Resource> resource,
+                                D3D12_RESOURCE_STATES     stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                                                                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
                                 UINT firstSubresource                      = 0,
                                 UINT numSubresources                       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
@@ -342,16 +343,17 @@ public:
     /**
      * Set the UAV on the graphics pipeline.
      */
-    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const Resource& resource,
-                                 D3D12_RESOURCE_STATES stateAfter            = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                                 UINT                  firstSubresource      = 0,
-                                 UINT                  numSubresources       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
+                                 std::shared_ptr<Resource> resource,
+                                 D3D12_RESOURCE_STATES     stateAfter        = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                                 UINT                      firstSubresource  = 0,
+                                 UINT                      numSubresources   = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
                                  const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav = nullptr );
 
     /**
      * Set the render targets for the graphics rendering pipeline.
      */
-    void SetRenderTarget( std::shared_ptr<RenderTarget> renderTarget );
+    void SetRenderTarget( const RenderTarget& renderTarget );
 
     /**
      * Draw geometry.
@@ -426,7 +428,7 @@ private:
     using TrackedObjects = std::vector<Microsoft::WRL::ComPtr<ID3D12Object>>;
 
     // The device that is used to create this command list.
-    std::weak_ptr<Device>                              m_Device; // weak_ptr to break circular references.
+    std::weak_ptr<Device>                              m_Device;  // weak_ptr to break circular references.
     D3D12_COMMAND_LIST_TYPE                            m_d3d12CommandListType;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_d3d12CommandList;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator>     m_d3d12CommandAllocator;

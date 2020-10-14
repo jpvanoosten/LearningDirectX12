@@ -79,12 +79,12 @@ public:
      * on a stale allocations queue. Stale allocations are returned to the heap
      * using the DescriptorAllocatorPage::ReleaseStaleAllocations method.
      */
-    void Free( DescriptorAllocation&& descriptorHandle, uint64_t frameNumber );
+    void Free( DescriptorAllocation&& descriptorHandle );
 
     /**
      * Returned the stale descriptors back to the descriptor heap.
      */
-    void ReleaseStaleDescriptors( uint64_t frameNumber );
+    void ReleaseStaleDescriptors( uint64_t fenceValue );
 
 protected:
     DescriptorAllocatorPage( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
@@ -127,10 +127,10 @@ private:
 
     struct StaleDescriptorInfo
     {
-        StaleDescriptorInfo( OffsetType offset, SizeType size, uint64_t frame )
+        StaleDescriptorInfo( OffsetType offset, SizeType size, uint64_t fenceValue )
         : Offset( offset )
         , Size( size )
-        , FrameNumber( frame )
+        , FenceValue( fenceValue )
         {}
 
         // The offset within the descriptor heap.
@@ -138,7 +138,7 @@ private:
         // The number of descriptors
         SizeType Size;
         // The frame number that the descriptor was freed.
-        uint64_t FrameNumber;
+        uint64_t FenceValue;
     };
 
     // Device that was used to create the descriptor heap.

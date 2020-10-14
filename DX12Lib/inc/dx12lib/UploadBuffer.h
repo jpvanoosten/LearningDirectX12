@@ -77,11 +77,12 @@ public:
     void Reset();
 
 protected:
+    friend class std::default_delete<UploadBuffer>;
+
     /**
      * @param pageSize The size to use to allocate new pages in GPU memory.
      */
     explicit UploadBuffer( std::shared_ptr<Device> device, size_t pageSize = _2MB );
-
     virtual ~UploadBuffer();
 
 private:
@@ -105,7 +106,7 @@ private:
         void Reset();
 
     private:
-        std::shared_ptr<Device>                m_Device;
+        std::weak_ptr<Device>                m_Device;
         Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource;
 
         // Base pointer.
@@ -122,7 +123,7 @@ private:
     using PagePool = std::deque<std::shared_ptr<Page>>;
 
     // The device that was used to create this upload buffer.
-    std::shared_ptr<Device> m_Device;
+    std::weak_ptr<Device> m_Device;
 
     // Request a page from the pool of available pages
     // or create a new page if there are no available pages.

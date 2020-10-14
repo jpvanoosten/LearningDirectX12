@@ -88,7 +88,7 @@ public:
      */
     void AddChild( std::shared_ptr<SceneNode> childNode );
     void RemoveChild( std::shared_ptr<SceneNode> childNode );
-    void SetParent( std::weak_ptr<SceneNode> parentNode );
+    void SetParent( std::shared_ptr<SceneNode> parentNode );
 
     /**
      * Add a mesh to this scene node.
@@ -99,7 +99,7 @@ public:
     /**
      * Render this node and all nodes in the scene graph.
      */
-    void Render( CommandList& commandList );
+    void Render( std::shared_ptr<CommandList> commandList );
 
 protected:
     DirectX::XMMATRIX GetParentWorldTransform() const;

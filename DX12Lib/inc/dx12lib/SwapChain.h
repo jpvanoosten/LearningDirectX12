@@ -34,7 +34,6 @@
 
 // #include <dx12lib/GUI.h>
 #include <dx12lib/RenderTarget.h>
-#include <dx12lib/Texture.h>
 
 #include <dxgi1_5.h>     // For IDXGISwapChain4
 #include <wrl/client.h>  // For Microsoft::WRL::ComPtr
@@ -46,6 +45,8 @@ namespace dx12lib
 
 class CommandQueue;
 class Device;
+class GUI;
+class Texture;
 
 class SwapChain
 {
@@ -74,6 +75,21 @@ public:
         SetFullscreen( !m_Fullscreen );
     }
 
+    void SetVSync( bool vSync )
+    {
+        m_VSync = vSync;
+    }
+
+    bool GetVSync() const
+    {
+        return m_VSync;
+    }
+
+    void ToggleVSync()
+    {
+        SetVSync( !m_VSync );
+    }
+
     /**
      * Check to see if tearing is supported.
      *
@@ -89,7 +105,6 @@ public:
      * Doing this at the beginning of the update loop can improve input latency.
      */
     void WaitForSwapChain();
-
 
     /**
      * Resize the swapchain's back buffers. This should be called whenever the window is resized.
@@ -134,10 +149,10 @@ private:
     // the next frame is allowed to be rendered.
     std::shared_ptr<CommandQueue>           m_CommandQueue;
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
-    Texture                                 m_BackBufferTextures[BufferCount];
+    std::shared_ptr<Texture>                m_BackBufferTextures[BufferCount];
     mutable RenderTarget                    m_RenderTarget;
 
-    //GUI m_GUI;
+    std::shared_ptr<GUI> m_GUI;
 
     // The current backbuffer index of the swap chain.
     UINT   m_CurrentBackBufferIndex;

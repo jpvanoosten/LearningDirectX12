@@ -6,13 +6,16 @@
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
+#include <dx12lib/GUI.h>
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/ResourceStateTracker.h>
+#include <dx12lib/Texture.h>
 
 using namespace dx12lib;
 
 SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
 : m_Device( device )
+, m_CommandQueue( device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT ) )
 , m_hWnd( hWnd )
 , m_FenceValues { 0 }
 , m_Width( 0u )
@@ -26,8 +29,7 @@ SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
 
     // Query the direct command queue from the device.
     // This is required to create the swapchain.
-    auto commandQueue      = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
-    auto d3d12CommandQueue = commandQueue->GetD3D12CommandQueue();
+    auto d3d12CommandQueue = m_CommandQueue->GetD3D12CommandQueue();
 
     // Query the factory from the adapter that was used to create the device.
     auto adapter     = device->GetAdapter();
@@ -97,15 +99,10 @@ SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
     // Get the SwapChain's waitable object.
     m_hFrameLatencyWaitableObject = m_dxgiSwapChain->GetFrameLatencyWaitableObject();
 
-    // Set the names for the backbuffer textures.
-    // Useful for debugging.
-    for ( int i = 0; i < BufferCount; ++i )
-    { m_BackBufferTextures[i].SetName( L"Backbuffer[" + std::to_wstring( i ) + L"]" ); }
-
     UpdateRenderTargetViews();
 
-    // TODO: Initialize GUI.
-    // m_GUI.Initialize()
+    m_GUI = std::make_shared<GUI>( device, m_hWnd );
+    m_GUI->NewFrame();
 }
 
 SwapChain::~SwapChain()
@@ -137,12 +134,15 @@ void dx12lib::SwapChain::Resize( uint32_t width, uint32_t height )
         m_Width  = std::max( 1u, width );
         m_Height = std::max( 1u, height );
 
+        auto device = m_Device.lock();
+        device->Flush();
+
         // Release all references to back buffer textures.
-        m_RenderTarget.AttachTexture( AttachmentPoint::Color0, Texture() );
+        m_RenderTarget.AttachTexture( AttachmentPoint::Color0, nullptr );
         for ( UINT i = 0; i < BufferCount; ++i )
         {
-            ResourceStateTracker::RemoveGlobalResourceState( m_BackBufferTextures[i].GetD3D12Resource().Get() );
-            m_BackBufferTextures[i].Reset();
+            ResourceStateTracker::RemoveGlobalResourceState( m_BackBufferTextures[i]->GetD3D12Resource().Get() );
+            m_BackBufferTextures[i].reset();
         }
 
         DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -164,9 +164,10 @@ const dx12lib::RenderTarget& dx12lib::SwapChain::GetRenderTarget() const
 
 UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
 {
+    auto device      = m_Device.lock();
     auto commandList = m_CommandQueue->GetCommandList();
 
-    auto& backBuffer = m_BackBufferTextures[m_CurrentBackBufferIndex];
+    auto backBuffer = m_BackBufferTextures[m_CurrentBackBufferIndex];
 
     if ( texture )
     {
@@ -180,10 +181,9 @@ UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
         }
     }
 
-    // TODO: Port GUI.
-    // RenderTarget renderTarget;
-    // renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
-    // m_GUI.Render( commandList, renderTarget );
+     RenderTarget renderTarget;
+     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
+     m_GUI->Render( commandList, renderTarget );
 
     commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     m_CommandQueue->ExecuteCommandList( commandList );
@@ -196,16 +196,20 @@ UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
 
     m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
-    m_CommandQueue->WaitForFenceValue( m_FenceValues[m_CurrentBackBufferIndex] );
+    auto fenceValue = m_FenceValues[m_CurrentBackBufferIndex];
+    m_CommandQueue->WaitForFenceValue( fenceValue );
 
-    // TODO: Port this function to the Device.
-    // m_Device->ReleaseStaleDescriptors();
+    device->ReleaseStaleDescriptors( fenceValue );
+
+    m_GUI->NewFrame();
 
     return m_CurrentBackBufferIndex;
 }
 
 void dx12lib::SwapChain::UpdateRenderTargetViews()
 {
+    auto device = m_Device.lock();
+
     for ( UINT i = 0; i < BufferCount; ++i )
     {
         ComPtr<ID3D12Resource> backBuffer;
@@ -213,7 +217,10 @@ void dx12lib::SwapChain::UpdateRenderTargetViews()
 
         ResourceStateTracker::AddGlobalResourceState( backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON );
 
-        m_BackBufferTextures[i].SetD3D12Resource( backBuffer );
-        m_BackBufferTextures[i].CreateViews();
+        m_BackBufferTextures[i] = device->CreateTexture( backBuffer, nullptr, TextureUsage::RenderTarget );
+
+        // Set the names for the backbuffer textures.
+        // Useful for debugging.
+        m_BackBufferTextures[i]->SetName( L"Backbuffer[" + std::to_wstring( i ) + L"]" );
     }
 }

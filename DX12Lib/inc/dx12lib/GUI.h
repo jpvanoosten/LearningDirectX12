@@ -35,22 +35,22 @@
 #include <d3dx12.h>
 #include <wrl.h>
 
+#include <memory> // For std::weak_ptr and std::shared_ptr
+
 namespace dx12lib
 {
+
 class CommandList;
-class Texture;
+class Device;
 class RenderTarget;
 class RootSignature;
-class Window;
+class Texture;
 
 class GUI
 {
 public:
-    GUI();
+    GUI( std::shared_ptr<Device> device, HWND hWnd );
     virtual ~GUI();
-
-    // Initialize the ImGui context.
-    virtual bool Initialize( std::shared_ptr<Window> window );
 
     // Begin a new frame.
     virtual void NewFrame();
@@ -64,10 +64,12 @@ public:
 
 protected:
 private:
+    std::weak_ptr<Device>                       m_Device;
+
     ImGuiContext*                               m_pImGuiCtx;
-    std::unique_ptr<Texture>                    m_FontTexture;
-    std::unique_ptr<RootSignature>              m_RootSignature;
+    std::shared_ptr<Texture>                    m_FontTexture;
+    std::shared_ptr<RootSignature>              m_RootSignature;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
-    std::shared_ptr<Window>                     m_Window;
+    HWND                                        m_hWnd;
 };
 }  // namespace dx12lib
