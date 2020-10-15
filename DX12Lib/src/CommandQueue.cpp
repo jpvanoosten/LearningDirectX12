@@ -41,7 +41,27 @@ CommandQueue::CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_T
         break;
     }
 
+    char threadName[256];
+    sprintf_s( threadName, "ProccessInFlightCommandLists " );
+
+    switch ( type )
+    {
+    case D3D12_COMMAND_LIST_TYPE_DIRECT:
+        strcat_s( threadName, "(Direct)" );
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+        strcat_s( threadName, "(Compute)" );
+        break;
+    case D3D12_COMMAND_LIST_TYPE_COPY:
+        strcat_s( threadName, "(Copy)" );
+        break;
+    default:
+        break;
+    }
+
     m_ProcessInFlightCommandListsThread = std::thread( &CommandQueue::ProccessInFlightCommandLists, this );
+
+    SetThreadName( m_ProcessInFlightCommandListsThread, threadName );
 }
 
 CommandQueue::~CommandQueue()
@@ -103,8 +123,7 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
     else
     {
         // Otherwise create a new command list.
-        commandList =
-            device->CreateCommandList( m_CommandListType );
+        commandList = device->CreateCommandList( m_CommandListType );
     }
 
     return commandList;
@@ -212,6 +231,7 @@ void CommandQueue::ProccessInFlightCommandLists()
         lock.unlock();
         m_ProcessInFlightCommandListsThreadCV.notify_one();
 
-        std::this_thread::yield();
+        std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+        //        std::this_thread::yield();
     }
 }
