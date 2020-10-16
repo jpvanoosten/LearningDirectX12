@@ -14,7 +14,7 @@ public:
     void Tick();
 
     /**
-     * Reset the timer.
+     * Reset the elapsed and total time.
      */
     void Reset();
     
@@ -24,6 +24,7 @@ public:
     double ElapsedSeconds() const;
     double ElapsedMilliseconds() const;
     double ElapsedMicroseconds() const;
+    double ElapsedNanoseconds() const;
 
     /**
      * Get the total time since the timer was started (or reset).
@@ -31,6 +32,7 @@ public:
     double TotalSeconds() const;
     double TotalMilliseconds() const;
     double TotalMicroseconds() const;
+    double TotalNanoseconds() const;
 
 private:
     class impl;

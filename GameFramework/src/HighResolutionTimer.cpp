@@ -20,8 +20,8 @@ public:
     : t0 { 0 }
     , t1 { 0 }
     , frequency { 0 }
-    , elapsedTime( 0.0 )
-    , totalTime( 0.0 )
+    , elapsedNanoseconds( 0.0 )
+    , totalNanseconds( 0.0 )
     {
         ::QueryPerformanceFrequency( &frequency );
         ::QueryPerformanceCounter( &t0 );
@@ -30,11 +30,9 @@ public:
     void Tick()
     {
         ::QueryPerformanceCounter( &t1 );
-        // Compute the value in microseconds (1 second = 1,000,000 microseconds)
-        elapsedTime =
-            ( t1.QuadPart - t0.QuadPart ) * ( 1000000.0 / frequency.QuadPart );
 
-        totalTime += elapsedTime;
+        elapsedNanoseconds = ( t1.QuadPart - t0.QuadPart ) * ( 1e9 / frequency.QuadPart );
+        totalNanseconds += elapsedNanoseconds;
 
         t0 = t1;
     }
@@ -42,25 +40,25 @@ public:
     void Reset()
     {
         ::QueryPerformanceCounter( &t0 );
-        elapsedTime = 0.0;
-        totalTime   = 0.0;
+        elapsedNanoseconds = 0.0;
+        totalNanseconds    = 0.0;
     }
 
-    double ElapsedMicroseconds() const
+    double ElapsedNanoseconds() const
     {
-        return elapsedTime;
+        return elapsedNanoseconds;
     }
 
-    double TotalMicroseconds() const
+    double TotalNanoseconds() const
     {
-        return totalTime;
+        return totalNanseconds;
     }
 
 private:
     LARGE_INTEGER t0, t1;
     LARGE_INTEGER frequency;
-    double        elapsedTime;
-    double        totalTime;
+    double        elapsedNanoseconds;
+    double        totalNanseconds;
 };
 #elif USE_CLOCK == HIGH_RESOLUTION_CLOCK
 class HighResolutionTimer::impl
@@ -75,10 +73,10 @@ public:
 
     void Tick()
     {
-        t1                                 = high_resolution_clock::now();
-        duration<double, std::micro> delta = t1 - t0;
-        t0                                 = t1;
-        elapsedTime                        = delta.count();
+        t1                                = high_resolution_clock::now();
+        duration<double, std::nano> delta = t1 - t0;
+        t0                                = t1;
+        elapsedTime                       = delta.count();
         totalTime += elapsedTime;
     }
 
@@ -89,12 +87,12 @@ public:
         totalTime   = 0.0;
     }
 
-    double ElapsedMicroseconds() const
+    double ElapsedNanoseconds() const
     {
         return elapsedTime;
     }
 
-    double TotalMicroseconds() const
+    double TotalNanoseconds() const
     {
         return totalTime;
     }
@@ -117,10 +115,11 @@ public:
 
     void Tick()
     {
-        t1                                 = steady_clock::now();
-        duration<double, std::micro> delta = t1 - t0;
-        t0                                 = t1;
-        elapsedTime                        = delta.count();
+        t1                                = steady_clock::now();
+        duration<double, std::nano> delta = t1 - t0;
+        t0                                = t1;
+        elapsedTime                       = delta.count();
+        totalTime += elapsedTime;
     }
 
     void Reset()
@@ -130,12 +129,12 @@ public:
         totalTime   = 0.0;
     }
 
-    double ElapsedMicroseconds() const
+    double ElapsedNanoseconds() const
     {
         return elapsedTime;
     }
 
-    double TotalMicroseconds() const
+    double TotalNanoseconds() const
     {
         return totalTime;
     }
@@ -166,30 +165,40 @@ void HighResolutionTimer::Reset()
 
 double HighResolutionTimer::ElapsedSeconds() const
 {
-    return pImpl->ElapsedMicroseconds() * 0.000001;
+    return pImpl->ElapsedNanoseconds() * 1e-9;
 }
 
 double HighResolutionTimer::ElapsedMilliseconds() const
 {
-    return pImpl->ElapsedMicroseconds() * 0.001;
+    return pImpl->ElapsedNanoseconds() * 1e-6;
 }
 
 double HighResolutionTimer::ElapsedMicroseconds() const
 {
-    return pImpl->ElapsedMicroseconds();
+    return pImpl->ElapsedNanoseconds() * 1e-3;
+}
+
+double HighResolutionTimer::ElapsedNanoseconds() const
+{
+    return pImpl->ElapsedNanoseconds();
 }
 
 double HighResolutionTimer::TotalSeconds() const
 {
-    return pImpl->TotalMicroseconds() * 0.000001;
+    return pImpl->TotalNanoseconds() * 1e-9;
 }
 
 double HighResolutionTimer::TotalMilliseconds() const
 {
-    return pImpl->TotalMicroseconds() * 0.001;
+    return pImpl->TotalNanoseconds() * 1e-6;
 }
 
 double HighResolutionTimer::TotalMicroseconds() const
 {
-    return pImpl->TotalMicroseconds();
+    return pImpl->TotalNanoseconds() * 1e-3;
+}
+
+double HighResolutionTimer::TotalNanoseconds() const
+{
+    return pImpl->TotalNanoseconds();
 }

@@ -81,6 +81,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 
         // Create a swapchain for the window
         pSwapChain = device.CreateSwapChain( pGameWindow->GetWindowHandle() );
+        pSwapChain->SetVSync( false );
 
         // Register events.
         pGameWindow->KeyPressed += &OnKeyPressed;
@@ -90,7 +91,24 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 
         pGameWindow->Show();
 
-        retCode = GameFramework::Get().Run();
+         retCode = GameFramework::Get().Run();
+
+        //double                             deltaSeconds = 0.0;
+        //double                             totalSeconds = 0.0;
+        //std::chrono::high_resolution_clock clock;
+        //auto                               t0 = clock.now();
+
+        //while ( true )
+        //{
+        //    auto t1        = clock.now();
+        //    auto delta = t1 - t0;
+        //    t0             = t1;
+
+        //    deltaSeconds = delta.count() * 1e-9;
+        //    totalSeconds += deltaSeconds;
+
+        //    OnUpdate( UpdateEventArgs( deltaSeconds, totalSeconds ) );
+        //}
 
         // Release globals.
         pSwapChain.reset();
