@@ -30,9 +30,8 @@
  *  @brief A wrapper for a DX12 Texture object.
  */
 
-
-#include "Resource.h"
 #include "DescriptorAllocation.h"
+#include "Resource.h"
 #include "TextureUsage.h"
 
 #include "d3dx12.h"
@@ -90,24 +89,24 @@ public:
      */
     virtual D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
 
-    bool CheckSRVSupport()
+    bool CheckSRVSupport() const
     {
         return CheckFormatSupport( D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE );
     }
 
-    bool CheckRTVSupport()
+    bool CheckRTVSupport() const
     {
         return CheckFormatSupport( D3D12_FORMAT_SUPPORT1_RENDER_TARGET );
     }
 
-    bool CheckUAVSupport()
+    bool CheckUAVSupport() const
     {
         return CheckFormatSupport( D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW ) &&
                CheckFormatSupport( D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD ) &&
                CheckFormatSupport( D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE );
     }
 
-    bool CheckDSVSupport()
+    bool CheckDSVSupport() const
     {
         return CheckFormatSupport( D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL );
     }
@@ -124,9 +123,10 @@ public:
     static DXGI_FORMAT GetUAVCompatableFormat( DXGI_FORMAT format );
 
 protected:
-    Texture( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue = nullptr, TextureUsage texturUsage = TextureUsage::Albedo );
-    Texture( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-             const D3D12_CLEAR_VALUE* clearValue = nullptr, TextureUsage textureUsage = TextureUsage::Albedo );
+    Texture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, TextureUsage texturUsage = TextureUsage::Albedo,
+             const D3D12_CLEAR_VALUE* clearValue = nullptr );
+    Texture( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+             TextureUsage textureUsage = TextureUsage::Albedo, const D3D12_CLEAR_VALUE* clearValue = nullptr );
     virtual ~Texture();
 
 private:

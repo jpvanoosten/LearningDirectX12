@@ -67,11 +67,11 @@ enum
 class GenerateMipsPSO
 {
 public:
-    GenerateMipsPSO(std::shared_ptr<Device> device);
+    GenerateMipsPSO( Device& device );
 
-    std::shared_ptr<RootSignature> GetRootSignature() const
+    RootSignature& GetRootSignature() const
     {
-        return m_RootSignature;
+        return *m_RootSignature;
     }
 
     Microsoft::WRL::ComPtr<ID3D12PipelineState> GetPipelineState() const

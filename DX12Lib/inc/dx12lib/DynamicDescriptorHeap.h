@@ -52,7 +52,7 @@ class RootSignature;
 class DynamicDescriptorHeap
 {
 public:
-    DynamicDescriptorHeap( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptorsPerHeap = 1024 );
+    DynamicDescriptorHeap( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptorsPerHeap = 1024 );
 
     virtual ~DynamicDescriptorHeap();
 
@@ -103,7 +103,7 @@ public:
      * descriptor tables and determine the number of descriptors needed for
      * each table.
      */
-    void ParseRootSignature( std::shared_ptr<RootSignature> rootSignature );
+    void ParseRootSignature( const RootSignature& rootSignature );
 
     /**
      * Reset used descriptors. This should only be done if any descriptors
@@ -114,8 +114,6 @@ public:
 
 protected:
 private:
-    std::weak_ptr<Device> m_Device;
-
     // Request a descriptor heap if one is available.
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RequestDescriptorHeap();
     // Create a new descriptor heap of no descriptor heap is available.
@@ -154,6 +152,9 @@ private:
         // The pointer to the descriptor in the descriptor handle cache.
         D3D12_CPU_DESCRIPTOR_HANDLE* BaseDescriptor;
     };
+
+    // The device that is used to create this descriptor heap.
+    Device& m_Device;
 
     // Describes the type of descriptors that can be staged using this
     // dynamic descriptor heap.

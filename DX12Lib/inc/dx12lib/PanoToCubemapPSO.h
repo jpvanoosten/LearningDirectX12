@@ -68,7 +68,7 @@ enum
 class PanoToCubemapPSO
 {
 public:
-    PanoToCubemapPSO(std::shared_ptr<Device> device );
+    PanoToCubemapPSO(Device& device );
 
     std::shared_ptr<RootSignature> GetRootSignature() const
     {

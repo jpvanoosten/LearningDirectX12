@@ -77,18 +77,18 @@ using IndexCollection  = std::vector<uint16_t>;
 class Mesh
 {
 public:
-    void Render( std::shared_ptr<CommandList> commandList, uint32_t instanceCount = 1, uint32_t firstInstance = 0 );
+    void Render( CommandList& commandList, uint32_t instanceCount = 1, uint32_t firstInstance = 0 );
 
-    static std::unique_ptr<Mesh> CreateCube( std::shared_ptr<CommandList> commandList, float size = 1,
+    static std::unique_ptr<Mesh> CreateCube( CommandList& commandList, float size = 1,
                                              bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreateSphere( std::shared_ptr<CommandList> commandList, float diameter = 1,
+    static std::unique_ptr<Mesh> CreateSphere( CommandList& commandList, float diameter = 1,
                                                size_t tessellation = 16, bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreateCone( std::shared_ptr<CommandList> commandList, float diameter = 1,
+    static std::unique_ptr<Mesh> CreateCone( CommandList& commandList, float diameter = 1,
                                              float height = 1, size_t tessellation = 32, bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreateTorus( std::shared_ptr<CommandList> commandList, float diameter = 1,
+    static std::unique_ptr<Mesh> CreateTorus( CommandList& commandList, float diameter = 1,
                                               float thickness = 0.333f, size_t tessellation = 32,
                                               bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreatePlane( std::shared_ptr<CommandList> commandList, float width = 1,
+    static std::unique_ptr<Mesh> CreatePlane( CommandList& commandList, float width = 1,
                                               float height = 1, bool rhcoords = false );
 
 protected:
@@ -99,7 +99,7 @@ private:
     Mesh( const Mesh& copy ) = delete;
     virtual ~Mesh();
 
-    void Initialize( std::shared_ptr<CommandList> commandList, VertexCollection& vertices, IndexCollection& indices,
+    void Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices,
                      bool rhcoords );
 
     std::shared_ptr<VertexBuffer> m_VertexBuffer;

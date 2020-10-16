@@ -9,15 +9,24 @@
 
 using namespace dx12lib;
 
-CommandQueue::CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type )
+// Adapter for std::make_shared
+class MakeCommandList : public CommandList
+{
+public:
+    MakeCommandList( Device& device, D3D12_COMMAND_LIST_TYPE type )
+    : CommandList( device, type )
+    {}
+
+    virtual ~MakeCommandList() {}
+};
+
+CommandQueue::CommandQueue( Device& device, D3D12_COMMAND_LIST_TYPE type )
 : m_Device( device )
 , m_CommandListType( type )
 , m_FenceValue( 0 )
 , m_bProcessInFlightCommandLists( true )
 {
-    assert( device );  // Device must be valid!
-
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     D3D12_COMMAND_QUEUE_DESC desc = {};
     desc.Type                     = type;
@@ -41,9 +50,9 @@ CommandQueue::CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_T
         break;
     }
 
+    // Set the thread name for easy debugging.
     char threadName[256];
     sprintf_s( threadName, "ProccessInFlightCommandLists " );
-
     switch ( type )
     {
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
@@ -60,7 +69,6 @@ CommandQueue::CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_T
     }
 
     m_ProcessInFlightCommandListsThread = std::thread( &CommandQueue::ProccessInFlightCommandLists, this );
-
     SetThreadName( m_ProcessInFlightCommandListsThread, threadName );
 }
 
@@ -87,13 +95,14 @@ void CommandQueue::WaitForFenceValue( uint64_t fenceValue )
     if ( !IsFenceComplete( fenceValue ) )
     {
         auto event = ::CreateEvent( NULL, FALSE, FALSE, NULL );
-        assert( event && "Failed to create fence event handle." );
+        if ( event )
+        {
+            // Is this function thread safe?
+            m_d3d12Fence->SetEventOnCompletion( fenceValue, event );
+            ::WaitForSingleObject( event, DWORD_MAX );
 
-        // Is this function thread safe?
-        m_d3d12Fence->SetEventOnCompletion( fenceValue, event );
-        ::WaitForSingleObject( event, DWORD_MAX );
-
-        ::CloseHandle( event );
+            ::CloseHandle( event );
+        }
     }
 }
 
@@ -113,8 +122,6 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
 {
     std::shared_ptr<CommandList> commandList;
 
-    auto device = m_Device.lock();
-
     // If there is a command list on the queue.
     if ( !m_AvailableCommandLists.Empty() )
     {
@@ -123,7 +130,7 @@ std::shared_ptr<CommandList> CommandQueue::GetCommandList()
     else
     {
         // Otherwise create a new command list.
-        commandList = device->CreateCommandList( m_CommandListType );
+        commandList = std::make_shared<MakeCommandList>( m_Device, m_CommandListType );
     }
 
     return commandList;
@@ -189,10 +196,9 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
     // after the initial resource command lists have finished.
     if ( generateMipsCommandLists.size() > 0 )
     {
-        auto device       = m_Device.lock();
-        auto computeQueue = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE );
-        computeQueue->Wait( *this );
-        computeQueue->ExecuteCommandLists( generateMipsCommandLists );
+        auto& computeQueue = m_Device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COMPUTE );
+        computeQueue.Wait( *this );
+        computeQueue.ExecuteCommandLists( generateMipsCommandLists );
     }
 
     return fenceValue;

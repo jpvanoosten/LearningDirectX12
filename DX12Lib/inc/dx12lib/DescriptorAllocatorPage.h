@@ -1,4 +1,4 @@
-#pragma  once
+#pragma once
 
 /*
  *  Copyright(c) 2018 Jeremiah van Oosten
@@ -84,10 +84,10 @@ public:
     /**
      * Returned the stale descriptors back to the descriptor heap.
      */
-    void ReleaseStaleDescriptors( uint64_t fenceValue );
+    void ReleaseStaleDescriptors();
 
 protected:
-    DescriptorAllocatorPage( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
+    DescriptorAllocatorPage( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors );
     virtual ~DescriptorAllocatorPage() = default;
 
     // Compute the offset of the descriptor handle from the start of the heap.
@@ -127,22 +127,19 @@ private:
 
     struct StaleDescriptorInfo
     {
-        StaleDescriptorInfo( OffsetType offset, SizeType size, uint64_t fenceValue )
+        StaleDescriptorInfo( OffsetType offset, SizeType size )
         : Offset( offset )
         , Size( size )
-        , FenceValue( fenceValue )
         {}
 
         // The offset within the descriptor heap.
         OffsetType Offset;
         // The number of descriptors
         SizeType Size;
-        // The frame number that the descriptor was freed.
-        uint64_t FenceValue;
     };
 
     // Device that was used to create the descriptor heap.
-    std::weak_ptr<Device> m_Device;
+    Device& m_Device;
 
     // Stale descriptors are queued for release until the frame that they were freed
     // has completed.

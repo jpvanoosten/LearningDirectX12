@@ -84,9 +84,9 @@ public:
     }
 
 protected:
-    StructuredBuffer( std::shared_ptr<Device> device, size_t numElements,
+    StructuredBuffer( Device& device, size_t numElements,
                       size_t elementSize );
-    StructuredBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+    StructuredBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
                       size_t numElements, size_t elementSize );
 
     /**

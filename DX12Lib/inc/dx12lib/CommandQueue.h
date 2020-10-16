@@ -67,8 +67,10 @@ public:
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetD3D12CommandQueue() const;
 
 protected:
+    friend class std::default_delete<CommandQueue>;
+
     // Only the device can create command queues.
-    CommandQueue( std::shared_ptr<Device> device, D3D12_COMMAND_LIST_TYPE type );
+    CommandQueue( Device& device, D3D12_COMMAND_LIST_TYPE type );
     virtual ~CommandQueue();
 
 private:
@@ -80,7 +82,7 @@ private:
     // a shared pointer to the "in-flight" command list.
     using CommandListEntry = std::tuple<uint64_t, std::shared_ptr<CommandList>>;
 
-    std::weak_ptr<Device>                      m_Device; // The device that was used to create this command queue. Using a weak_ptr to break the circular reference.
+    Device&                                    m_Device;
     D3D12_COMMAND_LIST_TYPE                    m_CommandListType;
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_d3d12CommandQueue;
     Microsoft::WRL::ComPtr<ID3D12Fence>        m_d3d12Fence;

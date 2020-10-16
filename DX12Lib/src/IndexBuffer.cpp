@@ -6,7 +6,7 @@
 
 using namespace dx12lib;
 
-IndexBuffer::IndexBuffer( std::shared_ptr<Device> device, size_t numIndicies, DXGI_FORMAT indexFormat )
+IndexBuffer::IndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat )
 : Buffer( device, CD3DX12_RESOURCE_DESC::Buffer( numIndicies * ( indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4 ) ) )
 , m_NumIndicies( numIndicies )
 , m_IndexFormat( indexFormat )
@@ -16,7 +16,7 @@ IndexBuffer::IndexBuffer( std::shared_ptr<Device> device, size_t numIndicies, DX
     CreateViews();
 }
 
-IndexBuffer::IndexBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+IndexBuffer::IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
                                    size_t numIndicies, DXGI_FORMAT indexFormat )
 : Buffer( device, resource )
 , m_NumIndicies( numIndicies )

@@ -56,7 +56,7 @@ class SwapChain;
 class Texture;
 class VertexBuffer;
 
-class Device : public std::enable_shared_from_this<Device>
+class Device
 {
 public:
     /**
@@ -64,7 +64,22 @@ public:
      * If no adapter is specified, then the highest performance adapter will be
      * chosen.
      */
-    static std::shared_ptr<Device> CreateDevice( std::shared_ptr<Adapter> adapter = nullptr );
+    static Device& Create( std::shared_ptr<Adapter> adapter = nullptr );
+
+    /**
+     * Get a reference to the previously created device.
+     */
+    static Device& Get();
+
+    /**
+     * Destroy the device instance.
+     */
+    static void Destroy();
+
+    /**
+     * Get a description of the adapter that was used to create the device.
+     */
+    std::wstring GetDescription() const;
 
     /**
      * Allocate a number of CPU visible descriptors.
@@ -109,11 +124,11 @@ public:
      * @returns A pointer to the created texture.
      */
     std::shared_ptr<Texture> CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc,
-                                            const D3D12_CLEAR_VALUE*   clearValue   = nullptr,
-                                            TextureUsage               textureUsage = TextureUsage::Albedo );
+                                            TextureUsage               textureUsage = TextureUsage::Albedo,
+                                            const D3D12_CLEAR_VALUE*   clearValue   = nullptr );
     std::shared_ptr<Texture> CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-                                            const D3D12_CLEAR_VALUE*               clearValue = nullptr,
-                                            TextureUsage textureUsage                         = TextureUsage::Albedo );
+                                            TextureUsage                           textureUsage = TextureUsage::Albedo,
+                                            const D3D12_CLEAR_VALUE*               clearValue   = nullptr );
 
     std::shared_ptr<IndexBuffer> CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat );
     std::shared_ptr<IndexBuffer> CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
@@ -133,7 +148,7 @@ public:
     /**
      * Release stale descriptors. This should only be called with a completed frame counter.
      */
-    void ReleaseStaleDescriptors( uint64_t finishedFrame );
+    void ReleaseStaleDescriptors();
 
     /**
      * Get the adapter that was used to create this device.
@@ -150,13 +165,7 @@ public:
      * - D3D12_COMMAND_LIST_TYPE_COPY   : Can be used for copy commands.
      * By default, a D3D12_COMMAND_LIST_TYPE_DIRECT queue is returned.
      */
-    std::shared_ptr<CommandQueue>
-        GetCommandQueue( D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT ) const;
-
-    /**
-     * Get a description of the adapter that was used to create the device.
-     */
-    std::wstring GetDescription() const;
+    CommandQueue& GetCommandQueue( D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT );
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap( UINT                       numDescriptors,
                                                                        D3D12_DESCRIPTOR_HEAP_TYPE type );
@@ -167,19 +176,8 @@ public:
     }
 
 protected:
-    friend class CommandQueue;
-
     explicit Device( std::shared_ptr<Adapter> adapter );
     virtual ~Device();
-
-    // Init after creation.
-    void Init();
-
-    /**
-     * Create a command list for use by a CommandQueue.
-     */
-    std::shared_ptr<CommandList> CreateCommandList( D3D12_COMMAND_LIST_TYPE type );
-
 private:
     Microsoft::WRL::ComPtr<ID3D12Device8> m_d3d12Device;
 
@@ -187,9 +185,9 @@ private:
     std::shared_ptr<Adapter> m_Adapter;
 
     // Default command queues.
-    std::shared_ptr<CommandQueue> m_DirectCommandQueue;
-    std::shared_ptr<CommandQueue> m_ComputeCommandQueue;
-    std::shared_ptr<CommandQueue> m_CopyCommandQueue;
+    std::unique_ptr<CommandQueue> m_DirectCommandQueue;
+    std::unique_ptr<CommandQueue> m_ComputeCommandQueue;
+    std::unique_ptr<CommandQueue> m_CopyCommandQueue;
 
     // Descriptor allocators.
     std::unique_ptr<DescriptorAllocator> m_DescriptorAllocators[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];

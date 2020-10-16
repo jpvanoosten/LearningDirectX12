@@ -99,7 +99,7 @@ public:
     /**
      * Render this node and all nodes in the scene graph.
      */
-    void Render( std::shared_ptr<CommandList> commandList );
+    void Render( CommandList& commandList );
 
 protected:
     DirectX::XMMATRIX GetParentWorldTransform() const;

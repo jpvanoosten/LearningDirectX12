@@ -49,12 +49,12 @@ class Texture;
 class GUI
 {
 public:
-    GUI( std::shared_ptr<Device> device, HWND hWnd );
+    GUI( Device& device, HWND hWnd );
     virtual ~GUI();
 
     // Begin a new frame.
     virtual void NewFrame();
-    virtual void Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget );
+    virtual void Render( CommandList& commandList, const RenderTarget& renderTarget );
 
     // Destroy the ImGui context.
     virtual void Destroy();
@@ -64,7 +64,7 @@ public:
 
 protected:
 private:
-    std::weak_ptr<Device>                       m_Device;
+    Device&                       m_Device;
 
     ImGuiContext*                               m_pImGuiCtx;
     std::shared_ptr<Texture>                    m_FontTexture;

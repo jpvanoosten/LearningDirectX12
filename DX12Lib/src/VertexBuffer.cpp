@@ -4,7 +4,7 @@
 
 using namespace dx12lib;
 
-VertexBuffer::VertexBuffer( std::shared_ptr<Device> device, size_t numVertices, size_t vertexStride )
+VertexBuffer::VertexBuffer( Device& device, size_t numVertices, size_t vertexStride )
     : Buffer(device, CD3DX12_RESOURCE_DESC::Buffer( numVertices * vertexStride ) )
     , m_NumVertices(numVertices)
     , m_VertexStride(vertexStride)
@@ -13,7 +13,7 @@ VertexBuffer::VertexBuffer( std::shared_ptr<Device> device, size_t numVertices, 
     CreateViews();
 }
 
-VertexBuffer::VertexBuffer(std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
+VertexBuffer::VertexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
     size_t vertexStride)
     : Buffer(device, resource)
     , m_NumVertices(numVertices)
@@ -21,7 +21,6 @@ VertexBuffer::VertexBuffer(std::shared_ptr<Device> device, Microsoft::WRL::ComPt
 {
     CreateViews();
 }
-
 
 VertexBuffer::~VertexBuffer()
 {}

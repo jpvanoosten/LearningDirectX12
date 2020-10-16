@@ -10,14 +10,14 @@ using namespace dx12lib;
 struct MakeAllocatorPage : public DescriptorAllocatorPage
 {
 public:
-    MakeAllocatorPage( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )
+    MakeAllocatorPage( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )
     : DescriptorAllocatorPage(device, type, numDescriptors )
     {}
 
     virtual ~MakeAllocatorPage() {}
 };
 
-DescriptorAllocator::DescriptorAllocator( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type,
+DescriptorAllocator::DescriptorAllocator( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type,
                                           uint32_t numDescriptorsPerHeap )
 : m_Device( device )
 , m_HeapType( type )
@@ -28,7 +28,7 @@ DescriptorAllocator::~DescriptorAllocator() {}
 
 std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocator::CreateAllocatorPage()
 {
-    std::shared_ptr<DescriptorAllocatorPage> newPage = std::make_shared<MakeAllocatorPage>( m_Device.lock(), m_HeapType, m_NumDescriptorsPerHeap );
+    std::shared_ptr<DescriptorAllocatorPage> newPage = std::make_shared<MakeAllocatorPage>( m_Device, m_HeapType, m_NumDescriptorsPerHeap );
 
     m_HeapPool.emplace_back( newPage );
     m_AvailableHeaps.insert( m_HeapPool.size() - 1 );
@@ -77,7 +77,7 @@ DescriptorAllocation DescriptorAllocator::Allocate( uint32_t numDescriptors )
     return allocation;
 }
 
-void DescriptorAllocator::ReleaseStaleDescriptors( uint64_t fenceValue )
+void DescriptorAllocator::ReleaseStaleDescriptors()
 {
     std::lock_guard<std::mutex> lock( m_AllocationMutex );
 
@@ -85,7 +85,7 @@ void DescriptorAllocator::ReleaseStaleDescriptors( uint64_t fenceValue )
     {
         auto page = m_HeapPool[i];
 
-        page->ReleaseStaleDescriptors( fenceValue );
+        page->ReleaseStaleDescriptors();
 
         if ( page->NumFreeHandles() > 0 )
         {

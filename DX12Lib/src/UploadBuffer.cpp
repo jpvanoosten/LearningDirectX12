@@ -7,7 +7,7 @@
 
 using namespace dx12lib;
 
-UploadBuffer::UploadBuffer( std::shared_ptr<Device> device, size_t pageSize )
+UploadBuffer::UploadBuffer( Device& device, size_t pageSize )
 : m_Device( device )
 , m_PageSize( pageSize )
 {}
@@ -42,7 +42,7 @@ std::shared_ptr<UploadBuffer::Page> UploadBuffer::RequestPage()
     }
     else
     {
-        page = std::make_shared<Page>( m_Device.lock(), m_PageSize );
+        page = std::make_shared<Page>( m_Device, m_PageSize );
         m_PagePool.push_back( page );
     }
 
@@ -62,14 +62,14 @@ void UploadBuffer::Reset()
     }
 }
 
-UploadBuffer::Page::Page( std::shared_ptr<Device> device, size_t sizeInBytes )
+UploadBuffer::Page::Page( Device& device, size_t sizeInBytes )
 : m_Device( device )
 , m_PageSize( sizeInBytes )
 , m_Offset( 0 )
 , m_CPUPtr( nullptr )
 , m_GPUPtr( D3D12_GPU_VIRTUAL_ADDRESS( 0 ) )
 {
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     ThrowIfFailed( d3d12Device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,

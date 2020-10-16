@@ -62,9 +62,7 @@ public:
         GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
 
 protected:
-    friend class CommandList;
-
-    ConstantBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc );
+    ConstantBuffer( Device& device, const D3D12_RESOURCE_DESC& resourceDesc );
     virtual ~ConstantBuffer();
 
     void CreateViews();

@@ -61,7 +61,9 @@ public:
     uint32_t GetNumDescriptors( uint32_t rootIndex ) const;
 
 protected:
-    RootSignature( std::shared_ptr<Device> device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+    friend class std::default_delete<RootSignature>;
+
+    RootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
                    D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion );
 
     virtual ~RootSignature();
@@ -71,7 +73,7 @@ private:
     void SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
                                D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
 
-    std::weak_ptr<Device>                       m_Device;
+    Device&                                     m_Device;
     D3D12_ROOT_SIGNATURE_DESC1                  m_RootSignatureDesc;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
 

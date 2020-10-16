@@ -69,8 +69,8 @@ public:
     }
 
 protected:
-    ByteAddressBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc );
-    ByteAddressBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
+    ByteAddressBuffer( Device& device, const D3D12_RESOURCE_DESC& resDesc );
+    ByteAddressBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
     virtual ~ByteAddressBuffer() = default;
 
     /**

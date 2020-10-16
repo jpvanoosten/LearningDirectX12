@@ -35,13 +35,13 @@
 namespace dx12lib
 {
 
-class Device;
+//class Device;
 
 class Buffer : public Resource
 {
 public:
 protected:
-    Buffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resDesc );
-    Buffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
+    Buffer( Device& device, const D3D12_RESOURCE_DESC& resDesc );
+    Buffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
 };
 }  // namespace dx12lib

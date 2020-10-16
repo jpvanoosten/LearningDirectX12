@@ -100,9 +100,9 @@ protected:
 //    friend class CommandList;
 
     // Resource creation should go through the device.
-    Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc,
+    Resource( Device& device, const D3D12_RESOURCE_DESC& resourceDesc,
                        const D3D12_CLEAR_VALUE* clearValue = nullptr );
-    Resource( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+    Resource( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
               const D3D12_CLEAR_VALUE* clearValue = nullptr );
 
     virtual ~Resource() = default;
@@ -110,7 +110,7 @@ protected:
     virtual void SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource );
 
     // The device that is used to create this resource.
-    std::weak_ptr<Device> m_Device;
+    Device& m_Device;
 
     // The underlying D3D12 resource.
     Microsoft::WRL::ComPtr<ID3D12Resource> m_d3d12Resource;

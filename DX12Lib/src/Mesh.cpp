@@ -28,27 +28,23 @@ Mesh::~Mesh()
     // Allocated resources will be cleaned automatically when the pointers go out of scope.
 }
 
-void Mesh::Render( std::shared_ptr<CommandList> commandList, uint32_t instanceCount, uint32_t firstInstance )
+void Mesh::Render( CommandList& commandList, uint32_t instanceCount, uint32_t firstInstance )
 {
-    assert( commandList );
-
-    commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-    commandList->SetVertexBuffer( 0, m_VertexBuffer );
+    commandList.SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    commandList.SetVertexBuffer( 0, *m_VertexBuffer );
     if ( m_IndexCount > 0 )
     {
-        commandList->SetIndexBuffer( m_IndexBuffer );
-        commandList->DrawIndexed( m_IndexCount, instanceCount, 0, 0, firstInstance );
+        commandList.SetIndexBuffer( *m_IndexBuffer );
+        commandList.DrawIndexed( m_IndexCount, instanceCount, 0, 0, firstInstance );
     }
     else
     {
-        commandList->Draw( m_VertexBuffer->GetNumVertices(), instanceCount, 0, firstInstance );
+        commandList.Draw( m_VertexBuffer->GetNumVertices(), instanceCount, 0, firstInstance );
     }
 }
 
-std::unique_ptr<Mesh> Mesh::CreateSphere( std::shared_ptr<CommandList> commandList, float diameter, size_t tessellation, bool rhcoords )
+std::unique_ptr<Mesh> Mesh::CreateSphere( CommandList& commandList, float diameter, size_t tessellation, bool rhcoords )
 {
-    assert( commandList );
-
     VertexCollection vertices;
     IndexCollection  indices;
 
@@ -117,10 +113,8 @@ std::unique_ptr<Mesh> Mesh::CreateSphere( std::shared_ptr<CommandList> commandLi
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCube( std::shared_ptr<CommandList> commandList, float size, bool rhcoords )
+std::unique_ptr<Mesh> Mesh::CreateCube( CommandList& commandList, float size, bool rhcoords )
 {
-    assert( commandList );
-
     // A cube has six faces, each one pointing in a different direction.
     const int FaceCount = 6;
 
@@ -248,12 +242,10 @@ static void CreateCylinderCap( VertexCollection& vertices, IndexCollection& indi
     }
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCone( std::shared_ptr<CommandList> commandList, float diameter, float height,
+std::unique_ptr<Mesh> Mesh::CreateCone( CommandList& commandList, float diameter, float height,
                                         size_t tessellation,
                                         bool rhcoords )
 {
-    assert( commandList );
-
     VertexCollection vertices;
     IndexCollection  indices;
 
@@ -303,12 +295,10 @@ std::unique_ptr<Mesh> Mesh::CreateCone( std::shared_ptr<CommandList> commandList
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateTorus( std::shared_ptr<CommandList> commandList, float diameter, float thickness,
+std::unique_ptr<Mesh> Mesh::CreateTorus( CommandList& commandList, float diameter, float thickness,
                                          size_t tessellation,
                                          bool rhcoords )
 {
-    assert( commandList );
-
     VertexCollection vertices;
     IndexCollection  indices;
 
@@ -370,11 +360,9 @@ std::unique_ptr<Mesh> Mesh::CreateTorus( std::shared_ptr<CommandList> commandLis
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreatePlane( std::shared_ptr<CommandList> commandList, float width, float height,
+std::unique_ptr<Mesh> Mesh::CreatePlane( CommandList& commandList, float width, float height,
                                          bool rhcoords )
 {
-    assert( commandList );
-
     VertexCollection vertices = {
         { XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT2( 0.0f, 0.0f ) },  // 0
         { XMFLOAT3( 0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT2( 1.0f, 0.0f ) },   // 1
@@ -401,7 +389,7 @@ static void ReverseWinding( IndexCollection& indices, VertexCollection& vertices
     { it->textureCoordinate.x = ( 1.f - it->textureCoordinate.x ); }
 }
 
-void Mesh::Initialize( std::shared_ptr<CommandList> commandList, VertexCollection& vertices, IndexCollection& indices,
+void Mesh::Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices,
                        bool rhcoords )
 {
     if ( vertices.size() >= USHRT_MAX )
@@ -410,8 +398,8 @@ void Mesh::Initialize( std::shared_ptr<CommandList> commandList, VertexCollectio
     if ( !rhcoords )
         ReverseWinding( indices, vertices );
 
-    m_VertexBuffer = commandList->CopyVertexBuffer( vertices );
-    m_IndexBuffer  = commandList->CopyIndexBuffer( indices );
+    m_VertexBuffer = commandList.CopyVertexBuffer( vertices );
+    m_IndexBuffer  = commandList.CopyIndexBuffer( indices );
 
     m_IndexCount = static_cast<UINT>( indices.size() );
 }

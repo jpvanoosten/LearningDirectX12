@@ -69,8 +69,8 @@ public:
         GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
 
 protected:
-    VertexBuffer( std::shared_ptr<Device> device, size_t numVertices, size_t vertexStride );
-    VertexBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
+    VertexBuffer( Device& device, size_t numVertices, size_t vertexStride );
+    VertexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numVertices,
                   size_t vertexStride );
     virtual ~VertexBuffer();
 

@@ -7,11 +7,11 @@
 
 using namespace dx12lib;
 
-Resource::Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc,
+Resource::Resource( Device& device, const D3D12_RESOURCE_DESC& resourceDesc,
                     const D3D12_CLEAR_VALUE* clearValue )
 : m_Device( device )
 {
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     if ( clearValue )
     {
@@ -27,7 +27,7 @@ Resource::Resource( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& r
     CheckFeatureSupport();
 }
 
-Resource::Resource( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+Resource::Resource( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
                     const D3D12_CLEAR_VALUE* clearValue )
 : m_Device( device )
 , m_d3d12Resource( resource )
@@ -60,8 +60,7 @@ bool Resource::CheckFormatSupport( D3D12_FORMAT_SUPPORT2 formatSupport ) const
 
 void Resource::CheckFeatureSupport()
 {
-    auto device      = m_Device.lock();
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     auto desc              = m_d3d12Resource->GetDesc();
     m_FormatSupport.Format = desc.Format;

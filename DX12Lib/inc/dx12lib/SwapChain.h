@@ -121,20 +121,23 @@ public:
     /**
      * Present the swapchain's back buffer to the screen.
      *
-     * @param texture The texture to copy to the swap chain's backbuffer before
+     * @param [texture] The texture to copy to the swap chain's backbuffer before
      * presenting. By default, this is an empty texture. In this case, no copy
      * will be performed. Use the SwapChain::GetRenderTarget method to get a render
      * target for the window's color buffer.
      *
      * @returns The current backbuffer index after the present.
      */
-    UINT Present( std::shared_ptr<Texture> = nullptr );
+    UINT Present( const Texture* texture = nullptr );
 
-    Microsoft::WRL::ComPtr<IDXGISwapChain4> GetDXGISwapChain() const;
+    Microsoft::WRL::ComPtr<IDXGISwapChain4> GetDXGISwapChain() const
+    {
+        return m_dxgiSwapChain;
+    }
 
 protected:
     // Swap chains can only be created through the Device.
-    SwapChain( std::shared_ptr<Device> device, HWND hWnd );
+    SwapChain( Device& device, HWND hWnd );
     virtual ~SwapChain();
 
     // Update the swapchain's RTVs.
@@ -142,12 +145,12 @@ protected:
 
 private:
     // The device that was used to create the SwapChain.
-    std::weak_ptr<Device> m_Device;
+    Device& m_Device;
     // The command queue that is used to create the swapchain.
     // The command queue will be signaled right after the Present
     // to ensure that the swapchain's back buffers are not in-flight before
     // the next frame is allowed to be rendered.
-    std::shared_ptr<CommandQueue>           m_CommandQueue;
+    CommandQueue&                           m_CommandQueue;
     Microsoft::WRL::ComPtr<IDXGISwapChain4> m_dxgiSwapChain;
     std::shared_ptr<Texture>                m_BackBufferTextures[BufferCount];
     mutable RenderTarget                    m_RenderTarget;

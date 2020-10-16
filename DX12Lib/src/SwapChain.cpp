@@ -13,9 +13,9 @@
 
 using namespace dx12lib;
 
-SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
+SwapChain::SwapChain( Device& device, HWND hWnd )
 : m_Device( device )
-, m_CommandQueue( device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT ) )
+, m_CommandQueue( device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT ) )
 , m_hWnd( hWnd )
 , m_FenceValues { 0 }
 , m_Width( 0u )
@@ -25,14 +25,13 @@ SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
 , m_Fullscreen( false )
 {
     assert( hWnd );    // Must be a valid window handle!
-    assert( device );  // Must be a valid device!
 
     // Query the direct command queue from the device.
     // This is required to create the swapchain.
-    auto d3d12CommandQueue = m_CommandQueue->GetD3D12CommandQueue();
+    auto d3d12CommandQueue = m_CommandQueue.GetD3D12CommandQueue();
 
     // Query the factory from the adapter that was used to create the device.
-    auto adapter     = device->GetAdapter();
+    auto adapter     = m_Device.GetAdapter();
     auto dxgiAdapter = adapter->GetDXGIAdapter();
 
     // Get the factory that was used to create the adapter.
@@ -41,13 +40,6 @@ SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
     ThrowIfFailed( dxgiAdapter->GetParent( IID_PPV_ARGS( &dxgiFactory ) ) );
     // Now get the DXGIFactory5 so I can use the IDXGIFactory5::CheckFeatureSupport method.
     ThrowIfFailed( dxgiFactory.As( &dxgiFactory5 ) );
-
-    //    UINT                  createFactoryFlags = 0;
-    //#if defined( _DEBUG )
-    //    createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
-    //#endif
-    //
-    //    ThrowIfFailed( CreateDXGIFactory2( createFactoryFlags, IID_PPV_ARGS( &dxgiFactory5 ) ) );
 
     // Check for tearing support.
     BOOL allowTearing = FALSE;
@@ -95,7 +87,7 @@ SwapChain::SwapChain( std::shared_ptr<Device> device, HWND hWnd )
     m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
     // Set maximum frame latency to reduce input latency.
-    m_dxgiSwapChain->SetMaximumFrameLatency( 1 );
+    m_dxgiSwapChain->SetMaximumFrameLatency( BufferCount - 1 );
     // Get the SwapChain's waitable object.
     m_hFrameLatencyWaitableObject = m_dxgiSwapChain->GetFrameLatencyWaitableObject();
 
@@ -134,8 +126,7 @@ void dx12lib::SwapChain::Resize( uint32_t width, uint32_t height )
         m_Width  = std::max( 1u, width );
         m_Height = std::max( 1u, height );
 
-        auto device = m_Device.lock();
-        device->Flush();
+        m_Device.Flush();
 
         // Release all references to back buffer textures.
         m_RenderTarget.AttachTexture( AttachmentPoint::Color0, nullptr );
@@ -162,10 +153,9 @@ const dx12lib::RenderTarget& dx12lib::SwapChain::GetRenderTarget() const
     return m_RenderTarget;
 }
 
-UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
+UINT dx12lib::SwapChain::Present( const Texture* texture )
 {
-    auto device      = m_Device.lock();
-    auto commandList = m_CommandQueue->GetCommandList();
+    auto commandList = m_CommandQueue.GetCommandList();
 
     auto backBuffer = m_BackBufferTextures[m_CurrentBackBufferIndex];
 
@@ -173,33 +163,33 @@ UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
     {
         if ( texture->GetD3D12ResourceDesc().SampleDesc.Count > 1 )
         {
-            commandList->ResolveSubresource( backBuffer, texture );
+            commandList->ResolveSubresource( *backBuffer, *texture );
         }
         else
         {
-            commandList->CopyResource( backBuffer, texture );
+            commandList->CopyResource( *backBuffer, *texture );
         }
     }
 
      RenderTarget renderTarget;
      renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
-     m_GUI->Render( commandList, renderTarget );
+     m_GUI->Render( *commandList, renderTarget );
 
-    commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
-    m_CommandQueue->ExecuteCommandList( commandList );
+    commandList->TransitionBarrier( *backBuffer, D3D12_RESOURCE_STATE_PRESENT );
+    m_CommandQueue.ExecuteCommandList( commandList );
 
     UINT syncInterval = m_VSync ? 1 : 0;
     UINT presentFlags = m_TearingSupported && !m_Fullscreen && !m_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
     ThrowIfFailed( m_dxgiSwapChain->Present( syncInterval, presentFlags ) );
 
-    m_FenceValues[m_CurrentBackBufferIndex] = m_CommandQueue->Signal();
+    m_FenceValues[m_CurrentBackBufferIndex] = m_CommandQueue.Signal();
 
     m_CurrentBackBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
     auto fenceValue = m_FenceValues[m_CurrentBackBufferIndex];
-    m_CommandQueue->WaitForFenceValue( fenceValue );
+    m_CommandQueue.WaitForFenceValue( fenceValue );
 
-    device->ReleaseStaleDescriptors( fenceValue );
+    m_Device.ReleaseStaleDescriptors();
 
     m_GUI->NewFrame();
 
@@ -208,8 +198,6 @@ UINT dx12lib::SwapChain::Present( std::shared_ptr<Texture> texture )
 
 void dx12lib::SwapChain::UpdateRenderTargetViews()
 {
-    auto device = m_Device.lock();
-
     for ( UINT i = 0; i < BufferCount; ++i )
     {
         ComPtr<ID3D12Resource> backBuffer;
@@ -217,7 +205,7 @@ void dx12lib::SwapChain::UpdateRenderTargetViews()
 
         ResourceStateTracker::AddGlobalResourceState( backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON );
 
-        m_BackBufferTextures[i] = device->CreateTexture( backBuffer, nullptr, TextureUsage::RenderTarget );
+        m_BackBufferTextures[i] = m_Device.CreateTexture( backBuffer, TextureUsage::RenderTarget );
 
         // Set the names for the backbuffer textures.
         // Useful for debugging.

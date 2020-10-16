@@ -6,15 +6,13 @@
 
 using namespace dx12lib;
 
-DescriptorAllocatorPage::DescriptorAllocatorPage( std::shared_ptr<Device> device, D3D12_DESCRIPTOR_HEAP_TYPE type,
+DescriptorAllocatorPage::DescriptorAllocatorPage( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type,
                                                   uint32_t numDescriptors )
 : m_Device( device )
 , m_HeapType( type )
 , m_NumDescriptorsInHeap( numDescriptors )
 {
-    assert( device );  // Device must be valid!
-
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.Type                       = m_HeapType;
@@ -113,15 +111,9 @@ void DescriptorAllocatorPage::Free( DescriptorAllocation&& descriptor )
     // Compute the offset of the descriptor within the descriptor heap.
     auto offset = ComputeOffset( descriptor.GetDescriptorHandle() );
 
-    uint64_t fenceValue = 0;
-    if ( auto device = m_Device.lock() )
-    {
-        fenceValue = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT )->Signal();
-    }
-
     std::lock_guard<std::mutex> lock( m_AllocationMutex );
     // Don't add the block directly to the free list until the frame has completed.
-    m_StaleDescriptors.emplace( offset, descriptor.GetNumHandles(), fenceValue );
+    m_StaleDescriptors.emplace( offset, descriptor.GetNumHandles() );
 }
 
 void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptors )
@@ -188,11 +180,11 @@ void DescriptorAllocatorPage::FreeBlock( uint32_t offset, uint32_t numDescriptor
     AddNewBlock( offset, numDescriptors );
 }
 
-void DescriptorAllocatorPage::ReleaseStaleDescriptors( uint64_t fenceValue )
+void DescriptorAllocatorPage::ReleaseStaleDescriptors()
 {
     std::lock_guard<std::mutex> lock( m_AllocationMutex );
 
-    while ( !m_StaleDescriptors.empty() && m_StaleDescriptors.front().FenceValue <= fenceValue )
+    while ( !m_StaleDescriptors.empty() )
     {
         auto& staleDescriptor = m_StaleDescriptors.front();
 

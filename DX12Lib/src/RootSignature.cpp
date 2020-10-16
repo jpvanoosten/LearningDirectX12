@@ -6,7 +6,7 @@
 
 using namespace dx12lib;
 
-RootSignature::RootSignature( std::shared_ptr<Device> device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
+RootSignature::RootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
                               D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
 : m_Device( device )
 , m_RootSignatureDesc {}
@@ -124,8 +124,7 @@ void RootSignature::SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& root
     ThrowIfFailed( D3DX12SerializeVersionedRootSignature( &versionRootSignatureDesc, rootSignatureVersion,
                                                           &rootSignatureBlob, &errorBlob ) );
 
-    auto device      = m_Device.lock();
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     // Create the root signature.
     ThrowIfFailed( d3d12Device->CreateRootSignature( 0, rootSignatureBlob->GetBufferPointer(),

@@ -30,7 +30,7 @@ enum RootParameters
 void GetSurfaceInfo( _In_ size_t width, _In_ size_t height, _In_ DXGI_FORMAT fmt, size_t* outNumBytes,
                      _Out_opt_ size_t* outRowBytes, _Out_opt_ size_t* outNumRows );
 
-GUI::GUI( std::shared_ptr<Device> device, HWND hWnd )
+GUI::GUI( Device& device, HWND hWnd )
 : m_Device( device )
 , m_pImGuiCtx( nullptr )
 , m_hWnd(hWnd)
@@ -53,12 +53,12 @@ GUI::GUI( std::shared_ptr<Device> device, HWND hWnd )
     int            width, height;
     io.Fonts->GetTexDataAsRGBA32( &pixelData, &width, &height );
 
-    auto commandQueue = device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-    auto commandList  = commandQueue->GetCommandList();
+    auto& commandQueue = m_Device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto commandList  = commandQueue.GetCommandList();
 
     auto fontTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_R8G8B8A8_UNORM, width, height );
 
-    m_FontTexture = device->CreateTexture( fontTextureDesc );
+    m_FontTexture = m_Device.CreateTexture( fontTextureDesc );
     m_FontTexture->SetName( L"ImGui Font Texture" );
 
     size_t rowPitch, slicePitch;
@@ -69,12 +69,12 @@ GUI::GUI( std::shared_ptr<Device> device, HWND hWnd )
     subresourceData.RowPitch   = rowPitch;
     subresourceData.SlicePitch = slicePitch;
 
-    commandList->CopyTextureSubresource( m_FontTexture, 0, 1, &subresourceData );
-    commandList->GenerateMips( m_FontTexture );
+    commandList->CopyTextureSubresource( *m_FontTexture, 0, 1, &subresourceData );
+    commandList->GenerateMips( *m_FontTexture );
 
-    commandQueue->ExecuteCommandList( commandList );
+    commandQueue.ExecuteCommandList( commandList );
 
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
     // Create the root signature for the ImGUI shaders.
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -106,7 +106,7 @@ GUI::GUI( std::shared_ptr<Device> device, HWND hWnd )
     rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
                                        rootSignatureFlags );
 
-    m_RootSignature = device->CreateRootSignature( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature = m_Device.CreateRootSignature( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
 
     const D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, pos ),
@@ -190,7 +190,7 @@ void GUI::NewFrame()
     ImGui::NewFrame();
 }
 
-void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& renderTarget )
+void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
 {
     ImGui::SetCurrentContext( m_pImGuiCtx );
     ImGui::Render();
@@ -204,9 +204,9 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
 
     ImVec2 displayPos = drawData->DisplayPos;
 
-    commandList->SetGraphicsRootSignature( m_RootSignature );
-    commandList->SetPipelineState( m_PipelineState );
-    commandList->SetRenderTarget( renderTarget );
+    commandList.SetGraphicsRootSignature( *m_RootSignature );
+    commandList.SetPipelineState( m_PipelineState );
+    commandList.SetRenderTarget( renderTarget );
 
     // Set root arguments.
     //    DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixOrthographicRH( drawData->DisplaySize.x,
@@ -222,8 +222,8 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
         { ( R + L ) / ( L - R ), ( T + B ) / ( B - T ), 0.5f, 1.0f },
     };
 
-    commandList->SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
-    commandList->SetShaderResourceView( RootParameters::FontTexture, 0, m_FontTexture,
+    commandList.SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
+    commandList.SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     D3D12_VIEWPORT viewport = {};
@@ -232,8 +232,8 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     viewport.MinDepth       = 0.0f;
     viewport.MaxDepth       = 1.0f;
 
-    commandList->SetViewport( viewport );
-    commandList->SetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    commandList.SetViewport( viewport );
+    commandList.SetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     const DXGI_FORMAT indexFormat = sizeof( ImDrawIdx ) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
@@ -242,15 +242,15 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
     // resource barriers are only flushed when a draw command is executed).
     // In that case, manually flushing the resource barriers will ensure that
     // they are properly flushed before exiting this function.
-    commandList->FlushResourceBarriers();
+    commandList.FlushResourceBarriers();
 
     for ( int i = 0; i < drawData->CmdListsCount; ++i )
     {
         const ImDrawList* drawList = drawData->CmdLists[i];
 
-        commandList->SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ),
+        commandList.SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ),
                                              drawList->VtxBuffer.Data );
-        commandList->SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
+        commandList.SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
 
         int indexOffset = 0;
         for ( int j = 0; j < drawList->CmdBuffer.size(); ++j )
@@ -271,8 +271,8 @@ void GUI::Render( std::shared_ptr<CommandList> commandList, const RenderTarget& 
 
                 if ( scissorRect.right - scissorRect.left > 0.0f && scissorRect.bottom - scissorRect.top > 0.0 )
                 {
-                    commandList->SetScissorRect( scissorRect );
-                    commandList->DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
+                    commandList.SetScissorRect( scissorRect );
+                    commandList.DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
                 }
             }
             indexOffset += drawCmd.ElemCount;

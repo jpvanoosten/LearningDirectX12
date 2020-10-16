@@ -73,8 +73,12 @@ public:
     RenderTarget& operator=( const RenderTarget& other ) = default;
     RenderTarget& operator=( RenderTarget&& other ) = default;
 
-    // Attach a texture to the render target.
-    // The texture will be copied into the texture array.
+    /**
+     * Attach a texture to a given attachment point.
+     * 
+     * @param attachmentPoint The point to attach the texture to.
+     * @param [texture] Optional texture to bind to the render target. Specify nullptr to remove the texture.
+     */
     void           AttachTexture( AttachmentPoint attachmentPoint, std::shared_ptr<Texture> texture );
     std::shared_ptr<Texture> GetTexture( AttachmentPoint attachmentPoint ) const;
 

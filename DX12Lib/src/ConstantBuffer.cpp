@@ -6,7 +6,7 @@
 
 using namespace dx12lib;
 
-ConstantBuffer::ConstantBuffer( std::shared_ptr<Device> device, const D3D12_RESOURCE_DESC& resourceDesc )
+ConstantBuffer::ConstantBuffer( Device& device, const D3D12_RESOURCE_DESC& resourceDesc )
 : Buffer( device, resourceDesc )
 , m_SizeInBytes( resourceDesc.Width )
 {
@@ -17,10 +17,9 @@ ConstantBuffer::~ConstantBuffer() {}
 
 void ConstantBuffer::CreateViews()
 {
-    auto device      = m_Device.lock();
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = m_Device.GetD3D12Device();
 
-    m_ConstantBufferView = device->AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+    m_ConstantBufferView = m_Device.AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 
     D3D12_CONSTANT_BUFFER_VIEW_DESC d3d12ConstantBufferViewDesc;
     d3d12ConstantBufferViewDesc.BufferLocation = m_d3d12Resource->GetGPUVirtualAddress();

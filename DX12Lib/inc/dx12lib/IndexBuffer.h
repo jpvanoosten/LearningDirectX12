@@ -68,8 +68,8 @@ public:
         GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
 
 protected:
-    IndexBuffer( std::shared_ptr<Device> device, size_t numIndicies, DXGI_FORMAT indexFormat );
-    IndexBuffer( std::shared_ptr<Device> device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
+    IndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat );
+    IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
                  DXGI_FORMAT indexFormat );
     virtual ~IndexBuffer();
 

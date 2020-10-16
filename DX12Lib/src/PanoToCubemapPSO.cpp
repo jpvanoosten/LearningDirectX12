@@ -12,9 +12,9 @@
 
 using namespace dx12lib;
 
-PanoToCubemapPSO::PanoToCubemapPSO(std::shared_ptr<Device> device )
+PanoToCubemapPSO::PanoToCubemapPSO( Device& device )
 {
-    auto d3d12Device = device->GetD3D12Device();
+    auto d3d12Device = device.GetD3D12Device();
 
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
     featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
@@ -42,7 +42,7 @@ PanoToCubemapPSO::PanoToCubemapPSO(std::shared_ptr<Device> device )
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc(PanoToCubemapRS::NumRootParameters,
         rootParameters, 1, &linearRepeatSampler);
 
-    m_RootSignature = device->CreateRootSignature( rootSignatureDesc.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature = device.CreateRootSignature( rootSignatureDesc.Desc_1_1, featureData.HighestVersion );
 
     // Create the PSO for GenerateMips shader.
     struct PipelineStateStream
@@ -61,8 +61,8 @@ PanoToCubemapPSO::PanoToCubemapPSO(std::shared_ptr<Device> device )
     ThrowIfFailed( d3d12Device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
 
     // Create some default texture UAV's to pad any unused UAV's during mip map generation.
-    m_DefaultUAV = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5);
-    UINT descriptorHandleIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    m_DefaultUAV = device.AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5);
+    UINT descriptorHandleIncrementSize = device.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     for (UINT i = 0; i < 5; ++i)
     {
