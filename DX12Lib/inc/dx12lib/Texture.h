@@ -63,31 +63,14 @@ public:
     void Resize( uint32_t width, uint32_t height, uint32_t depthOrArraySize = 1 );
 
     /**
-     * Create SRV and UAVs for the resource.
-     */
-    virtual void CreateViews();
-
-    /**
-     * Get the SRV for a resource.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetShaderResourceView( const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr ) const override;
-
-    /**
-     * Get the UAV for a (sub)resource.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
-
-    /**
      * Get the RTV for the texture.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetView() const;
+    D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetView() const;
 
     /**
      * Get the DSV for the texture.
      */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
 
     bool CheckSRVSupport() const
     {
@@ -129,19 +112,15 @@ protected:
              TextureUsage textureUsage = TextureUsage::Albedo, const D3D12_CLEAR_VALUE* clearValue = nullptr );
     virtual ~Texture();
 
+    /**
+     * Create SRV and UAVs for the resource.
+     */
+    void CreateViews();
+
 private:
-    DescriptorAllocation CreateShaderResourceView( const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc ) const;
-    DescriptorAllocation CreateUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc ) const;
-
-    mutable std::unordered_map<size_t, DescriptorAllocation> m_ShaderResourceViews;
-    mutable std::unordered_map<size_t, DescriptorAllocation> m_UnorderedAccessViews;
-
-    mutable std::mutex m_ShaderResourceViewsMutex;
-    mutable std::mutex m_UnorderedAccessViewsMutex;
+    TextureUsage m_TextureUsage;
 
     DescriptorAllocation m_RenderTargetView;
     DescriptorAllocation m_DepthStencilView;
-
-    TextureUsage m_TextureUsage;
 };
 }  // namespace dx12lib

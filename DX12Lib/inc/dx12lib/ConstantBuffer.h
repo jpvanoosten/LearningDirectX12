@@ -44,31 +44,11 @@ public:
         return m_SizeInBytes;
     }
 
-    D3D12_CPU_DESCRIPTOR_HANDLE GetConstantBufferView() const
-    {
-        return m_ConstantBufferView.GetDescriptorHandle();
-    }
-
-    /**
-     * Get the SRV for a resource.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetShaderResourceView( const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr ) const override;
-
-    /**
-     * Get the UAV for a (sub)resource.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override;
-
 protected:
     ConstantBuffer( Device& device, const D3D12_RESOURCE_DESC& resourceDesc );
     virtual ~ConstantBuffer();
 
-    void CreateViews();
-
 private:
     size_t               m_SizeInBytes;
-    DescriptorAllocation m_ConstantBufferView;
 };
 }  // namespace dx12lib

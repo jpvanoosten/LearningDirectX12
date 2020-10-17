@@ -36,6 +36,7 @@
  */
 
 #include <DirectXMath.h>  // For XMFLOAT2
+
 #include <cstdint>
 #include <memory>  // for std::shared_ptr
 #include <vector>

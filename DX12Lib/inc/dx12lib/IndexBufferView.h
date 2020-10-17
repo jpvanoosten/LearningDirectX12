@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- *  Copyright(c) 2018 Jeremiah van Oosten
+ *  Copyright(c) 2020 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -23,38 +23,38 @@
  */
 
 /**
- *  @file IndexBuffer.h
- *  @date October 24, 2018
+ *  @file IndexBufferView.h
+ *  @date October 17, 2020
  *  @author Jeremiah van Oosten
  *
- *  @brief Index buffer resource.
+ *  @brief Wrapper for an Index Buffer View.
  */
 
-#include "Buffer.h"
+#include <d3d12.h>  // For D3D12_INDEX_BUFFER_VIEW
 
 namespace dx12lib
 {
-class IndexBuffer : public Buffer
+
+class IndexBuffer;
+
+class IndexBufferView
 {
 public:
-    size_t GetNumIndicies() const
-    {
-        return m_NumIndicies;
+    IndexBufferView( const IndexBuffer& indexBuffer );
+
+    const IndexBuffer& GetIndexBuffer() const {
+        return m_IndexBuffer;
     }
 
-    DXGI_FORMAT GetIndexFormat() const
+    D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const 
     {
-        return m_IndexFormat;
+        return m_IndexBufferView;
     }
-
-protected:
-    IndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat );
-    IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
-                 DXGI_FORMAT indexFormat );
-    virtual ~IndexBuffer();
 
 private:
-    size_t      m_NumIndicies;
-    DXGI_FORMAT m_IndexFormat;
+    const IndexBuffer& m_IndexBuffer;
+    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 };
-}  // namespace dx12lib
+
+} // namespace dx12lib
+

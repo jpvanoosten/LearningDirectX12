@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- *  Copyright(c) 2018 Jeremiah van Oosten
+ *  Copyright(c) 2020 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -23,38 +23,46 @@
  */
 
 /**
- *  @file IndexBuffer.h
- *  @date October 24, 2018
+ *  @file UnorderedAccessView.h
+ *  @date October 17, 2020
  *  @author Jeremiah van Oosten
  *
- *  @brief Index buffer resource.
+ *  @brief Wrapper for an Unordered Access View (UAV)
  */
 
-#include "Buffer.h"
+#include <dx12lib/DescriptorAllocation.h>
+
+#include <d3d12.h>  // For D3D12_UNORDERED_ACCESS_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
 
 namespace dx12lib
 {
-class IndexBuffer : public Buffer
+
+class Resource;
+
+class UnorderedAccessView
 {
 public:
-    size_t GetNumIndicies() const
+    UnorderedAccessView( const Resource& resource, const Resource* pCounterResource = nullptr,
+                         const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav = nullptr );
+
+    const Resource& GetResource() const
     {
-        return m_NumIndicies;
+        return m_Resource;
     }
 
-    DXGI_FORMAT GetIndexFormat() const
+    const Resource* GetCounterResource() const
     {
-        return m_IndexFormat;
+        return m_pCounterResource;
     }
 
-protected:
-    IndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat );
-    IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
-                 DXGI_FORMAT indexFormat );
-    virtual ~IndexBuffer();
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle() const
+    {
+        return m_Descriptor.GetDescriptorHandle();
+    }
 
 private:
-    size_t      m_NumIndicies;
-    DXGI_FORMAT m_IndexFormat;
+    const Resource&      m_Resource;
+    const Resource*      m_pCounterResource;
+    DescriptorAllocation m_Descriptor;
 };
 }  // namespace dx12lib

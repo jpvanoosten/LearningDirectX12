@@ -37,12 +37,11 @@ add_subdirectory( extern/DirectXTex )
 add_subdirectory( GameFramework )
 add_subdirectory( DX12Lib )
 add_subdirectory( samples/01-ClearScreen)
-add_subdirectory( samples/Tutorial1 )
-add_subdirectory( samples/Tutorial2 )
+add_subdirectory( samples/02-Cube )
 add_subdirectory( samples/Tutorial3 )
 add_subdirectory( samples/Tutorial4 )
 
-set_target_properties( 01-ClearScreen Tutorial1 Tutorial2 Tutorial3 Tutorial4
+set_target_properties( 01-ClearScreen 02-Cube Tutorial3 Tutorial4
     PROPERTIES
         FOLDER Samples 
 )

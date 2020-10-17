@@ -7,8 +7,10 @@ set( HEADER_FILES
     inc/dx12lib/CommandList.h
     inc/dx12lib/CommandQueue.h
     inc/dx12lib/ConstantBuffer.h
+    inc/dx12lib/ConstantBufferView.h
     inc/dx12lib/d3dx12.h
     inc/dx12lib/Defines.h
+    inc/dx12lib/DepthStencilView.h
     inc/dx12lib/DescriptorAllocation.h
     inc/dx12lib/DescriptorAllocator.h
     inc/dx12lib/DescriptorAllocatorPage.h
@@ -17,23 +19,28 @@ set( HEADER_FILES
     inc/dx12lib/GenerateMipsPSO.h
     inc/dx12lib/GUI.h
     inc/dx12lib/Helpers.h
-    inc/dx12lib/HighResolutionClock.h
     inc/dx12lib/IndexBuffer.h
+    inc/dx12lib/IndexBufferView.h
     inc/dx12lib/Mesh.h
     inc/dx12lib/PanoToCubemapPSO.h
     inc/dx12lib/RenderTarget.h
+    inc/dx12lib/RenderTargetView.h
     inc/dx12lib/Resource.h
     inc/dx12lib/ResourceStateTracker.h
     inc/dx12lib/RootSignature.h
     inc/dx12lib/Scene.h
     inc/dx12lib/SceneNode.h
+    inc/dx12lib/ShaderResourceView.h
     inc/dx12lib/StructuredBuffer.h
     inc/dx12lib/SwapChain.h
     inc/dx12lib/Texture.h
     inc/dx12lib/TextureUsage.h
     inc/dx12lib/ThreadSafeQueue.h
+    inc/dx12lib/UnorderedAccessView.h
     inc/dx12lib/UploadBuffer.h
     inc/dx12lib/VertexBuffer.h
+    inc/dx12lib/VertexBufferView.h
+
 )
 
 set( SOURCE_FILES
@@ -45,6 +52,8 @@ set( SOURCE_FILES
     src/CommandQueue.cpp
     src/CommandList.cpp
     src/ConstantBuffer.cpp
+    src/ConstantBufferView.cpp
+    src/DepthStencilView.cpp
     src/DescriptorAllocation.cpp
     src/DescriptorAllocator.cpp
     src/DescriptorAllocatorPage.cpp
@@ -52,20 +61,24 @@ set( SOURCE_FILES
     src/DynamicDescriptorHeap.cpp
     src/GenerateMipsPSO.cpp
     src/GUI.cpp
-    src/HighResolutionClock.cpp
     src/IndexBuffer.cpp
+    src/IndexBufferView.cpp
     src/Mesh.cpp
     src/PanoToCubemapPSO.cpp
     src/RenderTarget.cpp
+    src/RenderTargetView.cpp
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp
     src/SceneNode.cpp
+    src/ShaderResourceView.cpp
     src/StructuredBuffer.cpp
     src/SwapChain.cpp
     src/Texture.cpp
+    src/UnorderedAccessView.cpp
     src/UploadBuffer.cpp
     src/VertexBuffer.cpp
+    src/VertexBufferView.cpp
 )
 
 set( IMGUI_HEADERS

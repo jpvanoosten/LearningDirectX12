@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- *  Copyright(c) 2018 Jeremiah van Oosten
+ *  Copyright(c) 2020 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -23,38 +23,41 @@
  */
 
 /**
- *  @file IndexBuffer.h
- *  @date October 24, 2018
+ *  @file ConstantBufferView.h
+ *  @date October 17, 2020
  *  @author Jeremiah van Oosten
  *
- *  @brief Index buffer resource.
+ *  @brief A wrapper for a Constant buffer view (CBV)
  */
 
-#include "Buffer.h"
+#include <dx12lib/DescriptorAllocation.h>
+
+#include <d3d12.h>  // For D3D12_CONSTANT_BUFFER_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
 
 namespace dx12lib
 {
-class IndexBuffer : public Buffer
+
+class ConstantBuffer;
+
+class ConstantBufferView
 {
 public:
-    size_t GetNumIndicies() const
+    ConstantBufferView( const ConstantBuffer& constantBuffer, const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv = nullptr );
+    ~ConstantBufferView() = default;
+
+    const ConstantBuffer& GetConstantBuffer() const
     {
-        return m_NumIndicies;
+        return m_ConstantBuffer;
     }
 
-    DXGI_FORMAT GetIndexFormat() const
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle()
     {
-        return m_IndexFormat;
+        return m_Descriptor.GetDescriptorHandle();
     }
-
-protected:
-    IndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat );
-    IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
-                 DXGI_FORMAT indexFormat );
-    virtual ~IndexBuffer();
 
 private:
-    size_t      m_NumIndicies;
-    DXGI_FORMAT m_IndexFormat;
+    const ConstantBuffer& m_ConstantBuffer;
+    DescriptorAllocation  m_Descriptor;
 };
+
 }  // namespace dx12lib

@@ -51,16 +51,20 @@ class Device;
 class DynamicDescriptorHeap;
 class GenerateMipsPSO;
 class IndexBuffer;
+class IndexBufferView;
 class PanoToCubemapPSO;
 class RenderTarget;
 class Resource;
 class ResourceStateTracker;
 class RootSignature;
 class Scene;
+class ShaderResourceView;
 class StructuredBuffer;
 class Texture;
+class UnorderedAccessView;
 class UploadBuffer;
 class VertexBuffer;
+class VertexBufferView;
 
 class CommandList
 {
@@ -268,7 +272,7 @@ public:
      * @param slot The slot to bind the vertex buffer to.
      * @vertexBuffer The vertex buffer to bind (can be null to remove the vertex buffer from the slot).
      */
-    void SetVertexBuffer( uint32_t slot, const VertexBuffer& vertexBuffer );
+    void SetVertexBuffer( uint32_t slot, const VertexBufferView& vertexBuffer );
 
     /**
      * Set dynamic vertex buffer data to the rendering pipeline.
@@ -285,7 +289,7 @@ public:
      *
      * @param indexBuffer The index buffer to bind to the rendering pipeline.
      */
-    void SetIndexBuffer( const IndexBuffer& indexBuffer );
+    void SetIndexBuffer( const IndexBufferView& indexBufferView );
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
@@ -337,21 +341,19 @@ public:
     /**
      * Set the SRV on the graphics pipeline.
      */
-    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const Resource& resource,
+    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const ShaderResourceView& srv,
                                 D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                                                                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
                                 UINT firstSubresource                      = 0,
-                                UINT numSubresources                       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-                                const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr );
+                                UINT numSubresources                       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
 
     /**
      * Set the UAV on the graphics pipeline.
      */
-    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const Resource& resource,
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const UnorderedAccessView& uav,
                                  D3D12_RESOURCE_STATES stateAfter            = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                                  UINT                  firstSubresource      = 0,
-                                 UINT                  numSubresources       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-                                 const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav = nullptr );
+                                 UINT                  numSubresources       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
 
     /**
      * Set the render targets for the graphics rendering pipeline.

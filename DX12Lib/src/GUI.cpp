@@ -7,6 +7,7 @@
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/RootSignature.h>
+#include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/Texture.h>
 
 // Include compiled shaders for ImGui.

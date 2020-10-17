@@ -4,7 +4,9 @@
 
 #include <dx12lib/CommandList.h>
 #include <dx12lib/VertexBuffer.h>
+#include <dx12lib/VertexBufferView.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/IndexBufferView.h>
 
 using namespace dx12lib;
 using namespace DirectX;

@@ -44,6 +44,13 @@ class Device;
 class Resource
 {
 public:
+    /**
+     * Get the Device that was used to create this resource.
+     */
+    Device& GetDevice() const {
+        return m_Device;
+    }
+
     // Get access to the underlying D3D12 resource
     Microsoft::WRL::ComPtr<ID3D12Resource> GetD3D12Resource() const
     {
@@ -60,24 +67,6 @@ public:
 
         return resDesc;
     }
-
-    /**
-     * Get the SRV for a resource.
-     *
-     * @param srvDesc The description of the SRV to return. The default is nullptr
-     * which returns the default SRV for the resource (the SRV that is created when no
-     * description is provided.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetShaderResourceView( const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr ) const = 0;
-
-    /**
-     * Get the UAV for a (sub)resource.
-     *
-     * @param uavDesc The description of the UAV to return.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const = 0;
 
     /**
      * Set the name of the resource. Useful for debugging purposes.

@@ -5,19 +5,25 @@
 #include <dx12lib/ByteAddressBuffer.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/ConstantBuffer.h>
+#include <dx12lib/DepthStencilView.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/DynamicDescriptorHeap.h>
 #include <dx12lib/GenerateMipsPSO.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/IndexBufferView.h>
 #include <dx12lib/PanoToCubemapPSO.h>
 #include <dx12lib/RenderTarget.h>
+#include <dx12lib/RenderTargetView.h>
 #include <dx12lib/Resource.h>
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/RootSignature.h>
+#include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/Texture.h>
+#include <dx12lib/UnorderedAccessView.h>
 #include <dx12lib/UploadBuffer.h>
 #include <dx12lib/VertexBuffer.h>
+#include <dx12lib/VertexBufferView.h>
 
 using namespace dx12lib;
 
@@ -506,6 +512,8 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
         D3D12_SRV_DIMENSION_TEXTURE2D;  // Only 2D textures are supported (this was checked in the calling function).
     srvDesc.Texture2D.MipLevels = resourceDesc.MipLevels;
 
+    ShaderResourceView srv( texture, &srvDesc );
+
     for ( uint32_t srcMip = 0; srcMip < resourceDesc.MipLevels - 1u; )
     {
         uint64_t srcWidth  = resourceDesc.Width >> srcMip;
@@ -546,8 +554,7 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
 
         SetCompute32BitConstants( GenerateMips::GenerateMipsCB, generateMipsCB );
 
-        SetShaderResourceView( GenerateMips::SrcMip, 0, texture, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip,
-                               1, &srvDesc );
+        SetShaderResourceView( GenerateMips::SrcMip, 0, srv, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1 );
 
         for ( uint32_t mip = 0; mip < mipCount; ++mip )
         {
@@ -556,8 +563,9 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
             uavDesc.ViewDimension                    = D3D12_UAV_DIMENSION_TEXTURE2D;
             uavDesc.Texture2D.MipSlice               = srcMip + mip + 1;
 
-            SetUnorderedAccessView( GenerateMips::OutMip, mip, texture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                                    srcMip + mip + 1, 1, &uavDesc );
+            UnorderedAccessView uav( texture, nullptr, &uavDesc );
+            SetUnorderedAccessView( GenerateMips::OutMip, mip, uav, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                                    srcMip + mip + 1, 1 );
         }
 
         // Pad any unused mip levels with a default UAV. Doing this keeps the DX12 runtime happy.
@@ -656,8 +664,10 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
         for ( uint32_t mip = 0; mip < numMips; ++mip )
         {
             uavDesc.Texture2DArray.MipSlice = mipSlice + mip;
-            SetUnorderedAccessView( PanoToCubemapRS::DstMips, mip, *stagingTexture,
-                                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0, 0, &uavDesc );
+
+            UnorderedAccessView uav( *stagingTexture, nullptr, &uavDesc);
+            SetUnorderedAccessView( PanoToCubemapRS::DstMips, mip, uav,
+                                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0, 0 );
         }
 
         if ( numMips < 5 )
@@ -787,15 +797,13 @@ void CommandList::SetCompute32BitConstants( uint32_t rootParameterIndex, uint32_
     m_d3d12CommandList->SetComputeRoot32BitConstants( rootParameterIndex, numConstants, constants, 0 );
 }
 
-void CommandList::SetVertexBuffer( uint32_t slot, const VertexBuffer& vertexBuffer )
+void CommandList::SetVertexBuffer( uint32_t slot, const VertexBufferView& vertexBufferView )
 {
-    TransitionBarrier( vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
+    TransitionBarrier( vertexBufferView.GetVertexBuffer(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
 
-    auto vertexBufferView = vertexBuffer.GetVertexBufferView();
+    m_d3d12CommandList->IASetVertexBuffers( slot, 1, &vertexBufferView.GetVertexBufferView() );
 
-    m_d3d12CommandList->IASetVertexBuffers( slot, 1, &vertexBufferView );
-
-    TrackResource( vertexBuffer );
+    TrackResource( vertexBufferView.GetVertexBuffer() );
 }
 
 void CommandList::SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, size_t vertexSize,
@@ -814,15 +822,13 @@ void CommandList::SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, siz
     m_d3d12CommandList->IASetVertexBuffers( slot, 1, &vertexBufferView );
 }
 
-void CommandList::SetIndexBuffer( const IndexBuffer& indexBuffer )
+void CommandList::SetIndexBuffer( const IndexBufferView& indexBufferView )
 {
-    TransitionBarrier( indexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER );
+    TransitionBarrier( indexBufferView.GetIndexBuffer(), D3D12_RESOURCE_STATE_INDEX_BUFFER );
 
-    auto indexBufferView = indexBuffer.GetIndexBufferView();
+    m_d3d12CommandList->IASetIndexBuffer( &indexBufferView.GetIndexBufferView() );
 
-    m_d3d12CommandList->IASetIndexBuffer( &indexBufferView );
-
-    TrackResource( indexBuffer );
+    TrackResource( indexBufferView.GetIndexBuffer() );
 }
 
 void CommandList::SetDynamicIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData )
@@ -914,45 +920,43 @@ void CommandList::SetComputeRootSignature( const RootSignature& rootSignature )
 }
 
 void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
-                                         const Resource& resource, D3D12_RESOURCE_STATES stateAfter,
-                                         UINT firstSubresource, UINT numSubresources,
-                                         const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
+                                         const ShaderResourceView& srv, D3D12_RESOURCE_STATES stateAfter,
+                                         UINT firstSubresource, UINT numSubresources )
 {
     if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
     {
         for ( uint32_t i = 0; i < numSubresources; ++i )
-        { TransitionBarrier( resource, stateAfter, firstSubresource + i ); }
+        { TransitionBarrier( srv.GetResource(), stateAfter, firstSubresource + i ); }
     }
     else
     {
-        TransitionBarrier( resource, stateAfter );
+        TransitionBarrier( srv.GetResource(), stateAfter );
     }
 
     m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
-        rootParameterIndex, descriptorOffset, 1, resource.GetShaderResourceView( srv ) );
+        rootParameterIndex, descriptorOffset, 1, srv.GetDescriptorHandle() );
 
-    TrackResource( resource );
+    TrackResource( srv.GetResource() );
 }
 
 void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
-                                          const Resource& resource, D3D12_RESOURCE_STATES stateAfter,
-                                          UINT firstSubresource, UINT numSubresources,
-                                          const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
+                                          const UnorderedAccessView& uav, D3D12_RESOURCE_STATES stateAfter,
+                                          UINT firstSubresource, UINT numSubresources )
 {
     if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
     {
         for ( uint32_t i = 0; i < numSubresources; ++i )
-        { TransitionBarrier( resource, stateAfter, firstSubresource + i ); }
+        { TransitionBarrier( uav.GetResource(), stateAfter, firstSubresource + i ); }
     }
     else
     {
-        TransitionBarrier( resource, stateAfter );
+        TransitionBarrier( uav.GetResource(), stateAfter );
     }
 
     m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
-        rootParameterIndex, descrptorOffset, 1, resource.GetUnorderedAccessView( uav ) );
+        rootParameterIndex, descrptorOffset, 1, uav.GetDescriptorHandle() );
 
-    TrackResource( resource );
+    TrackResource( uav.GetResource() );
 }
 
 void CommandList::SetRenderTarget( const RenderTarget& renderTarget )

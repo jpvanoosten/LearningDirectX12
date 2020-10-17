@@ -1,5 +1,7 @@
+#pragma once
+
 /*
- *  Copyright(c) 2017 Jeremiah van Oosten
+ *  Copyright(c) 2020 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -21,24 +23,39 @@
  */
 
 /**
- *  @file Helpers.h
- *  @date August 28, 2017
+ *  @file DepthStencilView.h
+ *  @date October 17, 2020
  *  @author Jeremiah van Oosten
  *
- *  @brief Helper functions.
+ *  @brief Wrapper for a Depth Stencil View (DSV)
  */
 
-#pragma once
+#include <dx12lib/DescriptorAllocation.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h> // For HRESULT
+#include <d3d12.h>  // For D3D12_DEPTH_STENCIL_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
 
-// From DXSampleHelper.h 
-// Source: https://github.com/Microsoft/DirectX-Graphics-Samples
-inline void ThrowIfFailed(HRESULT hr)
+namespace dx12lib
 {
-    if (FAILED(hr))
+
+class Texture;
+
+class DepthStencilView
+{
+public:
+    DepthStencilView( const Texture& texture, const D3D12_DEPTH_STENCIL_VIEW_DESC* dsv = nullptr );
+
+    const Texture& GetTexture() const
     {
-        throw std::exception();
+        return m_Texture;
     }
-}
+
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle() const
+    {
+        return m_Descriptor.GetDescriptorHandle();
+    }
+
+private:
+    const Texture&       m_Texture;
+    DescriptorAllocation m_Descriptor;
+};
+}  // namespace dx12lib

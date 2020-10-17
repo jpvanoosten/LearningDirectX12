@@ -49,40 +49,12 @@ public:
         return m_BufferSize;
     }
 
-    /**
-     * Get the SRV for a resource.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetShaderResourceView( const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc = nullptr ) const override
-    {
-        return m_SRV.GetDescriptorHandle();
-    }
-
-    /**
-     * Get the UAV for a (sub)resource.
-     */
-    virtual D3D12_CPU_DESCRIPTOR_HANDLE
-        GetUnorderedAccessView( const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc = nullptr ) const override
-    {
-        // Buffers only have a single subresource.
-        return m_UAV.GetDescriptorHandle();
-    }
-
 protected:
     ByteAddressBuffer( Device& device, const D3D12_RESOURCE_DESC& resDesc );
     ByteAddressBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
     virtual ~ByteAddressBuffer() = default;
 
-    /**
-     * Create the views for the buffer resource.
-     * Used by the CommandList when setting the buffer contents.
-     */
-    void CreateViews();
-
 private:
     size_t m_BufferSize;
-
-    dx12lib::DescriptorAllocation m_SRV;
-    dx12lib::DescriptorAllocation m_UAV;
 };
 }  // namespace dx12lib
