@@ -12,6 +12,7 @@
 #include <dx12lib/IndexBuffer.h>
 #include <dx12lib/IndexBufferView.h>
 #include <dx12lib/PanoToCubemapPSO.h>
+#include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/RenderTargetView.h>
 #include <dx12lib/Resource.h>
@@ -495,7 +496,7 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
         m_GenerateMipsPSO = std::make_unique<GenerateMipsPSO>( m_Device );
     }
 
-    m_d3d12CommandList->SetPipelineState( m_GenerateMipsPSO->GetPipelineState().Get() );
+    SetPipelineState( m_GenerateMipsPSO->GetPipelineState() );
     SetComputeRootSignature( m_GenerateMipsPSO->GetRootSignature() );
 
     GenerateMipsCB generateMipsCB;
@@ -635,8 +636,8 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
 
     TransitionBarrier( *stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS );
 
-    m_d3d12CommandList->SetPipelineState( m_PanoToCubemapPSO->GetPipelineState().Get() );
-    SetComputeRootSignature( *( m_PanoToCubemapPSO->GetRootSignature() ) );
+    SetPipelineState( m_PanoToCubemapPSO->GetPipelineState() );
+    SetComputeRootSignature( m_PanoToCubemapPSO->GetRootSignature() );
 
     PanoToCubemapCB panoToCubemapCB;
 
@@ -880,11 +881,13 @@ void CommandList::SetScissorRects( const std::vector<D3D12_RECT>& scissorRects )
     m_d3d12CommandList->RSSetScissorRects( static_cast<UINT>( scissorRects.size() ), scissorRects.data() );
 }
 
-void CommandList::SetPipelineState( Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState )
+void CommandList::SetPipelineState( const PipelineStateObject& pipelineState )
 {
-    m_d3d12CommandList->SetPipelineState( pipelineState.Get() );
+    auto d3d12PipelineStateObject = pipelineState.GetD3D12PipelineState();
 
-    TrackResource( pipelineState );
+    m_d3d12CommandList->SetPipelineState( d3d12PipelineStateObject.Get() );
+
+    TrackResource( d3d12PipelineStateObject );
 }
 
 void CommandList::SetGraphicsRootSignature( const RootSignature& rootSignature )

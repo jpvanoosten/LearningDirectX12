@@ -1,7 +1,7 @@
 #pragma once
 
 /*
- *  Copyright(c) 2018 Jeremiah van Oosten
+ *  Copyright(c) 2020 Jeremiah van Oosten
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files(the "Software"), to deal
@@ -23,54 +23,35 @@
  */
 
 /**
- *  @file GUI.h
- *  @date October 24, 2018
+ *  @file PipelineStateObject.h
+ *  @date October 18, 2020
  *  @author Jeremiah van Oosten
  *
- *  @brief Wrapper for ImGui. This class is used internally by the Window class.
+ *  @brief Wrapper for a ID3D12PipelineState object.
  */
 
-#include "imgui.h"
-
-#include <d3dx12.h>
-#include <wrl.h>
-
-#include <memory>  // For std::weak_ptr and std::shared_ptr
+#include <d3d12.h>       // For D3D12_PIPELINE_STATE_STREAM_DESC, and ID3D12PipelineState
+#include <wrl/client.h>  // For Microsoft::WRL::ComPtr
 
 namespace dx12lib
 {
 
-class CommandList;
 class Device;
-class PipelineStateObject;
-class RenderTarget;
-class RootSignature;
-class Texture;
 
-class GUI
+class PipelineStateObject
 {
 public:
-    GUI( Device& device, HWND hWnd );
-    virtual ~GUI();
-
-    // Begin a new frame.
-    virtual void NewFrame();
-    virtual void Render( CommandList& commandList, const RenderTarget& renderTarget );
-
-    // Destroy the ImGui context.
-    virtual void Destroy();
-
-    // Set the scaling for this ImGuiContext.
-    void SetScaling( float scale );
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetD3D12PipelineState() const
+    {
+        return m_d3d12PipelineState;
+    }
 
 protected:
-private:
-    Device& m_Device;
+    PipelineStateObject( Device& device, const D3D12_PIPELINE_STATE_STREAM_DESC& desc );
+    virtual ~PipelineStateObject() = default;
 
-    ImGuiContext*                        m_pImGuiCtx;
-    std::shared_ptr<Texture>             m_FontTexture;
-    std::shared_ptr<RootSignature>       m_RootSignature;
-    std::shared_ptr<PipelineStateObject> m_PipelineState;
-    HWND                                 m_hWnd;
+private:
+    Device&                                     m_Device;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_d3d12PipelineState;
 };
 }  // namespace dx12lib

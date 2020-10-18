@@ -37,4 +37,5 @@ target_include_directories( 02-Cube
 target_link_libraries( 02-Cube
     GameFramework
     DX12Lib
+    d3dcompiler.lib
 )

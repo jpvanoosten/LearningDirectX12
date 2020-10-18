@@ -2,7 +2,6 @@
 
 #include <dx12lib/CommandQueue.h>
 
-#include <dx12lib/Application.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/ResourceStateTracker.h>

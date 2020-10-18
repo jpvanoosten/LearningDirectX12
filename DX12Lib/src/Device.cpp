@@ -7,6 +7,7 @@
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/SwapChain.h>
@@ -17,12 +18,20 @@ using namespace dx12lib;
 
 static Device* g_pDevice = nullptr;
 
+class MakePipelineStateObject : public PipelineStateObject
+{
+public:
+    MakePipelineStateObject(Device& device, const D3D12_PIPELINE_STATE_STREAM_DESC& desc)
+        : PipelineStateObject(device, desc)
+    {}
+
+    virtual ~MakePipelineStateObject() {}
+};
 class MakeRootSignature : public RootSignature
 {
 public:
-    MakeRootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                       D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
-    : RootSignature( device, rootSignatureDesc, rootSignatureVersion )
+    MakeRootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc )
+    : RootSignature( device, rootSignatureDesc )
     {}
 
     virtual ~MakeRootSignature() {}
@@ -37,8 +46,8 @@ public:
     : Texture( device, resourceDesc, texturUsage, clearValue )
     {}
 
-    MakeTexture( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-                 TextureUsage textureUsage, const D3D12_CLEAR_VALUE* clearValue )
+    MakeTexture( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, TextureUsage textureUsage,
+                 const D3D12_CLEAR_VALUE* clearValue )
     : Texture( device, resource, textureUsage, clearValue )
     {}
 
@@ -53,8 +62,7 @@ public:
     : StructuredBuffer( device, numElements, elementSize )
     {}
 
-    MakeStructuredBuffer( Device& device, ComPtr<ID3D12Resource> resource, size_t numElements,
-                          size_t elementSize )
+    MakeStructuredBuffer( Device& device, ComPtr<ID3D12Resource> resource, size_t numElements, size_t elementSize )
     : StructuredBuffer( device, resource, numElements, elementSize )
     {}
 
@@ -69,8 +77,7 @@ public:
     : VertexBuffer( device, numVertices, vertexStride )
     {}
 
-    MakeVertexBuffer( Device& device, ComPtr<ID3D12Resource> resource, size_t numVertices,
-                      size_t vertexStride )
+    MakeVertexBuffer( Device& device, ComPtr<ID3D12Resource> resource, size_t numVertices, size_t vertexStride )
     : VertexBuffer( device, resource, numVertices, vertexStride )
     {}
 
@@ -85,8 +92,8 @@ public:
     : IndexBuffer( device, numIndicies, indexFormat )
     {}
 
-    MakeIndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-                     size_t numIndicies, DXGI_FORMAT indexFormat )
+    MakeIndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
+                     DXGI_FORMAT indexFormat )
     : IndexBuffer( device, resource, numIndicies, indexFormat )
     {}
 
@@ -112,8 +119,7 @@ public:
 class MakeDescriptorAllocator : public DescriptorAllocator
 {
 public:
-    MakeDescriptorAllocator( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type,
-                             uint32_t numDescriptorsPerHeap = 256 )
+    MakeDescriptorAllocator( Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptorsPerHeap = 256 )
     : DescriptorAllocator( device, type, numDescriptorsPerHeap )
     {}
 
@@ -234,6 +240,18 @@ Device::Device( std::shared_ptr<Adapter> adapter )
         m_DescriptorAllocators[i] =
             std::make_unique<MakeDescriptorAllocator>( *this, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>( i ) );
     }
+
+    // Check features.
+    {
+        D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData;
+        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+        if ( FAILED( m_d3d12Device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData,
+                                                         sizeof( D3D12_FEATURE_DATA_ROOT_SIGNATURE ) ) ) )
+        {
+            featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+        }
+        m_HighestRootSignatureVersion = featureData.HighestVersion;
+    }
 }
 
 Device::~Device() {}
@@ -336,8 +354,7 @@ std::shared_ptr<StructuredBuffer> Device::CreateStructuredBuffer( ComPtr<ID3D12R
 
 std::shared_ptr<IndexBuffer> Device::CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat )
 {
-    std::shared_ptr<IndexBuffer> indexBuffer =
-        std::make_shared<MakeIndexBuffer>( *this, numIndicies, indexFormat );
+    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<MakeIndexBuffer>( *this, numIndicies, indexFormat );
 
     return indexBuffer;
 }
@@ -354,8 +371,7 @@ std::shared_ptr<dx12lib::IndexBuffer>
 
 std::shared_ptr<VertexBuffer> Device::CreateVertexBuffer( size_t numVertices, size_t vertexStride )
 {
-    std::shared_ptr<VertexBuffer> vertexBuffer =
-        std::make_shared<MakeVertexBuffer>( *this, numVertices, vertexStride );
+    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<MakeVertexBuffer>( *this, numVertices, vertexStride );
 
     return vertexBuffer;
 }
@@ -386,13 +402,19 @@ std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Res
     return texture;
 }
 
-
 std::shared_ptr<dx12lib::RootSignature>
-    dx12lib::Device::CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                                          D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion )
+    dx12lib::Device::CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc )
 {
-    std::shared_ptr<RootSignature> rootSignature =
-        std::make_shared<MakeRootSignature>( *this, rootSignatureDesc, rootSignatureVersion );
+    std::shared_ptr<RootSignature> rootSignature = std::make_shared<MakeRootSignature>( *this, rootSignatureDesc );
 
     return rootSignature;
+}
+
+std::shared_ptr<PipelineStateObject>
+    Device::DoCreatePipelineStateObject( const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc )
+{
+    std::shared_ptr<PipelineStateObject> pipelineStateObject =
+        std::make_shared<MakePipelineStateObject>( *this, pipelineStateStreamDesc );
+
+    return pipelineStateObject;
 }

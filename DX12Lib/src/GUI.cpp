@@ -2,9 +2,9 @@
 
 #include <dx12lib/GUI.h>
 
-#include <dx12lib/Device.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/ShaderResourceView.h>
@@ -34,7 +34,7 @@ void GetSurfaceInfo( _In_ size_t width, _In_ size_t height, _In_ DXGI_FORMAT fmt
 GUI::GUI( Device& device, HWND hWnd )
 : m_Device( device )
 , m_pImGuiCtx( nullptr )
-, m_hWnd(hWnd)
+, m_hWnd( hWnd )
 {
     m_pImGuiCtx = ImGui::CreateContext();
     ImGui::SetCurrentContext( m_pImGuiCtx );
@@ -55,7 +55,7 @@ GUI::GUI( Device& device, HWND hWnd )
     io.Fonts->GetTexDataAsRGBA32( &pixelData, &width, &height );
 
     auto& commandQueue = m_Device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-    auto commandList  = commandQueue.GetCommandList();
+    auto  commandList  = commandQueue.GetCommandList();
 
     auto fontTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_R8G8B8A8_UNORM, width, height );
 
@@ -78,13 +78,7 @@ GUI::GUI( Device& device, HWND hWnd )
     auto d3d12Device = m_Device.GetD3D12Device();
 
     // Create the root signature for the ImGUI shaders.
-    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
-    featureData.HighestVersion                    = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if ( FAILED(
-             d3d12Device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
-    {
-        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
-    }
+
     // Allow input layout and deny unnecessary access to certain pipeline stages.
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
                                                     D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -107,7 +101,7 @@ GUI::GUI( Device& device, HWND hWnd )
     rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
                                        rootSignatureFlags );
 
-    m_RootSignature = m_Device.CreateRootSignature( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature = m_Device.CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
     const D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, pos ),
@@ -175,8 +169,7 @@ GUI::GUI( Device& device, HWND hWnd )
     pipelineStateStream.RasterizerState       = CD3DX12_RASTERIZER_DESC( rasterizerDesc );
     pipelineStateStream.DepthStencilState     = CD3DX12_DEPTH_STENCIL_DESC( depthStencilDesc );
 
-    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = { sizeof( PipelineStateStream ), &pipelineStateStream };
-    ThrowIfFailed( d3d12Device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+    m_PipelineState = device.CreatePipelineStateObject( pipelineStateStream );
 }
 
 GUI::~GUI()
@@ -206,7 +199,7 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
     ImVec2 displayPos = drawData->DisplayPos;
 
     commandList.SetGraphicsRootSignature( *m_RootSignature );
-    commandList.SetPipelineState( m_PipelineState );
+    commandList.SetPipelineState( *m_PipelineState );
     commandList.SetRenderTarget( renderTarget );
 
     // Set root arguments.
@@ -225,7 +218,7 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
 
     commandList.SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
     commandList.SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontTexture,
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+                                       D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     D3D12_VIEWPORT viewport = {};
     viewport.Width          = drawData->DisplaySize.x;
@@ -250,7 +243,7 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
         const ImDrawList* drawList = drawData->CmdLists[i];
 
         commandList.SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ),
-                                             drawList->VtxBuffer.Data );
+                                            drawList->VtxBuffer.Data );
         commandList.SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
 
         int indexOffset = 0;

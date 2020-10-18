@@ -59,7 +59,7 @@ SwapChain::SwapChain( Device& device, HWND hWnd )
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width                 = m_Width;
     swapChainDesc.Height                = m_Height;
-    swapChainDesc.Format                = DXGI_FORMAT_R8G8B8A8_UNORM;  // TODO: Check for HDR support.
+    swapChainDesc.Format                = DXGI_FORMAT_R10G10B10A2_UNORM;  // TODO: Check for HDR support.
     swapChainDesc.Stereo                = FALSE;
     swapChainDesc.SampleDesc            = { 1, 0 };
     swapChainDesc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;

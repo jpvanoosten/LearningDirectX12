@@ -53,6 +53,7 @@ class GenerateMipsPSO;
 class IndexBuffer;
 class IndexBufferView;
 class PanoToCubemapPSO;
+class PipelineStateObject;
 class RenderTarget;
 class Resource;
 class ResourceStateTracker;
@@ -330,7 +331,7 @@ public:
     /**
      * Set the pipeline state object on the command list.
      */
-    void SetPipelineState( Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState );
+    void SetPipelineState( const PipelineStateObject& pipelineState );
 
     /**
      * Set the current root signature on the command list.

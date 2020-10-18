@@ -23,6 +23,7 @@ set( HEADER_FILES
     inc/dx12lib/IndexBufferView.h
     inc/dx12lib/Mesh.h
     inc/dx12lib/PanoToCubemapPSO.h
+    inc/dx12lib/PipelineStateObject.h
     inc/dx12lib/RenderTarget.h
     inc/dx12lib/RenderTargetView.h
     inc/dx12lib/Resource.h
@@ -65,6 +66,7 @@ set( SOURCE_FILES
     src/IndexBufferView.cpp
     src/Mesh.cpp
     src/PanoToCubemapPSO.cpp
+    src/PipelineStateObject.cpp
     src/RenderTarget.cpp
     src/RenderTargetView.cpp
     src/Resource.cpp

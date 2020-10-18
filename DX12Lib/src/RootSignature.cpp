@@ -6,15 +6,14 @@
 
 using namespace dx12lib;
 
-RootSignature::RootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                              D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion )
+RootSignature::RootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc )
 : m_Device( device )
 , m_RootSignatureDesc {}
 , m_NumDescriptorsPerTable { 0 }
 , m_SamplerTableBitMask( 0 )
 , m_DescriptorTableBitMask( 0 )
 {
-    SetRootSignatureDesc( rootSignatureDesc, rootSignatureVersion );
+    SetRootSignatureDesc( rootSignatureDesc );
 }
 
 RootSignature::~RootSignature()
@@ -47,8 +46,7 @@ void RootSignature::Destroy()
     memset( m_NumDescriptorsPerTable, 0, sizeof( m_NumDescriptorsPerTable ) );
 }
 
-void RootSignature::SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                                          D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion )
+void RootSignature::SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc )
 {
     // Make sure any previously allocated root signature description is cleaned
     // up first.
@@ -118,10 +116,12 @@ void RootSignature::SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& root
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC versionRootSignatureDesc;
     versionRootSignatureDesc.Init_1_1( numParameters, pParameters, numStaticSamplers, pStaticSamplers, flags );
 
+    D3D_ROOT_SIGNATURE_VERSION highestVersion = m_Device.GetHighestRootSignatureVersion();
+
     // Serialize the root signature.
     Microsoft::WRL::ComPtr<ID3DBlob> rootSignatureBlob;
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
-    ThrowIfFailed( D3DX12SerializeVersionedRootSignature( &versionRootSignatureDesc, rootSignatureVersion,
+    ThrowIfFailed( D3DX12SerializeVersionedRootSignature( &versionRootSignatureDesc, highestVersion,
                                                           &rootSignatureBlob, &errorBlob ) );
 
     auto d3d12Device = m_Device.GetD3D12Device();

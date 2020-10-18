@@ -63,15 +63,13 @@ public:
 protected:
     friend class std::default_delete<RootSignature>;
 
-    RootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                   D3D_ROOT_SIGNATURE_VERSION rootSignatureVersion );
+    RootSignature( Device& device, const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc );
 
     virtual ~RootSignature();
 
 private:
     void Destroy();
-    void SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                               D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
+    void SetRootSignatureDesc( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc );
 
     Device&                                     m_Device;
     D3D12_ROOT_SIGNATURE_DESC1                  m_RootSignatureDesc;

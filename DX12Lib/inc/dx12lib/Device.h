@@ -35,7 +35,7 @@
 #include "DescriptorAllocation.h"
 #include "TextureUsage.h"
 
-#include <d3d12.h>
+#include "d3dx12.h"
 #include <dxgi1_6.h>
 #include <wrl/client.h>
 
@@ -50,6 +50,7 @@ class CommandQueue;
 class CommandList;
 class DescriptorAllocator;
 class IndexBuffer;
+class PipelineStateObject;
 class RootSignature;
 class StructuredBuffer;
 class SwapChain;
@@ -138,8 +139,19 @@ public:
     std::shared_ptr<VertexBuffer> CreateVertexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
                                                       size_t numVertices, size_t vertexStride );
 
-    std::shared_ptr<RootSignature> CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc,
-                                                        D3D_ROOT_SIGNATURE_VERSION        rootSignatureVersion );
+    std::shared_ptr<RootSignature> CreateRootSignature( const D3D12_ROOT_SIGNATURE_DESC1& rootSignatureDesc );
+
+    template<class PipelineStateStream>
+    std::shared_ptr<PipelineStateObject> CreatePipelineStateObject( PipelineStateStream& pipelineStateStream )
+    {
+        D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
+            sizeof( PipelineStateStream ),
+            &pipelineStateStream
+        };
+
+        return DoCreatePipelineStateObject(pipelineStateStreamDesc);
+    }
+
     /**
      * Flush all command queues.
      */
@@ -175,9 +187,18 @@ public:
         return m_d3d12Device;
     }
 
+    D3D_ROOT_SIGNATURE_VERSION GetHighestRootSignatureVersion() const
+    {
+        return m_HighestRootSignatureVersion;
+    }
+
 protected:
     explicit Device( std::shared_ptr<Adapter> adapter );
     virtual ~Device();
+
+    std::shared_ptr<PipelineStateObject>
+        DoCreatePipelineStateObject( const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc );
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Device8> m_d3d12Device;
 
@@ -191,5 +212,7 @@ private:
 
     // Descriptor allocators.
     std::unique_ptr<DescriptorAllocator> m_DescriptorAllocators[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+    D3D_ROOT_SIGNATURE_VERSION m_HighestRootSignatureVersion;
 };
 }  // namespace dx12lib
