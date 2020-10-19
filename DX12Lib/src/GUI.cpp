@@ -61,6 +61,7 @@ GUI::GUI( Device& device, HWND hWnd )
 
     m_FontTexture = m_Device.CreateTexture( fontTextureDesc );
     m_FontTexture->SetName( L"ImGui Font Texture" );
+    m_FontSRV = m_Device.CreateShaderResourceView( m_FontTexture );
 
     size_t rowPitch, slicePitch;
     GetSurfaceInfo( width, height, DXGI_FORMAT_R8G8B8A8_UNORM, &slicePitch, &rowPitch, nullptr );
@@ -217,7 +218,7 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
     };
 
     commandList.SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
-    commandList.SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontTexture,
+    commandList.SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontSRV,
                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     D3D12_VIEWPORT viewport = {};

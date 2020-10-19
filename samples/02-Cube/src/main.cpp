@@ -36,8 +36,8 @@ void OnWindowClose( WindowCloseEventArgs& e );
 std::shared_ptr<Window>              pGameWindow          = nullptr;
 std::shared_ptr<SwapChain>           pSwapChain           = nullptr;
 std::shared_ptr<Texture>             pDepthTexture        = nullptr;
-std::shared_ptr<VertexBuffer>        pVertexBuffer        = nullptr;
-std::shared_ptr<IndexBuffer>         pIndexBuffer         = nullptr;
+std::shared_ptr<VertexBufferView>    pVertexBufferView    = nullptr;
+std::shared_ptr<IndexBufferView>     pIndexBufferView     = nullptr;
 std::shared_ptr<RootSignature>       pRootSignature       = nullptr;
 std::shared_ptr<PipelineStateObject> pPipelineStateObject = nullptr;
 
@@ -113,9 +113,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         auto  commandList  = commandQueue.GetCommandList();
 
         // Load vertex data:
-        pVertexBuffer = commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
+        auto vertexBuffer = commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
+        pVertexBufferView = device.CreateVertexBufferView( vertexBuffer );
+
         // Load index data:
-        pIndexBuffer = commandList->CopyIndexBuffer( _countof( g_Indicies ), DXGI_FORMAT_R16_UINT, g_Indicies );
+        auto indexBuffer = commandList->CopyIndexBuffer( _countof( g_Indicies ), DXGI_FORMAT_R16_UINT, g_Indicies );
+        pIndexBufferView = device.CreateIndexBufferView( indexBuffer );
 
         // Execute the command list to upload the resources to the GPU.
         commandQueue.ExecuteCommandList( commandList );
@@ -199,8 +202,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         retCode = GameFramework::Get().Run();
 
         // Release globals.
-        pIndexBuffer.reset();
-        pVertexBuffer.reset();
+        pIndexBufferView.reset();
+        pVertexBufferView.reset();
         pPipelineStateObject.reset();
         pRootSignature.reset();
         pDepthTexture.reset();
@@ -285,10 +288,10 @@ void OnUpdate( UpdateEventArgs& e )
     commandList->SetScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) );
 
     // Render the cube.
-    commandList->SetVertexBuffer( 0, *pVertexBuffer );
-    commandList->SetIndexBuffer( *pIndexBuffer );
+    commandList->SetVertexBuffer( 0, pVertexBufferView );
+    commandList->SetIndexBuffer( *pIndexBufferView );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-    commandList->DrawIndexed( pIndexBuffer->GetNumIndicies() );
+    commandList->DrawIndexed( pIndexBufferView->GetIndexBuffer()->GetNumIndicies() );
 
     commandQueue.ExecuteCommandList( commandList );
 

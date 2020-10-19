@@ -31,29 +31,34 @@
  */
 
 #include <d3d12.h>  // For D3D12_VERTEX_BUFFER_VIEW
+#include <memory>   // For std::shared_ptr
 
 namespace dx12lib
 {
 
+class Device;
 class VertexBuffer;
 
 class VertexBufferView
 {
 public:
-    VertexBufferView( const VertexBuffer& vertexBuffer );
-
-    const VertexBuffer& GetVertexBuffer() const
+    std::shared_ptr<VertexBuffer> GetVertexBuffer() const
     {
         return m_VertexBuffer;
     }
 
-    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const 
+    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const
     {
         return m_VertexBufferView;
     }
 
+protected:
+    VertexBufferView( Device& device, std::shared_ptr<VertexBuffer> vertexBuffer );
+    virtual ~VertexBufferView() = default;
+
 private:
-    const VertexBuffer&      m_VertexBuffer;
-    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+    Device&                       m_Device;
+    std::shared_ptr<VertexBuffer> m_VertexBuffer;
+    D3D12_VERTEX_BUFFER_VIEW      m_VertexBufferView;
 };
 }  // namespace dx12lib

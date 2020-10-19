@@ -79,6 +79,13 @@ public:
     }
 
     /**
+     * Get the device that was used to create this command list.
+     */
+    Device& GetDevice() const {
+        return m_Device;
+    }
+
+    /**
      * Get direct access to the ID3D12GraphicsCommandList2 interface.
      */
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetD3D12CommandList() const
@@ -226,7 +233,7 @@ public:
     /**
      * Generate a cubemap texture from a panoramic (equirectangular) texture.
      */
-    void PanoToCubemap( const Texture& cubemap, const Texture& pano );
+    void PanoToCubemap( std::shared_ptr<Texture>& cubemapTexture, std::shared_ptr<Texture>& panoTexture );
 
     /**
      * Copy subresource data to a texture.
@@ -273,7 +280,8 @@ public:
      * @param slot The slot to bind the vertex buffer to.
      * @vertexBuffer The vertex buffer to bind (can be null to remove the vertex buffer from the slot).
      */
-    void SetVertexBuffer( uint32_t slot, const VertexBufferView& vertexBuffer );
+    void SetVertexBuffers( uint32_t startSlot, const std::vector<std::shared_ptr<VertexBufferView>>& vertexBufferViews );
+    void SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBufferView> vertexBufferView );
 
     /**
      * Set dynamic vertex buffer data to the rendering pipeline.
@@ -422,7 +430,7 @@ private:
     void TrackResource( const Resource& res );
 
     // Generate mips for UAV compatible textures.
-    void GenerateMips_UAV( const Texture& texture, bool isSRGB );
+    void GenerateMips_UAV( std::shared_ptr<Texture>& texture, bool isSRGB );
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
     Microsoft::WRL::ComPtr<ID3D12Resource> CopyBuffer( size_t bufferSize, const void* bufferData,

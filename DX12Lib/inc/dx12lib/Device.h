@@ -48,22 +48,28 @@ class Adapter;
 class ByteAddressBuffer;
 class CommandQueue;
 class CommandList;
+class ConstantBuffer;
+class ConstantBufferView;
 class DescriptorAllocator;
 class IndexBuffer;
+class IndexBufferView;
 class PipelineStateObject;
+class Resource;
 class RootSignature;
+class ShaderResourceView;
 class StructuredBuffer;
 class SwapChain;
 class Texture;
+class UnorderedAccessView;
 class VertexBuffer;
+class VertexBufferView;
 
 class Device
 {
 public:
     /**
      * Create a new DX12 device using the provided adapter.
-     * If no adapter is specified, then the highest performance adapter will be
-     * chosen.
+     * If no adapter is specified, then the highest performance adapter will be  chosen.
      */
     static Device& Create( std::shared_ptr<Adapter> adapter = nullptr );
 
@@ -144,13 +150,28 @@ public:
     template<class PipelineStateStream>
     std::shared_ptr<PipelineStateObject> CreatePipelineStateObject( PipelineStateStream& pipelineStateStream )
     {
-        D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
-            sizeof( PipelineStateStream ),
-            &pipelineStateStream
-        };
+        D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = { sizeof( PipelineStateStream ),
+                                                                     &pipelineStateStream };
 
-        return DoCreatePipelineStateObject(pipelineStateStreamDesc);
+        return DoCreatePipelineStateObject( pipelineStateStreamDesc );
     }
+
+    std::shared_ptr<VertexBufferView> CreateVertexBufferView( std::shared_ptr<VertexBuffer> vertexBuffer );
+
+    std::shared_ptr<IndexBufferView> CreateIndexBufferView( std::shared_ptr<IndexBuffer> indexBuffer );
+
+    std::shared_ptr<ConstantBufferView>
+        CreateConstantBufferView( std::shared_ptr<ConstantBuffer>        constantBuffer,
+                                  const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv = nullptr );
+
+    std::shared_ptr<ShaderResourceView>
+        CreateShaderResourceView( std::shared_ptr<Resource>              resource,
+                                  const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr );
+
+    std::shared_ptr<UnorderedAccessView>
+        CreateUnorderedAccessView( std::shared_ptr<Resource>               resource,
+                                   std::shared_ptr<Resource>               counterResource = nullptr,
+                                   const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav             = nullptr );
 
     /**
      * Flush all command queues.

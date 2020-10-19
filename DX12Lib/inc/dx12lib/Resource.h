@@ -70,8 +70,6 @@ public:
 
     /**
      * Set the name of the resource. Useful for debugging purposes.
-     * The name of the resource will persist if the underlying D3D12 resource is
-     * replaced with SetD3D12Resource.
      */
     void                SetName( const std::wstring& name );
     const std::wstring& GetName() const

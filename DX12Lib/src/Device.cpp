@@ -4,25 +4,83 @@
 #include <dx12lib/ByteAddressBuffer.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
+#include <dx12lib/ConstantBufferView.h>
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/IndexBufferView.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
+#include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/Texture.h>
+#include <dx12lib/UnorderedAccessView.h>
 #include <dx12lib/VertexBuffer.h>
+#include <dx12lib/VertexBufferView.h>
 
 using namespace dx12lib;
 
 static Device* g_pDevice = nullptr;
 
+class MakeUnorderedAccessView : public UnorderedAccessView
+{
+public:
+    MakeUnorderedAccessView( Device& device, std::shared_ptr<Resource> resource,
+                             std::shared_ptr<Resource> counterResource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
+    : UnorderedAccessView(device, resource, counterResource, uav )
+    {}
+
+    virtual ~MakeUnorderedAccessView() {}
+};
+
+class MakeShaderResourceView : public ShaderResourceView
+{
+public:
+    MakeShaderResourceView( Device& device, std::shared_ptr<Resource> resource,
+                            const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
+    : ShaderResourceView( device, resource, srv )
+    {}
+
+    virtual ~MakeShaderResourceView() {}
+};
+
+class MakeConstantBufferView : public ConstantBufferView
+{
+public:
+    MakeConstantBufferView( Device& device, std::shared_ptr<ConstantBuffer> constantBuffer,
+                            const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv )
+    : ConstantBufferView( device, constantBuffer, cbv )
+    {}
+
+    virtual ~MakeConstantBufferView() {}
+};
+
+class MakeIndexBufferView : public IndexBufferView
+{
+public:
+    MakeIndexBufferView( Device& device, std::shared_ptr<IndexBuffer> indexBuffer )
+    : IndexBufferView( device, indexBuffer )
+    {}
+
+    virtual ~MakeIndexBufferView() {}
+};
+
+class MakeVertexBufferView : public VertexBufferView
+{
+public:
+    MakeVertexBufferView( Device& device, std::shared_ptr<VertexBuffer> vertexBuffer )
+    : VertexBufferView( device, vertexBuffer )
+    {}
+
+    virtual ~MakeVertexBufferView() {}
+};
+
 class MakePipelineStateObject : public PipelineStateObject
 {
 public:
-    MakePipelineStateObject(Device& device, const D3D12_PIPELINE_STATE_STREAM_DESC& desc)
-        : PipelineStateObject(device, desc)
+    MakePipelineStateObject( Device& device, const D3D12_PIPELINE_STATE_STREAM_DESC& desc )
+    : PipelineStateObject( device, desc )
     {}
 
     virtual ~MakePipelineStateObject() {}
@@ -417,4 +475,46 @@ std::shared_ptr<PipelineStateObject>
         std::make_shared<MakePipelineStateObject>( *this, pipelineStateStreamDesc );
 
     return pipelineStateObject;
+}
+
+std::shared_ptr<VertexBufferView> Device::CreateVertexBufferView( std::shared_ptr<VertexBuffer> vertexBuffer )
+{
+    std::shared_ptr<VertexBufferView> vertexBufferView = std::make_shared<MakeVertexBufferView>( *this, vertexBuffer );
+
+    return vertexBufferView;
+}
+
+std::shared_ptr<IndexBufferView> Device::CreateIndexBufferView( std::shared_ptr<IndexBuffer> indexBuffer )
+{
+    std::shared_ptr<IndexBufferView> indexBufferView = std::make_shared<MakeIndexBufferView>( *this, indexBuffer );
+
+    return indexBufferView;
+}
+
+std::shared_ptr<ConstantBufferView> Device::CreateConstantBufferView( std::shared_ptr<ConstantBuffer> constantBuffer,
+                                                                      const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv )
+{
+    std::shared_ptr<ConstantBufferView> constantBufferView =
+        std::make_shared<MakeConstantBufferView>( *this, constantBuffer, cbv );
+
+    return constantBufferView;
+}
+
+std::shared_ptr<ShaderResourceView> Device::CreateShaderResourceView( std::shared_ptr<Resource>              resource,
+                                                                      const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
+{
+    std::shared_ptr<ShaderResourceView> shaderResourceView =
+        std::make_shared<MakeShaderResourceView>( *this, resource, srv );
+
+    return shaderResourceView;
+}
+
+std::shared_ptr<UnorderedAccessView> Device::CreateUnorderedAccessView( std::shared_ptr<Resource> resource,
+                                                                        std::shared_ptr<Resource> counterResource,
+                                                                        const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
+{
+    std::shared_ptr<UnorderedAccessView> unorderedAccessView =
+        std::make_shared<MakeUnorderedAccessView>( *this, resource, counterResource, uav );
+
+    return unorderedAccessView;
 }

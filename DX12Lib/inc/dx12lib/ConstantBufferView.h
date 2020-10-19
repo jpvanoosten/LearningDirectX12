@@ -33,19 +33,18 @@
 #include <dx12lib/DescriptorAllocation.h>
 
 #include <d3d12.h>  // For D3D12_CONSTANT_BUFFER_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
+#include <memory> // For std::shared_ptr
 
 namespace dx12lib
 {
 
 class ConstantBuffer;
+class Device;
 
 class ConstantBufferView
 {
 public:
-    ConstantBufferView( const ConstantBuffer& constantBuffer, const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv = nullptr );
-    ~ConstantBufferView() = default;
-
-    const ConstantBuffer& GetConstantBuffer() const
+    std::shared_ptr<ConstantBuffer> GetConstantBuffer() const
     {
         return m_ConstantBuffer;
     }
@@ -55,9 +54,15 @@ public:
         return m_Descriptor.GetDescriptorHandle();
     }
 
+protected:
+    ConstantBufferView( Device& device, std::shared_ptr<ConstantBuffer> constantBuffer,
+                        const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv = nullptr );
+    virtual ~ConstantBufferView() = default;
+
 private:
-    const ConstantBuffer& m_ConstantBuffer;
-    DescriptorAllocation  m_Descriptor;
+    Device&                         m_Device;
+    std::shared_ptr<ConstantBuffer> m_ConstantBuffer;
+    DescriptorAllocation            m_Descriptor;
 };
 
 }  // namespace dx12lib

@@ -3,10 +3,11 @@
 #include <dx12lib/Mesh.h>
 
 #include <dx12lib/CommandList.h>
-#include <dx12lib/VertexBuffer.h>
-#include <dx12lib/VertexBufferView.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/IndexBuffer.h>
 #include <dx12lib/IndexBufferView.h>
+#include <dx12lib/VertexBuffer.h>
+#include <dx12lib/VertexBufferView.h>
 
 using namespace dx12lib;
 using namespace DirectX;
@@ -33,15 +34,15 @@ Mesh::~Mesh()
 void Mesh::Render( CommandList& commandList, uint32_t instanceCount, uint32_t firstInstance )
 {
     commandList.SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-    commandList.SetVertexBuffer( 0, *m_VertexBuffer );
+    commandList.SetVertexBuffer( 0, m_VertexBufferView );
     if ( m_IndexCount > 0 )
     {
-        commandList.SetIndexBuffer( *m_IndexBuffer );
+        commandList.SetIndexBuffer( *m_IndexBufferView );
         commandList.DrawIndexed( m_IndexCount, instanceCount, 0, 0, firstInstance );
     }
     else
     {
-        commandList.Draw( m_VertexBuffer->GetNumVertices(), instanceCount, 0, firstInstance );
+        commandList.Draw( m_VertexCount, instanceCount, 0, firstInstance );
     }
 }
 
@@ -244,8 +245,7 @@ static void CreateCylinderCap( VertexCollection& vertices, IndexCollection& indi
     }
 }
 
-std::unique_ptr<Mesh> Mesh::CreateCone( CommandList& commandList, float diameter, float height,
-                                        size_t tessellation,
+std::unique_ptr<Mesh> Mesh::CreateCone( CommandList& commandList, float diameter, float height, size_t tessellation,
                                         bool rhcoords )
 {
     VertexCollection vertices;
@@ -297,8 +297,7 @@ std::unique_ptr<Mesh> Mesh::CreateCone( CommandList& commandList, float diameter
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreateTorus( CommandList& commandList, float diameter, float thickness,
-                                         size_t tessellation,
+std::unique_ptr<Mesh> Mesh::CreateTorus( CommandList& commandList, float diameter, float thickness, size_t tessellation,
                                          bool rhcoords )
 {
     VertexCollection vertices;
@@ -362,8 +361,7 @@ std::unique_ptr<Mesh> Mesh::CreateTorus( CommandList& commandList, float diamete
     return mesh;
 }
 
-std::unique_ptr<Mesh> Mesh::CreatePlane( CommandList& commandList, float width, float height,
-                                         bool rhcoords )
+std::unique_ptr<Mesh> Mesh::CreatePlane( CommandList& commandList, float width, float height, bool rhcoords )
 {
     VertexCollection vertices = {
         { XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT2( 0.0f, 0.0f ) },  // 0
@@ -391,8 +389,7 @@ static void ReverseWinding( IndexCollection& indices, VertexCollection& vertices
     { it->textureCoordinate.x = ( 1.f - it->textureCoordinate.x ); }
 }
 
-void Mesh::Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices,
-                       bool rhcoords )
+void Mesh::Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords )
 {
     if ( vertices.size() >= USHRT_MAX )
         throw std::exception( "Too many vertices for 16-bit index buffer" );
@@ -400,8 +397,14 @@ void Mesh::Initialize( CommandList& commandList, VertexCollection& vertices, Ind
     if ( !rhcoords )
         ReverseWinding( indices, vertices );
 
-    m_VertexBuffer = commandList.CopyVertexBuffer( vertices );
-    m_IndexBuffer  = commandList.CopyIndexBuffer( indices );
+    auto vertexBuffer = commandList.CopyVertexBuffer( vertices );
+    auto indexBuffer  = commandList.CopyIndexBuffer( indices );
 
-    m_IndexCount = static_cast<UINT>( indices.size() );
+    auto& device = commandList.GetDevice();
+
+    m_VertexBufferView = device.CreateVertexBufferView( vertexBuffer );
+    m_IndexBufferView  = device.CreateIndexBufferView( indexBuffer );
+
+    m_IndexCount  = static_cast<UINT>( indices.size() );
+    m_VertexCount = static_cast<UINT>( vertices.size() );
 }

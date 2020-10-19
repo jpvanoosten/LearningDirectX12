@@ -33,26 +33,25 @@
 #include <dx12lib/DescriptorAllocation.h>
 
 #include <d3d12.h>  // For D3D12_UNORDERED_ACCESS_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
+#include <memory>   // For std::shared_ptr
 
 namespace dx12lib
 {
 
+class Device;
 class Resource;
 
 class UnorderedAccessView
 {
 public:
-    UnorderedAccessView( const Resource& resource, const Resource* pCounterResource = nullptr,
-                         const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav = nullptr );
-
-    const Resource& GetResource() const
+    std::shared_ptr<Resource> GetResource() const
     {
         return m_Resource;
     }
 
-    const Resource* GetCounterResource() const
+    std::shared_ptr<Resource> GetCounterResource() const
     {
-        return m_pCounterResource;
+        return m_CounterResource;
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle() const
@@ -60,9 +59,16 @@ public:
         return m_Descriptor.GetDescriptorHandle();
     }
 
+protected:
+    UnorderedAccessView( Device& device, std::shared_ptr<Resource> resource,
+                         std::shared_ptr<Resource>               counterResource = nullptr,
+                         const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav             = nullptr );
+    virtual ~UnorderedAccessView() = default;
+
 private:
-    const Resource&      m_Resource;
-    const Resource*      m_pCounterResource;
-    DescriptorAllocation m_Descriptor;
+    Device&                   m_Device;
+    std::shared_ptr<Resource> m_Resource;
+    std::shared_ptr<Resource> m_CounterResource;
+    DescriptorAllocation      m_Descriptor;
 };
 }  // namespace dx12lib

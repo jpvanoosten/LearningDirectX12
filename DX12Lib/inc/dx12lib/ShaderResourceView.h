@@ -33,18 +33,18 @@
 #include <dx12lib/DescriptorAllocation.h>
 
 #include <d3d12.h>  // For D3D12_SHADER_RESOURCE_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
+#include <memory>   // For std::shared_ptr
 
 namespace dx12lib
 {
 
+class Device;
 class Resource;
 
 class ShaderResourceView
 {
 public:
-    ShaderResourceView( const Resource& resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr );
-
-    const Resource& GetResource() const
+    std::shared_ptr<Resource> GetResource() const
     {
         return m_Resource;
     }
@@ -54,8 +54,14 @@ public:
         return m_Descriptor.GetDescriptorHandle();
     }
 
+protected:
+    ShaderResourceView( Device& device, std::shared_ptr<Resource> resource,
+                        const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr );
+    virtual ~ShaderResourceView() = default;
+
 private:
-    const Resource&      m_Resource;
-    DescriptorAllocation m_Descriptor;
+    Device&                   m_Device;
+    std::shared_ptr<Resource> m_Resource;
+    DescriptorAllocation      m_Descriptor;
 };
 }  // namespace dx12lib

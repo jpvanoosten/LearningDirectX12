@@ -7,14 +7,17 @@
 
 using namespace dx12lib;
 
-ShaderResourceView::ShaderResourceView( const Resource& resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
-: m_Resource( resource )
+ShaderResourceView::ShaderResourceView( Device& device, std::shared_ptr<Resource> resource,
+                                        const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
+: m_Device( device )
+, m_Resource( resource )
 {
-    auto& device        = m_Resource.GetDevice();
-    auto  d3d12Resource = m_Resource.GetD3D12Resource();
-    auto  d3d12Device   = device.GetD3D12Device();
+    assert( resource || srv );
 
-    m_Descriptor = device.AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+    auto d3d12Resource = m_Resource ? m_Resource->GetD3D12Resource() : nullptr;
+    auto d3d12Device   = m_Device.GetD3D12Device();
+
+    m_Descriptor = m_Device.AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 
     d3d12Device->CreateShaderResourceView( d3d12Resource.Get(), srv, m_Descriptor.GetDescriptorHandle() );
 }

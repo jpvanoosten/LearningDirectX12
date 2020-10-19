@@ -7,13 +7,15 @@
 
 using namespace dx12lib;
 
-ConstantBufferView::ConstantBufferView( const ConstantBuffer&                  constantBuffer,
+ConstantBufferView::ConstantBufferView( Device& device, std::shared_ptr<ConstantBuffer> constantBuffer,
                                         const D3D12_CONSTANT_BUFFER_VIEW_DESC* _cbv )
-: m_ConstantBuffer( constantBuffer )
+: m_Device( device )
+, m_ConstantBuffer( constantBuffer )
 {
-    auto& device        = m_ConstantBuffer.GetDevice();
-    auto  d3d12Device   = device.GetD3D12Device();
-    auto  d3d12Resource = m_ConstantBuffer.GetD3D12Resource();
+    assert( constantBuffer );
+
+    auto d3d12Device   = m_Device.GetD3D12Device();
+    auto d3d12Resource = m_ConstantBuffer->GetD3D12Resource();
 
     m_Descriptor = device.AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 
@@ -26,7 +28,7 @@ ConstantBufferView::ConstantBufferView( const ConstantBuffer&                  c
     {
         cbv.BufferLocation = d3d12Resource->GetGPUVirtualAddress();
         cbv.SizeInBytes =
-            Math::AlignUp( m_ConstantBuffer.GetSizeInBytes(),
+            Math::AlignUp( m_ConstantBuffer->GetSizeInBytes(),
                            D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT );  // Constant buffers must be aligned for
                                                                               // hardware requirements.
     }

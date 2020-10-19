@@ -40,8 +40,8 @@ namespace dx12lib
 {
 
 class CommandList;
-class IndexBuffer;
-class VertexBuffer;
+class IndexBufferView;
+class VertexBufferView;
 
 // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
@@ -79,17 +79,15 @@ class Mesh
 public:
     void Render( CommandList& commandList, uint32_t instanceCount = 1, uint32_t firstInstance = 0 );
 
-    static std::unique_ptr<Mesh> CreateCube( CommandList& commandList, float size = 1,
-                                             bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreateSphere( CommandList& commandList, float diameter = 1,
-                                               size_t tessellation = 16, bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreateCone( CommandList& commandList, float diameter = 1,
-                                             float height = 1, size_t tessellation = 32, bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreateTorus( CommandList& commandList, float diameter = 1,
-                                              float thickness = 0.333f, size_t tessellation = 32,
+    static std::unique_ptr<Mesh> CreateCube( CommandList& commandList, float size = 1, bool rhcoords = false );
+    static std::unique_ptr<Mesh> CreateSphere( CommandList& commandList, float diameter = 1, size_t tessellation = 16,
+                                               bool rhcoords = false );
+    static std::unique_ptr<Mesh> CreateCone( CommandList& commandList, float diameter = 1, float height = 1,
+                                             size_t tessellation = 32, bool rhcoords = false );
+    static std::unique_ptr<Mesh> CreateTorus( CommandList& commandList, float diameter = 1, float thickness = 0.333f,
+                                              size_t tessellation = 32, bool rhcoords = false );
+    static std::unique_ptr<Mesh> CreatePlane( CommandList& commandList, float width = 1, float height = 1,
                                               bool rhcoords = false );
-    static std::unique_ptr<Mesh> CreatePlane( CommandList& commandList, float width = 1,
-                                              float height = 1, bool rhcoords = false );
 
 protected:
 private:
@@ -99,12 +97,12 @@ private:
     Mesh( const Mesh& copy ) = delete;
     virtual ~Mesh();
 
-    void Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices,
-                     bool rhcoords );
+    void Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords );
 
-    std::shared_ptr<VertexBuffer> m_VertexBuffer;
-    std::shared_ptr<IndexBuffer>  m_IndexBuffer;
+    std::shared_ptr<VertexBufferView> m_VertexBufferView;
+    std::shared_ptr<IndexBufferView>  m_IndexBufferView;
 
     UINT m_IndexCount;
+    UINT m_VertexCount;
 };
 }  // namespace dx12lib

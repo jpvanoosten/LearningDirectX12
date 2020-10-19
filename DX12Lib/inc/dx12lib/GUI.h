@@ -45,6 +45,7 @@ class Device;
 class PipelineStateObject;
 class RenderTarget;
 class RootSignature;
+class ShaderResourceView;
 class Texture;
 
 class GUI
@@ -69,6 +70,7 @@ private:
 
     ImGuiContext*                        m_pImGuiCtx;
     std::shared_ptr<Texture>             m_FontTexture;
+    std::shared_ptr<ShaderResourceView>  m_FontSRV;
     std::shared_ptr<RootSignature>       m_RootSignature;
     std::shared_ptr<PipelineStateObject> m_PipelineState;
     HWND                                 m_hWnd;

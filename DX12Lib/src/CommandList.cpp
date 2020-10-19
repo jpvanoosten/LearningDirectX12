@@ -477,7 +477,7 @@ void CommandList::GenerateMips( const Texture& texture )
 
     // Generate mips with the UAV compatible resource.
     auto uavTexture = m_Device.CreateTexture( uavResource, texture.GetTextureUsage() );
-    GenerateMips_UAV( *uavTexture, Texture::IsSRGBFormat( resourceDesc.Format ) );
+    GenerateMips_UAV( uavTexture, Texture::IsSRGBFormat( resourceDesc.Format ) );
 
     if ( aliasResource )
     {
@@ -487,7 +487,7 @@ void CommandList::GenerateMips( const Texture& texture )
     }
 }
 
-void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
+void CommandList::GenerateMips_UAV( std::shared_ptr<Texture>& texture, bool isSRGB )
 {
     if ( !m_GenerateMipsPSO )
     {
@@ -500,7 +500,7 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
     GenerateMipsCB generateMipsCB;
     generateMipsCB.IsSRGB = isSRGB;
 
-    auto resource     = texture.GetD3D12Resource();
+    auto resource     = texture->GetD3D12Resource();
     auto resourceDesc = resource->GetDesc();
 
     // Create an SRV that uses the format of the original texture.
@@ -511,7 +511,7 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
         D3D12_SRV_DIMENSION_TEXTURE2D;  // Only 2D textures are supported (this was checked in the calling function).
     srvDesc.Texture2D.MipLevels = resourceDesc.MipLevels;
 
-    ShaderResourceView srv( texture, &srvDesc );
+    auto srv = m_Device.CreateShaderResourceView( texture, &srvDesc );
 
     for ( uint32_t srcMip = 0; srcMip < resourceDesc.MipLevels - 1u; )
     {
@@ -553,7 +553,8 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
 
         SetCompute32BitConstants( GenerateMips::GenerateMipsCB, generateMipsCB );
 
-        SetShaderResourceView( GenerateMips::SrcMip, 0, srv, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip, 1 );
+        SetShaderResourceView( GenerateMips::SrcMip, 0, *srv, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, srcMip,
+                               1 );
 
         for ( uint32_t mip = 0; mip < mipCount; ++mip )
         {
@@ -562,8 +563,8 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
             uavDesc.ViewDimension                    = D3D12_UAV_DIMENSION_TEXTURE2D;
             uavDesc.Texture2D.MipSlice               = srcMip + mip + 1;
 
-            UnorderedAccessView uav( texture, nullptr, &uavDesc );
-            SetUnorderedAccessView( GenerateMips::OutMip, mip, uav, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            auto uav = m_Device.CreateUnorderedAccessView( texture, nullptr, &uavDesc );
+            SetUnorderedAccessView( GenerateMips::OutMip, mip, *uav, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                                     srcMip + mip + 1, 1 );
         }
 
@@ -576,14 +577,17 @@ void CommandList::GenerateMips_UAV( const Texture& texture, bool isSRGB )
 
         Dispatch( Math::DivideByMultiple( dstWidth, 8 ), Math::DivideByMultiple( dstHeight, 8 ) );
 
-        UAVBarrier( &texture );
+        UAVBarrier( texture.get() );
 
         srcMip += mipCount;
     }
 }
 
-void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& panoTexture )
+void CommandList::PanoToCubemap( std::shared_ptr<Texture>& cubemapTexture, std::shared_ptr<Texture>& panoTexture )
 {
+    if ( !cubemapTexture || !panoTexture )
+        return;
+
     if ( m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY )
     {
         if ( !m_ComputeCommandList )
@@ -599,7 +603,7 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
         m_PanoToCubemapPSO = std::make_unique<PanoToCubemapPSO>( m_Device );
     }
 
-    auto cubemapResource = cubemapTexture.GetD3D12Resource();
+    auto cubemapResource = cubemapTexture->GetD3D12Resource();
     if ( !cubemapResource )
         return;
 
@@ -629,7 +633,7 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
         stagingTexture = m_Device.CreateTexture( stagingResource );
         stagingTexture->SetName( L"Pano to Cubemap Staging Texture" );
 
-        CopyResource( *stagingTexture, cubemapTexture );
+        CopyResource( *stagingTexture, *cubemapTexture );
     }
 
     TransitionBarrier( *stagingTexture, D3D12_RESOURCE_STATE_UNORDERED_ACCESS );
@@ -645,6 +649,9 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
     uavDesc.Texture2DArray.FirstArraySlice   = 0;
     uavDesc.Texture2DArray.ArraySize         = 6;
 
+    auto srv = m_Device.CreateShaderResourceView( panoTexture );
+    SetShaderResourceView( PanoToCubemapRS::SrcTexture, 0, *srv, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
+
     for ( uint32_t mipSlice = 0; mipSlice < cubemapDesc.MipLevels; )
     {
         // Maximum number of mips to generate per pass is 5.
@@ -657,16 +664,12 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
 
         SetCompute32BitConstants( PanoToCubemapRS::PanoToCubemapCB, panoToCubemapCB );
 
-        SetShaderResourceView( PanoToCubemapRS::SrcTexture, 0, panoTexture,
-                               D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE );
-
         for ( uint32_t mip = 0; mip < numMips; ++mip )
         {
             uavDesc.Texture2DArray.MipSlice = mipSlice + mip;
 
-            UnorderedAccessView uav( *stagingTexture, nullptr, &uavDesc);
-            SetUnorderedAccessView( PanoToCubemapRS::DstMips, mip, uav,
-                                    D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0, 0 );
+            auto uav = m_Device.CreateUnorderedAccessView( stagingTexture, nullptr, &uavDesc );
+            SetUnorderedAccessView( PanoToCubemapRS::DstMips, mip, *uav, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, 0, 0 );
         }
 
         if ( numMips < 5 )
@@ -684,7 +687,7 @@ void CommandList::PanoToCubemap( const Texture& cubemapTexture, const Texture& p
 
     if ( stagingResource != cubemapResource )
     {
-        CopyResource( cubemapTexture, *stagingTexture );
+        CopyResource( *cubemapTexture, *stagingTexture );
     }
 }
 
@@ -796,13 +799,33 @@ void CommandList::SetCompute32BitConstants( uint32_t rootParameterIndex, uint32_
     m_d3d12CommandList->SetComputeRoot32BitConstants( rootParameterIndex, numConstants, constants, 0 );
 }
 
-void CommandList::SetVertexBuffer( uint32_t slot, const VertexBufferView& vertexBufferView )
+void CommandList::SetVertexBuffers( uint32_t                                              startSlot,
+                                    const std::vector<std::shared_ptr<VertexBufferView>>& vertexBufferViews )
 {
-    TransitionBarrier( vertexBufferView.GetVertexBuffer(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> views;
+    views.reserve( vertexBufferViews.size() );
 
-    m_d3d12CommandList->IASetVertexBuffers( slot, 1, &vertexBufferView.GetVertexBufferView() );
+    for ( auto vertexBufferView: vertexBufferViews )
+    {
+        if ( vertexBufferView )
+        {
+            auto vertexBuffer = vertexBufferView->GetVertexBuffer();
+            if ( vertexBuffer )
+            {
+                TransitionBarrier( *vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
+                TrackResource( *vertexBuffer );
 
-    TrackResource( vertexBufferView.GetVertexBuffer() );
+                views.push_back( vertexBufferView->GetVertexBufferView() );
+            }
+        }
+    }
+
+    m_d3d12CommandList->IASetVertexBuffers( startSlot, views.size(), views.data() );
+}
+
+void CommandList::SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBufferView> vertexBufferView )
+{
+    SetVertexBuffers( slot, { vertexBufferView } );
 }
 
 void CommandList::SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, size_t vertexSize,
@@ -823,11 +846,13 @@ void CommandList::SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, siz
 
 void CommandList::SetIndexBuffer( const IndexBufferView& indexBufferView )
 {
-    TransitionBarrier( indexBufferView.GetIndexBuffer(), D3D12_RESOURCE_STATE_INDEX_BUFFER );
-
-    m_d3d12CommandList->IASetIndexBuffer( &indexBufferView.GetIndexBufferView() );
-
-    TrackResource( indexBufferView.GetIndexBuffer() );
+    auto indexBuffer = indexBufferView.GetIndexBuffer();
+    if ( indexBuffer )
+    {
+        TransitionBarrier( *indexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER );
+        TrackResource( *indexBuffer );
+        m_d3d12CommandList->IASetIndexBuffer( &indexBufferView.GetIndexBufferView() );
+    }
 }
 
 void CommandList::SetDynamicIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData )
@@ -924,40 +949,47 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t d
                                          const ShaderResourceView& srv, D3D12_RESOURCE_STATES stateAfter,
                                          UINT firstSubresource, UINT numSubresources )
 {
-    if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+    auto resource = srv.GetResource();
+    if ( resource )
     {
-        for ( uint32_t i = 0; i < numSubresources; ++i )
-        { TransitionBarrier( srv.GetResource(), stateAfter, firstSubresource + i ); }
-    }
-    else
-    {
-        TransitionBarrier( srv.GetResource(), stateAfter );
+        if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+        {
+            for ( uint32_t i = 0; i < numSubresources; ++i )
+            { TransitionBarrier( *resource, stateAfter, firstSubresource + i ); }
+        }
+        else
+        {
+            TransitionBarrier( *resource, stateAfter );
+        }
+        TrackResource( *resource );
     }
 
     m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
         rootParameterIndex, descriptorOffset, 1, srv.GetDescriptorHandle() );
-
-    TrackResource( srv.GetResource() );
 }
 
 void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
                                           const UnorderedAccessView& uav, D3D12_RESOURCE_STATES stateAfter,
                                           UINT firstSubresource, UINT numSubresources )
 {
-    if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+    auto resource = uav.GetResource();
+    if ( resource )
     {
-        for ( uint32_t i = 0; i < numSubresources; ++i )
-        { TransitionBarrier( uav.GetResource(), stateAfter, firstSubresource + i ); }
-    }
-    else
-    {
-        TransitionBarrier( uav.GetResource(), stateAfter );
+        if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+        {
+            for ( uint32_t i = 0; i < numSubresources; ++i )
+            { TransitionBarrier( *resource, stateAfter, firstSubresource + i ); }
+        }
+        else
+        {
+            TransitionBarrier( *resource, stateAfter );
+        }
+
+        TrackResource( *resource );
     }
 
     m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
         rootParameterIndex, descrptorOffset, 1, uav.GetDescriptorHandle() );
-
-    TrackResource( uav.GetResource() );
 }
 
 void CommandList::SetRenderTarget( const RenderTarget& renderTarget )

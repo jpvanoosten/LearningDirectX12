@@ -31,30 +31,35 @@
  */
 
 #include <d3d12.h>  // For D3D12_INDEX_BUFFER_VIEW
+#include <memory> // For std::shared_ptr
 
 namespace dx12lib
 {
 
+class Device;
 class IndexBuffer;
 
 class IndexBufferView
 {
 public:
-    IndexBufferView( const IndexBuffer& indexBuffer );
-
-    const IndexBuffer& GetIndexBuffer() const {
+    std::shared_ptr<IndexBuffer> GetIndexBuffer() const
+    {
         return m_IndexBuffer;
     }
 
-    D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const 
+    D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const
     {
         return m_IndexBufferView;
     }
 
+protected:
+    IndexBufferView( Device& device, std::shared_ptr<IndexBuffer> indexBuffer );
+    virtual ~IndexBufferView() = default;
+
 private:
-    const IndexBuffer& m_IndexBuffer;
-    D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+    Device&                      m_Device;
+    std::shared_ptr<IndexBuffer> m_IndexBuffer;
+    D3D12_INDEX_BUFFER_VIEW      m_IndexBufferView;
 };
 
-} // namespace dx12lib
-
+}  // namespace dx12lib
