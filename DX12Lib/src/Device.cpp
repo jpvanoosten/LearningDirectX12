@@ -8,7 +8,6 @@
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/IndexBuffer.h>
-#include <dx12lib/IndexBufferView.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/ShaderResourceView.h>
@@ -17,7 +16,6 @@
 #include <dx12lib/Texture.h>
 #include <dx12lib/UnorderedAccessView.h>
 #include <dx12lib/VertexBuffer.h>
-#include <dx12lib/VertexBufferView.h>
 
 using namespace dx12lib;
 
@@ -54,26 +52,6 @@ public:
     {}
 
     virtual ~MakeConstantBufferView() {}
-};
-
-class MakeIndexBufferView : public IndexBufferView
-{
-public:
-    MakeIndexBufferView( Device& device, std::shared_ptr<IndexBuffer> indexBuffer )
-    : IndexBufferView( device, indexBuffer )
-    {}
-
-    virtual ~MakeIndexBufferView() {}
-};
-
-class MakeVertexBufferView : public VertexBufferView
-{
-public:
-    MakeVertexBufferView( Device& device, std::shared_ptr<VertexBuffer> vertexBuffer )
-    : VertexBufferView( device, vertexBuffer )
-    {}
-
-    virtual ~MakeVertexBufferView() {}
 };
 
 class MakePipelineStateObject : public PipelineStateObject
@@ -475,20 +453,6 @@ std::shared_ptr<PipelineStateObject>
         std::make_shared<MakePipelineStateObject>( *this, pipelineStateStreamDesc );
 
     return pipelineStateObject;
-}
-
-std::shared_ptr<VertexBufferView> Device::CreateVertexBufferView( std::shared_ptr<VertexBuffer> vertexBuffer )
-{
-    std::shared_ptr<VertexBufferView> vertexBufferView = std::make_shared<MakeVertexBufferView>( *this, vertexBuffer );
-
-    return vertexBufferView;
-}
-
-std::shared_ptr<IndexBufferView> Device::CreateIndexBufferView( std::shared_ptr<IndexBuffer> indexBuffer )
-{
-    std::shared_ptr<IndexBufferView> indexBufferView = std::make_shared<MakeIndexBufferView>( *this, indexBuffer );
-
-    return indexBufferView;
 }
 
 std::shared_ptr<ConstantBufferView> Device::CreateConstantBufferView( std::shared_ptr<ConstantBuffer> constantBuffer,

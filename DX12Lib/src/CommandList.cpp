@@ -9,7 +9,6 @@
 #include <dx12lib/DynamicDescriptorHeap.h>
 #include <dx12lib/GenerateMipsPSO.h>
 #include <dx12lib/IndexBuffer.h>
-#include <dx12lib/IndexBufferView.h>
 #include <dx12lib/PanoToCubemapPSO.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RenderTarget.h>
@@ -22,7 +21,6 @@
 #include <dx12lib/UnorderedAccessView.h>
 #include <dx12lib/UploadBuffer.h>
 #include <dx12lib/VertexBuffer.h>
-#include <dx12lib/VertexBufferView.h>
 
 using namespace dx12lib;
 
@@ -800,32 +798,28 @@ void CommandList::SetCompute32BitConstants( uint32_t rootParameterIndex, uint32_
 }
 
 void CommandList::SetVertexBuffers( uint32_t                                              startSlot,
-                                    const std::vector<std::shared_ptr<VertexBufferView>>& vertexBufferViews )
+                                    const std::vector<std::shared_ptr<VertexBuffer>>& vertexBuffers )
 {
     std::vector<D3D12_VERTEX_BUFFER_VIEW> views;
-    views.reserve( vertexBufferViews.size() );
+    views.reserve( vertexBuffers.size() );
 
-    for ( auto vertexBufferView: vertexBufferViews )
+    for ( auto vertexBuffer: vertexBuffers )
     {
-        if ( vertexBufferView )
+        if ( vertexBuffer )
         {
-            auto vertexBuffer = vertexBufferView->GetVertexBuffer();
-            if ( vertexBuffer )
-            {
-                TransitionBarrier( *vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
-                TrackResource( *vertexBuffer );
+            TransitionBarrier( *vertexBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
+            TrackResource( *vertexBuffer );
 
-                views.push_back( vertexBufferView->GetVertexBufferView() );
-            }
+            views.push_back( vertexBuffer->GetVertexBufferView() );
         }
     }
 
     m_d3d12CommandList->IASetVertexBuffers( startSlot, views.size(), views.data() );
 }
 
-void CommandList::SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBufferView> vertexBufferView )
+void CommandList::SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBuffer> vertexBuffer )
 {
-    SetVertexBuffers( slot, { vertexBufferView } );
+    SetVertexBuffers( slot, { vertexBuffer } );
 }
 
 void CommandList::SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, size_t vertexSize,
@@ -844,14 +838,13 @@ void CommandList::SetDynamicVertexBuffer( uint32_t slot, size_t numVertices, siz
     m_d3d12CommandList->IASetVertexBuffers( slot, 1, &vertexBufferView );
 }
 
-void CommandList::SetIndexBuffer( const IndexBufferView& indexBufferView )
+void CommandList::SetIndexBuffer( std::shared_ptr<IndexBuffer> indexBuffer )
 {
-    auto indexBuffer = indexBufferView.GetIndexBuffer();
     if ( indexBuffer )
     {
         TransitionBarrier( *indexBuffer, D3D12_RESOURCE_STATE_INDEX_BUFFER );
         TrackResource( *indexBuffer );
-        m_d3d12CommandList->IASetIndexBuffer( &indexBufferView.GetIndexBufferView() );
+        m_d3d12CommandList->IASetIndexBuffer( &indexBuffer->GetIndexBufferView() );
     }
 }
 

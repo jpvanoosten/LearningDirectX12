@@ -51,7 +51,6 @@ class Device;
 class DynamicDescriptorHeap;
 class GenerateMipsPSO;
 class IndexBuffer;
-class IndexBufferView;
 class PanoToCubemapPSO;
 class PipelineStateObject;
 class RenderTarget;
@@ -65,7 +64,6 @@ class Texture;
 class UnorderedAccessView;
 class UploadBuffer;
 class VertexBuffer;
-class VertexBufferView;
 
 class CommandList
 {
@@ -280,8 +278,8 @@ public:
      * @param slot The slot to bind the vertex buffer to.
      * @vertexBuffer The vertex buffer to bind (can be null to remove the vertex buffer from the slot).
      */
-    void SetVertexBuffers( uint32_t startSlot, const std::vector<std::shared_ptr<VertexBufferView>>& vertexBufferViews );
-    void SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBufferView> vertexBufferView );
+    void SetVertexBuffers( uint32_t startSlot, const std::vector<std::shared_ptr<VertexBuffer>>& vertexBufferViews );
+    void SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBuffer> vertexBufferView );
 
     /**
      * Set dynamic vertex buffer data to the rendering pipeline.
@@ -298,7 +296,7 @@ public:
      *
      * @param indexBuffer The index buffer to bind to the rendering pipeline.
      */
-    void SetIndexBuffer( const IndexBufferView& indexBufferView );
+    void SetIndexBuffer( std::shared_ptr<IndexBuffer> indexBuffer );
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.

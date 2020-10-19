@@ -5,9 +5,7 @@
 #include <dx12lib/CommandList.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/IndexBuffer.h>
-#include <dx12lib/IndexBufferView.h>
 #include <dx12lib/VertexBuffer.h>
-#include <dx12lib/VertexBufferView.h>
 
 using namespace dx12lib;
 using namespace DirectX;
@@ -34,10 +32,10 @@ Mesh::~Mesh()
 void Mesh::Render( CommandList& commandList, uint32_t instanceCount, uint32_t firstInstance )
 {
     commandList.SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-    commandList.SetVertexBuffer( 0, m_VertexBufferView );
+    commandList.SetVertexBuffer( 0, m_VertexBuffer );
     if ( m_IndexCount > 0 )
     {
-        commandList.SetIndexBuffer( *m_IndexBufferView );
+        commandList.SetIndexBuffer( m_IndexBuffer );
         commandList.DrawIndexed( m_IndexCount, instanceCount, 0, 0, firstInstance );
     }
     else
@@ -397,13 +395,8 @@ void Mesh::Initialize( CommandList& commandList, VertexCollection& vertices, Ind
     if ( !rhcoords )
         ReverseWinding( indices, vertices );
 
-    auto vertexBuffer = commandList.CopyVertexBuffer( vertices );
-    auto indexBuffer  = commandList.CopyIndexBuffer( indices );
-
-    auto& device = commandList.GetDevice();
-
-    m_VertexBufferView = device.CreateVertexBufferView( vertexBuffer );
-    m_IndexBufferView  = device.CreateIndexBufferView( indexBuffer );
+    m_VertexBuffer = commandList.CopyVertexBuffer( vertices );
+    m_IndexBuffer  = commandList.CopyIndexBuffer( indices );
 
     m_IndexCount  = static_cast<UINT>( indices.size() );
     m_VertexCount = static_cast<UINT>( vertices.size() );

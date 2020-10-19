@@ -7,12 +7,10 @@
 #include <dx12lib/Device.h>
 #include <dx12lib/Helpers.h>
 #include <dx12lib/IndexBuffer.h>
-#include <dx12lib/IndexBufferView.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/VertexBuffer.h>
-#include <dx12lib/VertexBufferView.h>
 
 #include <spdlog/spdlog.h>
 
@@ -36,8 +34,8 @@ void OnWindowClose( WindowCloseEventArgs& e );
 std::shared_ptr<Window>              pGameWindow          = nullptr;
 std::shared_ptr<SwapChain>           pSwapChain           = nullptr;
 std::shared_ptr<Texture>             pDepthTexture        = nullptr;
-std::shared_ptr<VertexBufferView>    pVertexBufferView    = nullptr;
-std::shared_ptr<IndexBufferView>     pIndexBufferView     = nullptr;
+std::shared_ptr<VertexBuffer>        pVertexBuffer        = nullptr;
+std::shared_ptr<IndexBuffer>         pIndexBuffer         = nullptr;
 std::shared_ptr<RootSignature>       pRootSignature       = nullptr;
 std::shared_ptr<PipelineStateObject> pPipelineStateObject = nullptr;
 
@@ -113,12 +111,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         auto  commandList  = commandQueue.GetCommandList();
 
         // Load vertex data:
-        auto vertexBuffer = commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
-        pVertexBufferView = device.CreateVertexBufferView( vertexBuffer );
+        pVertexBuffer =
+            commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
 
         // Load index data:
-        auto indexBuffer = commandList->CopyIndexBuffer( _countof( g_Indicies ), DXGI_FORMAT_R16_UINT, g_Indicies );
-        pIndexBufferView = device.CreateIndexBufferView( indexBuffer );
+        pIndexBuffer = commandList->CopyIndexBuffer( _countof( g_Indicies ), DXGI_FORMAT_R16_UINT, g_Indicies );
 
         // Execute the command list to upload the resources to the GPU.
         commandQueue.ExecuteCommandList( commandList );
@@ -202,8 +199,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         retCode = GameFramework::Get().Run();
 
         // Release globals.
-        pIndexBufferView.reset();
-        pVertexBufferView.reset();
+        pIndexBuffer.reset();
+        pVertexBuffer.reset();
         pPipelineStateObject.reset();
         pRootSignature.reset();
         pDepthTexture.reset();
@@ -238,7 +235,7 @@ void OnUpdate( UpdateEventArgs& e )
         logger->info( "FPS: {:.7}", fps );
 
         wchar_t buffer[256];
-        ::swprintf_s( buffer, L"Clear Screen [FPS: %f]", fps );
+        ::swprintf_s( buffer, L"Cube [FPS: %f]", fps );
         pGameWindow->SetWindowTitle( buffer );
     }
 
@@ -288,10 +285,10 @@ void OnUpdate( UpdateEventArgs& e )
     commandList->SetScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) );
 
     // Render the cube.
-    commandList->SetVertexBuffer( 0, pVertexBufferView );
-    commandList->SetIndexBuffer( *pIndexBufferView );
+    commandList->SetVertexBuffer( 0, pVertexBuffer );
+    commandList->SetIndexBuffer( pIndexBuffer );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-    commandList->DrawIndexed( pIndexBufferView->GetIndexBuffer()->GetNumIndicies() );
+    commandList->DrawIndexed( pIndexBuffer->GetNumIndicies() );
 
     commandQueue.ExecuteCommandList( commandList );
 

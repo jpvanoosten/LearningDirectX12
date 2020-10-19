@@ -37,6 +37,11 @@ namespace dx12lib
 class VertexBuffer : public Buffer
 {
 public:
+    D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const
+    {
+        return m_VertexBufferView;
+    }
+
     size_t GetNumVertices() const
     {
         return m_NumVertices;
@@ -53,8 +58,11 @@ protected:
                   size_t vertexStride );
     virtual ~VertexBuffer();
 
+    void CreateVertexBufferView();
+
 private:
-    size_t m_NumVertices;
-    size_t m_VertexStride;
+    size_t                   m_NumVertices;
+    size_t                   m_VertexStride;
+    D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
 };
 }  // namespace dx12lib

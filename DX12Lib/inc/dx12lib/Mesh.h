@@ -40,8 +40,8 @@ namespace dx12lib
 {
 
 class CommandList;
-class IndexBufferView;
-class VertexBufferView;
+class IndexBuffer;
+class VertexBuffer;
 
 // Vertex struct holding position, normal vector, and texture mapping information.
 struct VertexPositionNormalTexture
@@ -99,8 +99,8 @@ private:
 
     void Initialize( CommandList& commandList, VertexCollection& vertices, IndexCollection& indices, bool rhcoords );
 
-    std::shared_ptr<VertexBufferView> m_VertexBufferView;
-    std::shared_ptr<IndexBufferView>  m_IndexBufferView;
+    std::shared_ptr<VertexBuffer> m_VertexBuffer;
+    std::shared_ptr<IndexBuffer>  m_IndexBuffer;
 
     UINT m_IndexCount;
     UINT m_VertexCount;

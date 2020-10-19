@@ -52,7 +52,6 @@ class ConstantBuffer;
 class ConstantBufferView;
 class DescriptorAllocator;
 class IndexBuffer;
-class IndexBufferView;
 class PipelineStateObject;
 class Resource;
 class RootSignature;
@@ -62,7 +61,6 @@ class SwapChain;
 class Texture;
 class UnorderedAccessView;
 class VertexBuffer;
-class VertexBufferView;
 
 class Device
 {
@@ -155,10 +153,6 @@ public:
 
         return DoCreatePipelineStateObject( pipelineStateStreamDesc );
     }
-
-    std::shared_ptr<VertexBufferView> CreateVertexBufferView( std::shared_ptr<VertexBuffer> vertexBuffer );
-
-    std::shared_ptr<IndexBufferView> CreateIndexBufferView( std::shared_ptr<IndexBuffer> indexBuffer );
 
     std::shared_ptr<ConstantBufferView>
         CreateConstantBufferView( std::shared_ptr<ConstantBuffer>        constantBuffer,
