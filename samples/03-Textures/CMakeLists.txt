@@ -38,22 +38,23 @@ set_source_files_properties( shaders/PixelShader.hlsl PROPERTIES
     VS_SHADER_TYPE Pixel
 )
 
-add_executable( Tutorial3 WIN32
+add_executable( 03-Textures WIN32
     ${HEADER_FILES}
     ${SRC_FILES}
     ${SHADER_FILES}
 )
 
-target_include_directories( Tutorial3
+target_include_directories( 03-Textures
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
-target_link_libraries( Tutorial3
+target_link_libraries( 03-Textures
     DX12Lib
+    GameFramework
     d3dcompiler.lib
     Shlwapi.lib
 )
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
-configure_file( Tutorial3.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/Tutorial3.vcxproj.user @ONLY )
+configure_file( 03-Textures.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/03-Textures.vcxproj.user @ONLY )

@@ -10,7 +10,6 @@ set( HEADER_FILES
     inc/dx12lib/ConstantBufferView.h
     inc/dx12lib/d3dx12.h
     inc/dx12lib/Defines.h
-    inc/dx12lib/DepthStencilView.h
     inc/dx12lib/DescriptorAllocation.h
     inc/dx12lib/DescriptorAllocator.h
     inc/dx12lib/DescriptorAllocatorPage.h
@@ -25,7 +24,6 @@ set( HEADER_FILES
     inc/dx12lib/PanoToCubemapPSO.h
     inc/dx12lib/PipelineStateObject.h
     inc/dx12lib/RenderTarget.h
-    inc/dx12lib/RenderTargetView.h
     inc/dx12lib/Resource.h
     inc/dx12lib/ResourceStateTracker.h
     inc/dx12lib/RootSignature.h
@@ -54,7 +52,6 @@ set( SOURCE_FILES
     src/CommandList.cpp
     src/ConstantBuffer.cpp
     src/ConstantBufferView.cpp
-    src/DepthStencilView.cpp
     src/DescriptorAllocation.cpp
     src/DescriptorAllocator.cpp
     src/DescriptorAllocatorPage.cpp
@@ -68,7 +65,6 @@ set( SOURCE_FILES
     src/PanoToCubemapPSO.cpp
     src/PipelineStateObject.cpp
     src/RenderTarget.cpp
-    src/RenderTargetView.cpp
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp

@@ -11,14 +11,22 @@ set( SHADER_FILES
 
 source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
-set_source_files_properties( shaders/VertexShader.hlsl PROPERTIES 
-    VS_SHADER_TYPE Vertex
-    VS_SHADER_MODEL 5.1
+set_source_files_properties( ${SHADER_FILES} 
+    PROPERTIES
+        VS_SHADER_MODEL 5.1
+        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( shaders/PixelShader.hlsl PROPERTIES 
+
+set_source_files_properties( shaders/VertexShader.hlsl 
+PROPERTIES
+    VS_SHADER_TYPE Vertex
+)
+
+set_source_files_properties( shaders/PixelShader.hlsl 
+PROPERTIES
     VS_SHADER_TYPE Pixel
-    VS_SHADER_MODEL 5.1
 )
 
 add_executable( 02-Cube WIN32

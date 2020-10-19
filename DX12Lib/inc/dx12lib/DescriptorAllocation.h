@@ -50,7 +50,7 @@ public:
     DescriptorAllocation();
 
     DescriptorAllocation( D3D12_CPU_DESCRIPTOR_HANDLE descriptor, uint32_t numHandles, uint32_t descriptorSize,
-                          std::shared_ptr<dx12lib::DescriptorAllocatorPage> page );
+                          std::shared_ptr<DescriptorAllocatorPage> page );
 
     // The destructor will automatically free the allocation.
     ~DescriptorAllocation();
@@ -60,11 +60,15 @@ public:
     DescriptorAllocation& operator=( const DescriptorAllocation& ) = delete;
 
     // Move is allowed.
-    DescriptorAllocation( DescriptorAllocation&& allocation );
-    DescriptorAllocation& operator=( DescriptorAllocation&& other );
+    DescriptorAllocation( DescriptorAllocation&& allocation ) noexcept;
+    DescriptorAllocation& operator=( DescriptorAllocation&& other ) noexcept;
 
     // Check if this a valid descriptor.
     bool IsNull() const;
+    bool IsValid() const
+    {
+        return !IsNull();
+    }
 
     // Get a descriptor at a particular offset in the allocation.
     D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle( uint32_t offset = 0 ) const;
@@ -74,7 +78,7 @@ public:
 
     // Get the heap that this allocation came from.
     // (For internal use only).
-    std::shared_ptr<dx12lib::DescriptorAllocatorPage> GetDescriptorAllocatorPage() const;
+    std::shared_ptr<DescriptorAllocatorPage> GetDescriptorAllocatorPage() const;
 
 private:
     // Free the descriptor back to the heap it came from.
@@ -88,6 +92,6 @@ private:
     uint32_t m_DescriptorSize;
 
     // A pointer back to the original page where this allocation came from.
-    std::shared_ptr<dx12lib::DescriptorAllocatorPage> m_Page;
+    std::shared_ptr<DescriptorAllocatorPage> m_Page;
 };
 }  // namespace dx12lib

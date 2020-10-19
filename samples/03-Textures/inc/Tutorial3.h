@@ -33,9 +33,7 @@
 #include <Camera.h>
 #include <Light.h>
 
-#include <dx12lib/Game.h>
 #include <dx12lib/IndexBuffer.h>
-#include <dx12lib/Window.h>
 #include <dx12lib/Mesh.h>
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/RootSignature.h>

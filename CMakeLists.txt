@@ -36,17 +36,17 @@ add_subdirectory( extern/gainput )
 add_subdirectory( extern/DirectXTex )
 add_subdirectory( GameFramework )
 add_subdirectory( DX12Lib )
-add_subdirectory( samples/01-ClearScreen)
-add_subdirectory( samples/02-Cube )
-add_subdirectory( samples/Tutorial3 )
-add_subdirectory( samples/Tutorial4 )
+add_subdirectory( Samples/01-ClearScreen)
+add_subdirectory( Samples/02-Cube )
+add_subdirectory( Samples/03-Textures )
+add_subdirectory( Samples/Tutorial4 )
 
-set_target_properties( 01-ClearScreen 02-Cube Tutorial3 Tutorial4
+set_target_properties( 01-ClearScreen 02-Cube 03-Textures Tutorial4
     PROPERTIES
-        FOLDER Samples 
+        FOLDER Samples
 )
 
 # Set the startup project.
 set_directory_properties( PROPERTIES 
-    VS_STARTUP_PROJECT Tutorial4
+    VS_STARTUP_PROJECT 03-Textures
 )

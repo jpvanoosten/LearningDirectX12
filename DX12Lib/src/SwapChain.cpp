@@ -24,7 +24,7 @@ SwapChain::SwapChain( Device& device, HWND hWnd )
 , m_TearingSupported( false )
 , m_Fullscreen( false )
 {
-    assert( hWnd );    // Must be a valid window handle!
+    assert( hWnd );  // Must be a valid window handle!
 
     // Query the direct command queue from the device.
     // This is required to create the swapchain.
@@ -171,9 +171,9 @@ UINT dx12lib::SwapChain::Present( const Texture* texture )
         }
     }
 
-     RenderTarget renderTarget;
-     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
-     m_GUI->Render( *commandList, renderTarget );
+    RenderTarget renderTarget;
+    renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
+    m_GUI->Render( *commandList, renderTarget );
 
     commandList->TransitionBarrier( *backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     m_CommandQueue.ExecuteCommandList( commandList );

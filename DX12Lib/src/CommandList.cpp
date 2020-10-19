@@ -5,7 +5,6 @@
 #include <dx12lib/ByteAddressBuffer.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/ConstantBuffer.h>
-#include <dx12lib/DepthStencilView.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/DynamicDescriptorHeap.h>
 #include <dx12lib/GenerateMipsPSO.h>
@@ -14,7 +13,6 @@
 #include <dx12lib/PanoToCubemapPSO.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RenderTarget.h>
-#include <dx12lib/RenderTargetView.h>
 #include <dx12lib/Resource.h>
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/RootSignature.h>
