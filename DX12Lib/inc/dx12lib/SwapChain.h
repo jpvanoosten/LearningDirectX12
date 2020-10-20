@@ -128,7 +128,15 @@ public:
      *
      * @returns The current backbuffer index after the present.
      */
-    UINT Present( const Texture* texture = nullptr );
+    UINT Present( const std::shared_ptr<Texture>& texture = nullptr );
+
+    /**
+     * Get the format that is used to create the backbuffer.
+     */
+    DXGI_FORMAT GetBackbufferFormat() const {
+        return m_BackbufferFormat;
+    }
+
 
     Microsoft::WRL::ComPtr<IDXGISwapChain4> GetDXGISwapChain() const
     {
@@ -137,7 +145,7 @@ public:
 
 protected:
     // Swap chains can only be created through the Device.
-    SwapChain( Device& device, HWND hWnd );
+    SwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
     virtual ~SwapChain();
 
     // Update the swapchain's RTVs.
@@ -146,6 +154,7 @@ protected:
 private:
     // The device that was used to create the SwapChain.
     Device& m_Device;
+
     // The command queue that is used to create the swapchain.
     // The command queue will be signaled right after the Present
     // to ensure that the swapchain's back buffers are not in-flight before
@@ -170,6 +179,9 @@ private:
     // The current width/height of the swap chain.
     uint32_t m_Width;
     uint32_t m_Height;
+
+    // The format of the back buffer.
+    DXGI_FORMAT m_BackbufferFormat;
 
     // Should presentation be synchronized with the vertical refresh rate of the screen?
     // Set to true to eliminate screen tearing.

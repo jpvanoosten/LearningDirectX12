@@ -31,6 +31,7 @@ void OnMouseWheel( MouseWheelEventArgs& e );
 void OnResized( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
 
+std::shared_ptr<Device>              pDevice              = nullptr;
 std::shared_ptr<Window>              pGameWindow          = nullptr;
 std::shared_ptr<SwapChain>           pSwapChain           = nullptr;
 std::shared_ptr<Texture>             pDepthTexture        = nullptr;
@@ -101,13 +102,13 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         logger = gf.CreateLogger( "Cube" );
 
         // Create a GPU device using the default adapter selection.
-        auto& device = Device::Create();
+        pDevice = Device::Create();
 
-        auto description = device.GetDescription();
+        auto description = pDevice->GetDescription();
         logger->info( L"Device Created: {}", description );
 
         // Use a copy queue to copy GPU resources.
-        auto& commandQueue = device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+        auto& commandQueue = pDevice->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
         auto  commandList  = commandQueue.GetCommandList();
 
         // Load vertex data:
@@ -124,7 +125,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pGameWindow = gf.CreateWindow( L"Cube", 1920, 1080 );
 
         // Create a swapchain for the window
-        pSwapChain = device.CreateSwapChain( pGameWindow->GetWindowHandle() );
+        pSwapChain = pDevice->CreateSwapChain( pGameWindow->GetWindowHandle() );
         pSwapChain->SetVSync( false );
 
         // Register events.
@@ -157,7 +158,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription( _countof( rootParameters ), rootParameters, 0,
                                                                         nullptr, rootSignatureFlags );
 
-        pRootSignature = device.CreateRootSignature( rootSignatureDescription.Desc_1_1 );
+        pRootSignature = pDevice->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
         // Load shaders
         // Load the vertex shader.
@@ -180,7 +181,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         } pipelineStateStream;
 
-        pipelineStateStream.pRootSignature        = pRootSignature->GetRootSignature().Get();
+        pipelineStateStream.pRootSignature        = pRootSignature->GetD3D12RootSignature().Get();
         pipelineStateStream.InputLayout           = { inputLayout, _countof( inputLayout ) };
         pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
@@ -188,7 +189,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pipelineStateStream.DSVFormat             = DXGI_FORMAT_D32_FLOAT;
         pipelineStateStream.RTVFormats            = pSwapChain->GetRenderTarget().GetRenderTargetFormats();
 
-        pPipelineStateObject = device.CreatePipelineStateObject( pipelineStateStream );
+        pPipelineStateObject = pDevice->CreatePipelineStateObject( pipelineStateStream );
 
         // Make sure the index/vertex buffers are loaded before rendering the first frame.
         commandQueue.Flush();
@@ -204,11 +205,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pPipelineStateObject.reset();
         pRootSignature.reset();
         pDepthTexture.reset();
+        pDevice.reset();
         pSwapChain.reset();
         pGameWindow.reset();
-
-        // Destroy the graphics device.
-        Device::Destroy();
     }
     // Destroy game framework resource.
     GameFramework::Destroy();
@@ -264,21 +263,21 @@ void OnUpdate( UpdateEventArgs& e )
     XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
     mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
-    auto& commandQueue = Device::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
+    auto& commandQueue = pDevice->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
 
     // Set the pipeline state object
-    commandList->SetPipelineState( *pPipelineStateObject );
+    commandList->SetPipelineState( pPipelineStateObject );
     // Set the root signatures.
-    commandList->SetGraphicsRootSignature( *pRootSignature );
+    commandList->SetGraphicsRootSignature( pRootSignature );
 
     // Set root parameters
     commandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
     // Clear the color and depth-stencil textures.
     const FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-    commandList->ClearTexture( *( renderTarget.GetTexture( AttachmentPoint::Color0 ) ), clearColor );
-    commandList->ClearDepthStencilTexture( *pDepthTexture, D3D12_CLEAR_FLAG_DEPTH );
+    commandList->ClearTexture( renderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
+    commandList->ClearDepthStencilTexture( pDepthTexture, D3D12_CLEAR_FLAG_DEPTH );
 
     commandList->SetRenderTarget( renderTarget );
     commandList->SetViewport( renderTarget.GetViewport() );
@@ -332,7 +331,7 @@ void OnResized( ResizeEventArgs& e )
     GameFramework::Get().SetDisplaySize( e.Width, e.Height );
 
     // Flush any pending commands before resizing resources.
-    Device::Get().Flush();
+    pDevice->Flush();
 
     // Resize the swap chain.
     pSwapChain->Resize( e.Width, e.Height );
@@ -347,7 +346,7 @@ void OnResized( ResizeEventArgs& e )
     optimizedClearValue.Format            = DXGI_FORMAT_D32_FLOAT;
     optimizedClearValue.DepthStencil      = { 1.0F, 0 };
 
-    pDepthTexture = Device::Get().CreateTexture( depthTextureDesc, TextureUsage::Depth, &optimizedClearValue );
+    pDepthTexture = pDevice->CreateTexture( depthTextureDesc, TextureUsage::Depth, &optimizedClearValue );
 }
 
 void OnWindowClose( WindowCloseEventArgs& e )

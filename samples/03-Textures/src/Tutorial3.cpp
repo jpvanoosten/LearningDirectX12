@@ -1,12 +1,22 @@
-#include <Light.h>
-#include <Material.h>
 #include <Tutorial3.h>
 
-#include <dx12lib/Application.h>
+#include <Light.h>
+#include <Material.h>
+
+#include <GameFramework/GameFramework.h>
+#include <GameFramework/Window.h>
+
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/Helpers.h>
-#include <dx12lib/Window.h>
+#include <dx12lib/Mesh.h>
+#include <dx12lib/PipelineStateObject.h>
+#include <dx12lib/RootSignature.h>
+#include <dx12lib/SwapChain.h>
+#include <dx12lib/Texture.h>
+
+#include <imgui.h>
 
 #include <wrl.h>
 using namespace Microsoft::WRL;
@@ -18,7 +28,10 @@ using namespace Microsoft::WRL;
 using namespace dx12lib;
 using namespace DirectX;
 
-#include <algorithm>  // For std::min and std::max.
+#include <algorithm>   // For std::min, std::max, and std::clamp.
+//#include <cstdio>      // For swprintf_s
+#include <functional>  // For std::bind
+#include <string>      // For std::wstring
 
 struct Mat
 {
@@ -48,13 +61,6 @@ enum RootParameters
     NumRootParameters
 };
 
-// Clamp a value between a min and max range.
-template<typename T>
-constexpr const T& clamp( const T& val, const T& min, const T& max )
-{
-    return val < min ? min : val > max ? max : val;
-}
-
 // Builds a look-at (world) matrix from a point, up and direction vectors.
 XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMVECTOR Up )
 {
@@ -75,9 +81,8 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
     return M;
 }
 
-Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSync )
-: super( name, width, height, vSync )
-, m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
+Tutorial3::Tutorial3( const std::wstring& name, uint32_t width, uint32_t height, bool vSync )
+: m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
 , m_Viewport( CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( width ), static_cast<float>( height ) ) )
 , m_Forward( 0 )
 , m_Backward( 0 )
@@ -89,9 +94,22 @@ Tutorial3::Tutorial3( const std::wstring& name, int width, int height, bool vSyn
 , m_Yaw( 0 )
 , m_AnimateLights( false )
 , m_Shift( false )
-, m_Width( 0 )
-, m_Height( 0 )
+, m_Width( width )
+, m_Height( height )
+, m_VSync( vSync )
 {
+    m_Logger = GameFramework::Get().CreateLogger( "Textures" );
+
+    m_Window = GameFramework::Get().CreateWindow( name, width, height );
+
+    using namespace std::placeholders;  // for _1, _2, _3...
+
+    m_Window->Update += UpdateEvent::slot( &Tutorial3::OnUpdate, this );
+    m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial3::OnKeyPressed, this );
+    m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial3::OnKeyReleased, this );
+    m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial3::OnMouseMoved, this );
+    m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial3::OnMouseWheel, this );
+    m_Window->Resize += ResizeEvent::slot( &Tutorial3::OnResize, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -110,41 +128,61 @@ Tutorial3::~Tutorial3()
     _aligned_free( m_pAlignedCameraData );
 }
 
+uint32_t Tutorial3::Run()
+{
+    LoadContent();
+
+    m_Window->Show();
+
+    uint32_t retCode = GameFramework::Get().Run();
+
+    UnloadContent();
+
+    return retCode;
+}
+
 bool Tutorial3::LoadContent()
 {
-    auto device       = Application::Get().GetDevice();
-    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-    auto commandList  = commandQueue->GetCommandList();
+    // Create the DX12 device.
+    m_Device = Device::Create();
+
+    // Create a swap chain.
+    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
+    m_SwapChain->SetVSync( m_VSync );
+
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto  commandList  = commandQueue.GetCommandList();
 
     // Create a Cube mesh
-    m_CubeMesh   = Mesh::CreateCube( *commandList );
-    m_SphereMesh = Mesh::CreateSphere( *commandList );
-    m_ConeMesh   = Mesh::CreateCone( *commandList );
-    m_TorusMesh  = Mesh::CreateTorus( *commandList );
-    m_PlaneMesh  = Mesh::CreatePlane( *commandList );
+    m_CubeMesh   = Mesh::CreateCube( commandList );
+    m_SphereMesh = Mesh::CreateSphere( commandList );
+    m_ConeMesh   = Mesh::CreateCone( commandList );
+    m_TorusMesh  = Mesh::CreateTorus( commandList );
+    m_PlaneMesh  = Mesh::CreatePlane( commandList );
 
     // Load some textures
-    commandList->LoadTextureFromFile( m_DefaultTexture, L"Assets/Textures/DefaultWhite.bmp" );
-    commandList->LoadTextureFromFile( m_DirectXTexture, L"Assets/Textures/Directx9.png" );
-    commandList->LoadTextureFromFile( m_EarthTexture, L"Assets/Textures/earth.dds" );
-    commandList->LoadTextureFromFile( m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg" );
+    m_DefaultTexture  = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp" );
+    m_DirectXTexture  = commandList->LoadTextureFromFile( L"Assets/Textures/Directx9.png" );
+    m_EarthTexture    = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds" );
+    m_MonaLisaTexture = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg" );
+
+    m_DefaultTextureView = m_Device->CreateShaderResourceView( m_DefaultTexture );
+    m_DirectXTextureView = m_Device->CreateShaderResourceView( m_DirectXTexture );
+    m_EarthTextureView   = m_Device->CreateShaderResourceView( m_EarthTexture );
+    m_MonaLisaTextureView = m_Device->CreateShaderResourceView( m_MonaLisaTexture );
+
+    // Start loading resources...
+    commandQueue.ExecuteCommandList( commandList );
 
     // Load the vertex shader.
     ComPtr<ID3DBlob> vertexShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial3/VertexShader.cso", &vertexShaderBlob ) );
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/03-Textures/VertexShader.cso", &vertexShaderBlob ) );
 
     // Load the pixel shader.
     ComPtr<ID3DBlob> pixelShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial3/PixelShader.cso", &pixelShaderBlob ) );
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/03-Textures/PixelShader.cso", &pixelShaderBlob ) );
 
     // Create a root signature.
-    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
-    featureData.HighestVersion                    = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if ( FAILED( device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
-    {
-        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
-    }
-
     // Allow input layout and deny unnecessary access to certain pipeline stages.
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
                                                     D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -173,7 +211,7 @@ bool Tutorial3::LoadContent()
     rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
                                        rootSignatureFlags );
 
-    m_RootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+    m_RootSignature = m_Device->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
     // Setup the pipeline state.
     struct PipelineStateStream
@@ -188,19 +226,18 @@ bool Tutorial3::LoadContent()
         CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC           SampleDesc;
     } pipelineStateStream;
 
-    // sRGB formats provide free gamma correction!
+    // Create a color buffer with sRGB for gamma correction.
     DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
     // Check the best multisample quality level that can be used for the given back buffer format.
-    DXGI_SAMPLE_DESC sampleDesc =
-        Application::Get().GetMultisampleQualityLevels( backBufferFormat, D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT );
+    DXGI_SAMPLE_DESC sampleDesc = m_Device->GetMultisampleQualityLevels( backBufferFormat );
 
     D3D12_RT_FORMAT_ARRAY rtvFormats = {};
     rtvFormats.NumRenderTargets      = 1;
     rtvFormats.RTFormats[0]          = backBufferFormat;
 
-    pipelineStateStream.pRootSignature        = m_RootSignature.GetRootSignature().Get();
+    pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
     pipelineStateStream.InputLayout           = { VertexPositionNormalTexture::InputElements,
                                         VertexPositionNormalTexture::InputElementCount };
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -210,8 +247,7 @@ bool Tutorial3::LoadContent()
     pipelineStateStream.RTVFormats            = rtvFormats;
     pipelineStateStream.SampleDesc            = sampleDesc;
 
-    D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = { sizeof( PipelineStateStream ), &pipelineStateStream };
-    ThrowIfFailed( device->CreatePipelineState( &pipelineStateStreamDesc, IID_PPV_ARGS( &m_PipelineState ) ) );
+    m_PipelineState = m_Device->CreatePipelineStateObject( pipelineStateStream );
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
     auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat, m_Width, m_Height, 1, 1, sampleDesc.Count,
@@ -223,7 +259,8 @@ bool Tutorial3::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    Texture colorTexture = Texture( colorDesc, &colorClearValue, TextureUsage::RenderTarget, L"Color Render Target" );
+    auto colorTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    colorTexture->SetName( L"Color Render Target" );
 
     // Create a depth buffer.
     auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, m_Width, m_Height, 1, 1, sampleDesc.Count,
@@ -232,55 +269,77 @@ bool Tutorial3::LoadContent()
     depthClearValue.Format       = depthDesc.Format;
     depthClearValue.DepthStencil = { 1.0f, 0 };
 
-    Texture depthTexture = Texture( depthDesc, &depthClearValue, TextureUsage::Depth, L"Depth Render Target" );
+    auto depthTexture = m_Device->CreateTexture( depthDesc, TextureUsage::Depth, &depthClearValue );
+    depthTexture->SetName( L"Depth Render Target" );
 
     // Attach the textures to the render target.
     m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
     m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
 
-    auto fenceValue = commandQueue->ExecuteCommandList( commandList );
-    commandQueue->WaitForFenceValue( fenceValue );
+    commandQueue.Flush();  // Wait for loading operations to complete before rendering the first frame.
 
     return true;
 }
 
 void Tutorial3::OnResize( ResizeEventArgs& e )
 {
-    super::OnResize( e );
+    m_Width  = std::max( 1, e.Width );
+    m_Height = std::max( 1, e.Height );
 
-    if ( m_Width != e.Width || m_Height != e.Height )
-    {
-        m_Width  = std::max( 1, e.Width );
-        m_Height = std::max( 1, e.Height );
+    m_SwapChain->Resize( m_Width, m_Height );
 
-        float aspectRatio = m_Width / (float)m_Height;
-        m_Camera.set_Projection( 45.0f, aspectRatio, 0.1f, 100.0f );
+    float aspectRatio = m_Width / (float)m_Height;
+    m_Camera.set_Projection( 45.0f, aspectRatio, 0.1f, 100.0f );
 
-        m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( m_Width ), static_cast<float>( m_Height ) );
+    m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( m_Width ), static_cast<float>( m_Height ) );
 
-        m_RenderTarget.Resize( m_Width, m_Height );
-    }
+    m_RenderTarget.Resize( m_Width, m_Height );
 }
 
-void Tutorial3::UnloadContent() {}
+void Tutorial3::UnloadContent()
+{
+    m_CubeMesh.reset();
+    m_SphereMesh.reset();
+    m_ConeMesh.reset();
+    m_TorusMesh.reset();
+    m_PlaneMesh.reset();
+
+    m_DefaultTexture.reset();
+    m_DirectXTexture.reset();
+    m_EarthTexture.reset();
+    m_MonaLisaTexture.reset();
+
+    m_DefaultTextureView.reset();
+    m_DirectXTextureView.reset();
+    m_EarthTextureView.reset();
+    m_MonaLisaTextureView.reset();
+
+    m_RenderTarget.Reset();
+
+    m_RootSignature.reset();
+    m_PipelineState.reset();
+
+    m_SwapChain.reset();
+    m_Device.reset();
+}
 
 void Tutorial3::OnUpdate( UpdateEventArgs& e )
 {
     static uint64_t frameCount = 0;
     static double   totalTime  = 0.0;
 
-    super::OnUpdate( e );
-
-    totalTime += e.ElapsedTime;
+    totalTime += e.DeltaTime;
     frameCount++;
 
     if ( totalTime > 1.0 )
     {
         double fps = frameCount / totalTime;
 
-        char buffer[512];
-        sprintf_s( buffer, "FPS: %f\n", fps );
-        OutputDebugStringA( buffer );
+        m_Logger->info( "FPS: {:.7}", fps );
+
+        wchar_t buffer[256];
+        ::swprintf_s( buffer, L"Textures [FPS: %f]", fps );
+        m_Window->SetWindowTitle( buffer );
 
         frameCount = 0;
         totalTime  = 0.0;
@@ -290,9 +349,9 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
     float speedMultipler = ( m_Shift ? 16.0f : 4.0f );
 
     XMVECTOR cameraTranslate = XMVectorSet( m_Right - m_Left, 0.0f, m_Forward - m_Backward, 1.0f ) * speedMultipler *
-                               static_cast<float>( e.ElapsedTime );
+                               static_cast<float>( e.DeltaTime );
     XMVECTOR cameraPan =
-        XMVectorSet( 0.0f, m_Up - m_Down, 0.0f, 1.0f ) * speedMultipler * static_cast<float>( e.ElapsedTime );
+        XMVectorSet( 0.0f, m_Up - m_Down, 0.0f, 1.0f ) * speedMultipler * static_cast<float>( e.DeltaTime );
     m_Camera.Translate( cameraTranslate, Space::Local );
     m_Camera.Translate( cameraPan, Space::Local );
 
@@ -311,7 +370,7 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
     static float lightAnimTime = 0.0f;
     if ( m_AnimateLights )
     {
-        lightAnimTime += static_cast<float>( e.ElapsedTime ) * 0.5f * XM_PI;
+        lightAnimTime += static_cast<float>( e.DeltaTime ) * 0.5f * XM_PI;
     }
 
     const float radius  = 8.0f;
@@ -358,6 +417,8 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
         l.LinearAttenuation    = 0.08f;
         l.QuadraticAttenuation = 0.0f;
     }
+
+    OnRender();
 }
 
 void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX viewProjection, Mat& mat )
@@ -368,12 +429,10 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
     mat.ModelViewProjectionMatrix       = model * viewProjection;
 }
 
-void Tutorial3::OnRender( RenderEventArgs& e )
+void Tutorial3::OnRender()
 {
-    super::OnRender( e );
-
-    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
-    auto commandList  = commandQueue->GetCommandList();
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
+    auto commandList  = commandQueue.GetCommandList();
 
     // Clear the render targets.
     {
@@ -414,10 +473,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_SphereMesh->Render( *commandList );
+    m_SphereMesh->Render( commandList );
 
     // Draw a cube
     translationMatrix = XMMatrixTranslation( 4.0f, 4.0f, 4.0f );
@@ -429,10 +488,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_CubeMesh->Render( *commandList );
+    m_CubeMesh->Render( commandList );
 
     // Draw a torus
     translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
@@ -444,10 +503,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_TorusMesh->Render( *commandList );
+    m_TorusMesh->Render( commandList );
 
     // Floor plane.
     float scalePlane      = 20.0f;
@@ -462,10 +521,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Back wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
@@ -476,7 +535,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Ceiling plane
     translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
@@ -487,7 +546,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Front wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
@@ -498,7 +557,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Left wall
     translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
@@ -509,10 +568,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Right wall
     translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
@@ -523,7 +582,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Draw shapes to visualize the position of the lights in the scene.
     Material lightMaterial;
@@ -539,7 +598,7 @@ void Tutorial3::OnRender( RenderEventArgs& e )
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_SphereMesh->Render( *commandList );
+        m_SphereMesh->Render( commandList );
     }
 
     for ( const auto& l: m_SpotLights )
@@ -558,10 +617,10 @@ void Tutorial3::OnRender( RenderEventArgs& e )
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_ConeMesh->Render( *commandList );
+        m_ConeMesh->Render( commandList );
     }
 
-    commandQueue->ExecuteCommandList( commandList );
+    commandQueue.ExecuteCommandList( commandList );
 
     static bool showDemoWindow = false;
     if ( showDemoWindow )
@@ -570,21 +629,19 @@ void Tutorial3::OnRender( RenderEventArgs& e )
     }
 
     // Present
-    m_pWindow->Present( m_RenderTarget.GetTexture( AttachmentPoint::Color0 ) );
+    m_SwapChain->Present( m_RenderTarget.GetTexture( AttachmentPoint::Color0 ) );
 }
 
 static bool g_AllowFullscreenToggle = true;
 
 void Tutorial3::OnKeyPressed( KeyEventArgs& e )
 {
-    super::OnKeyPressed( e );
-
     if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
         switch ( e.Key )
         {
         case KeyCode::Escape:
-            Application::Get().Quit( 0 );
+            GameFramework::Get().Stop();
             break;
         case KeyCode::Enter:
             if ( e.Alt )
@@ -592,13 +649,13 @@ void Tutorial3::OnKeyPressed( KeyEventArgs& e )
             case KeyCode::F11:
                 if ( g_AllowFullscreenToggle )
                 {
-                    m_pWindow->ToggleFullscreen();
+                    m_Window->ToggleFullscreen();
                     g_AllowFullscreenToggle = false;
                 }
                 break;
             }
         case KeyCode::V:
-            m_pWindow->ToggleVSync();
+            m_SwapChain->ToggleVSync();
             break;
         case KeyCode::R:
             // Reset camera transform
@@ -641,8 +698,6 @@ void Tutorial3::OnKeyPressed( KeyEventArgs& e )
 
 void Tutorial3::OnKeyReleased( KeyEventArgs& e )
 {
-    super::OnKeyReleased( e );
-
     switch ( e.Key )
     {
     case KeyCode::Enter:
@@ -682,8 +737,6 @@ void Tutorial3::OnKeyReleased( KeyEventArgs& e )
 
 void Tutorial3::OnMouseMoved( MouseMotionEventArgs& e )
 {
-    super::OnMouseMoved( e );
-
     const float mouseSpeed = 0.1f;
 
     if ( !ImGui::GetIO().WantCaptureMouse )
@@ -692,7 +745,7 @@ void Tutorial3::OnMouseMoved( MouseMotionEventArgs& e )
         {
             m_Pitch -= e.RelY * mouseSpeed;
 
-            m_Pitch = clamp( m_Pitch, -90.0f, 90.0f );
+            m_Pitch = std::clamp( m_Pitch, -90.0f, 90.0f );
 
             m_Yaw -= e.RelX * mouseSpeed;
         }
@@ -706,7 +759,7 @@ void Tutorial3::OnMouseWheel( MouseWheelEventArgs& e )
         auto fov = m_Camera.get_FoV();
 
         fov -= e.WheelDelta;
-        fov = clamp( fov, 12.0f, 90.0f );
+        fov = std::clamp( fov, 12.0f, 90.0f );
 
         m_Camera.set_FoV( fov );
 

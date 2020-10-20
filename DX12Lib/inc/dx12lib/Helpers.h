@@ -31,7 +31,8 @@
  */
 
 #include <cstdint>
-#include <functional>
+//#include <functional>
+#include <thread>   // For std::thread
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // For HRESULT

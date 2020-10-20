@@ -47,7 +47,7 @@ class Device;
 class RootSignature
 {
 public:
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature() const
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> GetD3D12RootSignature() const
     {
         return m_RootSignature;
     }

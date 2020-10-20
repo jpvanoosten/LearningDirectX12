@@ -162,7 +162,7 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
     for ( auto commandList: commandLists )
     {
         auto pendingCommandList = GetCommandList();
-        bool hasPendingBarriers = commandList->Close( *pendingCommandList );
+        bool hasPendingBarriers = commandList->Close( pendingCommandList );
         pendingCommandList->Close();
         // If there are no pending barriers on the pending command list, there is no reason to
         // execute an empty command list on the command queue.

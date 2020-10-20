@@ -69,17 +69,7 @@ public:
      * Create a new DX12 device using the provided adapter.
      * If no adapter is specified, then the highest performance adapter will be  chosen.
      */
-    static Device& Create( std::shared_ptr<Adapter> adapter = nullptr );
-
-    /**
-     * Get a reference to the previously created device.
-     */
-    static Device& Get();
-
-    /**
-     * Destroy the device instance.
-     */
-    static void Destroy();
+    static std::shared_ptr<Device> Create( std::shared_ptr<Adapter> adapter = nullptr );
 
     /**
      * Get a description of the adapter that was used to create the device.
@@ -102,7 +92,7 @@ public:
     /**
      * Create a swapchain using the provided OS window handle.
      */
-    std::shared_ptr<SwapChain> CreateSwapChain( HWND hWnd );
+    std::shared_ptr<SwapChain> CreateSwapChain( HWND hWnd, DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
 
     /**
      * Create a ByteAddressBuffer resource.
@@ -206,6 +196,13 @@ public:
     {
         return m_HighestRootSignatureVersion;
     }
+
+    /**
+     * Check if the requested multisample quality is supported for the given format.
+     */
+    DXGI_SAMPLE_DESC GetMultisampleQualityLevels(
+        DXGI_FORMAT format, UINT numSamples = D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT,
+        D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE ) const;
 
 protected:
     explicit Device( std::shared_ptr<Adapter> adapter );

@@ -4,6 +4,9 @@
 #include <dxgi1_3.h>
 #include <dxgidebug.h>  // For IDXGIDebug1.
 #include <shellapi.h>
+#include <wrl/client.h>
+
+#include <dx12lib/Helpers.h>  // For ThrowIfFailed
 
 #include <GameFramework/GameFramework.h>
 
@@ -24,8 +27,16 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmd
 {
     int retCode = 0;
 
-    WCHAR path[MAX_PATH];
+#if defined( _DEBUG )
+    // Always enable the debug layer before doing anything DX12 related
+    // so all possible errors generated while creating DX12 objects
+    // are caught by the debug layer.
+    Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+    ThrowIfFailed( ::D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) ) );
+    debugInterface->EnableDebugLayer();
+#endif
 
+    WCHAR   path[MAX_PATH];
     int     argc = 0;
     LPWSTR* argv = CommandLineToArgvW( lpCmdLine, &argc );
     if ( argv )
@@ -42,12 +53,12 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmd
         LocalFree( argv );
     }
 
-    Application::Create( hInstance );
+    GameFramework::Create( hInstance );
     {
-        std::shared_ptr<Tutorial3> demo = std::make_shared<Tutorial3>( L"Learning DirectX 12 - Lesson 3", 1280, 720 );
-        retCode                         = Application::Get().Run( demo );
+        std::unique_ptr<Tutorial3> demo = std::make_unique<Tutorial3>( L"Learning DirectX 12 - Lesson 3", 1280, 720 );
+        retCode                         = demo->Run();
     }
-    Application::Destroy();
+    GameFramework::Destroy();
 
     atexit( &ReportLiveObjects );
 

@@ -33,68 +33,90 @@
 #include <Camera.h>
 #include <Light.h>
 
-#include <dx12lib/IndexBuffer.h>
-#include <dx12lib/Mesh.h>
+#include <GameFramework/GameFramework.h>
+#include <GameFramework/Events.h>
+
 #include <dx12lib/RenderTarget.h>
-#include <dx12lib/RootSignature.h>
-#include <dx12lib/Texture.h>
-#include <dx12lib/VertexBuffer.h>
 
-#include <DirectXMath.h>
+#include <cstdint>  // For uint32_t
+#include <memory>   // For std::unique_ptr and std::smart_ptr
+#include <string>   // For std::wstring
+#include <vector>   // For std::vector
 
-class Tutorial3 : public dx12lib::Game
+namespace dx12lib
+{
+class Device;
+class Mesh;
+class RootSignature;
+class PipelineStateObject;
+class ShaderResourceView;
+class SwapChain;
+class Texture;
+}  // namespace dx12lib
+
+class Window;  // From GameFramework
+
+class Tutorial3
 {
 public:
-    using super = dx12lib::Game;
-
-    Tutorial3(const std::wstring& name, int width, int height, bool vSync = false);
+    Tutorial3( const std::wstring& name, uint32_t width, uint32_t height, bool vSync = false );
     virtual ~Tutorial3();
+
+    /**
+     * Start the game loop and return the error code.
+     */
+    uint32_t Run();
 
     /**
      *  Load content required for the demo.
      */
-    virtual bool LoadContent() override;
+    bool LoadContent();
 
     /**
      *  Unload demo specific content that was loaded in LoadContent.
      */
-    virtual void UnloadContent() override;
+    void UnloadContent();
+
 protected:
     /**
      *  Update the game logic.
      */
-    virtual void OnUpdate(UpdateEventArgs& e) override;
-
-    /**
-     *  Render stuff.
-     */
-    virtual void OnRender(RenderEventArgs& e) override;
+    void OnUpdate( UpdateEventArgs& e );
+    void OnRender();
 
     /**
      * Invoked by the registered window when a key is pressed
      * while the window has focus.
      */
-    virtual void OnKeyPressed(KeyEventArgs& e) override;
+    void OnKeyPressed( KeyEventArgs& e );
 
     /**
      * Invoked when a key on the keyboard is released.
      */
-    virtual void OnKeyReleased(KeyEventArgs& e);
+    virtual void OnKeyReleased( KeyEventArgs& e );
 
     /**
      * Invoked when the mouse is moved over the registered window.
      */
-    virtual void OnMouseMoved(MouseMotionEventArgs& e);
+    virtual void OnMouseMoved( MouseMotionEventArgs& e );
 
     /**
      * Invoked when the mouse wheel is scrolled while the registered window has focus.
      */
-    virtual void OnMouseWheel(MouseWheelEventArgs& e) override;
+    void OnMouseWheel( MouseWheelEventArgs& e );
 
-
-    virtual void OnResize(ResizeEventArgs& e) override; 
+    /**
+     * Invoked when the window is resized.
+     */
+    void OnResize( ResizeEventArgs& e );
 
 private:
+    std::shared_ptr<Window> m_Window;  // Render window (from GameFramework)
+
+    // DX12 Device.
+    std::shared_ptr<dx12lib::Device>    m_Device;
+    std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
+
     // Some geometry to render.
     std::unique_ptr<dx12lib::Mesh> m_CubeMesh;
     std::unique_ptr<dx12lib::Mesh> m_SphereMesh;
@@ -102,22 +124,27 @@ private:
     std::unique_ptr<dx12lib::Mesh> m_TorusMesh;
     std::unique_ptr<dx12lib::Mesh> m_PlaneMesh;
 
-    dx12lib::Texture m_DefaultTexture;
-    dx12lib::Texture m_DirectXTexture;
-    dx12lib::Texture m_EarthTexture;
-    dx12lib::Texture m_MonaLisaTexture;
+    std::shared_ptr<dx12lib::Texture> m_DefaultTexture;
+    std::shared_ptr<dx12lib::Texture> m_DirectXTexture;
+    std::shared_ptr<dx12lib::Texture> m_EarthTexture;
+    std::shared_ptr<dx12lib::Texture> m_MonaLisaTexture;
+
+    std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_DirectXTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_EarthTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_MonaLisaTextureView;
 
     // Render target
     dx12lib::RenderTarget m_RenderTarget;
 
     // Root signature
-    dx12lib::RootSignature m_RootSignature;
+    std::shared_ptr<dx12lib::RootSignature> m_RootSignature;
 
     // Pipeline state object.
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
+    std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineState;
 
     D3D12_VIEWPORT m_Viewport;
-    D3D12_RECT m_ScissorRect;
+    D3D12_RECT     m_ScissorRect;
 
     Camera m_Camera;
     struct alignas( 16 ) CameraData
@@ -145,8 +172,12 @@ private:
 
     int m_Width;
     int m_Height;
+    bool m_VSync;
 
     // Define some lights.
     std::vector<PointLight> m_PointLights;
-    std::vector<SpotLight> m_SpotLights;
+    std::vector<SpotLight>  m_SpotLights;
+
+    // Logger for logging messages
+    Logger m_Logger;
 };

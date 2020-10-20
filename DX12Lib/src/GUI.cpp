@@ -71,8 +71,8 @@ GUI::GUI( Device& device, HWND hWnd )
     subresourceData.RowPitch   = rowPitch;
     subresourceData.SlicePitch = slicePitch;
 
-    commandList->CopyTextureSubresource( *m_FontTexture, 0, 1, &subresourceData );
-    commandList->GenerateMips( *m_FontTexture );
+    commandList->CopyTextureSubresource( m_FontTexture, 0, 1, &subresourceData );
+    commandList->GenerateMips( m_FontTexture );
 
     commandQueue.ExecuteCommandList( commandList );
 
@@ -159,7 +159,7 @@ GUI::GUI( Device& device, HWND hWnd )
         CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL         DepthStencilState;
     } pipelineStateStream;
 
-    pipelineStateStream.pRootSignature        = m_RootSignature->GetRootSignature().Get();
+    pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
     pipelineStateStream.InputLayout           = { inputLayout, 3 };
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS                    = { g_ImGUI_VS, sizeof( g_ImGUI_VS ) };
@@ -185,8 +185,10 @@ void GUI::NewFrame()
     ImGui::NewFrame();
 }
 
-void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
+void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget )
 {
+    assert( commandList );
+
     ImGui::SetCurrentContext( m_pImGuiCtx );
     ImGui::Render();
 
@@ -199,9 +201,9 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
 
     ImVec2 displayPos = drawData->DisplayPos;
 
-    commandList.SetGraphicsRootSignature( *m_RootSignature );
-    commandList.SetPipelineState( *m_PipelineState );
-    commandList.SetRenderTarget( renderTarget );
+    commandList->SetGraphicsRootSignature( m_RootSignature );
+    commandList->SetPipelineState( m_PipelineState );
+    commandList->SetRenderTarget( renderTarget );
 
     // Set root arguments.
     //    DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixOrthographicRH( drawData->DisplaySize.x,
@@ -217,8 +219,8 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
         { ( R + L ) / ( L - R ), ( T + B ) / ( B - T ), 0.5f, 1.0f },
     };
 
-    commandList.SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
-    commandList.SetShaderResourceView( RootParameters::FontTexture, 0, *m_FontSRV,
+    commandList->SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
+    commandList->SetShaderResourceView( RootParameters::FontTexture, 0, m_FontSRV,
                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     D3D12_VIEWPORT viewport = {};
@@ -227,8 +229,8 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
     viewport.MinDepth       = 0.0f;
     viewport.MaxDepth       = 1.0f;
 
-    commandList.SetViewport( viewport );
-    commandList.SetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    commandList->SetViewport( viewport );
+    commandList->SetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     const DXGI_FORMAT indexFormat = sizeof( ImDrawIdx ) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT;
 
@@ -237,15 +239,15 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
     // resource barriers are only flushed when a draw command is executed).
     // In that case, manually flushing the resource barriers will ensure that
     // they are properly flushed before exiting this function.
-    commandList.FlushResourceBarriers();
+    commandList->FlushResourceBarriers();
 
     for ( int i = 0; i < drawData->CmdListsCount; ++i )
     {
         const ImDrawList* drawList = drawData->CmdLists[i];
 
-        commandList.SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ),
+        commandList->SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ),
                                             drawList->VtxBuffer.Data );
-        commandList.SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
+        commandList->SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
 
         int indexOffset = 0;
         for ( int j = 0; j < drawList->CmdBuffer.size(); ++j )
@@ -266,8 +268,8 @@ void GUI::Render( CommandList& commandList, const RenderTarget& renderTarget )
 
                 if ( scissorRect.right - scissorRect.left > 0.0f && scissorRect.bottom - scissorRect.top > 0.0 )
                 {
-                    commandList.SetScissorRect( scissorRect );
-                    commandList.DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
+                    commandList->SetScissorRect( scissorRect );
+                    commandList->DrawIndexed( drawCmd.ElemCount, 1, indexOffset );
                 }
             }
             indexOffset += drawCmd.ElemCount;

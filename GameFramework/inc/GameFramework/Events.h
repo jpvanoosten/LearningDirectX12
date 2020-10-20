@@ -44,6 +44,7 @@ template<typename... Args>
 class Delegate
 {
 public:
+    using slot              = sig::slot<void( Args... )>;
     using signal            = sig::signal<void( Args... )>;
     using connection        = sig::connection;
     using scoped_connection = sig::scoped_connection;
@@ -166,8 +167,7 @@ class KeyEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
-    KeyEventArgs( KeyCode key, unsigned int c, KeyState state, bool control,
-                  bool shift, bool alt )
+    KeyEventArgs( KeyCode key, unsigned int c, KeyState state, bool control, bool shift, bool alt )
     : base()
     , Key( key )
     , Char( c )
@@ -196,8 +196,7 @@ class MouseMotionEventArgs : public EventArgs
 {
 public:
     using base = EventArgs;
-    MouseMotionEventArgs( bool leftButton, bool middleButton, bool rightButton,
-                          bool control, bool shift, int x, int y )
+    MouseMotionEventArgs( bool leftButton, bool middleButton, bool rightButton, bool control, bool shift, int x, int y )
     : base()
     , LeftButton( leftButton )
     , MiddleButton( middleButton )
@@ -215,12 +214,12 @@ public:
     bool RightButton;   // Is the right mouse button down?
     bool Control;       // Is the CTRL key down?
     bool Shift;         // Is the Shift key down?
-    int X;  // The X-position of the cursor relative to the upper-left corner of
-            // the client area (in pixels).
-    int Y;  // The Y-position of the cursor relative to the upper-left corner of
-            // the client area (in pixels).
-    int RelX;  // How far the mouse moved since the last event (in pixels).
-    int RelY;  // How far the mouse moved since the last event (in pixels).
+    int  X;             // The X-position of the cursor relative to the upper-left corner of
+                        // the client area (in pixels).
+    int Y;              // The Y-position of the cursor relative to the upper-left corner of
+                        // the client area (in pixels).
+    int RelX;           // How far the mouse moved since the last event (in pixels).
+    int RelY;           // How far the mouse moved since the last event (in pixels).
 };
 
 using MouseMotionEvent = Delegate<MouseMotionEventArgs&>;
@@ -244,8 +243,7 @@ class MouseButtonEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    MouseButtonEventArgs( MouseButton button, ButtonState state,
-                          bool leftButton, bool middleButton, bool rightButton,
+    MouseButtonEventArgs( MouseButton button, ButtonState state, bool leftButton, bool middleButton, bool rightButton,
                           bool control, bool shift, int x, int y )
     : base()
     , Button( button )
@@ -283,9 +281,8 @@ class MouseWheelEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    MouseWheelEventArgs( float wheelDelta, bool leftButton, bool middleButton,
-                         bool rightButton, bool control, bool shift, int x,
-                         int y )
+    MouseWheelEventArgs( float wheelDelta, bool leftButton, bool middleButton, bool rightButton, bool control,
+                         bool shift, int x, int y )
     : base()
     , WheelDelta( wheelDelta )
     , LeftButton( leftButton )
@@ -306,10 +303,10 @@ public:
     bool RightButton;   // Is the right mouse button down?
     bool Control;       // Is the CTRL key down?
     bool Shift;         // Is the Shift key down?
-    int X;  // The X-position of the cursor relative to the upper-left corner of
-            // the client area.
-    int Y;  // The Y-position of the cursor relative to the upper-left corner of
-            // the client area.
+    int  X;             // The X-position of the cursor relative to the upper-left corner of
+                        // the client area.
+    int Y;              // The Y-position of the cursor relative to the upper-left corner of
+                        // the client area.
 };
 using MouseWheelEvent = Delegate<MouseWheelEventArgs&>;
 
@@ -372,8 +369,7 @@ class RuntimeErrorEventArgs : public EventArgs
 public:
     using base = EventArgs;
 
-    RuntimeErrorEventArgs( const std::string& errorString,
-                           const std::string& compilerError )
+    RuntimeErrorEventArgs( const std::string& errorString, const std::string& compilerError )
     : base()
     , ErrorString( errorString )
     , CompilerError( compilerError )
@@ -386,10 +382,10 @@ using RuntimeErrorEvent = Delegate<RuntimeErrorEventArgs&>;
 
 enum class FileAction
 {
-    Unknown,  // An unknown action triggered this event. (Should not happen, but
-              // I guess it's possible)
-    Added,    // A file was added to a directory.
-    Removed,  // A file was removed from a directory.
+    Unknown,    // An unknown action triggered this event. (Should not happen, but
+                // I guess it's possible)
+    Added,      // A file was added to a directory.
+    Removed,    // A file was removed from a directory.
     Modified,   // A file was modified. This might indicate the file's timestamp
                 // was modified or another attribute was modified.
     RenameOld,  // The file was renamed and this event stores the previous name.

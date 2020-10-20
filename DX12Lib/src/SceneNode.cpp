@@ -160,7 +160,7 @@ void SceneNode::RemoveMesh( std::shared_ptr<Mesh> mesh )
     }
 }
 
-void SceneNode::Render( CommandList& commandList )
+void SceneNode::Render( const std::shared_ptr<CommandList>& commandList )
 {
     // First render meshes attached to this node
     for ( auto mesh: m_Meshes ) { mesh->Render( commandList ); }

@@ -13,13 +13,14 @@
 
 using namespace dx12lib;
 
-SwapChain::SwapChain( Device& device, HWND hWnd )
+SwapChain::SwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat )
 : m_Device( device )
 , m_CommandQueue( device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT ) )
 , m_hWnd( hWnd )
 , m_FenceValues { 0 }
 , m_Width( 0u )
 , m_Height( 0u )
+, m_BackbufferFormat( backBufferFormat )
 , m_VSync( true )
 , m_TearingSupported( false )
 , m_Fullscreen( false )
@@ -59,7 +60,7 @@ SwapChain::SwapChain( Device& device, HWND hWnd )
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width                 = m_Width;
     swapChainDesc.Height                = m_Height;
-    swapChainDesc.Format                = DXGI_FORMAT_R10G10B10A2_UNORM;  // TODO: Check for HDR support.
+    swapChainDesc.Format                = m_BackbufferFormat;
     swapChainDesc.Stereo                = FALSE;
     swapChainDesc.SampleDesc            = { 1, 0 };
     swapChainDesc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -113,13 +114,13 @@ void SwapChain::SetFullscreen( bool fullscreen )
     }
 }
 
-void dx12lib::SwapChain::WaitForSwapChain()
+void SwapChain::WaitForSwapChain()
 {
     DWORD result = ::WaitForSingleObjectEx( m_hFrameLatencyWaitableObject, 1000,
                                             TRUE );  // Wait for 1 second (should never have to wait that long...)
 }
 
-void dx12lib::SwapChain::Resize( uint32_t width, uint32_t height )
+void SwapChain::Resize( uint32_t width, uint32_t height )
 {
     if ( m_Width != width || m_Height != height )
     {
@@ -129,7 +130,7 @@ void dx12lib::SwapChain::Resize( uint32_t width, uint32_t height )
         m_Device.Flush();
 
         // Release all references to back buffer textures.
-        m_RenderTarget.AttachTexture( AttachmentPoint::Color0, nullptr );
+        m_RenderTarget.Reset();
         for ( UINT i = 0; i < BufferCount; ++i )
         {
             ResourceStateTracker::RemoveGlobalResourceState( m_BackBufferTextures[i]->GetD3D12Resource().Get() );
@@ -147,13 +148,13 @@ void dx12lib::SwapChain::Resize( uint32_t width, uint32_t height )
     }
 }
 
-const dx12lib::RenderTarget& dx12lib::SwapChain::GetRenderTarget() const
+const RenderTarget& SwapChain::GetRenderTarget() const
 {
     m_RenderTarget.AttachTexture( AttachmentPoint::Color0, m_BackBufferTextures[m_CurrentBackBufferIndex] );
     return m_RenderTarget;
 }
 
-UINT dx12lib::SwapChain::Present( const Texture* texture )
+UINT SwapChain::Present( const std::shared_ptr<Texture>& texture )
 {
     auto commandList = m_CommandQueue.GetCommandList();
 
@@ -163,19 +164,19 @@ UINT dx12lib::SwapChain::Present( const Texture* texture )
     {
         if ( texture->GetD3D12ResourceDesc().SampleDesc.Count > 1 )
         {
-            commandList->ResolveSubresource( *backBuffer, *texture );
+            commandList->ResolveSubresource( backBuffer, texture );
         }
         else
         {
-            commandList->CopyResource( *backBuffer, *texture );
+            commandList->CopyResource( backBuffer, texture );
         }
     }
 
     RenderTarget renderTarget;
     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
-    m_GUI->Render( *commandList, renderTarget );
+    m_GUI->Render( commandList, renderTarget );
 
-    commandList->TransitionBarrier( *backBuffer, D3D12_RESOURCE_STATE_PRESENT );
+    commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     m_CommandQueue.ExecuteCommandList( commandList );
 
     UINT syncInterval = m_VSync ? 1 : 0;
@@ -196,7 +197,7 @@ UINT dx12lib::SwapChain::Present( const Texture* texture )
     return m_CurrentBackBufferIndex;
 }
 
-void dx12lib::SwapChain::UpdateRenderTargetViews()
+void SwapChain::UpdateRenderTargetViews()
 {
     for ( UINT i = 0; i < BufferCount; ++i )
     {

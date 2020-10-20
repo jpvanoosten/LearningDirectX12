@@ -1,7 +1,5 @@
-/**
- *
- */
 #pragma once
+
 /*
  *  Copyright(c) 2018 Jeremiah van Oosten
  *
@@ -36,6 +34,7 @@
  */
 
 #include <DirectXMath.h>  // For XMFLOAT2
+#include <d3d12.h>        // For D3D12_VIEWPORT
 
 #include <cstdint>
 #include <memory>  // for std::shared_ptr
@@ -76,11 +75,11 @@ public:
 
     /**
      * Attach a texture to a given attachment point.
-     * 
+     *
      * @param attachmentPoint The point to attach the texture to.
      * @param [texture] Optional texture to bind to the render target. Specify nullptr to remove the texture.
      */
-    void           AttachTexture( AttachmentPoint attachmentPoint, std::shared_ptr<Texture> texture );
+    void                     AttachTexture( AttachmentPoint attachmentPoint, std::shared_ptr<Texture> texture );
     std::shared_ptr<Texture> GetTexture( AttachmentPoint attachmentPoint ) const;
 
     // Resize all of the textures associated with the render target.
@@ -109,6 +108,12 @@ public:
 
     // Get the format of the attached depth/stencil buffer.
     DXGI_FORMAT GetDepthStencilFormat() const;
+
+    // Reset all textures
+    void Reset()
+    {
+        m_Textures.clear();
+    }
 
 private:
     std::vector<std::shared_ptr<Texture>> m_Textures;

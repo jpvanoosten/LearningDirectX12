@@ -56,7 +56,7 @@ public:
 
     // Begin a new frame.
     virtual void NewFrame();
-    virtual void Render( CommandList& commandList, const RenderTarget& renderTarget );
+    virtual void Render( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget );
 
     // Destroy the ImGui context.
     virtual void Destroy();

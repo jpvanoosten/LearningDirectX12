@@ -43,7 +43,7 @@ PanoToCubemapPSO::PanoToCubemapPSO( Device& device )
         CD3DX12_PIPELINE_STATE_STREAM_CS CS;
     } pipelineStateStream;
 
-    pipelineStateStream.pRootSignature = m_RootSignature->GetRootSignature().Get();
+    pipelineStateStream.pRootSignature = m_RootSignature->GetD3D12RootSignature().Get();
     pipelineStateStream.CS = { g_PanoToCubemap_CS, sizeof(g_PanoToCubemap_CS) };
 
     m_PipelineState = device.CreatePipelineStateObject( pipelineStateStream );

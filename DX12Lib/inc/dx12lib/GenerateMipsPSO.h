@@ -70,14 +70,14 @@ class GenerateMipsPSO
 public:
     GenerateMipsPSO( Device& device );
 
-    const RootSignature& GetRootSignature() const
+    std::shared_ptr<RootSignature> GetRootSignature() const
     {
-        return *m_RootSignature;
+        return m_RootSignature;
     }
 
-    const PipelineStateObject& GetPipelineState() const
+    std::shared_ptr<PipelineStateObject> GetPipelineState() const
     {
-        return *m_PipelineState;
+        return m_PipelineState;
     }
 
     D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultUAV() const

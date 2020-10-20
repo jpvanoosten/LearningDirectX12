@@ -65,7 +65,7 @@ class UnorderedAccessView;
 class UploadBuffer;
 class VertexBuffer;
 
-class CommandList
+class CommandList : public std::enable_shared_from_this<CommandList>
 {
 public:
     /**
@@ -79,7 +79,8 @@ public:
     /**
      * Get the device that was used to create this command list.
      */
-    Device& GetDevice() const {
+    Device& GetDevice() const
+    {
         return m_Device;
     }
 
@@ -102,7 +103,7 @@ public:
      * @param flushBarriers Force flush any barriers. Resource barriers need to be flushed before a command (draw,
      * dispatch, or copy) that expects the resource to be in a particular state can run.
      */
-    void TransitionBarrier( const Resource& resource, D3D12_RESOURCE_STATES stateAfter,
+    void TransitionBarrier( const std::shared_ptr<Resource>& resource, D3D12_RESOURCE_STATES stateAfter,
                             UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false );
     void TransitionBarrier( Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter,
                             UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, bool flushBarriers = false );
@@ -116,7 +117,7 @@ public:
      * flushed before a command (draw, dispatch, or copy) that expects the resource
      * to be in a particular state can run.
      */
-    void UAVBarrier( const Resource* resource = nullptr, bool flushBarriers = false );
+    void UAVBarrier( const std::shared_ptr<Resource>& resource = nullptr, bool flushBarriers = false );
     void UAVBarrier( Microsoft::WRL::ComPtr<ID3D12Resource> resource, bool flushBarriers = false );
 
     /**
@@ -126,8 +127,8 @@ public:
      * @param [beforeResource] The resource that currently occupies the heap (can be null).
      * @param [afterResource] The resource that will occupy the space in the heap (can be null).
      */
-    void AliasingBarrier( const Resource* beforeResource = nullptr, const Resource* afterResource = nullptr,
-                          bool flushBarriers = false );
+    void AliasingBarrier( const std::shared_ptr<Resource>&               = nullptr,
+                          const std::shared_ptr<Resource>& afterResource = nullptr, bool flushBarriers = false );
     void AliasingBarrier( Microsoft::WRL::ComPtr<ID3D12Resource> beforeResource,
                           Microsoft::WRL::ComPtr<ID3D12Resource> afterResource, bool flushBarriers = false );
 
@@ -139,14 +140,14 @@ public:
     /**
      * Copy resources.
      */
-    void CopyResource( const Resource& dstRes, const Resource& srcRes );
+    void CopyResource( const std::shared_ptr<Resource>& dstRes, const std::shared_ptr<Resource>& srcRes );
     void CopyResource( Microsoft::WRL::ComPtr<ID3D12Resource> dstRes, Microsoft::WRL::ComPtr<ID3D12Resource> srcRes );
 
     /**
      * Resolve a multisampled resource into a non-multisampled resource.
      */
-    void ResolveSubresource( const Resource& dstRes, const Resource& srcRes, uint32_t dstSubresource = 0,
-                             uint32_t srcSubresource = 0 );
+    void ResolveSubresource( const std::shared_ptr<Resource>&, const std::shared_ptr<Resource>&,
+                             uint32_t dstSubresource = 0, uint32_t srcSubresource = 0 );
 
     /**
      * Copy the contents to a vertex buffer in GPU memory.
@@ -213,31 +214,31 @@ public:
     /**
      * Clear a texture.
      */
-    void ClearTexture( const Texture& texture, const float clearColor[4] );
+    void ClearTexture( const std::shared_ptr<Texture>& texture, const float clearColor[4] );
 
     /**
      * Clear depth/stencil texture.
      */
-    void ClearDepthStencilTexture( const Texture& texture, D3D12_CLEAR_FLAGS clearFlags, float depth = 1.0f,
-                                   uint8_t stencil = 0 );
+    void ClearDepthStencilTexture( const std::shared_ptr<Texture>& texture, D3D12_CLEAR_FLAGS clearFlags,
+                                   float depth = 1.0f, uint8_t stencil = 0 );
 
     /**
      * Generate mips for the texture.
      * The first subresource is used to generate the mip chain.
      * Mips are automatically generated for textures loaded from files.
      */
-    void GenerateMips( const Texture& texture );
+    void GenerateMips( const std::shared_ptr<Texture>& texture );
 
     /**
      * Generate a cubemap texture from a panoramic (equirectangular) texture.
      */
-    void PanoToCubemap( std::shared_ptr<Texture>& cubemapTexture, std::shared_ptr<Texture>& panoTexture );
+    void PanoToCubemap( const std::shared_ptr<Texture>& cubemapTexture, const std::shared_ptr<Texture>& panoTexture );
 
     /**
      * Copy subresource data to a texture.
      */
-    void CopyTextureSubresource( const Texture& texture, uint32_t firstSubresource, uint32_t numSubresources,
-                                 D3D12_SUBRESOURCE_DATA* subresourceData );
+    void CopyTextureSubresource( const std::shared_ptr<Texture>& texture, uint32_t firstSubresource,
+                                 uint32_t numSubresources, D3D12_SUBRESOURCE_DATA* subresourceData );
 
     /**
      * Set a dynamic constant buffer data to an inline descriptor in the root
@@ -279,7 +280,7 @@ public:
      * @vertexBuffer The vertex buffer to bind (can be null to remove the vertex buffer from the slot).
      */
     void SetVertexBuffers( uint32_t startSlot, const std::vector<std::shared_ptr<VertexBuffer>>& vertexBufferViews );
-    void SetVertexBuffer( uint32_t slot, std::shared_ptr<VertexBuffer> vertexBufferView );
+    void SetVertexBuffer( uint32_t slot, const std::shared_ptr<VertexBuffer>& vertexBufferView );
 
     /**
      * Set dynamic vertex buffer data to the rendering pipeline.
@@ -296,7 +297,7 @@ public:
      *
      * @param indexBuffer The index buffer to bind to the rendering pipeline.
      */
-    void SetIndexBuffer( std::shared_ptr<IndexBuffer> indexBuffer );
+    void SetIndexBuffer( const std::shared_ptr<IndexBuffer>& indexBuffer );
 
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
@@ -337,30 +338,32 @@ public:
     /**
      * Set the pipeline state object on the command list.
      */
-    void SetPipelineState( const PipelineStateObject& pipelineState );
+    void SetPipelineState( const std::shared_ptr<PipelineStateObject>& pipelineState );
 
     /**
      * Set the current root signature on the command list.
      */
-    void SetGraphicsRootSignature( const RootSignature& rootSignature );
-    void SetComputeRootSignature( const RootSignature& rootSignature );
+    void SetGraphicsRootSignature( const std::shared_ptr<RootSignature>& rootSignature );
+    void SetComputeRootSignature( const std::shared_ptr<RootSignature>& rootSignature );
 
     /**
      * Set the SRV on the graphics pipeline.
      */
-    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset, const ShaderResourceView& srv,
+    void SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
+                                const std::shared_ptr<ShaderResourceView>& srv,
                                 D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
                                                                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                                UINT firstSubresource                      = 0,
-                                UINT numSubresources                       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
+                                UINT firstSubresource = 0,
+                                UINT numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
 
     /**
      * Set the UAV on the graphics pipeline.
      */
-    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset, const UnorderedAccessView& uav,
-                                 D3D12_RESOURCE_STATES stateAfter            = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-                                 UINT                  firstSubresource      = 0,
-                                 UINT                  numSubresources       = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
+                                 const std::shared_ptr<UnorderedAccessView>& uav,
+                                 D3D12_RESOURCE_STATES stateAfter       = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                                 UINT                  firstSubresource = 0,
+                                 UINT                  numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
 
     /**
      * Set the render targets for the graphics rendering pipeline.
@@ -397,7 +400,7 @@ protected:
      * @return true if there are any pending resource barriers that need to be
      * processed.
      */
-    bool Close( CommandList& pendingCommandList );
+    bool Close( const std::shared_ptr<CommandList>& pendingCommandList );
     // Just close the command list. This is useful for pending command lists.
     void Close();
 
@@ -425,10 +428,10 @@ protected:
 
 private:
     void TrackResource( Microsoft::WRL::ComPtr<ID3D12Object> object );
-    void TrackResource( const Resource& res );
+    void TrackResource( const std::shared_ptr<Resource>& res );
 
     // Generate mips for UAV compatible textures.
-    void GenerateMips_UAV( std::shared_ptr<Texture>& texture, bool isSRGB );
+    void GenerateMips_UAV( const std::shared_ptr<Texture>& texture, bool isSRGB );
 
     // Copy the contents of a CPU buffer to a GPU buffer (possibly replacing the previous buffer contents).
     Microsoft::WRL::ComPtr<ID3D12Resource> CopyBuffer( size_t bufferSize, const void* bufferData,
@@ -436,8 +439,6 @@ private:
 
     // Binds the current descriptor heaps to the command list.
     void BindDescriptorHeaps();
-
-    using TrackedObjects = std::vector<Microsoft::WRL::ComPtr<ID3D12Object>>;
 
     // The device that is used to create this command list.
     Device&                                            m_Device;
@@ -477,6 +478,8 @@ private:
     std::unique_ptr<GenerateMipsPSO> m_GenerateMipsPSO;
     // Pipeline state object for converting panorama (equirectangular) to cubemaps
     std::unique_ptr<PanoToCubemapPSO> m_PanoToCubemapPSO;
+
+    using TrackedObjects = std::vector<Microsoft::WRL::ComPtr<ID3D12Object>>;
 
     // Objects that are being tracked by a command list that is "in-flight" on
     // the command-queue and cannot be deleted. To ensure objects are not deleted

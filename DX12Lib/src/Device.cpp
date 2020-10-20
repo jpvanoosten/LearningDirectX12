@@ -19,14 +19,12 @@
 
 using namespace dx12lib;
 
-static Device* g_pDevice = nullptr;
-
 class MakeUnorderedAccessView : public UnorderedAccessView
 {
 public:
     MakeUnorderedAccessView( Device& device, std::shared_ptr<Resource> resource,
                              std::shared_ptr<Resource> counterResource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
-    : UnorderedAccessView(device, resource, counterResource, uav )
+    : UnorderedAccessView( device, resource, counterResource, uav )
     {}
 
     virtual ~MakeUnorderedAccessView() {}
@@ -166,8 +164,8 @@ public:
 class MakeSwapChain : public SwapChain
 {
 public:
-    MakeSwapChain( Device& device, HWND hWnd )
-    : SwapChain( device, hWnd )
+    MakeSwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM )
+    : SwapChain( device, hWnd, backBufferFormat )
     {}
 
     virtual ~MakeSwapChain() {}
@@ -184,29 +182,20 @@ public:
     virtual ~MakeCommandQueue() {}
 };
 
-Device& Device::Create( std::shared_ptr<Adapter> adapter )
+// Adapter for std::make_shared
+class MakeDevice : public Device
 {
-    if ( !g_pDevice )
-    {
-        g_pDevice = new Device( adapter );
-    }
+public:
+    MakeDevice( std::shared_ptr<Adapter> adapter )
+    : Device( adapter )
+    {}
 
-    return *g_pDevice;
-}
+    virtual ~MakeDevice() {}
+};
 
-Device& Device::Get()
+std::shared_ptr<Device> Device::Create( std::shared_ptr<Adapter> adapter )
 {
-    assert( g_pDevice );
-    return *g_pDevice;
-}
-
-void Device::Destroy()
-{
-    if ( g_pDevice )
-    {
-        delete g_pDevice;
-        g_pDevice = nullptr;
-    }
+    return std::make_shared<MakeDevice>( adapter );
 }
 
 std::wstring Device::GetDescription() const
@@ -345,10 +334,11 @@ void Device::ReleaseStaleDescriptors()
     { m_DescriptorAllocators[i]->ReleaseStaleDescriptors(); }
 }
 
-std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND hWnd )
+std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND        hWnd,
+                                                    DXGI_FORMAT backBufferFormat )
 {
     std::shared_ptr<SwapChain> swapChain;
-    swapChain = std::make_shared<MakeSwapChain>( *this, hWnd );
+    swapChain = std::make_shared<MakeSwapChain>( *this, hWnd, backBufferFormat );
 
     return swapChain;
 }
@@ -481,4 +471,33 @@ std::shared_ptr<UnorderedAccessView> Device::CreateUnorderedAccessView( std::sha
         std::make_shared<MakeUnorderedAccessView>( *this, resource, counterResource, uav );
 
     return unorderedAccessView;
+}
+
+DXGI_SAMPLE_DESC Device::GetMultisampleQualityLevels( DXGI_FORMAT format,
+                                                      UINT        numSamples,
+                                                      D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS flags ) const
+{
+    DXGI_SAMPLE_DESC sampleDesc = { 1, 0 };
+
+    D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS qualityLevels;
+    qualityLevels.Format           = format;
+    qualityLevels.SampleCount      = 1;
+    qualityLevels.Flags            = flags;
+    qualityLevels.NumQualityLevels = 0;
+
+    while (
+        qualityLevels.SampleCount <= numSamples &&
+        SUCCEEDED( m_d3d12Device->CheckFeatureSupport( D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &qualityLevels,
+                                                       sizeof( D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS ) ) ) &&
+        qualityLevels.NumQualityLevels > 0 )
+    {
+        // That works...
+        sampleDesc.Count   = qualityLevels.SampleCount;
+        sampleDesc.Quality = qualityLevels.NumQualityLevels - 1;
+
+        // But can we do better?
+        qualityLevels.SampleCount *= 2;
+    }
+
+    return sampleDesc;
 }

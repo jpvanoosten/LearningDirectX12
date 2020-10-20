@@ -21,6 +21,7 @@ void OnKeyPressed( KeyEventArgs& e );
 void OnWindowResized( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
 
+std::shared_ptr<Device>    pDevice     = nullptr;
 std::shared_ptr<Window>    pGameWindow = nullptr;
 std::shared_ptr<SwapChain> pSwapChain  = nullptr;
 
@@ -54,16 +55,16 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         logger = gf.CreateLogger( "ClearScreen" );
 
         // Create a GPU device using the default adapter selection.
-        auto& device = Device::Create();
+        pDevice = Device::Create();
 
-        auto description = device.GetDescription();
+        auto description = pDevice->GetDescription();
         logger->info( L"Device Created: {}", description );
 
         // Create a window:
         pGameWindow = gf.CreateWindow( L"Clear Screen", 1920, 1080 );
 
-        // Create a swapchain for the window
-        pSwapChain = device.CreateSwapChain( pGameWindow->GetWindowHandle() );
+        // Create a swap chain for the window
+        pSwapChain = pDevice->CreateSwapChain( pGameWindow->GetWindowHandle() );
         pSwapChain->SetVSync( false );
 
         // Register events.
@@ -79,9 +80,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         // Release globals.
         pSwapChain.reset();
         pGameWindow.reset();
-
-        // Destroy the graphics device.
-        Device::Destroy();
+        pDevice.reset();
     }
     // Destroy game framework resource.
     GameFramework::Destroy();
@@ -112,13 +111,13 @@ void OnUpdate( UpdateEventArgs& e )
         pGameWindow->SetWindowTitle( buffer );
     }
 
-    auto& commandQueue = Device::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
+    auto& commandQueue = pDevice->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
 
     auto& renderTarget = pSwapChain->GetRenderTarget();
 
     const FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-    commandList->ClearTexture( *( renderTarget.GetTexture( AttachmentPoint::Color0 ) ), clearColor );
+    commandList->ClearTexture( renderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
 
     commandQueue.ExecuteCommandList( commandList );
 
