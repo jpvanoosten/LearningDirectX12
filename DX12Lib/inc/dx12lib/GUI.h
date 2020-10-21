@@ -32,10 +32,10 @@
 
 #include "imgui.h"
 
-#include <d3dx12.h>
-#include <wrl.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>  // For HWND
 
-#include <memory>  // For std::weak_ptr and std::shared_ptr
+#include <memory>  // For std::shared_ptr
 
 namespace dx12lib
 {
@@ -51,28 +51,42 @@ class Texture;
 class GUI
 {
 public:
-    GUI( Device& device, HWND hWnd );
-    virtual ~GUI();
+    /**
+     * Window message handler. This needs to be called by the application to allow ImGui to handle input messages.
+     */
+    LRESULT WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
-    // Begin a new frame.
-    virtual void NewFrame();
-    virtual void Render( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget );
+    /**
+     * Begin a new ImGui frame. Do this before calling any ImGui functions that modifies ImGui's render context.
+     */
+    void NewFrame();
 
-    // Destroy the ImGui context.
-    virtual void Destroy();
+    /**
+     * Render ImgGui to the given render target.
+     */
+    void Render( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget );
 
-    // Set the scaling for this ImGuiContext.
+    /**
+     * Destroy ImGui context.
+     */
+    void Destroy();
+
+    /**
+     * Set the font scaling for ImGui (this should be called when the window's DPI scaling changes.
+     */
     void SetScaling( float scale );
 
 protected:
-private:
-    Device& m_Device;
+    GUI( Device& device, HWND hWnd, const RenderTarget& renderTarget );
+    virtual ~GUI();
 
+private:
+    Device&                              m_Device;
+    HWND                                 m_hWnd;
     ImGuiContext*                        m_pImGuiCtx;
     std::shared_ptr<Texture>             m_FontTexture;
     std::shared_ptr<ShaderResourceView>  m_FontSRV;
     std::shared_ptr<RootSignature>       m_RootSignature;
     std::shared_ptr<PipelineStateObject> m_PipelineState;
-    HWND                                 m_hWnd;
 };
 }  // namespace dx12lib

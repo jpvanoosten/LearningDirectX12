@@ -45,7 +45,10 @@
 
 namespace dx12lib
 {
+
+class CommandList;
 class Device;
+class GUI;
 class Mesh;
 class RootSignature;
 class PipelineStateObject;
@@ -83,6 +86,7 @@ protected:
      */
     void OnUpdate( UpdateEventArgs& e );
     void OnRender();
+    void OnGUI(const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
 
     /**
      * Invoked by the registered window when a key is pressed
@@ -116,6 +120,7 @@ private:
     // DX12 Device.
     std::shared_ptr<dx12lib::Device>    m_Device;
     std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
+    std::shared_ptr<dx12lib::GUI>       m_GUI;
 
     // Some geometry to render.
     std::unique_ptr<dx12lib::Mesh> m_CubeMesh;

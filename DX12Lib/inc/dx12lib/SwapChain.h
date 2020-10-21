@@ -45,7 +45,6 @@ namespace dx12lib
 
 class CommandQueue;
 class Device;
-class GUI;
 class Texture;
 
 class SwapChain
@@ -133,8 +132,8 @@ public:
     /**
      * Get the format that is used to create the backbuffer.
      */
-    DXGI_FORMAT GetBackbufferFormat() const {
-        return m_BackbufferFormat;
+    DXGI_FORMAT GetRenderTargetFormat() const {
+        return m_RenderTargetFormat;
     }
 
 
@@ -145,7 +144,7 @@ public:
 
 protected:
     // Swap chains can only be created through the Device.
-    SwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
+    SwapChain( Device& device, HWND hWnd, DXGI_FORMAT renderTargetFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
     virtual ~SwapChain();
 
     // Update the swapchain's RTVs.
@@ -164,8 +163,6 @@ private:
     std::shared_ptr<Texture>                m_BackBufferTextures[BufferCount];
     mutable RenderTarget                    m_RenderTarget;
 
-    std::shared_ptr<GUI> m_GUI;
-
     // The current backbuffer index of the swap chain.
     UINT   m_CurrentBackBufferIndex;
     UINT64 m_FenceValues[BufferCount];  // The fence values to wait for before leaving the Present method.
@@ -181,7 +178,7 @@ private:
     uint32_t m_Height;
 
     // The format of the back buffer.
-    DXGI_FORMAT m_BackbufferFormat;
+    DXGI_FORMAT m_RenderTargetFormat;
 
     // Should presentation be synchronized with the vertical refresh rate of the screen?
     // Set to true to eliminate screen tearing.

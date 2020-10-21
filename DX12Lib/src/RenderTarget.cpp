@@ -121,3 +121,19 @@ DXGI_FORMAT RenderTarget::GetDepthStencilFormat() const
 
     return dsvFormat;
 }
+
+DXGI_SAMPLE_DESC RenderTarget::GetSampleDesc() const
+{
+    DXGI_SAMPLE_DESC sampleDesc = { 1, 0 };
+    for ( int i = AttachmentPoint::Color0; i <= AttachmentPoint::Color7; ++i )
+    {
+        auto texture = m_Textures[i];
+        if ( texture )
+        {
+            sampleDesc = texture->GetD3D12ResourceDesc().SampleDesc;
+            break;
+        }
+    }
+
+    return sampleDesc;
+}

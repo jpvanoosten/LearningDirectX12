@@ -31,10 +31,13 @@ enum RootParameters
 void GetSurfaceInfo( _In_ size_t width, _In_ size_t height, _In_ DXGI_FORMAT fmt, size_t* outNumBytes,
                      _Out_opt_ size_t* outRowBytes, _Out_opt_ size_t* outNumRows );
 
-GUI::GUI( Device& device, HWND hWnd )
+// Windows message handler for ImGui.
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
+
+GUI::GUI( Device& device, HWND hWnd, const RenderTarget& renderTarget )
 : m_Device( device )
-, m_pImGuiCtx( nullptr )
 , m_hWnd( hWnd )
+, m_pImGuiCtx( nullptr )
 {
     m_pImGuiCtx = ImGui::CreateContext();
     ImGui::SetCurrentContext( m_pImGuiCtx );
@@ -113,10 +116,6 @@ GUI::GUI( Device& device, HWND hWnd )
           D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
 
-    D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-    rtvFormats.NumRenderTargets      = 1;
-    rtvFormats.RTFormats[0]          = DXGI_FORMAT_R8G8B8A8_UNORM;
-
     D3D12_BLEND_DESC blendDesc                      = {};
     blendDesc.RenderTarget[0].BlendEnable           = true;
     blendDesc.RenderTarget[0].SrcBlend              = D3D12_BLEND_SRC_ALPHA;
@@ -164,8 +163,8 @@ GUI::GUI( Device& device, HWND hWnd )
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS                    = { g_ImGUI_VS, sizeof( g_ImGUI_VS ) };
     pipelineStateStream.PS                    = { g_ImGUI_PS, sizeof( g_ImGUI_PS ) };
-    pipelineStateStream.RTVFormats            = rtvFormats;
-    pipelineStateStream.SampleDesc            = { 1, 0 };
+    pipelineStateStream.RTVFormats            = renderTarget.GetRenderTargetFormats();
+    pipelineStateStream.SampleDesc            = renderTarget.GetSampleDesc();
     pipelineStateStream.BlendDesc             = CD3DX12_BLEND_DESC( blendDesc );
     pipelineStateStream.RasterizerState       = CD3DX12_RASTERIZER_DESC( rasterizerDesc );
     pipelineStateStream.DepthStencilState     = CD3DX12_DEPTH_STENCIL_DESC( depthStencilDesc );
@@ -221,7 +220,7 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
 
     commandList->SetGraphics32BitConstants( RootParameters::MatrixCB, mvp );
     commandList->SetShaderResourceView( RootParameters::FontTexture, 0, m_FontSRV,
-                                       D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     D3D12_VIEWPORT viewport = {};
     viewport.Width          = drawData->DisplaySize.x;
@@ -246,7 +245,7 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
         const ImDrawList* drawList = drawData->CmdLists[i];
 
         commandList->SetDynamicVertexBuffer( 0, drawList->VtxBuffer.size(), sizeof( ImDrawVert ),
-                                            drawList->VtxBuffer.Data );
+                                             drawList->VtxBuffer.Data );
         commandList->SetDynamicIndexBuffer( drawList->IdxBuffer.size(), indexFormat, drawList->IdxBuffer.Data );
 
         int indexOffset = 0;
@@ -285,7 +284,16 @@ void GUI::Destroy()
     m_pImGuiCtx = nullptr;
 }
 
-void GUI::SetScaling( float scale ) {}
+void GUI::SetScaling( float scale )
+{
+    ImGuiIO& io        = ImGui::GetIO();
+    io.FontGlobalScale = scale;
+}
+
+LRESULT GUI::WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+    return ImGui_ImplWin32_WndProcHandler( hWnd, msg, wParam, lParam );
+}
 
 //--------------------------------------------------------------------------------------
 // Get surface information for a particular format

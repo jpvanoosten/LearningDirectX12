@@ -37,7 +37,7 @@
 #include <spdlog/logger.h>
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 
 // I want to use a function with this name but it conflicts with the Windows
 // macro defined in the Windows header files.
@@ -56,6 +56,12 @@
 class Window;
 
 using Logger = std::shared_ptr<spdlog::logger>;
+
+/**
+ * Windows message handler.
+ */
+using WndProcEvent = Delegate<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>;
+
 
 class GameFramework
 {
@@ -187,6 +193,11 @@ public:
         GetWindowByName( const std::wstring& windowName ) const;
 
     /**
+     * Invoked when a message is sent to a window.
+     */
+    WndProcEvent WndProcHandler;
+
+    /**
      * Invoked when a file is modified on disk.
      */
     FileChangeEvent FileChanged;
@@ -197,11 +208,16 @@ public:
     Event Exit;
 
 protected:
+    friend LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
+
     GameFramework( HINSTANCE hInst );
     virtual ~GameFramework();
 
     // A file modification was detected.
     virtual void OnFileChange( FileChangedEventArgs& e );
+
+    // Windows message handler.
+    virtual LRESULT OnWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
     // Application is going to close
     virtual void OnExit( EventArgs& e );

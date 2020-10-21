@@ -51,8 +51,10 @@ class CommandList;
 class ConstantBuffer;
 class ConstantBufferView;
 class DescriptorAllocator;
+class GUI;
 class IndexBuffer;
 class PipelineStateObject;
+class RenderTarget;
 class Resource;
 class RootSignature;
 class ShaderResourceView;
@@ -93,6 +95,11 @@ public:
      * Create a swapchain using the provided OS window handle.
      */
     std::shared_ptr<SwapChain> CreateSwapChain( HWND hWnd, DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
+
+    /**
+     * Create a GUI object.
+     */
+    std::shared_ptr<GUI> CreateGUI( HWND hWnd, const RenderTarget& renderTarget );
 
     /**
      * Create a ByteAddressBuffer resource.
@@ -183,9 +190,6 @@ public:
      * By default, a D3D12_COMMAND_LIST_TYPE_DIRECT queue is returned.
      */
     CommandQueue& GetCommandQueue( D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT );
-
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap( UINT                       numDescriptors,
-                                                                       D3D12_DESCRIPTOR_HEAP_TYPE type );
 
     Microsoft::WRL::ComPtr<ID3D12Device8> GetD3D12Device() const
     {

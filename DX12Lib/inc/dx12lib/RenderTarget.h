@@ -109,14 +109,18 @@ public:
     // Get the format of the attached depth/stencil buffer.
     DXGI_FORMAT GetDepthStencilFormat() const;
 
+    // Get the sample description of the render target.
+    DXGI_SAMPLE_DESC GetSampleDesc() const;
+
     // Reset all textures
     void Reset()
     {
-        m_Textures.clear();
+        m_Textures = RenderTargetList( AttachmentPoint::NumAttachmentPoints );
     }
 
 private:
-    std::vector<std::shared_ptr<Texture>> m_Textures;
+    using RenderTargetList = std::vector<std::shared_ptr<Texture>>;
+    RenderTargetList m_Textures;
     DirectX::XMUINT2                      m_Size;
 };
 }  // namespace dx12lib

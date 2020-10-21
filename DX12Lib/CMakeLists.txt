@@ -75,19 +75,23 @@ set( SOURCE_FILES
 )
 
 set( IMGUI_HEADERS
-    inc/imgui.h
-    inc/imconfig.h
-    inc/imgui_impl_win32.h
+    inc/imgui/imconfig.h
+    inc/imgui/imgui.h
+    inc/imgui/imgui_impl_win32.h
+    inc/imgui/imgui_internal.h
+    inc/imgui/imstb_rectpack.h
+    inc/imgui/imstb_textedit.h
+    inc/imgui/imstb_truetype.h
 )
 
 source_group( "Header Files\\ImGUI" FILES ${IMGUI_HEADERS} )
 
 set( IMGUI_SOURCE
-    src/imgui.cpp
-    src/imgui_demo.cpp
-    src/imgui_draw.cpp
-    src/imgui_widgets.cpp
-    src/imgui_impl_win32.cpp
+    src/imgui/imgui.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_impl_win32.cpp
+    src/imgui/imgui_widgets.cpp
 )
 
 source_group( "Source Files\\ImGUI" FILES ${IMGUI_SOURCE} )
@@ -127,7 +131,7 @@ target_compile_definitions( DX12Lib
 )
 
 target_include_directories( DX12Lib
-    PUBLIC inc
+    PUBLIC inc inc/imgui
     PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 

@@ -126,7 +126,7 @@ GameFramework::GameFramework( HINSTANCE hInst )
     // @see https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setthreaddpiawarenesscontext
     SetThreadDpiAwarenessContext( DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 );
 
-#if defined(_DEBUG)
+#if defined( _DEBUG )
     // Create a console window for std::cout
     CreateConsole();
 #endif
@@ -156,8 +156,9 @@ GameFramework::GameFramework( HINSTANCE hInst )
     // This must be called at least once for each thread that uses the COM library.
     // @see https://docs.microsoft.com/en-us/windows/win32/api/objbase/nf-objbase-coinitialize
     HRESULT hr = CoInitialize( NULL );
-    if ( FAILED( hr ) ) {
-        _com_error err( hr );   // I hope this never happens.
+    if ( FAILED( hr ) )
+    {
+        _com_error err( hr );  // I hope this never happens.
         spdlog::critical( "CoInitialize failed: {}", err.ErrorMessage() );
         throw new std::exception( err.ErrorMessage() );
     }
@@ -183,7 +184,6 @@ GameFramework::GameFramework( HINSTANCE hInst )
     // Create a thread to listen for file changes.
     m_DirectoryChangeListenerThread = std::thread( &GameFramework::CheckFileChanges, this );
     SetThreadName( m_DirectoryChangeListenerThread, "Check File Changes" );
-
 }
 
 GameFramework::~GameFramework()
@@ -413,13 +413,20 @@ void GameFramework::CheckFileChanges()
         }
 
         std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-        //std::this_thread::yield();
+        // std::this_thread::yield();
     }
 }
 
 void GameFramework::OnFileChange( FileChangedEventArgs& e )
 {
     FileChanged( e );
+}
+
+LRESULT GameFramework::OnWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+    auto res = WndProcHandler( static_cast<HWND&&>( hWnd ), static_cast<UINT&&>( msg ), static_cast<WPARAM&&>( wParam ),
+                               static_cast<LPARAM&&>( lParam ) );
+    return res ? *res : 0;
 }
 
 void GameFramework::OnExit( EventArgs& e )
@@ -509,6 +516,12 @@ static WindowState DecodeWindowState( WPARAM wParam )
 
 static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
+    // Allow for external handling of window messages.
+    if ( GameFramework::Get().OnWndProc( hwnd, message, wParam, lParam ) )
+    {
+        return 1;
+    }
+
     std::shared_ptr<Window> pWindow;
     {
         auto iter = gs_WindowMap.find( hwnd );

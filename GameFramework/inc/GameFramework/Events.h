@@ -38,14 +38,18 @@
 
 /**
  * A Delegate holds function callbacks.
- * For simplicity, delegates do not return values.
  */
-template<typename... Args>
-class Delegate
+
+// Primary delegate template.
+template<typename Func>
+class Delegate;
+
+template<typename R, typename... Args>
+class Delegate<R( Args... )>
 {
 public:
-    using slot              = sig::slot<void( Args... )>;
-    using signal            = sig::signal<void( Args... )>;
+    using slot              = sig::slot<R( Args... )>;
+    using signal            = sig::signal<R( Args... )>;
     using connection        = sig::connection;
     using scoped_connection = sig::scoped_connection;
 
@@ -77,9 +81,9 @@ public:
     /**
      * Invoke the delegate.
      */
-    void operator()( Args&&... args )
+    opt::optional<R> operator()( Args&&... args )
     {
-        m_Callbacks( std::forward<Args>( args )... );
+        return m_Callbacks( std::forward<Args>( args )... );
     }
 
 private:
@@ -96,7 +100,7 @@ public:
 };
 
 // Define the default event.
-using Event = Delegate<EventArgs&>;
+using Event = Delegate<void(EventArgs&)>;
 
 /**
  * Update event args.
@@ -115,7 +119,7 @@ public:
     double TotalTime;
 };
 
-using UpdateEvent = Delegate<UpdateEventArgs&>;
+using UpdateEvent = Delegate<void(UpdateEventArgs&)>;
 
 class DPIScaleEventArgs : public EventArgs
 {
@@ -128,7 +132,7 @@ public:
     float DPIScale;
 };
 
-using DPIScaleEvent = Delegate<DPIScaleEventArgs&>;
+using DPIScaleEvent = Delegate<void(DPIScaleEventArgs&)>;
 
 /**
  * EventArgs for a WindowClosing event.
@@ -152,7 +156,7 @@ public:
     bool ConfirmClose;
 };
 
-using WindowCloseEvent = Delegate<WindowCloseEventArgs&>;
+using WindowCloseEvent = Delegate<void(WindowCloseEventArgs&)>;
 
 enum class KeyState
 {
@@ -186,7 +190,7 @@ public:
     bool     Alt;       // Is the Alt modifier pressed
 };
 
-using KeyboardEvent = Delegate<KeyEventArgs&>;
+using KeyboardEvent = Delegate<void(KeyEventArgs&)>;
 
 /**
  * MouseMotionEventArgs are used to indicate the mouse moved or was dragged over
@@ -222,7 +226,7 @@ public:
     int RelY;           // How far the mouse moved since the last event (in pixels).
 };
 
-using MouseMotionEvent = Delegate<MouseMotionEventArgs&>;
+using MouseMotionEvent = Delegate<void(MouseMotionEventArgs&)>;
 
 enum class MouseButton
 {
@@ -271,7 +275,7 @@ public:
             // the client area.
 };
 
-using MouseButtonEvent = Delegate<MouseButtonEventArgs&>;
+using MouseButtonEvent = Delegate<void(MouseButtonEventArgs&)>;
 
 /**
  * MouseWheelEventArgs indicates if the mouse wheel was moved and how much.
@@ -308,7 +312,7 @@ public:
     int Y;              // The Y-position of the cursor relative to the upper-left corner of
                         // the client area.
 };
-using MouseWheelEvent = Delegate<MouseWheelEventArgs&>;
+using MouseWheelEvent = Delegate<void(MouseWheelEventArgs&)>;
 
 enum class WindowState
 {
@@ -339,7 +343,7 @@ public:
     // If the window was minimized or maximized.
     WindowState State;
 };
-using ResizeEvent = Delegate<ResizeEventArgs&>;
+using ResizeEvent = Delegate<void(ResizeEventArgs&)>;
 
 /**
  * Generic user event args.
@@ -359,7 +363,7 @@ public:
     void* Data1;
     void* Data2;
 };
-using UserEvent = Delegate<UserEventArgs&>;
+using UserEvent = Delegate<void(UserEventArgs&)>;
 
 /**
  * Used to notify a runtime error occurred.
@@ -378,7 +382,7 @@ public:
     std::string ErrorString;
     std::string CompilerError;
 };
-using RuntimeErrorEvent = Delegate<RuntimeErrorEventArgs&>;
+using RuntimeErrorEvent = Delegate<void(RuntimeErrorEventArgs&)>;
 
 enum class FileAction
 {
@@ -406,4 +410,4 @@ public:
     FileAction   Action;  // The action that triggered this event.
     std::wstring Path;    // The file or directory path that was modified.
 };
-using FileChangeEvent = Delegate<FileChangedEventArgs&>;
+using FileChangeEvent = Delegate<void(FileChangedEventArgs&)>;

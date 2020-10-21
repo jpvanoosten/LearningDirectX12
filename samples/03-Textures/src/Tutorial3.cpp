@@ -9,6 +9,7 @@
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
+#include <dx12lib/GUI.h>
 #include <dx12lib/Helpers.h>
 #include <dx12lib/Mesh.h>
 #include <dx12lib/PipelineStateObject.h>
@@ -28,7 +29,7 @@ using namespace Microsoft::WRL;
 using namespace dx12lib;
 using namespace DirectX;
 
-#include <algorithm>   // For std::min, std::max, and std::clamp.
+#include <algorithm>  // For std::min, std::max, and std::clamp.
 //#include <cstdio>      // For swprintf_s
 #include <functional>  // For std::bind
 #include <string>      // For std::wstring
@@ -99,7 +100,6 @@ Tutorial3::Tutorial3( const std::wstring& name, uint32_t width, uint32_t height,
 , m_VSync( vSync )
 {
     m_Logger = GameFramework::Get().CreateLogger( "Textures" );
-
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
     using namespace std::placeholders;  // for _1, _2, _3...
@@ -150,6 +150,11 @@ bool Tutorial3::LoadContent()
     m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
     m_SwapChain->SetVSync( m_VSync );
 
+    m_GUI = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
+
+    // This magic here allows ImGui to process window messages.
+    GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
+
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
@@ -166,9 +171,9 @@ bool Tutorial3::LoadContent()
     m_EarthTexture    = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds" );
     m_MonaLisaTexture = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg" );
 
-    m_DefaultTextureView = m_Device->CreateShaderResourceView( m_DefaultTexture );
-    m_DirectXTextureView = m_Device->CreateShaderResourceView( m_DirectXTexture );
-    m_EarthTextureView   = m_Device->CreateShaderResourceView( m_EarthTexture );
+    m_DefaultTextureView  = m_Device->CreateShaderResourceView( m_DefaultTexture );
+    m_DirectXTextureView  = m_Device->CreateShaderResourceView( m_DirectXTexture );
+    m_EarthTextureView    = m_Device->CreateShaderResourceView( m_EarthTexture );
     m_MonaLisaTextureView = m_Device->CreateShaderResourceView( m_MonaLisaTexture );
 
     // Start loading resources...
@@ -319,6 +324,7 @@ void Tutorial3::UnloadContent()
     m_RootSignature.reset();
     m_PipelineState.reset();
 
+    m_GUI.reset();
     m_SwapChain.reset();
     m_Device.reset();
 }
@@ -432,7 +438,7 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
 void Tutorial3::OnRender()
 {
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
-    auto commandList  = commandQueue.GetCommandList();
+    auto  commandList  = commandQueue.GetCommandList();
 
     // Clear the render targets.
     {
@@ -620,7 +626,25 @@ void Tutorial3::OnRender()
         m_ConeMesh->Render( commandList );
     }
 
+    // Resolve the MSAA render target to the swapchain's backbuffer.
+    auto& swapChainRT         = m_SwapChain->GetRenderTarget();
+    auto  swapChainBackBuffer = swapChainRT.GetTexture( AttachmentPoint::Color0 );
+    auto  msaaRenderTarget    = m_RenderTarget.GetTexture( AttachmentPoint::Color0 );
+
+    commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+
+    // Render the GUI directly to the swap chain's render target.
+    OnGUI( commandList, swapChainRT );
+
     commandQueue.ExecuteCommandList( commandList );
+
+    // Present
+    m_SwapChain->Present();
+}
+
+void Tutorial3::OnGUI( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget )
+{
+    m_GUI->NewFrame();
 
     static bool showDemoWindow = false;
     if ( showDemoWindow )
@@ -628,8 +652,7 @@ void Tutorial3::OnRender()
         ImGui::ShowDemoWindow( &showDemoWindow );
     }
 
-    // Present
-    m_SwapChain->Present( m_RenderTarget.GetTexture( AttachmentPoint::Color0 ) );
+    m_GUI->Render( commandList, renderTarget );
 }
 
 static bool g_AllowFullscreenToggle = true;
@@ -763,8 +786,6 @@ void Tutorial3::OnMouseWheel( MouseWheelEventArgs& e )
 
         m_Camera.set_FoV( fov );
 
-        char buffer[256];
-        sprintf_s( buffer, "FoV: %f\n", fov );
-        OutputDebugStringA( buffer );
+        m_Logger->info( "FoV: {:.7}", fov );
     }
 }

@@ -13,14 +13,14 @@
 
 using namespace dx12lib;
 
-SwapChain::SwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat )
+SwapChain::SwapChain( Device& device, HWND hWnd, DXGI_FORMAT renderTargetFormat )
 : m_Device( device )
 , m_CommandQueue( device.GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT ) )
 , m_hWnd( hWnd )
 , m_FenceValues { 0 }
 , m_Width( 0u )
 , m_Height( 0u )
-, m_BackbufferFormat( backBufferFormat )
+, m_RenderTargetFormat( renderTargetFormat )
 , m_VSync( true )
 , m_TearingSupported( false )
 , m_Fullscreen( false )
@@ -60,7 +60,7 @@ SwapChain::SwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat )
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
     swapChainDesc.Width                 = m_Width;
     swapChainDesc.Height                = m_Height;
-    swapChainDesc.Format                = m_BackbufferFormat;
+    swapChainDesc.Format                = m_RenderTargetFormat;
     swapChainDesc.Stereo                = FALSE;
     swapChainDesc.SampleDesc            = { 1, 0 };
     swapChainDesc.BufferUsage           = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -93,9 +93,6 @@ SwapChain::SwapChain( Device& device, HWND hWnd, DXGI_FORMAT backBufferFormat )
     m_hFrameLatencyWaitableObject = m_dxgiSwapChain->GetFrameLatencyWaitableObject();
 
     UpdateRenderTargetViews();
-
-    m_GUI = std::make_shared<GUI>( device, m_hWnd );
-    m_GUI->NewFrame();
 }
 
 SwapChain::~SwapChain()
@@ -174,7 +171,6 @@ UINT SwapChain::Present( const std::shared_ptr<Texture>& texture )
 
     RenderTarget renderTarget;
     renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
-    m_GUI->Render( commandList, renderTarget );
 
     commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     m_CommandQueue.ExecuteCommandList( commandList );
@@ -191,8 +187,6 @@ UINT SwapChain::Present( const std::shared_ptr<Texture>& texture )
     m_CommandQueue.WaitForFenceValue( fenceValue );
 
     m_Device.ReleaseStaleDescriptors();
-
-    m_GUI->NewFrame();
 
     return m_CurrentBackBufferIndex;
 }

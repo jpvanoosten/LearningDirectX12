@@ -7,6 +7,7 @@
 #include <dx12lib/ConstantBufferView.h>
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
+#include <dx12lib/GUI.h>
 #include <dx12lib/IndexBuffer.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
@@ -18,6 +19,16 @@
 #include <dx12lib/VertexBuffer.h>
 
 using namespace dx12lib;
+
+class MakeGUI : public GUI
+{
+public: 
+    MakeGUI( Device& device, HWND hWnd, const RenderTarget& renderTarget )
+    : GUI( device, hWnd, renderTarget )
+    {}
+
+    virtual ~MakeGUI() {}
+};
 
 class MakeUnorderedAccessView : public UnorderedAccessView
 {
@@ -302,20 +313,6 @@ CommandQueue& Device::GetCommandQueue( D3D12_COMMAND_LIST_TYPE type )
     return *commandQueue;
 }
 
-ComPtr<ID3D12DescriptorHeap> Device::CreateDescriptorHeap( UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE type )
-{
-    D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-    desc.Type                       = type;
-    desc.NumDescriptors             = numDescriptors;
-    desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    desc.NodeMask                   = 0;
-
-    ComPtr<ID3D12DescriptorHeap> descriptorHeap;
-    ThrowIfFailed( m_d3d12Device->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &descriptorHeap ) ) );
-
-    return descriptorHeap;
-}
-
 void Device::Flush()
 {
     m_DirectCommandQueue->Flush();
@@ -341,6 +338,13 @@ std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND        hWnd,
     swapChain = std::make_shared<MakeSwapChain>( *this, hWnd, backBufferFormat );
 
     return swapChain;
+}
+
+std::shared_ptr<GUI> Device::CreateGUI( HWND hWnd, const RenderTarget& renderTarget )
+{
+    std::shared_ptr<GUI> gui = std::make_shared<MakeGUI>( *this, hWnd, renderTarget );
+
+    return gui;
 }
 
 std::shared_ptr<ByteAddressBuffer> Device::CreateByteAddressBuffer( size_t bufferSize )
