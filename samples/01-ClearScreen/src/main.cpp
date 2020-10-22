@@ -151,7 +151,6 @@ void OnKeyPressed( KeyEventArgs& e )
 void OnWindowResized( ResizeEventArgs& e )
 {
     logger->info( "Window Resize: {}, {}", e.Width, e.Height );
-    GameFramework::Get().SetDisplaySize( e.Width, e.Height );
     pSwapChain->Resize( e.Width, e.Height );
 }
 
