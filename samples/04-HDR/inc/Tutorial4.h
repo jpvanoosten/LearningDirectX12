@@ -33,75 +33,96 @@
 #include "Camera.h"
 #include "Light.h"
 
-#include <dx12lib/Game.h>
-#include <dx12lib/IndexBuffer.h>
-#include <dx12lib/Mesh.h>
+#include <GameFramework/GameFramework.h>
+
 #include <dx12lib/RenderTarget.h>
-#include <dx12lib/RootSignature.h>
-#include <dx12lib/Texture.h>
-#include <dx12lib/VertexBuffer.h>
-#include <dx12lib/Window.h>
 
 #include <DirectXMath.h>
 
-class Tutorial4 : public dx12lib::Game
+#include <string>
+
+namespace dx12lib
+{
+class CommandList;
+class Device;
+class GUI;
+class Mesh;
+class PipelineStateObject;
+class RootSignature;
+class ShaderResourceView;
+class SwapChain;
+class Texture;
+}  // namespace dx12lib
+
+class Window;  // From GameFramework.
+
+class Tutorial4
 {
 public:
-    using super = dx12lib::Game;
-
     Tutorial4( const std::wstring& name, int width, int height, bool vSync = false );
     virtual ~Tutorial4();
 
     /**
+     * Start the main game loop.
+     */
+    uint32_t Run();
+
+    /**
      *  Load content required for the demo.
      */
-    virtual bool LoadContent() override;
+    bool LoadContent();
 
     /**
      *  Unload demo specific content that was loaded in LoadContent.
      */
-    virtual void UnloadContent() override;
+    void UnloadContent();
 
 protected:
     /**
      *  Update the game logic.
      */
-    virtual void OnUpdate( UpdateEventArgs& e ) override;
+    void OnUpdate( UpdateEventArgs& e );
 
     /**
      *  Render stuff.
      */
-    virtual void OnRender( RenderEventArgs& e ) override;
+    void OnRender();
 
     /**
      * Invoked by the registered window when a key is pressed
      * while the window has focus.
      */
-    virtual void OnKeyPressed( KeyEventArgs& e ) override;
+    void OnKeyPressed( KeyEventArgs& e );
 
     /**
      * Invoked when a key on the keyboard is released.
      */
-    virtual void OnKeyReleased( KeyEventArgs& e );
+    void OnKeyReleased( KeyEventArgs& e );
 
     /**
      * Invoked when the mouse is moved over the registered window.
      */
-    virtual void OnMouseMoved( MouseMotionEventArgs& e );
+    void OnMouseMoved( MouseMotionEventArgs& e );
 
     /**
      * Invoked when the mouse wheel is scrolled while the registered window has focus.
      */
-    virtual void OnMouseWheel( MouseWheelEventArgs& e ) override;
+    void OnMouseWheel( MouseWheelEventArgs& e );
 
-    void         RescaleHDRRenderTarget( float scale );
-    virtual void OnResize( ResizeEventArgs& e ) override;
+    void RescaleHDRRenderTarget( float scale );
+    void OnResize( ResizeEventArgs& e );
 
-    virtual void OnDPIScaleChanged( DPIScaleEventArgs& e ) override;
+    void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
-    void OnGUI();
+    void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
 
 private:
+    std::shared_ptr<dx12lib::Device>    m_Device;
+    std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
+    std::shared_ptr<dx12lib::GUI>       m_GUI;
+
+    std::shared_ptr<Window> m_Window;
+
     // Some geometry to render.
     std::unique_ptr<dx12lib::Mesh> m_CubeMesh;
     std::unique_ptr<dx12lib::Mesh> m_SphereMesh;
@@ -111,27 +132,36 @@ private:
 
     std::unique_ptr<dx12lib::Mesh> m_SkyboxMesh;
 
-    dx12lib::Texture m_DefaultTexture;
-    dx12lib::Texture m_DirectXTexture;
-    dx12lib::Texture m_EarthTexture;
-    dx12lib::Texture m_MonaLisaTexture;
-    dx12lib::Texture m_GraceCathedralTexture;
-    dx12lib::Texture m_GraceCathedralCubemap;
+    std::shared_ptr<dx12lib::Texture> m_DefaultTexture;
+    std::shared_ptr<dx12lib::Texture> m_DirectXTexture;
+    std::shared_ptr<dx12lib::Texture> m_EarthTexture;
+    std::shared_ptr<dx12lib::Texture> m_MonaLisaTexture;
+    std::shared_ptr<dx12lib::Texture> m_GraceCathedralTexture;
+    std::shared_ptr<dx12lib::Texture> m_GraceCathedralCubemap;
+
+    std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_DirectXTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_EarthTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_MonaLisaTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_GraceCathedralTextureView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_GraceCathedralCubemapView;
 
     // HDR Render target
     dx12lib::RenderTarget m_HDRRenderTarget;
+    // SRV to allow the HDR render target to be used in a pixel shader.
+    std::shared_ptr<dx12lib::ShaderResourceView> m_HDRSRV;
 
     // Root signatures
-    dx12lib::RootSignature m_SkyboxSignature;
-    dx12lib::RootSignature m_HDRRootSignature;
-    dx12lib::RootSignature m_SDRRootSignature;
+    std::shared_ptr<dx12lib::RootSignature> m_SkyboxSignature;
+    std::shared_ptr<dx12lib::RootSignature> m_HDRRootSignature;
+    std::shared_ptr<dx12lib::RootSignature> m_SDRRootSignature;
 
     // Pipeline state object.
     // Skybox PSO
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_SkyboxPipelineState;
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_HDRPipelineState;
+    std::shared_ptr<dx12lib::PipelineStateObject> m_SkyboxPipelineState;
+    std::shared_ptr<dx12lib::PipelineStateObject> m_HDRPipelineState;
     // HDR -> SDR tone mapping PSO.
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> m_SDRPipelineState;
+    std::shared_ptr<dx12lib::PipelineStateObject> m_SDRPipelineState;
 
     D3D12_RECT m_ScissorRect;
 
@@ -160,8 +190,9 @@ private:
     // Set to true if the Shift key is pressed.
     bool m_Shift;
 
-    int m_Width;
-    int m_Height;
+    int  m_Width;
+    int  m_Height;
+    bool m_VSync;
 
     // Scale the HDR render target to a fraction of the window size.
     float m_RenderScale;
@@ -169,4 +200,6 @@ private:
     // Define some lights.
     std::vector<PointLight> m_PointLights;
     std::vector<SpotLight>  m_SpotLights;
+
+    Logger m_Logger;
 };

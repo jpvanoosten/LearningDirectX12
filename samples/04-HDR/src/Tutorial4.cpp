@@ -3,15 +3,20 @@
 #include <Light.h>
 #include <Material.h>
 
-#include <dx12lib/Application.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
+#include <dx12lib/Device.h>
+#include <dx12lib/GUI.h>
 #include <dx12lib/Helpers.h>
-#include <dx12lib/Window.h>
+#include <dx12lib/Mesh.h>
+#include <dx12lib/PipelineStateObject.h>
+#include <dx12lib/RootSignature.h>
+#include <dx12lib/SwapChain.h>
+#include <dx12lib/Texture.h>
 
-#include <dx12lib/d3dx12.h>
+#include <GameFramework/Window.h>
 
-#include <wrl.h>
+#include <wrl/client.h>
 using namespace Microsoft::WRL;
 
 #include <DirectXColors.h>
@@ -21,14 +26,7 @@ using namespace Microsoft::WRL;
 using namespace dx12lib;
 using namespace DirectX;
 
-#include <algorithm>  // For std::min and std::max.
-#if defined( min )
-    #undef min
-#endif
-
-#if defined( max )
-    #undef max
-#endif
+#include <algorithm>  // For std::min, std::max, and std::clamp.
 
 struct Mat
 {
@@ -109,13 +107,6 @@ enum RootParameters
     NumRootParameters
 };
 
-// Clamp a value between a min and max range.
-template<typename T>
-constexpr const T& clamp( const T& val, const T& min = T( 0 ), const T& max = T( 1 ) )
-{
-    return val < min ? min : val > max ? max : val;
-}
-
 // Builds a look-at (world) matrix from a point, up and direction vectors.
 XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMVECTOR Up )
 {
@@ -137,8 +128,7 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
 }
 
 Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSync )
-: super( name, width, height, vSync )
-, m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
+: m_ScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) )
 , m_Forward( 0 )
 , m_Backward( 0 )
 , m_Left( 0 )
@@ -149,10 +139,21 @@ Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSyn
 , m_Yaw( 0 )
 , m_AnimateLights( false )
 , m_Shift( false )
-, m_Width( 0 )
-, m_Height( 0 )
+, m_Width( width )
+, m_Height( height )
+, m_VSync( vSync )
 , m_RenderScale( 1.0f )
 {
+    m_Logger = GameFramework::Get().CreateLogger( "HDR" );
+    m_Window = GameFramework::Get().CreateWindow( name, width, height );
+
+    m_Window->Update += UpdateEvent::slot( &Tutorial4::OnUpdate, this );
+    m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial4::OnKeyPressed, this );
+    m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial4::OnKeyReleased, this );
+    m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial4::OnMouseMoved, this );
+    m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial4::OnMouseWheel, this );
+    m_Window->Resize += ResizeEvent::slot( &Tutorial4::OnResize, this );
+    m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial4::OnDPIScaleChanged, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -173,38 +174,79 @@ Tutorial4::~Tutorial4()
     _aligned_free( m_pAlignedCameraData );
 }
 
+uint32_t Tutorial4::Run()
+{
+    LoadContent();
+
+    m_Window->Show();
+
+    uint32_t retCode = GameFramework::Get().Run();
+
+    UnloadContent();
+
+    return retCode;
+}
+
 bool Tutorial4::LoadContent()
 {
-    auto device       = Application::Get().GetDevice();
-    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-    auto commandList  = commandQueue->GetCommandList();
+    m_Device    = Device::Create();
+    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_B8G8R8A8_UNORM );
+    m_SwapChain->SetVSync( m_VSync );
+
+    m_GUI = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
+
+    // This magic here allows ImGui to process window messages.
+    GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
+
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto  commandList  = commandQueue.GetCommandList();
 
     // Create a Cube mesh
-    m_CubeMesh   = Mesh::CreateCube( *commandList );
-    m_SphereMesh = Mesh::CreateSphere( *commandList );
-    m_ConeMesh   = Mesh::CreateCone( *commandList );
-    m_TorusMesh  = Mesh::CreateTorus( *commandList );
-    m_PlaneMesh  = Mesh::CreatePlane( *commandList );
+    m_CubeMesh   = Mesh::CreateCube( commandList );
+    m_SphereMesh = Mesh::CreateSphere( commandList );
+    m_ConeMesh   = Mesh::CreateCone( commandList );
+    m_TorusMesh  = Mesh::CreateTorus( commandList );
+    m_PlaneMesh  = Mesh::CreatePlane( commandList );
     // Create an inverted (reverse winding order) cube so the insides are not clipped.
-    m_SkyboxMesh = Mesh::CreateCube( *commandList, 1.0f, true );
+    m_SkyboxMesh = Mesh::CreateCube( commandList, 1.0f, true );
 
     // Load some textures
-    commandList->LoadTextureFromFile( m_DefaultTexture, L"Assets/Textures/DefaultWhite.bmp" );
-    commandList->LoadTextureFromFile( m_DirectXTexture, L"Assets/Textures/Directx9.png" );
-    commandList->LoadTextureFromFile( m_EarthTexture, L"Assets/Textures/earth.dds" );
-    commandList->LoadTextureFromFile( m_MonaLisaTexture, L"Assets/Textures/Mona_Lisa.jpg" );
-    commandList->LoadTextureFromFile( m_GraceCathedralTexture, L"Assets/Textures/grace-new.hdr" );
-    //    commandList->LoadTextureFromFile(m_GraceCathedralTexture, L"Assets/Textures/UV_Test_Pattern.png");
+    m_DefaultTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp" );
+    m_DirectXTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/Directx9.png" );
+    m_EarthTexture          = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds" );
+    m_MonaLisaTexture       = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg" );
+    m_GraceCathedralTexture = commandList->LoadTextureFromFile( L"Assets/Textures/grace-new.hdr" );
+
+    // m_GraceCathedralTexture = commandList->LoadTextureFromFile( L"Assets/Textures/UV_Test_Pattern.png" );
 
     // Create a cubemap for the HDR panorama.
-    auto cubemapDesc  = m_GraceCathedralTexture.GetD3D12ResourceDesc();
+    auto cubemapDesc  = m_GraceCathedralTexture->GetD3D12ResourceDesc();
     cubemapDesc.Width = cubemapDesc.Height = 1024;
     cubemapDesc.DepthOrArraySize           = 6;
     cubemapDesc.MipLevels                  = 0;
 
-    m_GraceCathedralCubemap = Texture( cubemapDesc, nullptr, TextureUsage::Albedo, L"Grace Cathedral Cubemap" );
+    m_GraceCathedralCubemap = m_Device->CreateTexture( cubemapDesc, TextureUsage::Albedo );
+    m_GraceCathedralCubemap->SetName( L"Grace Cathedral Cubemap" );
+
     // Convert the 2D panorama to a 3D cubemap.
     commandList->PanoToCubemap( m_GraceCathedralCubemap, m_GraceCathedralTexture );
+
+    // Start loading resources while the rest of the resources are created.
+    commandQueue.ExecuteCommandList( commandList );
+
+    // Setup views for the textures.
+    m_DefaultTextureView  = m_Device->CreateShaderResourceView( m_DefaultTexture );
+    m_DirectXTextureView  = m_Device->CreateShaderResourceView( m_DirectXTexture );
+    m_EarthTextureView    = m_Device->CreateShaderResourceView( m_EarthTexture );
+    m_MonaLisaTextureView = m_Device->CreateShaderResourceView( m_MonaLisaTexture );
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC cubeMapSRVDesc = {};
+    cubeMapSRVDesc.Format                          = cubemapDesc.Format;
+    cubeMapSRVDesc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    cubeMapSRVDesc.ViewDimension                   = D3D12_SRV_DIMENSION_TEXTURECUBE;
+    cubeMapSRVDesc.TextureCube.MipLevels           = (UINT)-1;  // Use all mips.
+
+    m_GraceCathedralCubemapView = m_Device->CreateShaderResourceView( m_GraceCathedralCubemap, &cubeMapSRVDesc );
 
     // Create an HDR intermediate render target.
     DXGI_FORMAT HDRFormat         = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -221,7 +263,11 @@ bool Tutorial4::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    Texture HDRTexture = Texture( colorDesc, &colorClearValue, TextureUsage::RenderTarget, L"HDR Texture" );
+    auto HDRTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    HDRTexture->SetName( L"HDR Texture" );
+
+    // Create SRV for use in a pixel shader.
+    m_HDRSRV = m_Device->CreateShaderResourceView( HDRTexture );
 
     // Create a depth buffer for the HDR render target.
     auto depthDesc  = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, m_Width, m_Height );
@@ -231,26 +277,20 @@ bool Tutorial4::LoadContent()
     depthClearValue.Format       = depthDesc.Format;
     depthClearValue.DepthStencil = { 1.0f, 0 };
 
-    Texture depthTexture = Texture( depthDesc, &depthClearValue, TextureUsage::Depth, L"Depth Render Target" );
+    auto depthTexture = m_Device->CreateTexture( depthDesc, TextureUsage::Depth, &depthClearValue );
+    depthTexture->SetName( L"Depth Render Target" );
 
     // Attach the HDR texture to the HDR render target.
     m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, HDRTexture );
     m_HDRRenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
-
-    D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
-    featureData.HighestVersion                    = D3D_ROOT_SIGNATURE_VERSION_1_1;
-    if ( FAILED( device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof( featureData ) ) ) )
-    {
-        featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
-    }
 
     // Create a root signature and PSO for the skybox shaders.
     {
         // Load the Skybox shaders.
         ComPtr<ID3DBlob> vs;
         ComPtr<ID3DBlob> ps;
-        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/Skybox_VS.cso", &vs ) );
-        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/Skybox_PS.cso", &ps ) );
+        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/04-HDR/Skybox_VS.cso", &vs ) );
+        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/04-HDR/Skybox_PS.cso", &ps ) );
 
         // Setup the input layout for the skybox vertex shader.
         D3D12_INPUT_ELEMENT_DESC inputLayout[1] = {
@@ -277,7 +317,7 @@ bool Tutorial4::LoadContent()
         CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
         rootSignatureDescription.Init_1_1( 2, rootParameters, 1, &linearClampSampler, rootSignatureFlags );
 
-        m_SkyboxSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+        m_SkyboxSignature = m_Device->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
         // Setup the Skybox pipeline state.
         struct SkyboxPipelineState
@@ -290,17 +330,14 @@ bool Tutorial4::LoadContent()
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         } skyboxPipelineStateStream;
 
-        skyboxPipelineStateStream.pRootSignature        = m_SkyboxSignature.GetRootSignature().Get();
+        skyboxPipelineStateStream.pRootSignature        = m_SkyboxSignature->GetD3D12RootSignature().Get();
         skyboxPipelineStateStream.InputLayout           = { inputLayout, 1 };
         skyboxPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         skyboxPipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vs.Get() );
         skyboxPipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( ps.Get() );
         skyboxPipelineStateStream.RTVFormats            = m_HDRRenderTarget.GetRenderTargetFormats();
 
-        D3D12_PIPELINE_STATE_STREAM_DESC skyboxPipelineStateStreamDesc = { sizeof( SkyboxPipelineState ),
-                                                                           &skyboxPipelineStateStream };
-        ThrowIfFailed(
-            device->CreatePipelineState( &skyboxPipelineStateStreamDesc, IID_PPV_ARGS( &m_SkyboxPipelineState ) ) );
+        m_SkyboxPipelineState = m_Device->CreatePipelineStateObject( skyboxPipelineStateStream );
     }
 
     // Create a root signature for the HDR pipeline.
@@ -308,8 +345,8 @@ bool Tutorial4::LoadContent()
         // Load the HDR shaders.
         ComPtr<ID3DBlob> vs;
         ComPtr<ID3DBlob> ps;
-        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDR_VS.cso", &vs ) );
-        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDR_PS.cso", &ps ) );
+        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/04-HDR/HDR_VS.cso", &vs ) );
+        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/04-HDR/HDR_PS.cso", &ps ) );
 
         // Allow input layout and deny unnecessary access to certain pipeline stages.
         D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -340,7 +377,7 @@ bool Tutorial4::LoadContent()
         rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
                                            rootSignatureFlags );
 
-        m_HDRRootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+        m_HDRRootSignature = m_Device->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
         // Setup the HDR pipeline state.
         struct HDRPipelineStateStream
@@ -354,7 +391,7 @@ bool Tutorial4::LoadContent()
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         } hdrPipelineStateStream;
 
-        hdrPipelineStateStream.pRootSignature        = m_HDRRootSignature.GetRootSignature().Get();
+        hdrPipelineStateStream.pRootSignature        = m_HDRRootSignature->GetD3D12RootSignature().Get();
         hdrPipelineStateStream.InputLayout           = { VertexPositionNormalTexture::InputElements,
                                                VertexPositionNormalTexture::InputElementCount };
         hdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -363,10 +400,7 @@ bool Tutorial4::LoadContent()
         hdrPipelineStateStream.DSVFormat             = m_HDRRenderTarget.GetDepthStencilFormat();
         hdrPipelineStateStream.RTVFormats            = m_HDRRenderTarget.GetRenderTargetFormats();
 
-        D3D12_PIPELINE_STATE_STREAM_DESC hdrPipelineStateStreamDesc = { sizeof( HDRPipelineStateStream ),
-                                                                        &hdrPipelineStateStream };
-        ThrowIfFailed(
-            device->CreatePipelineState( &hdrPipelineStateStreamDesc, IID_PPV_ARGS( &m_HDRPipelineState ) ) );
+        m_HDRPipelineState = m_Device->CreatePipelineStateObject( hdrPipelineStateStream );
     }
 
     // Create the SDR Root Signature
@@ -384,13 +418,13 @@ bool Tutorial4::LoadContent()
         CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
         rootSignatureDescription.Init_1_1( 2, rootParameters, 1, &linearClampsSampler );
 
-        m_SDRRootSignature.SetRootSignatureDesc( rootSignatureDescription.Desc_1_1, featureData.HighestVersion );
+        m_SDRRootSignature = m_Device->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
         // Create the SDR PSO
         ComPtr<ID3DBlob> vs;
         ComPtr<ID3DBlob> ps;
-        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDRtoSDR_VS.cso", &vs ) );
-        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/Tutorial4/HDRtoSDR_PS.cso", &ps ) );
+        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/04-HDR/HDRtoSDR_VS.cso", &vs ) );
+        ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/04-HDR/HDRtoSDR_PS.cso", &ps ) );
 
         CD3DX12_RASTERIZER_DESC rasterizerDesc( D3D12_DEFAULT );
         rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
@@ -405,21 +439,18 @@ bool Tutorial4::LoadContent()
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         } sdrPipelineStateStream;
 
-        sdrPipelineStateStream.pRootSignature        = m_SDRRootSignature.GetRootSignature().Get();
+        sdrPipelineStateStream.pRootSignature        = m_SDRRootSignature->GetD3D12RootSignature().Get();
         sdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         sdrPipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vs.Get() );
         sdrPipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( ps.Get() );
         sdrPipelineStateStream.Rasterizer            = rasterizerDesc;
-        sdrPipelineStateStream.RTVFormats            = m_pWindow->GetRenderTarget().GetRenderTargetFormats();
+        sdrPipelineStateStream.RTVFormats            = m_SwapChain->GetRenderTarget().GetRenderTargetFormats();
 
-        D3D12_PIPELINE_STATE_STREAM_DESC sdrPipelineStateStreamDesc = { sizeof( SDRPipelineStateStream ),
-                                                                        &sdrPipelineStateStream };
-        ThrowIfFailed(
-            device->CreatePipelineState( &sdrPipelineStateStreamDesc, IID_PPV_ARGS( &m_SDRPipelineState ) ) );
+        m_SDRPipelineState = m_Device->CreatePipelineStateObject( sdrPipelineStateStream );
     }
 
-    auto fenceValue = commandQueue->ExecuteCommandList( commandList );
-    commandQueue->WaitForFenceValue( fenceValue );
+    // Make sure the command queue is finished loading resources before rendering the first frame.
+    commandQueue.Flush();
 
     return true;
 }
@@ -429,35 +460,69 @@ void Tutorial4::RescaleHDRRenderTarget( float scale )
     uint32_t width  = static_cast<uint32_t>( m_Width * scale );
     uint32_t height = static_cast<uint32_t>( m_Height * scale );
 
-    width  = clamp<uint32_t>( width, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION );
-    height = clamp<uint32_t>( height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION );
+    width  = std::clamp<uint32_t>( width, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION );
+    height = std::clamp<uint32_t>( height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION );
 
     m_HDRRenderTarget.Resize( width, height );
+
+    // Create SRV for use in a pixel shader.
+    m_HDRSRV = m_Device->CreateShaderResourceView( m_HDRRenderTarget.GetTexture( AttachmentPoint::Color0 ) );
 }
 
 void Tutorial4::OnResize( ResizeEventArgs& e )
 {
-    super::OnResize( e );
+    m_Width  = std::max( 1, e.Width );
+    m_Height = std::max( 1, e.Height );
 
-    if ( m_Width != e.Width || m_Height != e.Height )
-    {
-        m_Width  = std::max( 1, e.Width );
-        m_Height = std::max( 1, e.Height );
+    float fov         = m_Camera.get_FoV();
+    float aspectRatio = m_Width / (float)m_Height;
+    m_Camera.set_Projection( fov, aspectRatio, 0.1f, 100.0f );
 
-        float fov         = m_Camera.get_FoV();
-        float aspectRatio = m_Width / (float)m_Height;
-        m_Camera.set_Projection( fov, aspectRatio, 0.1f, 100.0f );
+    RescaleHDRRenderTarget( m_RenderScale );
 
-        RescaleHDRRenderTarget( m_RenderScale );
-    }
+    m_SwapChain->Resize( m_Width, m_Height );
 }
 
 void Tutorial4::OnDPIScaleChanged( DPIScaleEventArgs& e )
 {
-    ImGui::GetIO().FontGlobalScale = e.DPIScale;
+    m_GUI->SetScaling( e.DPIScale );
 }
 
-void Tutorial4::UnloadContent() {}
+void Tutorial4::UnloadContent()
+{
+    m_SphereMesh.reset();
+    m_ConeMesh.reset();
+    m_TorusMesh.reset();
+    m_PlaneMesh.reset();
+    m_SkyboxMesh.reset();
+
+    m_DefaultTextureView.reset();
+    m_DirectXTextureView.reset();
+    m_EarthTextureView.reset();
+    m_MonaLisaTextureView.reset();
+    m_GraceCathedralTextureView.reset();
+    m_GraceCathedralCubemapView.reset();
+
+    m_DefaultTexture.reset();
+    m_DirectXTexture.reset();
+    m_EarthTexture.reset();
+    m_MonaLisaTexture.reset();
+    m_GraceCathedralTexture.reset();
+    m_GraceCathedralCubemap.reset();
+
+    m_SkyboxSignature.reset();
+    m_HDRRootSignature.reset();
+    m_SDRRootSignature.reset();
+    m_SkyboxPipelineState.reset();
+    m_HDRPipelineState.reset();
+    m_SDRPipelineState.reset();
+
+    m_HDRRenderTarget.Reset();
+
+    m_GUI.reset();
+    m_SwapChain.reset();
+    m_Device.reset();
+}
 
 static double g_FPS = 0.0;
 
@@ -466,30 +531,33 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
     static uint64_t frameCount = 0;
     static double   totalTime  = 0.0;
 
-    super::OnUpdate( e );
-
-    totalTime += e.ElapsedTime;
+    totalTime += e.DeltaTime;
     frameCount++;
 
     if ( totalTime > 1.0 )
     {
         g_FPS = frameCount / totalTime;
 
-        char buffer[512];
-        sprintf_s( buffer, "FPS: %f\n", g_FPS );
-        OutputDebugStringA( buffer );
+        m_Logger->info( "FPS: {:.7}", g_FPS );
+
+        wchar_t buffer[512];
+        ::swprintf_s( buffer, L"HDR [FPS: %f]", g_FPS );
+        m_Window->SetWindowTitle( buffer );
 
         frameCount = 0;
         totalTime  = 0.0;
     }
 
+    // To reduce potential input lag, wait for the swap chain to be ready to present before updating input.
+    m_SwapChain->WaitForSwapChain();
+
     // Update the camera.
     float speedMultipler = ( m_Shift ? 16.0f : 4.0f );
 
     XMVECTOR cameraTranslate = XMVectorSet( m_Right - m_Left, 0.0f, m_Forward - m_Backward, 1.0f ) * speedMultipler *
-                               static_cast<float>( e.ElapsedTime );
+                               static_cast<float>( e.DeltaTime );
     XMVECTOR cameraPan =
-        XMVectorSet( 0.0f, m_Up - m_Down, 0.0f, 1.0f ) * speedMultipler * static_cast<float>( e.ElapsedTime );
+        XMVectorSet( 0.0f, m_Up - m_Down, 0.0f, 1.0f ) * speedMultipler * static_cast<float>( e.DeltaTime );
     m_Camera.Translate( cameraTranslate, Space::Local );
     m_Camera.Translate( cameraPan, Space::Local );
 
@@ -508,7 +576,7 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
     static float lightAnimTime = 0.0f;
     if ( m_AnimateLights )
     {
-        lightAnimTime += static_cast<float>( e.ElapsedTime ) * 0.5f * XM_PI;
+        lightAnimTime += static_cast<float>( e.DeltaTime ) * 0.5f * XM_PI;
     }
 
     const float radius  = 8.0f;
@@ -553,6 +621,8 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         l.SpotAngle   = XMConvertToRadians( 45.0f );
         l.Attenuation = 0.0f;
     }
+
+    OnRender();
 }
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -578,7 +648,7 @@ float LinearTonemapping( float HDR, float max )
 {
     if ( max > 0.0f )
     {
-        return clamp( HDR / max );
+        return std::clamp( HDR / max, 0.0f, 1.0f );
     }
     return HDR;
 }
@@ -623,10 +693,13 @@ float ACESFilmicTonemappingPlot( void*, int index )
                                   g_TonemapParameters.F );
 }
 
-void Tutorial4::OnGUI()
+void Tutorial4::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
+                       const dx12lib::RenderTarget&                 renderTarget )
 {
     static bool showDemoWindow = false;
     static bool showOptions    = true;
+
+    m_GUI->NewFrame();
 
     if ( ImGui::BeginMainMenuBar() )
     {
@@ -634,7 +707,7 @@ void Tutorial4::OnGUI()
         {
             if ( ImGui::MenuItem( "Exit", "Esc" ) )
             {
-                Application::Get().Quit();
+                GameFramework::Get().Stop();
             }
             ImGui::EndMenu();
         }
@@ -649,23 +722,22 @@ void Tutorial4::OnGUI()
 
         if ( ImGui::BeginMenu( "Options" ) )
         {
-            bool vSync = m_pWindow->IsVSync();
+            bool vSync = m_SwapChain->GetVSync();
             if ( ImGui::MenuItem( "V-Sync", "V", &vSync ) )
             {
-                m_pWindow->SetVSync( vSync );
+                m_SwapChain->SetVSync( vSync );
             }
 
-            bool fullscreen = m_pWindow->IsFullScreen();
+            bool fullscreen = m_Window->IsFullscreen();
             if ( ImGui::MenuItem( "Full screen", "Alt+Enter", &fullscreen ) )
             {
-                m_pWindow->SetFullscreen( fullscreen );
+                m_Window->SetFullscreen( fullscreen );
             }
 
             ImGui::EndMenu();
         }
 
         char buffer[256];
-
         {
             // Output a slider to scale the resolution of the HDR render target.
             float renderScale = m_RenderScale;
@@ -674,7 +746,7 @@ void Tutorial4::OnGUI()
             // Using Ctrl+Click on the slider, the user can set values outside of the
             // specified range. Make sure to clamp to a sane range to avoid creating
             // giant render targets.
-            renderScale = clamp( renderScale, 0.0f, 2.0f );
+            renderScale = std::clamp( renderScale, 0.0f, 2.0f );
 
             // Output current resolution of render target.
             auto size = m_HDRRenderTarget.GetSize();
@@ -769,6 +841,8 @@ void Tutorial4::OnGUI()
 
         ImGui::End();
     }
+
+    m_GUI->Render( commandList, renderTarget );
 }
 
 void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX viewProjection, Mat& mat )
@@ -779,12 +853,10 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
     mat.ModelViewProjectionMatrix       = model * viewProjection;
 }
 
-void Tutorial4::OnRender( RenderEventArgs& e )
+void Tutorial4::OnRender()
 {
-    super::OnRender( e );
-
-    auto commandQueue = Application::Get().GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
-    auto commandList  = commandQueue->GetCommandList();
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
+    auto  commandList  = commandQueue.GetCommandList();
 
     // Clear the render targets.
     {
@@ -811,17 +883,10 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
         commandList->SetGraphics32BitConstants( 0, viewProjMatrix );
 
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Format                          = m_GraceCathedralCubemap.GetD3D12ResourceDesc().Format;
-        srvDesc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.ViewDimension                   = D3D12_SRV_DIMENSION_TEXTURECUBE;
-        srvDesc.TextureCube.MipLevels           = (UINT)-1;  // Use all mips.
+        commandList->SetShaderResourceView( 1, 0, m_GraceCathedralCubemapView,
+                                            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-        // TODO: Need a better way to bind a cubemap.
-        commandList->SetShaderResourceView( 1, 0, m_GraceCathedralCubemap, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-                                            0, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, &srvDesc );
-
-        m_SkyboxMesh->Render( *commandList );
+        m_SkyboxMesh->Render( commandList );
     }
 
     commandList->SetPipelineState( m_HDRPipelineState );
@@ -849,10 +914,10 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_SphereMesh->Render( *commandList );
+    m_SphereMesh->Render( commandList );
 
     // Draw a cube
     translationMatrix = XMMatrixTranslation( 4.0f, 4.0f, 4.0f );
@@ -864,10 +929,10 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_CubeMesh->Render( *commandList );
+    m_CubeMesh->Render( commandList );
 
     // Draw a torus
     translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
@@ -879,10 +944,10 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_TorusMesh->Render( *commandList );
+    m_TorusMesh->Render( commandList );
 
     // Floor plane.
     float scalePlane      = 20.0f;
@@ -897,10 +962,10 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Back wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
@@ -911,7 +976,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Ceiling plane
     translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
@@ -922,7 +987,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Front wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
@@ -933,7 +998,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Left wall
     translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
@@ -944,10 +1009,10 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Right wall
     translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
@@ -958,7 +1023,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
-    m_PlaneMesh->Render( *commandList );
+    m_PlaneMesh->Render( commandList );
 
     // Draw shapes to visualize the position of the lights in the scene.
     Material lightMaterial;
@@ -974,7 +1039,7 @@ void Tutorial4::OnRender( RenderEventArgs& e )
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_SphereMesh->Render( *commandList );
+        m_SphereMesh->Render( commandList );
     }
 
     for ( const auto& l: m_SpotLights )
@@ -993,42 +1058,39 @@ void Tutorial4::OnRender( RenderEventArgs& e )
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_ConeMesh->Render( *commandList );
+        m_ConeMesh->Render( commandList );
     }
 
-    // Perform HDR -> SDR tonemapping directly to the Window's render target.
-    commandList->SetRenderTarget( m_pWindow->GetRenderTarget() );
-    commandList->SetViewport( m_pWindow->GetRenderTarget().GetViewport() );
+    // Perform HDR -> SDR tonemapping directly to the SwapChain's render target.
+    commandList->SetRenderTarget( m_SwapChain->GetRenderTarget() );
+    commandList->SetViewport( m_SwapChain->GetRenderTarget().GetViewport() );
     commandList->SetPipelineState( m_SDRPipelineState );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     commandList->SetGraphicsRootSignature( m_SDRRootSignature );
     commandList->SetGraphics32BitConstants( 0, g_TonemapParameters );
-    commandList->SetShaderResourceView( 1, 0, m_HDRRenderTarget.GetTexture( Color0 ),
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetShaderResourceView( 1, 0, m_HDRSRV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     commandList->Draw( 3 );
 
-    commandQueue->ExecuteCommandList( commandList );
-
     // Render GUI.
-    OnGUI();
+    OnGUI( commandList, m_SwapChain->GetRenderTarget() );
+
+    commandQueue.ExecuteCommandList( commandList );
 
     // Present
-    m_pWindow->Present();
+    m_SwapChain->Present();
 }
 
 static bool g_AllowFullscreenToggle = true;
 
 void Tutorial4::OnKeyPressed( KeyEventArgs& e )
 {
-    super::OnKeyPressed( e );
-
     if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
         switch ( e.Key )
         {
         case KeyCode::Escape:
-            Application::Get().Quit( 0 );
+            GameFramework::Get().Stop();
             break;
         case KeyCode::Enter:
             if ( e.Alt )
@@ -1036,13 +1098,13 @@ void Tutorial4::OnKeyPressed( KeyEventArgs& e )
             case KeyCode::F11:
                 if ( g_AllowFullscreenToggle )
                 {
-                    m_pWindow->ToggleFullscreen();
+                    m_Window->ToggleFullscreen();
                     g_AllowFullscreenToggle = false;
                 }
                 break;
             }
         case KeyCode::V:
-            m_pWindow->ToggleVSync();
+            m_SwapChain->ToggleVSync();
             break;
         case KeyCode::R:
             // Reset camera transform
@@ -1086,8 +1148,6 @@ void Tutorial4::OnKeyPressed( KeyEventArgs& e )
 
 void Tutorial4::OnKeyReleased( KeyEventArgs& e )
 {
-    super::OnKeyReleased( e );
-
     if ( !ImGui::GetIO().WantCaptureKeyboard )
     {
         switch ( e.Key )
@@ -1130,8 +1190,6 @@ void Tutorial4::OnKeyReleased( KeyEventArgs& e )
 
 void Tutorial4::OnMouseMoved( MouseMotionEventArgs& e )
 {
-    super::OnMouseMoved( e );
-
     const float mouseSpeed = 0.1f;
     if ( !ImGui::GetIO().WantCaptureMouse )
     {
@@ -1139,7 +1197,7 @@ void Tutorial4::OnMouseMoved( MouseMotionEventArgs& e )
         {
             m_Pitch -= e.RelY * mouseSpeed;
 
-            m_Pitch = clamp( m_Pitch, -90.0f, 90.0f );
+            m_Pitch = std::clamp( m_Pitch, -90.0f, 90.0f );
 
             m_Yaw -= e.RelX * mouseSpeed;
         }
@@ -1153,12 +1211,10 @@ void Tutorial4::OnMouseWheel( MouseWheelEventArgs& e )
         auto fov = m_Camera.get_FoV();
 
         fov -= e.WheelDelta;
-        fov = clamp( fov, 12.0f, 90.0f );
+        fov = std::clamp( fov, 12.0f, 90.0f );
 
         m_Camera.set_FoV( fov );
 
-        char buffer[256];
-        sprintf_s( buffer, "FoV: %f\n", fov );
-        OutputDebugStringA( buffer );
+        m_Logger->info( "FoV: {:.7}", fov );
     }
 }

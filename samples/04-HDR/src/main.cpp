@@ -1,4 +1,4 @@
-#include <dx12lib/Application.h>
+#include <GameFramework/GameFramework.h>
 
 #include <Tutorial4.h>
 
@@ -7,14 +7,15 @@
 #include <Windows.h>
 #include <shellapi.h>
 
-#include <dxgidebug.h>
+#include <dxgi1_3.h>
+#include <dxgidebug.h>  // For IDXGIDebug1.
 
 using namespace dx12lib;
 
 void ReportLiveObjects()
 {
     IDXGIDebug1* dxgiDebug;
-    DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
+    ::DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
 
     dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
     dxgiDebug->Release();
@@ -42,13 +43,12 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         LocalFree( argv );
     }
 
-    Application::Create( hInstance );
+    GameFramework::Create( hInstance );
     {
-        std::shared_ptr<Tutorial4> demo =
-            std::make_shared<Tutorial4>( L"Learning DirectX 12 - Lesson 4", 1280, 720, true );
-        retCode = Application::Get().Run( demo );
+        std::unique_ptr<Tutorial4> demo = std::make_unique<Tutorial4>( L"HDR", 1920, 1080, true );
+        retCode                         = demo->Run();
     }
-    Application::Destroy();
+    GameFramework::Destroy();
 
     atexit( &ReportLiveObjects );
 

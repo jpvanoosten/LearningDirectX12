@@ -39,14 +39,14 @@ add_subdirectory( DX12Lib )
 add_subdirectory( Samples/01-ClearScreen)
 add_subdirectory( Samples/02-Cube )
 add_subdirectory( Samples/03-Textures )
-add_subdirectory( Samples/Tutorial4 )
+add_subdirectory( Samples/04-HDR )
 
-set_target_properties( 01-ClearScreen 02-Cube 03-Textures Tutorial4
+set_target_properties( 01-ClearScreen 02-Cube 03-Textures 04-HDR
     PROPERTIES
         FOLDER Samples
 )
 
 # Set the startup project.
 set_directory_properties( PROPERTIES 
-    VS_STARTUP_PROJECT 03-Textures
+    VS_STARTUP_PROJECT 04-HDR
 )

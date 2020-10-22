@@ -33,8 +33,8 @@
 #include <Camera.h>
 #include <Light.h>
 
-#include <GameFramework/GameFramework.h>
 #include <GameFramework/Events.h>
+#include <GameFramework/GameFramework.h>
 
 #include <dx12lib/RenderTarget.h>
 
@@ -86,7 +86,7 @@ protected:
      */
     void OnUpdate( UpdateEventArgs& e );
     void OnRender();
-    void OnGUI(const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
+    void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
 
     /**
      * Invoked by the registered window when a key is pressed
@@ -175,8 +175,8 @@ private:
     // Set to true if the Shift key is pressed.
     bool m_Shift;
 
-    int m_Width;
-    int m_Height;
+    int  m_Width;
+    int  m_Height;
     bool m_VSync;
 
     // Define some lights.

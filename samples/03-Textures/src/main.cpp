@@ -55,7 +55,7 @@ int CALLBACK wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmd
 
     GameFramework::Create( hInstance );
     {
-        std::unique_ptr<Tutorial3> demo = std::make_unique<Tutorial3>( L"Learning DirectX 12 - Lesson 3", 1280, 720 );
+        std::unique_ptr<Tutorial3> demo = std::make_unique<Tutorial3>( L"Textures", 1920, 1080);
         retCode                         = demo->Run();
     }
     GameFramework::Destroy();

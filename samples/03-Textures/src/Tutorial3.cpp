@@ -102,8 +102,6 @@ Tutorial3::Tutorial3( const std::wstring& name, uint32_t width, uint32_t height,
     m_Logger = GameFramework::Get().CreateLogger( "Textures" );
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
-    using namespace std::placeholders;  // for _1, _2, _3...
-
     m_Window->Update += UpdateEvent::slot( &Tutorial3::OnUpdate, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial3::OnKeyPressed, this );
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial3::OnKeyReleased, this );
@@ -638,7 +636,6 @@ void Tutorial3::OnRender()
 
     commandQueue.ExecuteCommandList( commandList );
 
-    // Present
     m_SwapChain->Present();
 }
 

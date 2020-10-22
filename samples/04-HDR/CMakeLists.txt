@@ -36,7 +36,7 @@ source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
 
 set_source_files_properties( ${SHADER_FILES} 
     PROPERTIES
-        VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/Tutorial4/%(Filename).cso"
+        VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/04-HDR/%(Filename).cso"
         VS_SHADER_MODEL 5.1
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
@@ -52,27 +52,28 @@ set_source_files_properties( ${PIXEL_SHADER_FILES}
         VS_SHADER_TYPE Pixel
 )
 
-add_executable( Tutorial4 WIN32
+add_executable( 04-HDR WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
     ${SHADER_FILES}
 )
 
-target_include_directories( Tutorial4
+target_include_directories( 04-HDR
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
-target_link_libraries( Tutorial4
+target_link_libraries( 04-HDR
+    GameFramework
     DX12Lib
     d3dcompiler.lib
     Shlwapi.lib
 )
 
 # Set debug database to enable the "Edit and Continue" feature.
-target_compile_options( Tutorial4
+target_compile_options( 04-HDR
     PRIVATE $<$<CONFIG:Debug>:/ZI>
 )
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)
 set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
-configure_file( Tutorial4.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/Tutorial4.vcxproj.user @ONLY )
+configure_file( 04-HDR.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/04-HDR.vcxproj.user @ONLY )
