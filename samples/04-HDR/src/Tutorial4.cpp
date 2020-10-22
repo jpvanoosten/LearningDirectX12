@@ -548,7 +548,7 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         totalTime  = 0.0;
     }
 
-    // To reduce potential input lag, wait for the swap chain to be ready to present before updating input.
+    // To reduce potential input lag, wait for the swap chain to be ready to present before updating the camera.
     m_SwapChain->WaitForSwapChain();
 
     // Update the camera.
