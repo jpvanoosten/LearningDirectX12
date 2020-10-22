@@ -5,6 +5,7 @@
 #include <dx12lib/ByteAddressBuffer.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/ConstantBuffer.h>
+#include <dx12lib/ConstantBufferView.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/DynamicDescriptorHeap.h>
 #include <dx12lib/GenerateMipsPSO.h>
@@ -961,9 +962,54 @@ void CommandList::SetComputeRootSignature( const std::shared_ptr<RootSignature>&
     }
 }
 
+void CommandList::SetConstantBufferView( uint32_t rootParameterIndex, const std::shared_ptr<ConstantBuffer>& buffer,
+                                         D3D12_RESOURCE_STATES stateAfter, size_t bufferOffset )
+{
+    if ( buffer )
+    {
+        auto d3d12Resource = buffer->GetD3D12Resource();
+        TransitionBarrier( d3d12Resource, stateAfter );
+
+        m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageInlineCBV(
+            rootParameterIndex, d3d12Resource->GetGPUVirtualAddress() + bufferOffset );
+
+        TrackResource( buffer );
+    }
+}
+
+void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, const std::shared_ptr<Buffer>& buffer,
+                                         D3D12_RESOURCE_STATES stateAfter, size_t bufferOffset )
+{
+    if ( buffer )
+    {
+        auto d3d12Resource = buffer->GetD3D12Resource();
+        TransitionBarrier( d3d12Resource, stateAfter );
+
+        m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageInlineSRV(
+            rootParameterIndex, d3d12Resource->GetGPUVirtualAddress() + bufferOffset );
+
+        TrackResource( buffer );
+    }
+}
+
+void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, const std::shared_ptr<Buffer>& buffer,
+                                          D3D12_RESOURCE_STATES stateAfter, size_t bufferOffset )
+{
+    if ( buffer )
+    {
+        auto d3d12Resource = buffer->GetD3D12Resource();
+        TransitionBarrier( d3d12Resource, stateAfter );
+
+        m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageInlineUAV(
+            rootParameterIndex, d3d12Resource->GetGPUVirtualAddress() + bufferOffset );
+
+        TrackResource( buffer );
+    }
+}
+
 void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
-                                         const std::shared_ptr<ShaderResourceView>& srv, D3D12_RESOURCE_STATES stateAfter,
-                                         UINT firstSubresource, UINT numSubresources )
+                                         const std::shared_ptr<ShaderResourceView>& srv,
+                                         D3D12_RESOURCE_STATES stateAfter, UINT firstSubresource, UINT numSubresources )
 {
     assert( srv );
 
@@ -988,8 +1034,8 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t d
 
 void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
                                           const std::shared_ptr<UnorderedAccessView>& uav,
-                                          D3D12_RESOURCE_STATES stateAfter,
-                                          UINT firstSubresource, UINT numSubresources )
+                                          D3D12_RESOURCE_STATES stateAfter, UINT firstSubresource,
+                                          UINT numSubresources )
 {
     assert( uav );
 
@@ -1011,6 +1057,23 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t 
 
     m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
         rootParameterIndex, descrptorOffset, 1, uav->GetDescriptorHandle() );
+}
+
+void CommandList::SetConstantBufferView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
+                                         const std::shared_ptr<ConstantBufferView>& cbv,
+                                         D3D12_RESOURCE_STATES                      stateAfter )
+{
+    assert( cbv );
+
+    auto constantBuffer = cbv->GetConstantBuffer();
+    if ( constantBuffer )
+    {
+        TransitionBarrier( constantBuffer, stateAfter );
+        TrackResource( constantBuffer );
+    }
+
+    m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
+        rootParameterIndex, descriptorOffset, 1, cbv->GetDescriptorHandle() );
 }
 
 void CommandList::SetRenderTarget( const RenderTarget& renderTarget )

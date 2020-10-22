@@ -2,8 +2,8 @@
 
 #include <dx12lib/DynamicDescriptorHeap.h>
 
-#include <dx12lib/Device.h>
 #include <dx12lib/CommandList.h>
+#include <dx12lib/Device.h>
 #include <dx12lib/RootSignature.h>
 
 using namespace dx12lib;
@@ -15,6 +15,9 @@ DynamicDescriptorHeap::DynamicDescriptorHeap( Device& device, D3D12_DESCRIPTOR_H
 , m_NumDescriptorsPerHeap( numDescriptorsPerHeap )
 , m_DescriptorTableBitMask( 0 )
 , m_StaleDescriptorTableBitMask( 0 )
+, m_StaleCBVBitMask( 0 )
+, m_StaleSRVBitMask( 0 )
+, m_StaleUAVBitMask( 0 )
 , m_CurrentCPUDescriptorHandle( D3D12_DEFAULT )
 , m_CurrentGPUDescriptorHandle( D3D12_DEFAULT )
 , m_NumFreeHandles( 0 )
@@ -92,6 +95,30 @@ void DynamicDescriptorHeap::StageDescriptors( uint32_t rootParameterIndex, uint3
     m_StaleDescriptorTableBitMask |= ( 1 << rootParameterIndex );
 }
 
+void DynamicDescriptorHeap::StageInlineCBV( uint32_t rootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation )
+{
+    assert( rootParameterIndex < MaxDescriptorTables );
+
+    m_InlineCBV[rootParameterIndex] = bufferLocation;
+    m_StaleCBVBitMask |= ( 1 << rootParameterIndex );
+}
+
+void DynamicDescriptorHeap::StageInlineSRV( uint32_t rootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation )
+{
+    assert( rootParameterIndex < MaxDescriptorTables );
+
+    m_InlineSRV[rootParameterIndex] = bufferLocation;
+    m_StaleSRVBitMask |= ( 1 << rootParameterIndex );
+}
+
+void DynamicDescriptorHeap::StageInlineUAV( uint32_t rootParamterIndex, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation )
+{
+    assert( rootParamterIndex < MaxDescriptorTables );
+
+    m_InlineUAV[rootParamterIndex] = bufferLocation;
+    m_StaleUAVBitMask |= ( 1 << rootParamterIndex );
+}
+
 uint32_t DynamicDescriptorHeap::ComputeStaleDescriptorCount() const
 {
     uint32_t numStaleDescriptors = 0;
@@ -139,7 +166,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DynamicDescriptorHeap::CreateDescri
     return descriptorHeap;
 }
 
-void DynamicDescriptorHeap::CommitStagedDescriptors(
+void DynamicDescriptorHeap::CommitDescriptorTables(
     CommandList&                                                                         commandList,
     std::function<void( ID3D12GraphicsCommandList*, UINT, D3D12_GPU_DESCRIPTOR_HANDLE )> setFunc )
 {
@@ -179,7 +206,7 @@ void DynamicDescriptorHeap::CommitStagedDescriptors(
 
             // Copy the staged CPU visible descriptors to the GPU visible descriptor heap.
             d3d12Device->CopyDescriptors( 1, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes, numSrcDescriptors,
-                                     pSrcDescriptorHandles, nullptr, m_DescriptorHeapType );
+                                          pSrcDescriptorHandles, nullptr, m_DescriptorHeapType );
 
             // Set the descriptors on the command list using the passed-in setter function.
             setFunc( d3d12GraphicsCommandList, rootIndex, m_CurrentGPUDescriptorHandle );
@@ -196,14 +223,44 @@ void DynamicDescriptorHeap::CommitStagedDescriptors(
     }
 }
 
+void DynamicDescriptorHeap::CommitInlineDescriptors(
+    CommandList& commandList, const D3D12_GPU_VIRTUAL_ADDRESS* bufferLocations, uint32_t& bitMask,
+    std::function<void( ID3D12GraphicsCommandList*, UINT, D3D12_GPU_VIRTUAL_ADDRESS )> setFunc )
+{
+    if ( bitMask != 0 )
+    {
+        auto  d3d12GraphicsCommandList = commandList.GetD3D12CommandList().Get();
+        DWORD rootIndex;
+        while ( _BitScanForward( &rootIndex, bitMask ) )
+        {
+            setFunc( d3d12GraphicsCommandList, rootIndex, bufferLocations[rootIndex] );
+
+            // Flip the stale bit so the descriptor is not recopied again unless it is updated with a new descriptor.
+            bitMask ^= ( 1 << rootIndex );
+        }
+    }
+}
+
 void DynamicDescriptorHeap::CommitStagedDescriptorsForDraw( CommandList& commandList )
 {
-    CommitStagedDescriptors( commandList, &ID3D12GraphicsCommandList::SetGraphicsRootDescriptorTable );
+    CommitDescriptorTables( commandList, &ID3D12GraphicsCommandList::SetGraphicsRootDescriptorTable );
+    CommitInlineDescriptors( commandList, m_InlineCBV, m_StaleCBVBitMask,
+                             &ID3D12GraphicsCommandList::SetGraphicsRootConstantBufferView );
+    CommitInlineDescriptors( commandList, m_InlineSRV, m_StaleSRVBitMask,
+                             &ID3D12GraphicsCommandList::SetGraphicsRootShaderResourceView );
+    CommitInlineDescriptors( commandList, m_InlineUAV, m_StaleUAVBitMask,
+                             &ID3D12GraphicsCommandList::SetGraphicsRootUnorderedAccessView );
 }
 
 void DynamicDescriptorHeap::CommitStagedDescriptorsForDispatch( CommandList& commandList )
 {
-    CommitStagedDescriptors( commandList, &ID3D12GraphicsCommandList::SetComputeRootDescriptorTable );
+    CommitDescriptorTables( commandList, &ID3D12GraphicsCommandList::SetComputeRootDescriptorTable );
+    CommitInlineDescriptors( commandList, m_InlineCBV, m_StaleCBVBitMask,
+                             &ID3D12GraphicsCommandList::SetComputeRootConstantBufferView );
+    CommitInlineDescriptors( commandList, m_InlineSRV, m_StaleSRVBitMask,
+                             &ID3D12GraphicsCommandList::SetComputeRootShaderResourceView );
+    CommitInlineDescriptors( commandList, m_InlineUAV, m_StaleUAVBitMask,
+                             &ID3D12GraphicsCommandList::SetComputeRootUnorderedAccessView );
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DynamicDescriptorHeap::CopyDescriptor( CommandList&                comandList,
@@ -245,7 +302,16 @@ void DynamicDescriptorHeap::Reset()
     m_NumFreeHandles              = 0;
     m_DescriptorTableBitMask      = 0;
     m_StaleDescriptorTableBitMask = 0;
+    m_StaleCBVBitMask             = 0;
+    m_StaleSRVBitMask             = 0;
+    m_StaleUAVBitMask             = 0;
 
-    // Reset the table cache
-    for ( int i = 0; i < MaxDescriptorTables; ++i ) { m_DescriptorTableCache[i].Reset(); }
+    // Reset the descriptor cache
+    for ( int i = 0; i < MaxDescriptorTables; ++i )
+    {
+        m_DescriptorTableCache[i].Reset();
+        m_InlineCBV[i] = 0ull;
+        m_InlineSRV[i] = 0ull;
+        m_InlineUAV[i] = 0ull;
+    }
 }

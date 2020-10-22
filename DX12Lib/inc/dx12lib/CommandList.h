@@ -47,6 +47,7 @@ namespace dx12lib
 class Buffer;
 class ByteAddressBuffer;
 class ConstantBuffer;
+class ConstantBufferView;
 class Device;
 class DynamicDescriptorHeap;
 class GenerateMipsPSO;
@@ -345,6 +346,40 @@ public:
      */
     void SetGraphicsRootSignature( const std::shared_ptr<RootSignature>& rootSignature );
     void SetComputeRootSignature( const std::shared_ptr<RootSignature>& rootSignature );
+
+    /**
+     * Set an inline CBV.
+     *
+     * Note: Only ConstantBuffer's can be used with inline CBV's.
+     */
+    void SetConstantBufferView( uint32_t rootParameterIndex, const std::shared_ptr<ConstantBuffer>& buffer,
+                                D3D12_RESOURCE_STATES stateAfter   = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+                                size_t                bufferOffset = 0 );
+
+    /**
+     * Set an inline SRV.
+     *
+     * Note: Only Buffer resources can be used with inline SRV's
+     */
+    void SetShaderResourceView( uint32_t rootParameterIndex, const std::shared_ptr<Buffer>& buffer,
+                                D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+                                                                   D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                                size_t bufferOffset = 0 );
+    /**
+     * Set an inline UAV.
+     *
+     * Note: Only Buffer resoruces can be used with inline UAV's.
+     */
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, const std::shared_ptr<Buffer>& buffer,
+                                 D3D12_RESOURCE_STATES stateAfter   = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                                 size_t                bufferOffset = 0 );
+
+    /**
+     * Set the CBV on the rendering pipeline.
+     */
+    void SetConstantBufferView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
+                                const std::shared_ptr<ConstantBufferView>& cbv,
+                                D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
 
     /**
      * Set the SRV on the graphics pipeline.

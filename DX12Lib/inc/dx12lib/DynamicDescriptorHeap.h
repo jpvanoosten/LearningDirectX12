@@ -65,19 +65,20 @@ public:
                            const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors );
 
     /**
-     * Copy all of the staged descriptors to the GPU visible descriptor heap and
-     * bind the descriptor heap and the descriptor tables to the command list.
-     * The passed-in function object is used to set the GPU visible descriptors
-     * on the command list. Two possible functions are:
-     *   * Before a draw    : ID3D12GraphicsCommandList::SetGraphicsRootDescriptorTable
-     *   * Before a dispatch: ID3D12GraphicsCommandList::SetComputeRootDescriptorTable
-     *
-     * Since the DynamicDescriptorHeap can't know which function will be used, it must
-     * be passed as an argument to the function.
+     * Stage an inline CBV descriptor.
      */
-    void CommitStagedDescriptors(
-        CommandList&                                                                         commandList,
-        std::function<void( ID3D12GraphicsCommandList*, UINT, D3D12_GPU_DESCRIPTOR_HANDLE )> setFunc );
+    void StageInlineCBV( uint32_t rootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation );
+
+    /**
+     * Stage an inline SRV descriptor.
+     */
+    void StageInlineSRV( uint32_t rootParameterIndex, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation );
+
+    /**
+     * Stage an inline UAV descriptor.
+     */
+    void StageInlineUAV( uint32_t rootParamterIndex, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation );
+
     void CommitStagedDescriptorsForDraw( CommandList& commandList );
     void CommitStagedDescriptorsForDispatch( CommandList& commandList );
 
@@ -122,6 +123,24 @@ private:
     // Compute the number of stale descriptors that need to be copied
     // to GPU visible descriptor heap.
     uint32_t ComputeStaleDescriptorCount() const;
+
+    /**
+     * Copy all of the staged descriptors to the GPU visible descriptor heap and
+     * bind the descriptor heap and the descriptor tables to the command list.
+     * The passed-in function object is used to set the GPU visible descriptors
+     * on the command list. Two possible functions are:
+     *   * Before a draw    : ID3D12GraphicsCommandList::SetGraphicsRootDescriptorTable
+     *   * Before a dispatch: ID3D12GraphicsCommandList::SetComputeRootDescriptorTable
+     *
+     * Since the DynamicDescriptorHeap can't know which function will be used, it must
+     * be passed as an argument to the function.
+     */
+    void CommitDescriptorTables(
+        CommandList&                                                                         commandList,
+        std::function<void( ID3D12GraphicsCommandList*, UINT, D3D12_GPU_DESCRIPTOR_HANDLE )> setFunc );
+    void CommitInlineDescriptors(
+        CommandList& commandList, const D3D12_GPU_VIRTUAL_ADDRESS* bufferLocations, uint32_t& bitMask,
+        std::function<void( ID3D12GraphicsCommandList*, UINT, D3D12_GPU_VIRTUAL_ADDRESS )> setFunc );
 
     /**
      * The maximum number of descriptor tables per root signature.
@@ -177,6 +196,13 @@ private:
     // Descriptor handle cache per descriptor table.
     DescriptorTableCache m_DescriptorTableCache[MaxDescriptorTables];
 
+    // Inline CBV
+    D3D12_GPU_VIRTUAL_ADDRESS m_InlineCBV[MaxDescriptorTables];
+    // Inline SRV
+    D3D12_GPU_VIRTUAL_ADDRESS m_InlineSRV[MaxDescriptorTables];
+    // Inline UAV
+    D3D12_GPU_VIRTUAL_ADDRESS m_InlineUAV[MaxDescriptorTables];
+
     // Each bit in the bit mask represents the index in the root signature
     // that contains a descriptor table.
     uint32_t m_DescriptorTableBitMask;
@@ -184,6 +210,9 @@ private:
     // in the root signature that has changed since the last time the
     // descriptors were copied.
     uint32_t m_StaleDescriptorTableBitMask;
+    uint32_t m_StaleCBVBitMask;
+    uint32_t m_StaleSRVBitMask;
+    uint32_t m_StaleUAVBitMask;
 
     using DescriptorHeapPool = std::queue<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>>;
 
