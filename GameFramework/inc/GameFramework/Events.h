@@ -81,7 +81,7 @@ public:
     /**
      * Invoke the delegate.
      */
-    opt::optional<R> operator()( Args&&... args )
+    opt::optional<R> operator()( Args... args )
     {
         return m_Callbacks( std::forward<Args>( args )... );
     }

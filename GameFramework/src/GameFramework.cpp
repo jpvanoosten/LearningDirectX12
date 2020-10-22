@@ -424,8 +424,7 @@ void GameFramework::OnFileChange( FileChangedEventArgs& e )
 
 LRESULT GameFramework::OnWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-    auto res = WndProcHandler( static_cast<HWND&&>( hWnd ), static_cast<UINT&&>( msg ), static_cast<WPARAM&&>( wParam ),
-                               static_cast<LPARAM&&>( lParam ) );
+    auto res = WndProcHandler( hWnd, msg, wParam, lParam );
     return res ? *res : 0;
 }
 
@@ -533,7 +532,6 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 
     if ( pWindow )
     {
-
         switch ( message )
         {
         case WM_DPICHANGED:
