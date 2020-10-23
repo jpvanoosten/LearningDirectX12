@@ -35,19 +35,20 @@
  *  a depth buffer resource is being used as a depth-stencil view in a command list
  *  that is generating the shadow map for a light source, but needs to be used as
  *  a shader-resource view in a command list that is performing shadow mapping. If
- *  the command lists are being generated in separate threads, the exact state of the 
+ *  the command lists are being generated in separate threads, the exact state of the
  *  resource can't be guaranteed at the moment it is used in the command list.
  *  The ResourceStateTracker class is intended to be used within a command list
  *  to track the state of the resource as it is known within that command list.
- * 
+ *
  *  @see https://youtu.be/nmB2XMasz2o
  *  @see https://msdn.microsoft.com/en-us/library/dn899226(v=vs.85).aspx#implicit_state_transitions
  */
 
 #include <d3d12.h>
+#include <wrl/client.h>
 
-#include <mutex>
 #include <map>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -149,7 +150,12 @@ public:
      * Remove a resource from the global resource state array (map).
      * This should only be done when the resource is destroyed.
      */
-    static void RemoveGlobalResourceState( ID3D12Resource* resource );
+    static void RemoveGlobalResourceState( ID3D12Resource* resource, bool immediate = false );
+
+    /**
+     * Remove garbage resources.
+     */
+    static void RemoveGarbageResources();
 
 protected:
 private:
@@ -207,6 +213,7 @@ private:
         std::map<UINT, D3D12_RESOURCE_STATES> SubresourceState;
     };
 
+    using ResourceList     = std::vector<ID3D12Resource*>;
     using ResourceStateMap = std::unordered_map<ID3D12Resource*, ResourceState>;
 
     // The final (last known state) of the resources within a command list.
@@ -217,6 +224,8 @@ private:
     // The global resource state array (map) stores the state of a resource
     // between command list execution.
     static ResourceStateMap ms_GlobalResourceState;
+    // Resources that should be cleaned up when they are no longer being used.
+    static ResourceList ms_GarbageResources;
 
     // The mutex protects shared access to the GlobalResourceState map.
     static std::mutex ms_GlobalMutex;

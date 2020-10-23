@@ -11,6 +11,7 @@
 #include <dx12lib/GUI.h>
 #include <dx12lib/IndexBuffer.h>
 #include <dx12lib/PipelineStateObject.h>
+#include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/StructuredBuffer.h>
@@ -329,6 +330,9 @@ void Device::Flush()
     m_DirectCommandQueue->Flush();
     m_ComputeCommandQueue->Flush();
     m_CopyCommandQueue->Flush();
+
+    // Perform garbage collection on the resource state tracker.
+    ResourceStateTracker::RemoveGarbageResources();
 }
 
 DescriptorAllocation Device::AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )

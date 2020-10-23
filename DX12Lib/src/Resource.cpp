@@ -7,8 +7,7 @@
 
 using namespace dx12lib;
 
-Resource::Resource( Device& device, const D3D12_RESOURCE_DESC& resourceDesc,
-                    const D3D12_CLEAR_VALUE* clearValue )
+Resource::Resource( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue )
 : m_Device( device )
 {
     auto d3d12Device = m_Device.GetD3D12Device();
