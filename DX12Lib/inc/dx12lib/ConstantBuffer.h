@@ -31,7 +31,9 @@
  */
 
 #include "Buffer.h"
-#include "DescriptorAllocation.h"
+
+#include <d3d12.h> // For ID3D12Resource
+#include <wrl/client.h> // For ComPtr
 
 namespace dx12lib
 {
@@ -45,7 +47,7 @@ public:
     }
 
 protected:
-    ConstantBuffer( Device& device, const D3D12_RESOURCE_DESC& resourceDesc );
+    ConstantBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource );
     virtual ~ConstantBuffer();
 
 private:

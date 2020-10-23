@@ -94,12 +94,18 @@ public:
     /**
      * Create a swapchain using the provided OS window handle.
      */
-    std::shared_ptr<SwapChain> CreateSwapChain( HWND hWnd, DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
+    std::shared_ptr<SwapChain> CreateSwapChain( HWND        hWnd,
+                                                DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
 
     /**
      * Create a GUI object.
      */
     std::shared_ptr<GUI> CreateGUI( HWND hWnd, const RenderTarget& renderTarget );
+
+    /**
+     * Create a ConstantBuffer from a given ID3D12Resoure.
+     */
+    std::shared_ptr<ConstantBuffer> CreateConstantBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource );
 
     /**
      * Create a ByteAddressBuffer resource.
@@ -151,17 +157,16 @@ public:
         return DoCreatePipelineStateObject( pipelineStateStreamDesc );
     }
 
-    std::shared_ptr<ConstantBufferView>
-        CreateConstantBufferView( std::shared_ptr<ConstantBuffer>        constantBuffer,
-                                  const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv = nullptr );
+    std::shared_ptr<ConstantBufferView> CreateConstantBufferView( const std::shared_ptr<ConstantBuffer>& constantBuffer,
+                                                                  size_t                                 offset = 0 );
 
     std::shared_ptr<ShaderResourceView>
-        CreateShaderResourceView( std::shared_ptr<Resource>              resource,
+        CreateShaderResourceView( const std::shared_ptr<Resource>&       resource,
                                   const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr );
 
     std::shared_ptr<UnorderedAccessView>
-        CreateUnorderedAccessView( std::shared_ptr<Resource>               resource,
-                                   std::shared_ptr<Resource>               counterResource = nullptr,
+        CreateUnorderedAccessView( const std::shared_ptr<Resource>&        resource,
+                                   const std::shared_ptr<Resource>&        counterResource = nullptr,
                                    const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav             = nullptr );
 
     /**

@@ -60,8 +60,8 @@ public:
     }
 
 protected:
-    UnorderedAccessView( Device& device, std::shared_ptr<Resource> resource,
-                         std::shared_ptr<Resource>               counterResource = nullptr,
+    UnorderedAccessView( Device& device, const std::shared_ptr<Resource>& resource,
+                         const std::shared_ptr<Resource>&        counterResource = nullptr,
                          const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav             = nullptr );
     virtual ~UnorderedAccessView() = default;
 

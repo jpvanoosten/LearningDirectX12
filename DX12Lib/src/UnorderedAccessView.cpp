@@ -7,8 +7,8 @@
 
 using namespace dx12lib;
 
-UnorderedAccessView::UnorderedAccessView( Device& device, std::shared_ptr<Resource> resource,
-                                          std::shared_ptr<Resource>               counterResource,
+UnorderedAccessView::UnorderedAccessView( Device& device, const std::shared_ptr<Resource>& resource,
+                                          const std::shared_ptr<Resource>&        counterResource,
                                           const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
 : m_Device( device )
 , m_Resource( resource )
@@ -16,11 +16,12 @@ UnorderedAccessView::UnorderedAccessView( Device& device, std::shared_ptr<Resour
 {
     assert( m_Resource || uav );
 
-    auto  d3d12Device          = m_Device.GetD3D12Device();
-    auto  d3d12Resource        = m_Resource ? m_Resource->GetD3D12Resource() : nullptr;
-    auto  d3d12CounterResource = m_CounterResource ? m_CounterResource->GetD3D12Resource() : nullptr;
+    auto d3d12Device          = m_Device.GetD3D12Device();
+    auto d3d12Resource        = m_Resource ? m_Resource->GetD3D12Resource() : nullptr;
+    auto d3d12CounterResource = m_CounterResource ? m_CounterResource->GetD3D12Resource() : nullptr;
 
-    if (m_Resource) {
+    if ( m_Resource )
+    {
         auto d3d12ResourceDesc = m_Resource->GetD3D12ResourceDesc();
 
         // Resource must be created with the D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS flag.

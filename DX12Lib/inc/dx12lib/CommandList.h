@@ -176,6 +176,17 @@ public:
     }
 
     /**
+     * Copy the contents to a constant buffer in GPU memory.
+     */
+    std::shared_ptr<ConstantBuffer> CopyConstantBuffer( size_t bufferSize, const void* bufferData );
+
+    template<typename T>
+    std::shared_ptr<ConstantBuffer> CopyConstantBuffer(const T& data)
+    {
+        return CopyConstantBuffer( sizeof( T ), &data );
+    }
+
+    /**
      * Copy the contents to a byte address buffer in GPU memory.
      */
     std::shared_ptr<ByteAddressBuffer> CopyByteAddressBuffer( size_t bufferSize, const void* bufferData );

@@ -67,9 +67,3 @@ void Resource::CheckFeatureSupport()
     ThrowIfFailed( d3d12Device->CheckFeatureSupport( D3D12_FEATURE_FORMAT_SUPPORT, &m_FormatSupport,
                                                      sizeof( D3D12_FEATURE_DATA_FORMAT_SUPPORT ) ) );
 }
-
-void dx12lib::Resource::SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource )
-{
-    m_d3d12Resource = d3d12Resource;
-    CheckFeatureSupport();
-}

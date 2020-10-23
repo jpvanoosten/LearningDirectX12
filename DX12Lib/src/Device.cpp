@@ -4,6 +4,7 @@
 #include <dx12lib/ByteAddressBuffer.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
+#include <dx12lib/ConstantBuffer.h>
 #include <dx12lib/ConstantBufferView.h>
 #include <dx12lib/DescriptorAllocator.h>
 #include <dx12lib/Device.h>
@@ -22,7 +23,7 @@ using namespace dx12lib;
 
 class MakeGUI : public GUI
 {
-public: 
+public:
     MakeGUI( Device& device, HWND hWnd, const RenderTarget& renderTarget )
     : GUI( device, hWnd, renderTarget )
     {}
@@ -33,8 +34,9 @@ public:
 class MakeUnorderedAccessView : public UnorderedAccessView
 {
 public:
-    MakeUnorderedAccessView( Device& device, std::shared_ptr<Resource> resource,
-                             std::shared_ptr<Resource> counterResource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
+    MakeUnorderedAccessView( Device& device, const std::shared_ptr<Resource>& resource,
+                             const std::shared_ptr<Resource>&        counterResource,
+                             const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
     : UnorderedAccessView( device, resource, counterResource, uav )
     {}
 
@@ -44,7 +46,7 @@ public:
 class MakeShaderResourceView : public ShaderResourceView
 {
 public:
-    MakeShaderResourceView( Device& device, std::shared_ptr<Resource> resource,
+    MakeShaderResourceView( Device& device, const std::shared_ptr<Resource>& resource,
                             const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
     : ShaderResourceView( device, resource, srv )
     {}
@@ -55,9 +57,8 @@ public:
 class MakeConstantBufferView : public ConstantBufferView
 {
 public:
-    MakeConstantBufferView( Device& device, std::shared_ptr<ConstantBuffer> constantBuffer,
-                            const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv )
-    : ConstantBufferView( device, constantBuffer, cbv )
+    MakeConstantBufferView( Device& device, const std::shared_ptr<ConstantBuffer>& constantBuffer, size_t offset )
+    : ConstantBufferView( device, constantBuffer, offset )
     {}
 
     virtual ~MakeConstantBufferView() {}
@@ -143,6 +144,16 @@ public:
     {}
 
     virtual ~MakeIndexBuffer() {}
+};
+
+class MakeConstantBuffer : public ConstantBuffer
+{
+public:
+    MakeConstantBuffer( Device& device, ComPtr<ID3D12Resource> resource )
+    : ConstantBuffer( device, resource )
+    {}
+
+    virtual ~MakeConstantBuffer() {}
 };
 
 // Adapter for std::make_shared
@@ -331,8 +342,7 @@ void Device::ReleaseStaleDescriptors()
     { m_DescriptorAllocators[i]->ReleaseStaleDescriptors(); }
 }
 
-std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND        hWnd,
-                                                    DXGI_FORMAT backBufferFormat )
+std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND hWnd, DXGI_FORMAT backBufferFormat )
 {
     std::shared_ptr<SwapChain> swapChain;
     swapChain = std::make_shared<MakeSwapChain>( *this, hWnd, backBufferFormat );
@@ -345,6 +355,13 @@ std::shared_ptr<GUI> Device::CreateGUI( HWND hWnd, const RenderTarget& renderTar
     std::shared_ptr<GUI> gui = std::make_shared<MakeGUI>( *this, hWnd, renderTarget );
 
     return gui;
+}
+
+std::shared_ptr<ConstantBuffer> Device::CreateConstantBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource )
+{
+    std::shared_ptr<ConstantBuffer> constantBuffer = std::make_shared<MakeConstantBuffer>( *this, resource );
+
+    return constantBuffer;
 }
 
 std::shared_ptr<ByteAddressBuffer> Device::CreateByteAddressBuffer( size_t bufferSize )
@@ -449,16 +466,16 @@ std::shared_ptr<PipelineStateObject>
     return pipelineStateObject;
 }
 
-std::shared_ptr<ConstantBufferView> Device::CreateConstantBufferView( std::shared_ptr<ConstantBuffer> constantBuffer,
-                                                                      const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv )
+std::shared_ptr<ConstantBufferView>
+    Device::CreateConstantBufferView( const std::shared_ptr<ConstantBuffer>& constantBuffer, size_t offset )
 {
     std::shared_ptr<ConstantBufferView> constantBufferView =
-        std::make_shared<MakeConstantBufferView>( *this, constantBuffer, cbv );
+        std::make_shared<MakeConstantBufferView>( *this, constantBuffer, offset );
 
     return constantBufferView;
 }
 
-std::shared_ptr<ShaderResourceView> Device::CreateShaderResourceView( std::shared_ptr<Resource>              resource,
+std::shared_ptr<ShaderResourceView> Device::CreateShaderResourceView( const std::shared_ptr<Resource>&       resource,
                                                                       const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
 {
     std::shared_ptr<ShaderResourceView> shaderResourceView =
@@ -467,9 +484,10 @@ std::shared_ptr<ShaderResourceView> Device::CreateShaderResourceView( std::share
     return shaderResourceView;
 }
 
-std::shared_ptr<UnorderedAccessView> Device::CreateUnorderedAccessView( std::shared_ptr<Resource> resource,
-                                                                        std::shared_ptr<Resource> counterResource,
-                                                                        const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
+std::shared_ptr<UnorderedAccessView>
+    Device::CreateUnorderedAccessView( const std::shared_ptr<Resource>&        resource,
+                                       const std::shared_ptr<Resource>&        counterResource,
+                                       const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav )
 {
     std::shared_ptr<UnorderedAccessView> unorderedAccessView =
         std::make_shared<MakeUnorderedAccessView>( *this, resource, counterResource, uav );
@@ -477,8 +495,7 @@ std::shared_ptr<UnorderedAccessView> Device::CreateUnorderedAccessView( std::sha
     return unorderedAccessView;
 }
 
-DXGI_SAMPLE_DESC Device::GetMultisampleQualityLevels( DXGI_FORMAT format,
-                                                      UINT        numSamples,
+DXGI_SAMPLE_DESC Device::GetMultisampleQualityLevels( DXGI_FORMAT format, UINT numSamples,
                                                       D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS flags ) const
 {
     DXGI_SAMPLE_DESC sampleDesc = { 1, 0 };

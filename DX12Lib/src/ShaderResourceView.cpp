@@ -7,7 +7,7 @@
 
 using namespace dx12lib;
 
-ShaderResourceView::ShaderResourceView( Device& device, std::shared_ptr<Resource> resource,
+ShaderResourceView::ShaderResourceView( Device& device, const std::shared_ptr<Resource>& resource,
                                         const D3D12_SHADER_RESOURCE_VIEW_DESC* srv )
 : m_Device( device )
 , m_Resource( resource )

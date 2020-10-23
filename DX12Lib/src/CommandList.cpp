@@ -248,6 +248,15 @@ std::shared_ptr<IndexBuffer> CommandList::CopyIndexBuffer( size_t numIndicies, D
     return indexBuffer;
 }
 
+std::shared_ptr<ConstantBuffer> CommandList::CopyConstantBuffer( size_t bufferSize, const void* bufferData )
+{
+    auto d3d12Resource = CopyBuffer( bufferSize, bufferData );
+
+    std::shared_ptr<ConstantBuffer> constantBuffer = m_Device.CreateConstantBuffer( d3d12Resource );
+
+    return constantBuffer;
+}
+
 std::shared_ptr<ByteAddressBuffer> CommandList::CopyByteAddressBuffer( size_t bufferSize, const void* bufferData )
 {
     auto d3d12Resource = CopyBuffer( bufferSize, bufferData, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS );

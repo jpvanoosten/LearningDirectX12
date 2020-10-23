@@ -55,7 +55,7 @@ public:
     }
 
 protected:
-    ShaderResourceView( Device& device, std::shared_ptr<Resource> resource,
+    ShaderResourceView( Device& device, const std::shared_ptr<Resource>& resource,
                         const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr );
     virtual ~ShaderResourceView() = default;
 

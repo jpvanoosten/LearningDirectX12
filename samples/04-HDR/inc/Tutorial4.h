@@ -193,6 +193,7 @@ private:
     int  m_Width;
     int  m_Height;
     bool m_VSync;
+    bool m_Fullscreen;
 
     // Scale the HDR render target to a fraction of the window size.
     float m_RenderScale;

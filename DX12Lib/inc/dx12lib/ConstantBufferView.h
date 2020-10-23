@@ -55,8 +55,8 @@ public:
     }
 
 protected:
-    ConstantBufferView( Device& device, std::shared_ptr<ConstantBuffer> constantBuffer,
-                        const D3D12_CONSTANT_BUFFER_VIEW_DESC* cbv = nullptr );
+    ConstantBufferView( Device& device, const std::shared_ptr<ConstantBuffer>& constantBuffer,
+                        size_t offset = 0 );
     virtual ~ConstantBufferView() = default;
 
 private:

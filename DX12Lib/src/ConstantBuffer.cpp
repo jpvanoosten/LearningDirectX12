@@ -6,9 +6,10 @@
 
 using namespace dx12lib;
 
-ConstantBuffer::ConstantBuffer( Device& device, const D3D12_RESOURCE_DESC& resourceDesc )
-: Buffer( device, resourceDesc )
-, m_SizeInBytes( resourceDesc.Width )
-{}
+ConstantBuffer::ConstantBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource )
+: Buffer( device, resource )
+{
+    m_SizeInBytes = GetD3D12ResourceDesc().Width;
+}
 
 ConstantBuffer::~ConstantBuffer() {}

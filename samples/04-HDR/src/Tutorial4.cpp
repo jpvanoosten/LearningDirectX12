@@ -142,6 +142,7 @@ Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSyn
 , m_Width( width )
 , m_Height( height )
 , m_VSync( vSync )
+, m_Fullscreen( false )
 , m_RenderScale( 1.0f )
 {
     m_Logger = GameFramework::Get().CreateLogger( "HDR" );
@@ -548,6 +549,8 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         totalTime  = 0.0;
     }
 
+    m_Window->SetFullscreen( m_Fullscreen );
+
     // To reduce potential input lag, wait for the swap chain to be ready to present before updating the camera.
     m_SwapChain->WaitForSwapChain();
 
@@ -731,7 +734,9 @@ void Tutorial4::OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList,
             bool fullscreen = m_Window->IsFullscreen();
             if ( ImGui::MenuItem( "Full screen", "Alt+Enter", &fullscreen ) )
             {
-                m_Window->SetFullscreen( fullscreen );
+                // m_Window->SetFullscreen( fullscreen );
+                // Defer the window resizing until the reference to the render target is released.
+                m_Fullscreen = fullscreen;
             }
 
             ImGui::EndMenu();
@@ -1098,7 +1103,8 @@ void Tutorial4::OnKeyPressed( KeyEventArgs& e )
             case KeyCode::F11:
                 if ( g_AllowFullscreenToggle )
                 {
-                    m_Window->ToggleFullscreen();
+                    m_Fullscreen = !m_Fullscreen; // Defer window resizing until OnUpdate();
+                    // Prevent the key repeat to cause multiple resizes.
                     g_AllowFullscreenToggle = false;
                 }
                 break;

@@ -6,9 +6,12 @@
 #include <Shlwapi.h>
 #include <Windows.h>
 #include <shellapi.h>
+#include <wrl/client.h>
 
 #include <dxgi1_3.h>
 #include <dxgidebug.h>  // For IDXGIDebug1.
+
+#include <dx12lib/Helpers.h>  // For ThrowIfFailed
 
 using namespace dx12lib;
 
@@ -23,6 +26,16 @@ void ReportLiveObjects()
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
+
+#if defined( _DEBUG )
+    // Always enable the debug layer before doing anything DX12 related
+    // so all possible errors generated while creating DX12 objects
+    // are caught by the debug layer.
+    Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+    ThrowIfFailed( ::D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) ) );
+    debugInterface->EnableDebugLayer();
+#endif
+
     int retCode = 0;
 
     WCHAR path[MAX_PATH];

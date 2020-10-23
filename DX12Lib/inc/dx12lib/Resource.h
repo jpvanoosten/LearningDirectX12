@@ -94,8 +94,6 @@ protected:
 
     virtual ~Resource() = default;
 
-    virtual void SetD3D12Resource( Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource );
-
     // The device that is used to create this resource.
     Device& m_Device;
 
