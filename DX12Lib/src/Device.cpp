@@ -22,6 +22,7 @@
 
 using namespace dx12lib;
 
+#pragma region Class adapters for std::make_shared
 class MakeGUI : public GUI
 {
 public:
@@ -84,7 +85,6 @@ public:
     virtual ~MakeRootSignature() {}
 };
 
-// Adapter for std::make_shared
 class MakeTexture : public Texture
 {
 public:
@@ -101,7 +101,6 @@ public:
     virtual ~MakeTexture() {}
 };
 
-// Adapter for std::make_shared
 class MakeStructuredBuffer : public StructuredBuffer
 {
 public:
@@ -116,7 +115,6 @@ public:
     virtual ~MakeStructuredBuffer() {}
 };
 
-// Adapter for std::make_shared
 class MakeVertexBuffer : public VertexBuffer
 {
 public:
@@ -131,7 +129,6 @@ public:
     virtual ~MakeVertexBuffer() {}
 };
 
-// Adapter for std::make_shared
 class MakeIndexBuffer : public IndexBuffer
 {
 public:
@@ -157,7 +154,6 @@ public:
     virtual ~MakeConstantBuffer() {}
 };
 
-// Adapter for std::make_shared
 class MakeByteAddressBuffer : public ByteAddressBuffer
 {
 public:
@@ -172,7 +168,6 @@ public:
     virtual ~MakeByteAddressBuffer() {}
 };
 
-// Adapter for std::make_unique
 class MakeDescriptorAllocator : public DescriptorAllocator
 {
 public:
@@ -183,7 +178,6 @@ public:
     virtual ~MakeDescriptorAllocator() {}
 };
 
-// Adapter for std::make_shared
 class MakeSwapChain : public SwapChain
 {
 public:
@@ -194,7 +188,6 @@ public:
     virtual ~MakeSwapChain() {}
 };
 
-// Adapter for std::make_shared
 class MakeCommandQueue : public CommandQueue
 {
 public:
@@ -205,7 +198,6 @@ public:
     virtual ~MakeCommandQueue() {}
 };
 
-// Adapter for std::make_shared
 class MakeDevice : public Device
 {
 public:
@@ -215,6 +207,23 @@ public:
 
     virtual ~MakeDevice() {}
 };
+#pragma endregion
+
+void Device::EnableDebugLayer()
+{
+    ComPtr<ID3D12Debug> debugInterface;
+    ThrowIfFailed( D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) ) );
+    debugInterface->EnableDebugLayer();
+}
+
+void Device::ReportLiveObjects() {
+
+    IDXGIDebug1* dxgiDebug;
+    DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
+
+    dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
+    dxgiDebug->Release();
+}
 
 std::shared_ptr<Device> Device::Create( std::shared_ptr<Adapter> adapter )
 {
@@ -239,8 +248,7 @@ Device::Device( std::shared_ptr<Adapter> adapter )
 
     ThrowIfFailed( D3D12CreateDevice( dxgiAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_d3d12Device ) ) );
 
-    // Enable debug messages in debug mode.
-#if defined( _DEBUG )
+    // Enable debug messages (only works if the debug layer has already been enabled).
     ComPtr<ID3D12InfoQueue> pInfoQueue;
     if ( SUCCEEDED( m_d3d12Device.As( &pInfoQueue ) ) )
     {
@@ -276,7 +284,6 @@ Device::Device( std::shared_ptr<Adapter> adapter )
 
         ThrowIfFailed( pInfoQueue->PushStorageFilter( &NewFilter ) );
     }
-#endif
 
     m_DirectCommandQueue  = std::make_unique<MakeCommandQueue>( *this, D3D12_COMMAND_LIST_TYPE_DIRECT );
     m_ComputeCommandQueue = std::make_unique<MakeCommandQueue>( *this, D3D12_COMMAND_LIST_TYPE_COMPUTE );
@@ -330,9 +337,6 @@ void Device::Flush()
     m_DirectCommandQueue->Flush();
     m_ComputeCommandQueue->Flush();
     m_CopyCommandQueue->Flush();
-
-    // Perform garbage collection on the resource state tracker.
-    ResourceStateTracker::RemoveGarbageResources();
 }
 
 DescriptorAllocation Device::AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors )

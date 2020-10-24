@@ -236,10 +236,12 @@ void ResourceStateTracker::RemoveGlobalResourceState( ID3D12Resource* resource, 
         std::lock_guard<std::mutex> lock( ms_GlobalMutex );
         if ( immediate )
         {
+            // Perform immediate removal of the resource in the resource state tracker.
              ms_GlobalResourceState.erase( resource );
         }
         else
         {
+            // Defer the removal until all resources are no longer being referenced.
             resource->AddRef();
             ms_GarbageResources.push_back( resource );
         }

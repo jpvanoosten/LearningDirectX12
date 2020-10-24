@@ -1,18 +1,10 @@
 #include <GameFramework/GameFramework.h>
 #include <GameFramework/Window.h>
 
-#include <dx12lib/Adapter.h>
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
-#include <dx12lib/Helpers.h>
 #include <dx12lib/SwapChain.h>
-
-#include <spdlog/spdlog.h>
-
-#include <shellapi.h>  // for CommandLineToArgvW
-
-#include <dxgidebug.h>  // For ReportLiveObjects.
 
 using namespace dx12lib;
 
@@ -21,33 +13,20 @@ void OnKeyPressed( KeyEventArgs& e );
 void OnWindowResized( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
 
-std::shared_ptr<Device>    pDevice     = nullptr;
 std::shared_ptr<Window>    pGameWindow = nullptr;
+std::shared_ptr<Device>    pDevice     = nullptr;
 std::shared_ptr<SwapChain> pSwapChain  = nullptr;
 
 Logger logger;
 
-void ReportLiveObjects()
-{
-    IDXGIDebug1* dxgiDebug;
-    DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
-
-    dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
-    dxgiDebug->Release();
-}
-
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
-    int retCode = 0;
-
 #if defined( _DEBUG )
-    // Always enable the debug layer before doing anything DX12 related
-    // so all possible errors generated while creating DX12 objects
-    // are caught by the debug layer.
-    Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
-    ThrowIfFailed( D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) ) );
-    debugInterface->EnableDebugLayer();
+    // Always enable the Debug layer before doing anything with DX12.
+    Device::EnableDebugLayer();
 #endif
+
+    int retCode = 0;
 
     auto& gf = GameFramework::Create( hInstance );
     {
@@ -85,7 +64,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
     // Destroy game framework resource.
     GameFramework::Destroy();
 
-    atexit( &ReportLiveObjects );
+    atexit( &Device::ReportLiveObjects );
 
     return retCode;
 }
@@ -96,13 +75,13 @@ void OnUpdate( UpdateEventArgs& e )
     static double   totalTime  = 0.0;
 
     totalTime += e.DeltaTime;
-    frameCount++;
+    ++frameCount;
 
     if ( totalTime > 1.0 )
     {
         auto fps   = frameCount / totalTime;
         frameCount = 0;
-        totalTime -= 1.0;
+        totalTime  = 1.0;
 
         logger->info( "FPS: {:.7}", fps );
 

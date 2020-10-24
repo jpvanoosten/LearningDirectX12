@@ -68,6 +68,15 @@ class Device
 {
 public:
     /**
+     * Always enable the debug layer before doing anything DX12 related so all possible errors generated while creating
+     * DX12 objects are caught by the debug layer.
+     */
+    static void EnableDebugLayer();
+
+
+    static void ReportLiveObjects();
+
+    /**
      * Create a new DX12 device using the provided adapter.
      * If no adapter is specified, then the highest performance adapter will be  chosen.
      */
