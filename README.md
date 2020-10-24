@@ -4,3 +4,5 @@ This repository is intended to be used as a code repository for learning DirectX
 This project uses [CMake](https://cmake.org/) (3.18.3 or newer) to generate the project and solution files. 
 
 To use this project, run the [GenerateProjectFiles.bat](GenerateProjectFiles.bat) script and open the generated Visual Studio 2017 solution file in the build_vs2017 folder.
+
+For more instructions see [Getting Started](https://github.com/jpvanoosten/LearningDirectX12/wiki/Getting-Started).
