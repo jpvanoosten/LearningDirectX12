@@ -169,9 +169,6 @@ UINT SwapChain::Present( const std::shared_ptr<Texture>& texture )
         }
     }
 
-    RenderTarget renderTarget;
-    renderTarget.AttachTexture( AttachmentPoint::Color0, backBuffer );
-
     commandList->TransitionBarrier( backBuffer, D3D12_RESOURCE_STATE_PRESENT );
     m_CommandQueue.ExecuteCommandList( commandList );
 

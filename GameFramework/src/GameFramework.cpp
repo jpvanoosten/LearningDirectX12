@@ -48,7 +48,7 @@ using WindowMapByName = std::map<std::wstring, std::weak_ptr<Window>>;
 static WindowMap       gs_WindowMap;
 static WindowMapByName gs_WindowMapByName;
 
-std::mutex gs_WindowHandlesMutex;
+static std::mutex gs_WindowHandlesMutex;
 
 // A wrapper struct to allow shared pointers for the window class.
 // This is needed because the constructor and destructor for the Window

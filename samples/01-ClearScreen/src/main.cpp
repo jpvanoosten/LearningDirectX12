@@ -81,7 +81,7 @@ void OnUpdate( UpdateEventArgs& e )
     {
         auto fps   = frameCount / totalTime;
         frameCount = 0;
-        totalTime  = 1.0;
+        totalTime  = 0.0;
 
         logger->info( "FPS: {:.7}", fps );
 

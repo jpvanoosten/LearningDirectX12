@@ -755,7 +755,7 @@ void CommandList::ClearTexture( const std::shared_ptr<Texture>& texture, const f
 {
     assert( texture );
 
-    TransitionBarrier( texture, D3D12_RESOURCE_STATE_RENDER_TARGET );
+    TransitionBarrier( texture, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, true );
     m_d3d12CommandList->ClearRenderTargetView( texture->GetRenderTargetView(), clearColor, 0, nullptr );
 
     TrackResource( texture );
@@ -766,7 +766,7 @@ void CommandList::ClearDepthStencilTexture( const std::shared_ptr<Texture>& text
 {
     assert( texture );
 
-    TransitionBarrier( texture, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+    TransitionBarrier( texture, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, true );
     m_d3d12CommandList->ClearDepthStencilView( texture->GetDepthStencilView(), clearFlags, depth, stencil, 0, nullptr );
 
     TrackResource( texture );

@@ -65,26 +65,12 @@ static WORD g_Indicies[36] = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1
 
 float fieldOfView = 45.0f;
 
-void ReportLiveObjects()
-{
-    IDXGIDebug1* dxgiDebug;
-    ::DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
-
-    dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
-    dxgiDebug->Release();
-}
-
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
     int retCode = 0;
 
 #if defined( _DEBUG )
-    // Always enable the debug layer before doing anything DX12 related
-    // so all possible errors generated while creating DX12 objects
-    // are caught by the debug layer.
-    Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
-    ThrowIfFailed( ::D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) ) );
-    debugInterface->EnableDebugLayer();
+    Device::EnableDebugLayer();
 #endif
 
     // Set the working directory to the path of the executable.
@@ -212,7 +198,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
     // Destroy game framework resource.
     GameFramework::Destroy();
 
-    atexit( &ReportLiveObjects );
+    atexit( &Device::ReportLiveObjects );
 
     return retCode;
 }
