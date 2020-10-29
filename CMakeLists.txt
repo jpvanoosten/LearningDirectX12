@@ -1,5 +1,7 @@
 cmake_minimum_required( VERSION 3.16.1 ) # Latest version of CMake when this file was created.
 
+option( DX12LIB_BUILD_SAMPLES "Build samples for DX12Lib" ON )
+
 # Use solution folders to organize projects
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -32,21 +34,24 @@ set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDL
 )
 
 add_subdirectory( extern/gainput )
-
 add_subdirectory( extern/DirectXTex )
 add_subdirectory( GameFramework )
 add_subdirectory( DX12Lib )
-add_subdirectory( Samples/01-ClearScreen)
-add_subdirectory( Samples/02-Cube )
-add_subdirectory( Samples/03-Textures )
-add_subdirectory( Samples/04-HDR )
 
-set_target_properties( 01-ClearScreen 02-Cube 03-Textures 04-HDR
-    PROPERTIES
-        FOLDER Samples
-)
+if ( DX12LIB_BUILD_SAMPLES )
+    add_subdirectory( Samples/01-ClearScreen)
+    add_subdirectory( Samples/02-Cube )
+    add_subdirectory( Samples/03-Textures )
+    add_subdirectory( Samples/04-HDR )
+    add_subdirectory( Samples/05-Models )
 
-# Set the startup project.
-set_directory_properties( PROPERTIES 
-    VS_STARTUP_PROJECT 04-HDR
-)
+    set_target_properties( 01-ClearScreen 02-Cube 03-Textures 04-HDR 05-Models
+        PROPERTIES
+            FOLDER Samples
+    )
+
+    # Set the startup project.
+    set_directory_properties( PROPERTIES 
+        VS_STARTUP_PROJECT 04-Models
+    )
+endif( DX12LIB_BUILD_SAMPLES )
