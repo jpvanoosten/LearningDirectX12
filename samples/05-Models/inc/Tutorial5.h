@@ -47,6 +47,7 @@ class CommandList;
 class Device;
 class GUI;
 class RenderTarget;
+class Scene;
 class SwapChain;
 }  // namespace dx12lib
 
@@ -111,6 +112,8 @@ private:
     std::shared_ptr<dx12lib::Device>    m_Device;
     std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
     std::shared_ptr<dx12lib::GUI>       m_GUI;
+
+    std::shared_ptr<dx12lib::Scene> m_Scene;
 
     std::shared_ptr<Window> m_Window;
 

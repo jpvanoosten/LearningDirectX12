@@ -747,7 +747,8 @@ std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring& filna
         throw std::exception( errorMessage.c_str() );
     }
 
-    // TODO: Load aiScene to Scene
+
+
     return nullptr;
 }
 

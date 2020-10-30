@@ -6,6 +6,7 @@
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/GUI.h>
+#include <dx12lib/Scene.h>
 #include <dx12lib/SwapChain.h>
 
 #include <DirectXMath.h>
@@ -62,10 +63,24 @@ bool Tutorial5::LoadContent()
     // This magic here allows ImGui to process window messages.
     GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
 
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto  commandList  = commandQueue.GetCommandList();
+
+    // Load a scene:
+    m_Scene = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj" );
+
+    commandQueue.ExecuteCommandList( commandList );
+
+    // Ensure that the scene is completely loaded before rendering.
+    commandQueue.Flush();
+
     return true;
 }
 
-void Tutorial5::UnloadContent() {}
+void Tutorial5::UnloadContent() 
+{
+
+}
 
 void Tutorial5::OnUpdate( UpdateEventArgs& e )
 {

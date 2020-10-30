@@ -560,7 +560,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             // KeyPressed event. Inspired by the SDL 1.2 implementation.
             if ( PeekMessage( &charMsg, hwnd, 0, 0, PM_NOREMOVE ) && charMsg.message == WM_CHAR )
             {
-                GetMessage( &charMsg, hwnd, 0, 0 );
+//                GetMessage( &charMsg, hwnd, 0, 0 );
                 c = static_cast<unsigned int>( charMsg.wParam );
             }
 
