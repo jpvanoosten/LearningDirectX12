@@ -36,7 +36,7 @@
 
 #include <GameFramework/GameFramework.h>
 
-#include <d3d12.h> // For D3D12_RECT
+#include <d3d12.h>  // For D3D12_RECT
 
 #include <memory>
 #include <string>
@@ -87,6 +87,17 @@ protected:
     void OnRender();
 
     /**
+     * Invoked by the registered window when a key is pressed
+     * while the window has focus.
+     */
+    void OnKeyPressed( KeyEventArgs& e );
+
+    /**
+     * Invoked when a key on the keyboard is released.
+     */
+    void OnKeyReleased( KeyEventArgs& e );
+
+    /**
      * Handle DPI change events.
      */
     void OnDPIScaleChanged( DPIScaleEventArgs& e );
@@ -107,4 +118,7 @@ private:
 
     Camera m_Camera;
     Logger m_Logger;
+
+    bool m_Fullscreen;
+    bool m_AllowFullscreenToggle;
 };
