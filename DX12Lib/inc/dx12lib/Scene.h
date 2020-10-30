@@ -51,28 +51,17 @@ class Material;
 class Scene
 {
 public:
-    Scene();
-    virtual ~Scene();
-
-    /**
-     * Load a scene from a file on disc.
-     */
-    virtual bool LoadFromFile( CommandList& commandList, const std::wstring& fileName );
-
-    /**
-     * Load a scene from a string.
-     * The scene can be preloaded into a byte array and the
-     * scene can be loaded from the loaded byte array.
-     *
-     * @param scene The byte encoded scene file.
-     * @param format The format of the scene file.
-     */
-    virtual bool LoadFromString( CommandList& commandList, const std::string& scene, const std::string& format );
-    virtual void Render( CommandList& commandList );
-
     virtual std::shared_ptr<SceneNode> GetRootNode() const;
 
 protected:
+    // Create a scene from a filename.
+    Scene( CommandList& commandList, const std::wstring& sceneFileName );
+    
+    // Create a scene from a string.
+    Scene( CommandList& commandList, const std::string& scene, const std::string& format );
+
+    virtual ~Scene() = default;
+
 private:
     void ImportMaterial( CommandList& commandList, const aiMaterial& material, fs::path parentPath );
     void ImportMesh( CommandList& commandList, const aiMesh& mesh );
