@@ -13,6 +13,7 @@
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/RootSignature.h>
+#include <dx12lib/Scene.h>
 #include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/SwapChain.h>
@@ -23,6 +24,17 @@
 using namespace dx12lib;
 
 #pragma region Class adapters for std::make_shared
+
+class MakeScene : public Scene
+{
+public:
+    MakeScene( Device& device )
+    : Scene( device )
+    {}
+
+    virtual ~MakeScene() {};
+};
+
 class MakeGUI : public GUI
 {
 public:
@@ -216,7 +228,8 @@ void Device::EnableDebugLayer()
     debugInterface->EnableDebugLayer();
 }
 
-void Device::ReportLiveObjects() {
+void Device::ReportLiveObjects()
+{
 
     IDXGIDebug1* dxgiDebug;
     DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
@@ -465,8 +478,15 @@ std::shared_ptr<dx12lib::RootSignature>
     return rootSignature;
 }
 
-std::shared_ptr<PipelineStateObject>
-    Device::DoCreatePipelineStateObject( const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc )
+std::shared_ptr<Scene> Device::CreateScene()
+{
+    std::shared_ptr<Scene> scene = std::make_shared<MakeScene>( *this );
+
+    return scene;
+}
+
+std::shared_ptr<PipelineStateObject> Device::DoCreatePipelineStateObject(
+    const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc )
 {
     std::shared_ptr<PipelineStateObject> pipelineStateObject =
         std::make_shared<MakePipelineStateObject>( *this, pipelineStateStreamDesc );

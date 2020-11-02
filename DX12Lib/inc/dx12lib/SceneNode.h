@@ -42,6 +42,7 @@ namespace dx12lib
 
 class Mesh;
 class CommandList;
+class Visitor;
 
 class SceneNode : public std::enable_shared_from_this<SceneNode>
 {
@@ -97,9 +98,9 @@ public:
     void RemoveMesh( std::shared_ptr<Mesh> mesh );
 
     /**
-     * Render this node and all nodes in the scene graph.
+     * Accept a visitor.
      */
-    void Render( const std::shared_ptr<CommandList>& commandList );
+    void Accept( Visitor& visitor );
 
 protected:
     DirectX::XMMATRIX GetParentWorldTransform() const;

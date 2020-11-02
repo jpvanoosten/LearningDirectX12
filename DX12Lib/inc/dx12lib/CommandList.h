@@ -33,6 +33,7 @@
  */
 #include "TextureUsage.h"
 
+#include <DirectXMath.h>
 #include <d3d12.h>
 #include <wrl.h>
 
@@ -181,7 +182,7 @@ public:
     std::shared_ptr<ConstantBuffer> CopyConstantBuffer( size_t bufferSize, const void* bufferData );
 
     template<typename T>
-    std::shared_ptr<ConstantBuffer> CopyConstantBuffer(const T& data)
+    std::shared_ptr<ConstantBuffer> CopyConstantBuffer( const T& data )
     {
         return CopyConstantBuffer( sizeof( T ), &data );
     }
@@ -220,8 +221,54 @@ public:
 
     /**
      * Load a scene file.
+     *
+     * @param fileName The path to the scene file definition.
      */
-    std::shared_ptr<Scene> LoadSceneFromFile( const std::wstring& filname );
+    std::shared_ptr<Scene> LoadSceneFromFile( const std::wstring& fileName );
+
+    /**
+     * Load a scene from a string.
+     *
+     * @param sceneString The scene file definition as a string.
+     * @param format The format of the scene file. (for example "NFF")
+     *
+     * @see https://www.fileformat.info/format/nff/egff.htm
+     */
+    std::shared_ptr<Scene> LoadSceneFromString( const std::string& sceneString, const std::string& format );
+
+    /**
+     * Create a cube.
+     *
+     * @param size The size of one side of the cube.
+     */
+    std::shared_ptr<Scene> CreateCube( float size = 1.0 );
+
+    /**
+     * Create a sphere.
+     */
+    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tesselation = 16 );
+
+    /**
+     * Create a Cylinder
+     */
+    std::shared_ptr<Scene> CreateCylinder( float baseRadius = 0.5f, float apexRadius = 0.5f, float height = 1.0f,
+                                           const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 1.0f, 0.0f ) );
+
+    /**
+     * Create a cone.
+     */
+    std::shared_ptr<Scene> CreateCone( float baseRadius = 0.5f, float height = 1.0f,
+                                       const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 1.0f, 0.0f ) );
+
+    /**
+     * Create a torus.
+     */
+    std::shared_ptr<Scene> CreateTorus( float diameter = 1.0f, float thickness = 0.333f, uint32_t tessellation = 32 );
+
+    /**
+     * Create a plane.
+     */
+    std::shared_ptr<Scene> CreatePlane( float width = 1.0f, float height = 1.0f );
 
     /**
      * Clear a texture.

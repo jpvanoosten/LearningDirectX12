@@ -94,6 +94,16 @@ public:
         return CheckFormatSupport( D3D12_FORMAT_SUPPORT1_DEPTH_STENCIL );
     }
 
+    /**
+     * Check to see if the image format has an alpha channel.
+     */
+    bool HasAlpha() const;
+
+    /**
+     * Check the number of bits per pixel.
+     */
+    size_t BitsPerPixel() const;
+
     static bool IsUAVCompatibleFormat( DXGI_FORMAT format );
     static bool IsSRGBFormat( DXGI_FORMAT format );
     static bool IsBGRFormat( DXGI_FORMAT format );

@@ -35,8 +35,6 @@
 #include <memory>
 #include <string>
 
-namespace fs = std::filesystem;
-
 class aiMaterial;
 class aiMesh;
 class aiNode;
@@ -44,34 +42,60 @@ class aiNode;
 namespace dx12lib
 {
 class CommandList;
+class Device;
 class SceneNode;
 class Mesh;
 class Material;
+class Visitor;
 
 class Scene
 {
 public:
-    virtual std::shared_ptr<SceneNode> GetRootNode() const;
+    std::shared_ptr<SceneNode> GetRootNode() const
+    {
+        return m_RootNode;
+    }
 
 protected:
+    friend class CommandList;
+
     // Create a scene from a filename.
-    Scene( CommandList& commandList, const std::wstring& sceneFileName );
-    
-    // Create a scene from a string.
-    Scene( CommandList& commandList, const std::string& scene, const std::string& format );
+    Scene( Device& device );
 
     virtual ~Scene() = default;
 
+    /**
+     * Load a scene from a file on disc.
+     */
+    bool LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName );
+
+    /**
+     * Load a scene from a string.
+     * The scene can be preloaded into a byte array and the
+     * scene can be loaded from the loaded byte array.
+     *
+     * @param scene The byte encoded scene file.
+     * @param format The format of the scene file.
+     */
+    bool LoadSceneFromString( CommandList& commandList, const std::string& sceneStr, const std::string& format );
+
+    /**
+     * Accept a visitor.
+     * This will first visit the scene, then it will visit the root node of the scene.
+     */
+    virtual void Accept( Visitor& visitor );
+
 private:
-    void ImportMaterial( CommandList& commandList, const aiMaterial& material, fs::path parentPath );
+    void ImportMaterial( CommandList& commandList, const aiMaterial& material, std::filesystem::path parentPath );
     void ImportMesh( CommandList& commandList, const aiMesh& mesh );
     std::shared_ptr<SceneNode> ImportSceneNode( CommandList& commandList, std::shared_ptr<SceneNode> parent,
-                                                aiNode* aiNode );
+                                                const aiNode* aiNode );
 
     using MaterialMap  = std::map<std::string, std::shared_ptr<Material>>;
     using MaterialList = std::vector<std::shared_ptr<Material>>;
     using MeshList     = std::vector<std::shared_ptr<Mesh>>;
 
+    Device&      m_Device;
     MaterialMap  m_MaterialMap;
     MaterialList m_Materials;
     MeshList     m_Meshes;

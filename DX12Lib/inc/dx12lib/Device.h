@@ -57,6 +57,7 @@ class PipelineStateObject;
 class RenderTarget;
 class Resource;
 class RootSignature;
+class Scene;
 class ShaderResourceView;
 class StructuredBuffer;
 class SwapChain;
@@ -177,6 +178,12 @@ public:
         CreateUnorderedAccessView( const std::shared_ptr<Resource>&        resource,
                                    const std::shared_ptr<Resource>&        counterResource = nullptr,
                                    const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav             = nullptr );
+
+    /**
+     * Create a scene object.
+     * This method is used by the CommandList when loading scenes.
+     */
+    std::shared_ptr<Scene> CreateScene();
 
     /**
      * Flush all command queues.

@@ -19,6 +19,7 @@ set( HEADER_FILES
     inc/dx12lib/GUI.h
     inc/dx12lib/Helpers.h
     inc/dx12lib/IndexBuffer.h
+    inc/dx12lib/Material.h
     inc/dx12lib/Mesh.h
     inc/dx12lib/PanoToCubemapPSO.h
     inc/dx12lib/PipelineStateObject.h
@@ -37,6 +38,7 @@ set( HEADER_FILES
     inc/dx12lib/UnorderedAccessView.h
     inc/dx12lib/UploadBuffer.h
     inc/dx12lib/VertexBuffer.h
+    inc/dx12lib/Visitor.h
 )
 
 set( SOURCE_FILES
@@ -57,6 +59,7 @@ set( SOURCE_FILES
     src/GenerateMipsPSO.cpp
     src/GUI.cpp
     src/IndexBuffer.cpp
+    src/Material.cpp
     src/Mesh.cpp
     src/PanoToCubemapPSO.cpp
     src/PipelineStateObject.cpp
@@ -64,6 +67,7 @@ set( SOURCE_FILES
     src/Resource.cpp
     src/ResourceStateTracker.cpp
     src/RootSignature.cpp
+    src/Scene.cpp
     src/SceneNode.cpp
     src/ShaderResourceView.cpp
     src/StructuredBuffer.cpp

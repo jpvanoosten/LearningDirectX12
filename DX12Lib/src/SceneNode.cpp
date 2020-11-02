@@ -2,6 +2,7 @@
 
 #include <dx12lib/Mesh.h>
 #include <dx12lib/SceneNode.h>
+#include <dx12lib/Visitor.h>
 
 #include <cstdlib>
 
@@ -108,7 +109,10 @@ void SceneNode::RemoveChild( std::shared_ptr<SceneNode> childNode )
         else
         {
             // Maybe the child appears deeper in the scene graph.
-            for ( auto child: m_Children ) { child->RemoveChild( childNode ); }
+            for ( auto child: m_Children )
+            {
+                child->RemoveChild( childNode );
+            }
         }
     }
 }
@@ -160,11 +164,19 @@ void SceneNode::RemoveMesh( std::shared_ptr<Mesh> mesh )
     }
 }
 
-void SceneNode::Render( const std::shared_ptr<CommandList>& commandList )
+void SceneNode::Accept( Visitor& visitor )
 {
-    // First render meshes attached to this node
-    for ( auto mesh: m_Meshes ) { mesh->Render( commandList ); }
+    visitor.Visit( *this );
 
-    // Now recurse into the children
-    for ( auto child: m_Children ) { child->Render( commandList ); }
+    // Visit meshes
+    for ( auto& mesh: m_Meshes )
+    {
+        mesh->Accept( visitor );
+    }
+
+    // Visit children
+    for ( auto& child: m_Children )
+    {
+        child->Accept( visitor );
+    }
 }

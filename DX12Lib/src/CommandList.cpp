@@ -16,6 +16,7 @@
 #include <dx12lib/Resource.h>
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/RootSignature.h>
+#include <dx12lib/Scene.h>
 #include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/Texture.h>
@@ -710,46 +711,225 @@ void CommandList::PanoToCubemap( const std::shared_ptr<Texture>& cubemapTexture,
     }
 }
 
-std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring& filname )
+std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring& fileName )
 {
-    fs::path filePath   = filname;
-    fs::path exportPath = filePath.replace_extension( "assbin" );
+    auto scene = m_Device.CreateScene();
 
-    Assimp::Importer importer;
-    const aiScene*   aiScene;
+    scene->LoadSceneFromFile( *this, fileName );
 
-    // Check if a preprocessed file exists.
-    if ( fs::exists( exportPath ) && fs::is_regular_file( exportPath ) )
+    return scene;
+}
+
+std::shared_ptr<Scene> CommandList::LoadSceneFromString( const std::string& sceneString, const std::string& format )
+{
+    auto scene = m_Device.CreateScene();
+
+    scene->LoadSceneFromString( *this, sceneString, format );
+
+    return scene;
+}
+
+std::shared_ptr<Scene> CommandList::CreateCube( float size )
+{
+    // Cube is centered.
+    float s = size * 0.5f;
+
+    // 8 edges of cube.
+    XMFLOAT3 p[8] = { { s, s, -s }, { s, s, s },   { s, -s, s },   { s, -s, -s },
+                      { -s, s, s }, { -s, s, -s }, { -s, -s, -s }, { -s, -s, s } };
+    // 6 face normals
+    XMFLOAT3 n[6] = { { 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 } };
+    // 4 unique texture coordinates
+    XMFLOAT2 t[4] = { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } };
+
+    // Indices.
+    // 6 faces, 4 vertices each.
+    uint16_t index[6][4] = { { 0, 1, 2, 3 }, { 4, 5, 6, 7 }, { 4, 1, 0, 5 },
+                             { 3, 6, 7, 2 }, { 1, 4, 7, 2 }, { 4, 0, 3, 6 } };
+
+    std::stringstream ss;
+
+    // Create a white diffuse material
+    // f red green blue Kd Ks Shine transmittance indexOfRefraction
+    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+    for ( int f = 0; f < 6; ++f )  // For each face of the cube.
     {
-        aiScene = importer.ReadFile( exportPath.string(), 0 );
-    }
-    else
-    {
-        // File has not been preprocessed yet. Import and processes the file.
-        importer.SetPropertyFloat( AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f );
-        importer.SetPropertyInteger( AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE );
-
-        unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph;
-        aiScene                      = importer.ReadFile( filePath.string(), preprocessFlags );
-
-        if ( aiScene )
+        ss << "tpp 4" << std::endl;
+        for ( int v = 0; v < 4; ++v )  // For each vertex
         {
-            // Export the preprocessed scene file for faster loading next time.
-            Assimp::Exporter exporter;
-            exporter.Export( aiScene, "assbin", exportPath.string(), preprocessFlags );
+            int i = index[f][v];  // The index in the position buffer.
+            // px py pz nx ny nz tu tv
+            ss << p[i].x << " " << p[i].y << " " << p[i].z << " " << n[f].x << " " << n[f].y << " " << n[f].z << " "
+               << t[v].x << t[v].y << std::endl;
         }
     }
 
-    if ( !aiScene )
+    return LoadSceneFromString( ss.str(), "nff" );
+}
+
+std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tesselation )
+{
+    std::stringstream ss;
+    // Create a white diffuse material for the sphere.
+    // f red green blue Kd Ks Shine transmittance indexOfRefraction
+    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+    // tess tesselation
+    ss << "tess " << tesselation << std::endl;
+    // s x y z radius
+    ss << "s 0 0 0 " << radius << std::endl;
+
+    return LoadSceneFromString( ss.str(), "nff" );
+}
+
+std::shared_ptr<Scene> CommandList::CreateCylinder( float baseRadius, float apexRadius, float height,
+                                                    const XMFLOAT3& axis )
+{
+    std::stringstream ss;
+
+    // Create a white diffuse material for the cylinder.
+    // f red green blue Kd Ks Shine transmittance indexOfRefraction
+    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+    ss << "c" << std::endl;
+    // base.x base.y base.z baseRadius
+    ss << "0 0 0 " << baseRadius << std::endl;
+
+    XMFLOAT3 apex = { axis.x * height, axis.y * height, axis.z * height };
+    // apex.x apex.y apex.z apexRadius
+    ss << apex.x << " " << apex.y << " " << apex.z << " " << apexRadius << std::endl;
+
+    return LoadSceneFromString( ss.str(), "nff" );
+}
+
+std::shared_ptr<Scene> CommandList::CreateCone( float baseRadius, float height, const XMFLOAT3& axis )
+{
+    // A cone is just a cylinder with a 0 apex radius.
+    return CreateCylinder( baseRadius, 0.0f, height, axis );
+}
+
+std::shared_ptr<Scene> CommandList::CreateTorus( float diameter, float thickness, uint32_t tessellation )
+{
+    assert( tessellation > 3 );
+
+    struct Vertex
     {
-        std::string errorMessage = "Could not load file \"";
-        errorMessage += filePath.string() + "\"";
-        throw std::exception( errorMessage.c_str() );
+        XMVECTOR position;
+        XMVECTOR normal;
+        XMVECTOR textureCoordinate;
+    };
+
+    struct Face
+    {
+        uint16_t v0, v1, v2;
+    };
+
+    std::vector<Vertex> verts;
+    std::vector<Face>   indices;
+
+    size_t stride = tessellation + 1;
+
+    // First we loop around the main ring of the torus.
+    for ( size_t i = 0; i <= tessellation; i++ )
+    {
+        float u = (float)i / tessellation;
+
+        float outerAngle = i * XM_2PI / tessellation - XM_PIDIV2;
+
+        // Create a transform matrix that will align geometry to
+        // slice perpendicularly though the current ring position.
+        XMMATRIX transform = XMMatrixTranslation( diameter / 2, 0, 0 ) * XMMatrixRotationY( outerAngle );
+
+        // Now we loop along the other axis, around the side of the tube.
+        for ( size_t j = 0; j <= tessellation; j++ )
+        {
+            float v = 1 - (float)j / tessellation;
+
+            float innerAngle = j * XM_2PI / tessellation + XM_PI;
+            float dx, dy;
+
+            XMScalarSinCos( &dy, &dx, innerAngle );
+
+            // Create a vertex.
+            Vertex vert;
+            vert.normal            = XMVectorSet( dx, dy, 0, 0 );
+            vert.position          = vert.normal * thickness / 2;
+            vert.textureCoordinate = XMVectorSet( u, v, 0, 0 );
+
+            vert.position = XMVector3Transform( vert.position, transform );
+            vert.normal   = XMVector3TransformNormal( vert.normal, transform );
+
+            verts.push_back( vert );
+
+            // And create indices for two triangles.
+            size_t nextI = ( i + 1 ) % stride;
+            size_t nextJ = ( j + 1 ) % stride;
+
+            Face f0;
+            f0.v0 = i * stride + j;
+            f0.v1 = i * stride + nextJ;
+            f0.v2 = nextI * stride + j;
+            indices.push_back( f0 );
+
+            Face f1;
+            f1.v0 = i * stride + nextJ;
+            f1.v1 = nextI * stride + nextJ;
+            f1.v2 = nextI * stride + j;
+            indices.push_back( f1 );
+        }
     }
 
+    // NFF version 2.1
+    // See: http://www.netghost.narod.ru/gff/graphics/summary/sense8.htm
+    std::stringstream ss;
 
+    ss << "nff" << std::endl;
+    ss << "version 2.1" << std::endl;
 
-    return nullptr;
+    ss << "Torus" << std::endl;       // Object name.
+    ss << verts.size() << std::endl;  // Total vertices.
+    for ( auto& v: verts )
+    {
+        XMFLOAT3 p, n, t;
+        XMStoreFloat3( &p, v.position );
+        XMStoreFloat3( &n, v.normal );
+        XMStoreFloat3( &t, v.textureCoordinate );
+
+        ss << p.x << " " << p.y << " " << p.z << " norm " << n.x << " " << n.y << " " << n.z << " uv " << t.x << " "
+           << t.y << std::endl;
+    }
+    ss << indices.size() << std::endl;  // Total polygons
+    for ( auto& i: indices )
+    {
+        ss << "3 " << i.v0 << " " << i.v1 << " " << i.v2 << std::endl;
+    }
+
+    return LoadSceneFromString( ss.str(), "nff" );
+}
+
+std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height )
+{
+    std::stringstream ss;
+
+    XMFLOAT3 p[4] = { { -0.5f * width, 0.0f, 0.5f * height },
+                      { 0.5f * width, 0.0f, 0.5f * height },
+                      { 0.5f * width, 0.0f, -0.5f * height },
+                      { -0.5f * width, 0.0f, -0.5f * height } };
+    XMFLOAT3 n    = { 0.0f, 1.0f, 0.0f };
+    XMFLOAT2 t[4] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+
+    // Create a white diffuse material
+    // f red green blue Kd Ks Shine transmittance indexOfRefraction
+    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+    ss << "tpp 4" << std::endl;
+    for ( int i = 0; i < 4; ++i )
+    {
+        ss << p[i].x << " " << p[i].y << " " << p[i].z << " " << n.x << " " << n.y << " " << n.z << " " << t[i].x
+           << t[i].y << std::endl;
+    }
+
+    return LoadSceneFromString( ss.str(), "nff" );
 }
 
 void CommandList::ClearTexture( const std::shared_ptr<Texture>& texture, const float clearColor[4] )
@@ -946,7 +1126,9 @@ void CommandList::SetGraphicsRootSignature( const std::shared_ptr<RootSignature>
         m_RootSignature = d3d12RootSignature;
 
         for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-        { m_DynamicDescriptorHeap[i]->ParseRootSignature( rootSignature ); }
+        {
+            m_DynamicDescriptorHeap[i]->ParseRootSignature( rootSignature );
+        }
 
         m_d3d12CommandList->SetGraphicsRootSignature( m_RootSignature );
 
@@ -964,7 +1146,9 @@ void CommandList::SetComputeRootSignature( const std::shared_ptr<RootSignature>&
         m_RootSignature = d3d12RootSignature;
 
         for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-        { m_DynamicDescriptorHeap[i]->ParseRootSignature( rootSignature ); }
+        {
+            m_DynamicDescriptorHeap[i]->ParseRootSignature( rootSignature );
+        }
 
         m_d3d12CommandList->SetComputeRootSignature( m_RootSignature );
 
@@ -1029,7 +1213,9 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t d
         if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
         {
             for ( uint32_t i = 0; i < numSubresources; ++i )
-            { TransitionBarrier( resource, stateAfter, firstSubresource + i ); }
+            {
+                TransitionBarrier( resource, stateAfter, firstSubresource + i );
+            }
         }
         else
         {
@@ -1055,7 +1241,9 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t 
         if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
         {
             for ( uint32_t i = 0; i < numSubresources; ++i )
-            { TransitionBarrier( resource, stateAfter, firstSubresource + i ); }
+            {
+                TransitionBarrier( resource, stateAfter, firstSubresource + i );
+            }
         }
         else
         {
@@ -1129,7 +1317,9 @@ void CommandList::Draw( uint32_t vertexCount, uint32_t instanceCount, uint32_t s
     FlushResourceBarriers();
 
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-    { m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw( *this ); }
+    {
+        m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw( *this );
+    }
 
     m_d3d12CommandList->DrawInstanced( vertexCount, instanceCount, startVertex, startInstance );
 }
@@ -1140,7 +1330,9 @@ void CommandList::DrawIndexed( uint32_t indexCount, uint32_t instanceCount, uint
     FlushResourceBarriers();
 
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-    { m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw( *this ); }
+    {
+        m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDraw( *this );
+    }
 
     m_d3d12CommandList->DrawIndexedInstanced( indexCount, instanceCount, startIndex, baseVertex, startInstance );
 }
@@ -1150,7 +1342,9 @@ void CommandList::Dispatch( uint32_t numGroupsX, uint32_t numGroupsY, uint32_t n
     FlushResourceBarriers();
 
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-    { m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDispatch( *this ); }
+    {
+        m_DynamicDescriptorHeap[i]->CommitStagedDescriptorsForDispatch( *this );
+    }
 
     m_d3d12CommandList->Dispatch( numGroupsX, numGroupsY, numGroupsZ );
 }

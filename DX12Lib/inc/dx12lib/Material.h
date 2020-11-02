@@ -37,6 +37,7 @@
 
 namespace dx12lib
 {
+
 class Texture;
 
 struct alignas( 16 ) MaterialProperties
@@ -122,13 +123,56 @@ public:
     };
 
     Material();
+    ~Material();
+
+    const DirectX::XMFLOAT4& GetGlobalAmbientColor() const;
+    void                     SetGlobalAmbientColor( const DirectX::XMFLOAT4& globalAmbient );
+
+    const DirectX::XMFLOAT4& GetAmbientColor() const;
+    void                     SetAmbientColor( const DirectX::XMFLOAT4& ambient );
+
+    const DirectX::XMFLOAT4& GetDiffuseColor() const;
+    void                     SetDiffuseColor( const DirectX::XMFLOAT4& diffuse );
+
+    const DirectX::XMFLOAT4& GetEmissiveColor() const;
+    void                     SetEmissiveColor( const DirectX::XMFLOAT4& emissive );
+
+    const DirectX::XMFLOAT4& GetSpecularColor() const;
+    void                     SetSpecularColor( const DirectX::XMFLOAT4& specular );
+
+    float GetSpecularPower() const;
+    void  SetSpecularPower( float specularPower );
+
+    const DirectX::XMFLOAT4& GetReflectance() const;
+    void                     SetReflectance( const DirectX::XMFLOAT4& reflectance );
+
+    const float GetOpacity() const;
+    void        SetOpacity( float opacity );
+
+    float GetIndexOfRefraction() const;
+    void  SetIndexOfRefraction( float indexOfRefraction );
+
+    // When using bump maps, we can adjust the "intensity" of the normals generated
+    // from the bump maps. We can even inverse the normals by using a negative intensity.
+    // Default bump intensity is 1.0 and a value of 0 will remove the bump effect altogether.
+    float GetBumpIntensity() const;
+    void  SetBumpIntensity( float bumpIntensity );
+
+    std::shared_ptr<Texture> GetTexture( TextureType ID ) const;
+    void                     SetTexture( TextureType type, std::shared_ptr<Texture> texture );
+
+    // This material defines a transparent material
+    // if the opacity value is < 1, or there is an opacity map, or the diffuse texture has an alpha channel.
+    bool IsTransparent() const;
+
+    const MaterialProperties& GetMaterialProperties() const;
 
 protected:
 private:
-    using TextureMap = std::map<TextureType, std::shared_ptr<Texture>>;
+    using TextureMap            = std::map<TextureType, std::shared_ptr<Texture>>;
+    using MaterialPropertiesPtr = std::unique_ptr<MaterialProperties, void ( * )( MaterialProperties* )>;
 
-    std::unique_ptr<MaterialProperties> m_MaterialProperties;
-
-    TextureMap m_Textures;
+    MaterialPropertiesPtr m_MaterialProperties;
+    TextureMap            m_Textures;
 };
 }  // namespace dx12lib
