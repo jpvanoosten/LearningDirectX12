@@ -123,7 +123,7 @@ public:
     };
 
     Material();
-    ~Material();
+    ~Material() = default;
 
     const DirectX::XMFLOAT4& GetGlobalAmbientColor() const;
     void                     SetGlobalAmbientColor( const DirectX::XMFLOAT4& globalAmbient );

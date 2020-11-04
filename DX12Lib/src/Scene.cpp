@@ -20,7 +20,7 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
 {
 
     fs::path filePath   = fileName;
-    fs::path exportPath = filePath.replace_extension( "assbin" );
+    fs::path exportPath = fs::path(filePath).replace_extension( "assbin" );
 
     Assimp::Importer importer;
     const aiScene*   scene;
@@ -36,7 +36,7 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
         importer.SetPropertyFloat( AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f );
         importer.SetPropertyInteger( AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE );
 
-        unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph;
+        unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph | aiProcess_ConvertToLeftHanded;
         scene                        = importer.ReadFile( filePath.string(), preprocessFlags );
 
         if ( scene )

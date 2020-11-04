@@ -55,6 +55,7 @@ class Tutorial5
 {
 public:
     Tutorial5( const std::wstring& name, int width, int height, bool vSync = false );
+    ~Tutorial5();
 
     /**
      * Start the main game loop.

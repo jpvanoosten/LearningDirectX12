@@ -10,20 +10,69 @@
 #include <dx12lib/SwapChain.h>
 
 #include <DirectXMath.h>
+#include <assimp/DefaultLogger.hpp>
+
+#include <regex>
 
 using namespace DirectX;
 using namespace dx12lib;
 
+template<spdlog::level::level_enum lvl>
+class LogStream : public Assimp::LogStream
+{
+public:
+    LogStream( Logger logger )
+    : m_Logger( logger )
+    {}
+
+    virtual void write( const char* message ) override
+    {
+        // Extract just the part of the message we want to log with spdlog.
+        std::regex  re( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
+        std::cmatch match;
+        std::regex_search( message, match, re );
+
+        if ( match.size() > 1 )
+        {
+            m_Logger->log( lvl, match.str( 1 ) );
+        }
+    }
+
+private:
+    Logger m_Logger;
+};
+
+using DebugLogStream = LogStream<spdlog::level::debug>;
+using InfoLogStream  = LogStream<spdlog::level::info>;
+using WarnLogStream  = LogStream<spdlog::level::warn>;
+using ErrorLogStream = LogStream<spdlog::level::err>;
+
 Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSync )
 : m_ScissorRect { 0, 0, LONG_MAX, LONG_MAX }
-, m_Fullscreen(false)
-, m_AllowFullscreenToggle(true)
+, m_Fullscreen( false )
+, m_AllowFullscreenToggle( true )
 {
 #if _DEBUG
     Device::EnableDebugLayer();
 #endif
+    // Create a spdlog logger for demo.
+    m_Logger = GameFramework::Get().CreateLogger( "05-Models" );
+    // Create logger for assimp
+    auto assimpLogger = GameFramework::Get().CreateLogger( "ASSIMP" );
 
-    m_Logger = GameFramework::Get().CreateLogger( "Models" );
+    // Setup assimp logging.
+#if defined( _DEBUG )
+    Assimp::Logger::LogSeverity logSeverity = Assimp::Logger::VERBOSE;
+#else
+    Assimp::Logger::LogSeverity logSeverity = Assimp::Logger::NORMAL;
+#endif
+    // Create a default logger with no streams (we'll supply our own).
+    auto assimpDefaultLogger = Assimp::DefaultLogger::create( "", logSeverity, 0 );
+    assimpDefaultLogger->attachStream( new DebugLogStream( assimpLogger ), Assimp::Logger::Debugging );
+    assimpDefaultLogger->attachStream( new InfoLogStream( assimpLogger ), Assimp::Logger::Info );
+    assimpDefaultLogger->attachStream( new WarnLogStream( assimpLogger ), Assimp::Logger::Warn );
+    assimpDefaultLogger->attachStream( new ErrorLogStream( assimpLogger ), Assimp::Logger::Err );
+
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
     m_Window->Update += UpdateEvent::slot( &Tutorial5::OnUpdate, this );
@@ -38,6 +87,11 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 
     m_Camera.set_LookAt( cameraPos, cameraTarget, cameraUp );
     m_Camera.set_Projection( 45.0f, width / (float)height, 0.1f, 100.0f );
+}
+
+Tutorial5::~Tutorial5()
+{
+    Assimp::DefaultLogger::kill();
 }
 
 uint32_t Tutorial5::Run()
@@ -56,7 +110,9 @@ uint32_t Tutorial5::Run()
 
 bool Tutorial5::LoadContent()
 {
-    m_Device    = Device::Create();
+    m_Device = Device::Create();
+    m_Logger->info( L"Device created: {}", m_Device->GetDescription() );
+
     m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle() );
     m_GUI       = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
 
@@ -77,10 +133,7 @@ bool Tutorial5::LoadContent()
     return true;
 }
 
-void Tutorial5::UnloadContent() 
-{
-
-}
+void Tutorial5::UnloadContent() {}
 
 void Tutorial5::OnUpdate( UpdateEventArgs& e )
 {
@@ -181,7 +234,7 @@ void Tutorial5::OnKeyReleased( KeyEventArgs& e )
     }
 }
 
-void Tutorial5::OnDPIScaleChanged( DPIScaleEventArgs& e ) 
+void Tutorial5::OnDPIScaleChanged( DPIScaleEventArgs& e )
 {
     m_GUI->SetScaling( e.DPIScale );
 }
