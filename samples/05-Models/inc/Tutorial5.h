@@ -38,6 +38,7 @@
 
 #include <d3d12.h>  // For D3D12_RECT
 
+#include <future> // For std::future.
 #include <memory>
 #include <string>
 
@@ -65,7 +66,7 @@ public:
     /**
      * Load content requred for the demo.
      */
-    bool LoadContent();
+    void LoadContent();
 
     /**
      * Unload content that was loaded in LoadContent.
@@ -110,6 +111,22 @@ protected:
     void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
 
 private:
+
+    /**
+     * Load all of the assets (scene file, shaders, etc...).
+     * This is executed as an async task so that we can render a loading screen in the main thread.
+     */
+    bool LoadAssets();
+
+    /**
+     * This function is called to report the loading progress of the scene. This is useful for updating the loading progress bar.
+     * 
+     * @param progress The loading progress (as a normalized float in the range [0...1].
+     * 
+     * @returns true to continue loading or false to cancel loading.
+     */
+    bool LoadingProgress( float loadingProgress );
+
     std::shared_ptr<dx12lib::Device>    m_Device;
     std::shared_ptr<dx12lib::SwapChain> m_SwapChain;
     std::shared_ptr<dx12lib::GUI>       m_GUI;
@@ -125,4 +142,8 @@ private:
 
     bool m_Fullscreen;
     bool m_AllowFullscreenToggle;
+    std::atomic_bool m_IsLoading;
+    std::future<bool> m_LoadingTask;
+    float m_LoadingProgress;
+    std::string m_LoadingText;
 };

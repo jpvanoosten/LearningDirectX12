@@ -17,6 +17,9 @@
 using namespace DirectX;
 using namespace dx12lib;
 
+// A regular express used to extract the relavent part of an Assimp log message.
+static std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
+
 template<spdlog::level::level_enum lvl>
 class LogStream : public Assimp::LogStream
 {
@@ -28,9 +31,8 @@ public:
     virtual void write( const char* message ) override
     {
         // Extract just the part of the message we want to log with spdlog.
-        std::regex  re( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
         std::cmatch match;
-        std::regex_search( message, match, re );
+        std::regex_search( message, match, gs_AssimpLogRegex );
 
         if ( match.size() > 1 )
         {
@@ -51,13 +53,14 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 : m_ScissorRect { 0, 0, LONG_MAX, LONG_MAX }
 , m_Fullscreen( false )
 , m_AllowFullscreenToggle( true )
+, m_IsLoading( true )
 {
 #if _DEBUG
     Device::EnableDebugLayer();
 #endif
-    // Create a spdlog logger for demo.
+    // Create a spdlog logger for the demo.
     m_Logger = GameFramework::Get().CreateLogger( "05-Models" );
-    // Create logger for assimp
+    // Create logger for assimp.
     auto assimpLogger = GameFramework::Get().CreateLogger( "ASSIMP" );
 
     // Setup assimp logging.
@@ -103,12 +106,45 @@ uint32_t Tutorial5::Run()
 
     auto retCode = GameFramework::Get().Run();
 
+    // Make sure the loading task is finished
+    m_LoadingTask.get();
+
     UnloadContent();
 
     return retCode;
 }
 
-bool Tutorial5::LoadContent()
+bool Tutorial5::LoadingProgress( float loadingProgress )
+{
+    m_LoadingProgress = loadingProgress;
+
+    return true;
+}
+
+bool Tutorial5::LoadAssets()
+{
+    using namespace std::placeholders; // For _1 used to denote a placeholder argument for std::bind.
+
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto  commandList  = commandQueue.GetCommandList();
+
+    // Load a scene:
+    m_LoadingText = "Loading Assets/Models/crytek-sponza/sponza_nobanner.obj ...";
+    m_Scene = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj",
+                                              std::bind( &Tutorial5::LoadingProgress, this, _1 ) );
+
+    commandQueue.ExecuteCommandList( commandList );
+
+    // Ensure that the scene is completely loaded before rendering.
+    commandQueue.Flush();
+
+    // Loading is finished.
+    m_IsLoading = false;
+
+    return true;
+}
+
+void Tutorial5::LoadContent()
 {
     m_Device = Device::Create();
     m_Logger->info( L"Device created: {}", m_Device->GetDescription() );
@@ -119,18 +155,8 @@ bool Tutorial5::LoadContent()
     // This magic here allows ImGui to process window messages.
     GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
 
-    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-    auto  commandList  = commandQueue.GetCommandList();
-
-    // Load a scene:
-    m_Scene = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj" );
-
-    commandQueue.ExecuteCommandList( commandList );
-
-    // Ensure that the scene is completely loaded before rendering.
-    commandQueue.Flush();
-
-    return true;
+    // Start the loading task.
+    m_LoadingTask = std::async( std::launch::async, std::bind( &Tutorial5::LoadAssets, this ) );
 }
 
 void Tutorial5::UnloadContent() {}
@@ -242,6 +268,22 @@ void Tutorial5::OnDPIScaleChanged( DPIScaleEventArgs& e )
 void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget )
 {
     m_GUI->NewFrame();
+
+    if ( m_IsLoading )
+    {
+        // Show a progress bar.
+        ImGui::SetNextWindowPos( ImVec2( m_Window->GetClientWidth() / 2.0f, m_Window->GetClientHeight() / 2.0f ), 0,
+                                 ImVec2( 0.5, 0.5 ) );
+        ImGui::SetNextWindowSize( ImVec2( m_Window->GetClientWidth() / 2.0f, 0 ) );
+
+        ImGui::Begin( "Loading", nullptr,
+                      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+                          ImGuiWindowFlags_NoScrollbar );
+        ImGui::ProgressBar( m_LoadingProgress );
+        ImGui::Text( m_LoadingText.c_str() );
+
+        ImGui::End();
+    }
 
     m_GUI->Render( commandList, renderTarget );
 }

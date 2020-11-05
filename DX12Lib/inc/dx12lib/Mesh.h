@@ -54,6 +54,9 @@ public:
         DirectX::XMFLOAT3 Tangent;
         DirectX::XMFLOAT3 BiTangent;
         DirectX::XMFLOAT3 TexCoord;
+
+        static const int               InputElementCount = 5;
+        static D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
     };
 
     Mesh()  = default;

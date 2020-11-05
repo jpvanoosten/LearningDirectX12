@@ -60,12 +60,13 @@ using namespace DirectX;
 #include <chrono>
 #include <condition_variable>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <new>
-#include <string>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
@@ -79,6 +80,7 @@ namespace fs = std::experimental::filesystem;
 // Assimp header files.
 #include <assimp/Exporter.hpp>
 #include <assimp/Importer.hpp>
+#include <assimp/ProgressHandler.hpp>
 #include <assimp/anim.h>
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>

@@ -12,18 +12,46 @@
 
 using namespace dx12lib;
 
+// A progress handler for Assimp
+class ProgressHandler : public Assimp::ProgressHandler
+{
+public:
+    ProgressHandler( const Scene& scene, const std::function<bool( float )> progressCallback )
+    : m_Scene( scene )
+    , m_ProgressCallback( progressCallback )
+    {}
+
+    virtual bool Update( float percentage ) override
+    {
+        // Invoke the progress callback
+        if ( m_ProgressCallback )
+        {
+            return m_ProgressCallback( percentage );
+        }
+
+        return true;
+    }
+
+private:
+    const Scene&                 m_Scene;
+    std::function<bool( float )> m_ProgressCallback;
+};
+
 Scene::Scene( Device& device )
 : m_Device( device )
 {}
 
-bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName )
+bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName,
+                               const std::function<bool( float )>& loadingProgress )
 {
 
     fs::path filePath   = fileName;
-    fs::path exportPath = fs::path(filePath).replace_extension( "assbin" );
+    fs::path exportPath = fs::path( filePath ).replace_extension( "assbin" );
 
     Assimp::Importer importer;
     const aiScene*   scene;
+
+    importer.SetProgressHandler( new ProgressHandler(*this, loadingProgress) );
 
     // Check if a preprocessed file exists.
     if ( fs::exists( exportPath ) && fs::is_regular_file( exportPath ) )
@@ -36,8 +64,9 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
         importer.SetPropertyFloat( AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f );
         importer.SetPropertyInteger( AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE );
 
-        unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph | aiProcess_ConvertToLeftHanded;
-        scene                        = importer.ReadFile( filePath.string(), preprocessFlags );
+        unsigned int preprocessFlags =
+            aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph | aiProcess_ConvertToLeftHanded;
+        scene = importer.ReadFile( filePath.string(), preprocessFlags );
 
         if ( scene )
         {
@@ -125,9 +154,11 @@ bool dx12lib::Scene::LoadSceneFromString( CommandList& commandList, const std::s
     return true;
 }
 
-void Scene::Accept( Visitor& visitor ) {
+void Scene::Accept( Visitor& visitor )
+{
     visitor.Visit( *this );
-    if (m_RootNode) {
+    if ( m_RootNode )
+    {
         m_RootNode->Accept( visitor );
     }
 }

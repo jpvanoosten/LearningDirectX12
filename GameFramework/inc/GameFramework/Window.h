@@ -86,14 +86,18 @@ public:
      *
      * @returns The width of the window's client area (in pixels).
      */
-    int GetClientWidth() const;
+    int GetClientWidth() const {
+        return m_ClientWidth;
+    }
 
     /**
      * Get the height of the window's client area.
      *
      * @returns The height of the window's client area (in pixels).
      */
-    int GetClientHeight() const;
+    int GetClientHeight() const {
+        return m_ClientHeight;
+    }
 
     /**
      * Check to see if this window is in fullscreen mode.

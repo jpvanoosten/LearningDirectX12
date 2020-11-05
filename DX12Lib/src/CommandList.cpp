@@ -711,11 +711,12 @@ void CommandList::PanoToCubemap( const std::shared_ptr<Texture>& cubemapTexture,
     }
 }
 
-std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring& fileName )
+std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring&                 fileName,
+                                                       const std::function<bool( float )>& loadingProgress )
 {
     auto scene = m_Device.CreateScene();
 
-    scene->LoadSceneFromFile( *this, fileName );
+    scene->LoadSceneFromFile( *this, fileName, loadingProgress );
 
     return scene;
 }

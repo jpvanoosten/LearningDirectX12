@@ -52,6 +52,7 @@ class GUI;
 class Mesh;
 class RootSignature;
 class PipelineStateObject;
+class Scene;
 class ShaderResourceView;
 class SwapChain;
 class Texture;
@@ -123,11 +124,11 @@ private:
     std::shared_ptr<dx12lib::GUI>       m_GUI;
 
     // Some geometry to render.
-    std::unique_ptr<dx12lib::Mesh> m_CubeMesh;
-    std::unique_ptr<dx12lib::Mesh> m_SphereMesh;
-    std::unique_ptr<dx12lib::Mesh> m_ConeMesh;
-    std::unique_ptr<dx12lib::Mesh> m_TorusMesh;
-    std::unique_ptr<dx12lib::Mesh> m_PlaneMesh;
+    std::shared_ptr<dx12lib::Scene> m_Cube;
+    std::shared_ptr<dx12lib::Scene> m_Sphere;
+    std::shared_ptr<dx12lib::Scene> m_Cone;
+    std::shared_ptr<dx12lib::Scene> m_Torus;
+    std::shared_ptr<dx12lib::Scene> m_Plane;
 
     std::shared_ptr<dx12lib::Texture> m_DefaultTexture;
     std::shared_ptr<dx12lib::Texture> m_DirectXTexture;

@@ -31,6 +31,7 @@
  */
 
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -67,7 +68,7 @@ protected:
     /**
      * Load a scene from a file on disc.
      */
-    bool LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName );
+    bool LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName, const std::function<bool(float)>& loadingProgress );
 
     /**
      * Load a scene from a string.

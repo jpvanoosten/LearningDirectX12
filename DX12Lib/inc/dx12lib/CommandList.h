@@ -37,10 +37,11 @@
 #include <d3d12.h>
 #include <wrl.h>
 
-#include <map>     // for std::map
-#include <memory>  // for std::unique_ptr
-#include <mutex>   // for std::mutex
-#include <vector>  // for std::vector
+#include <functional>  // For std::function
+#include <map>         // for std::map
+#include <memory>      // for std::unique_ptr
+#include <mutex>       // for std::mutex
+#include <vector>      // for std::vector
 
 namespace dx12lib
 {
@@ -223,8 +224,11 @@ public:
      * Load a scene file.
      *
      * @param fileName The path to the scene file definition.
+     * @param [loadingProgress] An optional callback function that can be used to report loading progress.
      */
-    std::shared_ptr<Scene> LoadSceneFromFile( const std::wstring& fileName );
+    std::shared_ptr<Scene>
+        LoadSceneFromFile( const std::wstring&                 fileName,
+                           const std::function<bool( float )>& loadingProgres = std::function<bool( float )>() );
 
     /**
      * Load a scene from a string.
@@ -246,7 +250,7 @@ public:
     /**
      * Create a sphere.
      */
-    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tesselation = 16 );
+    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tesselation = 1 );
 
     /**
      * Create a Cylinder
