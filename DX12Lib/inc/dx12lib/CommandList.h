@@ -250,19 +250,19 @@ public:
     /**
      * Create a sphere.
      */
-    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tesselation = 1 );
+    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tessellation = 16 );
 
     /**
      * Create a Cylinder
      */
     std::shared_ptr<Scene> CreateCylinder( float baseRadius = 0.5f, float apexRadius = 0.5f, float height = 1.0f,
-                                           const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 1.0f, 0.0f ) );
+                                           const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 0.0f, 1.0f ) );
 
     /**
      * Create a cone.
      */
     std::shared_ptr<Scene> CreateCone( float baseRadius = 0.5f, float height = 1.0f,
-                                       const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 1.0f, 0.0f ) );
+                                       const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 0.0f, 1.0f ) );
 
     /**
      * Create a torus.

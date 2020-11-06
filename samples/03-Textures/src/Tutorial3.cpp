@@ -2,6 +2,7 @@
 
 #include <Light.h>
 #include <Material.h>
+#include <SceneVisitor.h>
 
 #include <GameFramework/GameFramework.h>
 #include <GameFramework/Window.h>
@@ -438,6 +439,9 @@ void Tutorial3::OnRender()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
 
+    // Create a scene visitor that is used to perform the actual rendering of the meshes in the scenes.
+    SceneVisitor visitor( *commandList );
+
     // Clear the render targets.
     {
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
@@ -480,7 +484,8 @@ void Tutorial3::OnRender()
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    //    m_Sphere->Render( commandList );
+    // Render the earth sphere using the SceneVisitor.
+    m_Sphere->Accept( visitor );
 
     // Draw a cube
     translationMatrix = XMMatrixTranslation( 4.0f, 4.0f, 4.0f );
@@ -495,7 +500,8 @@ void Tutorial3::OnRender()
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    // m_Cube->Render( commandList );
+    // Render the Mona Lisa cube with the SceneVisitor.
+    m_Cube->Accept( visitor );
 
     // Draw a torus
     translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
@@ -510,7 +516,7 @@ void Tutorial3::OnRender()
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    // m_Torus->Render( commandList );
+    m_Torus->Accept( visitor );
 
     // Floor plane.
     float scalePlane      = 20.0f;
@@ -528,7 +534,8 @@ void Tutorial3::OnRender()
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    // m_Plane->Render( commandList );
+    // Render the plane using the SceneVisitor.
+    m_Plane->Accept( visitor );
 
     // Back wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
@@ -539,7 +546,8 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    // m_Plane->Render( commandList );
+    // Render the plane using the SceneVisitor.
+    m_Plane->Accept( visitor );
 
     // Ceiling plane
     translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
@@ -550,7 +558,8 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    // m_Plane->Render( commandList );
+    // Render the plane using the SceneVisitor.
+    m_Plane->Accept( visitor );
 
     // Front wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
@@ -561,7 +570,8 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    // m_Plane->Render( commandList );
+    // Render the plane using the SceneVisitor.
+    m_Plane->Accept( visitor );
 
     // Left wall
     translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
@@ -575,7 +585,8 @@ void Tutorial3::OnRender()
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    // m_Plane->Render( commandList );
+    // Render the plane using the SceneVisitor.
+    m_Plane->Accept( visitor );
 
     // Right wall
     translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
@@ -587,7 +598,8 @@ void Tutorial3::OnRender()
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Blue );
 
-    //m_Plane->Render( commandList );
+    // Render the plane using the SceneVisitor.
+    m_Plane->Accept( visitor );
 
     // Draw shapes to visualize the position of the lights in the scene.
     ::Material lightMaterial;
@@ -603,7 +615,7 @@ void Tutorial3::OnRender()
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        //m_Sphere->Render( commandList );
+        m_Sphere->Accept( visitor );
     }
 
     for ( const auto& l: m_SpotLights )
@@ -622,7 +634,7 @@ void Tutorial3::OnRender()
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        //m_Cone->Render( commandList );
+        m_Cone->Accept( visitor );
     }
 
     // Resolve the MSAA render target to the swapchain's backbuffer.

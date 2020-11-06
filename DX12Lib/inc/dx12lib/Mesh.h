@@ -29,7 +29,7 @@
  *  @brief A mesh class encapsulates the index and vertex buffers for a geometric primitive.
  */
 
-#include <DirectXMath.h> // For XMFLOAT3, XMFLOAT2
+#include <DirectXMath.h>  // For XMFLOAT3, XMFLOAT2
 
 #include <map>     // For std::map
 #include <memory>  // For std::shared_ptr
@@ -47,7 +47,7 @@ class Mesh
 public:
     using BufferMap = std::map<uint32_t, std::shared_ptr<VertexBuffer>>;
 
-    struct alignas(16) Vertex
+    struct alignas( 16 ) Vertex
     {
         DirectX::XMFLOAT3 Position;
         DirectX::XMFLOAT3 Normal;
@@ -55,12 +55,15 @@ public:
         DirectX::XMFLOAT3 BiTangent;
         DirectX::XMFLOAT3 TexCoord;
 
-        static const int               InputElementCount = 5;
+        static const int                InputElementCount = 5;
         static D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
     };
 
-    Mesh()  = default;
+    Mesh();
     ~Mesh() = default;
+
+    void                     SetPrimitiveTopology( D3D12_PRIMITIVE_TOPOLOGY primitiveToplogy );
+    D3D12_PRIMITIVE_TOPOLOGY GetPrimitiveTopology() const;
 
     void                          SetVertexBuffer( uint32_t slotID, const std::shared_ptr<VertexBuffer>& vertexBuffer );
     std::shared_ptr<VertexBuffer> GetVertexBuffer( uint32_t slotID ) const;
@@ -71,6 +74,18 @@ public:
 
     void                         SetIndexBuffer( const std::shared_ptr<IndexBuffer>& indexBuffer );
     std::shared_ptr<IndexBuffer> GetIndexBuffer();
+
+    /**
+     * Get the number if indicies in the index buffer.
+     * If no index buffer is bound to the mesh, this function returns 0.
+     */
+    size_t GetIndexCount() const;
+
+    /**
+     * Get the number of verticies in the mesh.
+     * If this mesh does not have a vertex buffer, the function returns 0.
+     */
+    size_t GetVertexCount() const;
 
     void                      SetMaterial( std::shared_ptr<Material> material );
     std::shared_ptr<Material> GetMaterial() const;
@@ -84,5 +99,7 @@ private:
     BufferMap                    m_VertexBuffers;
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
     std::shared_ptr<Material>    m_Material;
+    D3D12_PRIMITIVE_TOPOLOGY     m_PrimitiveTopology;
+    size_t                       m_VertexCount;
 };
 }  // namespace dx12lib

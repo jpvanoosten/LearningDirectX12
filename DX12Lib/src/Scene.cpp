@@ -120,7 +120,7 @@ bool dx12lib::Scene::LoadSceneFromString( CommandList& commandList, const std::s
     importer.SetPropertyFloat( AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f );
     importer.SetPropertyInteger( AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE );
 
-    unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality;
+    unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_ConvertToLeftHanded;
 
     scene = importer.ReadFileFromMemory( sceneStr.data(), sceneStr.size(), preprocessFlags, format.c_str() );
 

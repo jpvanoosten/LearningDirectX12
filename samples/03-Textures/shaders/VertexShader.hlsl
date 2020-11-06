@@ -10,9 +10,9 @@ ConstantBuffer<Mat> MatCB : register(b0);
 
 struct VertexPositionNormalTexture
 {
-    float3 Position : POSITION;
-    float3 Normal   : NORMAL;
-    float2 TexCoord : TEXCOORD;
+    float3 Position  : POSITION;
+    float3 Normal    : NORMAL;
+    float2 TexCoord  : TEXCOORD;
 };
 
 struct VertexShaderOutput

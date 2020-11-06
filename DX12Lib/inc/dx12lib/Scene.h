@@ -57,6 +57,12 @@ public:
         return m_RootNode;
     }
 
+    /**
+     * Accept a visitor.
+     * This will first visit the scene, then it will visit the root node of the scene.
+     */
+    virtual void Accept( Visitor& visitor );
+
 protected:
     friend class CommandList;
 
@@ -68,7 +74,8 @@ protected:
     /**
      * Load a scene from a file on disc.
      */
-    bool LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName, const std::function<bool(float)>& loadingProgress );
+    bool LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName,
+                            const std::function<bool( float )>& loadingProgress );
 
     /**
      * Load a scene from a string.
@@ -79,12 +86,6 @@ protected:
      * @param format The format of the scene file.
      */
     bool LoadSceneFromString( CommandList& commandList, const std::string& sceneStr, const std::string& format );
-
-    /**
-     * Accept a visitor.
-     * This will first visit the scene, then it will visit the root node of the scene.
-     */
-    virtual void Accept( Visitor& visitor );
 
 private:
     void ImportMaterial( CommandList& commandList, const aiMaterial& material, std::filesystem::path parentPath );
