@@ -25,16 +25,6 @@ using namespace dx12lib;
 
 #pragma region Class adapters for std::make_shared
 
-class MakeScene : public Scene
-{
-public:
-    MakeScene( Device& device )
-    : Scene( device )
-    {}
-
-    virtual ~MakeScene() {};
-};
-
 class MakeGUI : public GUI
 {
 public:
@@ -476,13 +466,6 @@ std::shared_ptr<dx12lib::RootSignature>
     std::shared_ptr<RootSignature> rootSignature = std::make_shared<MakeRootSignature>( *this, rootSignatureDesc );
 
     return rootSignature;
-}
-
-std::shared_ptr<Scene> Device::CreateScene()
-{
-    std::shared_ptr<Scene> scene = std::make_shared<MakeScene>( *this );
-
-    return scene;
 }
 
 std::shared_ptr<PipelineStateObject> Device::DoCreatePipelineStateObject(

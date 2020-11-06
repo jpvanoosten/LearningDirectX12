@@ -37,10 +37,6 @@ private:
     std::function<bool( float )> m_ProgressCallback;
 };
 
-Scene::Scene( Device& device )
-: m_Device( device )
-{}
-
 bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName,
                                const std::function<bool( float )>& loadingProgress )
 {

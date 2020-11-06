@@ -243,7 +243,7 @@ bool Tutorial3::LoadContent()
     rtvFormats.RTFormats[0]          = backBufferFormat;
 
     pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
-    pipelineStateStream.InputLayout           = { Mesh::Vertex::InputElements, Mesh::Vertex::InputElementCount };
+    pipelineStateStream.InputLayout           = Mesh::Vertex::InputLayout;
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
     pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
@@ -535,7 +535,7 @@ void Tutorial3::OnRender()
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     // Render the plane using the SceneVisitor.
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
     // Back wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
@@ -547,7 +547,7 @@ void Tutorial3::OnRender()
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
     // Render the plane using the SceneVisitor.
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
     // Ceiling plane
     translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
@@ -559,7 +559,7 @@ void Tutorial3::OnRender()
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
     // Render the plane using the SceneVisitor.
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
     // Front wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
@@ -571,7 +571,7 @@ void Tutorial3::OnRender()
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
     // Render the plane using the SceneVisitor.
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
     // Left wall
     translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
@@ -586,7 +586,7 @@ void Tutorial3::OnRender()
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     // Render the plane using the SceneVisitor.
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
     // Right wall
     translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
@@ -599,7 +599,7 @@ void Tutorial3::OnRender()
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Blue );
 
     // Render the plane using the SceneVisitor.
-    m_Plane->Accept( visitor );
+    //m_Plane->Accept( visitor );
 
     // Draw shapes to visualize the position of the lights in the scene.
     ::Material lightMaterial;
@@ -634,7 +634,7 @@ void Tutorial3::OnRender()
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_Cone->Accept( visitor );
+        //m_Cone->Accept( visitor );
     }
 
     // Resolve the MSAA render target to the swapchain's backbuffer.

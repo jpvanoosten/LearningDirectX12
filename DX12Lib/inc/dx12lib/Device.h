@@ -180,12 +180,6 @@ public:
                                    const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav             = nullptr );
 
     /**
-     * Create a scene object.
-     * This method is used by the CommandList when loading scenes.
-     */
-    std::shared_ptr<Scene> CreateScene();
-
-    /**
      * Flush all command queues.
      */
     void Flush();

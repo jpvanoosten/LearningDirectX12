@@ -52,6 +52,14 @@ class Visitor;
 class Scene
 {
 public:
+    Scene()  = default;
+    ~Scene() = default;
+
+    void SetRootNode( std::shared_ptr<SceneNode> node )
+    {
+        m_RootNode = node;
+    }
+
     std::shared_ptr<SceneNode> GetRootNode() const
     {
         return m_RootNode;
@@ -65,11 +73,6 @@ public:
 
 protected:
     friend class CommandList;
-
-    // Create a scene from a filename.
-    Scene( Device& device );
-
-    virtual ~Scene() = default;
 
     /**
      * Load a scene from a file on disc.
@@ -97,7 +100,6 @@ private:
     using MaterialList = std::vector<std::shared_ptr<Material>>;
     using MeshList     = std::vector<std::shared_ptr<Mesh>>;
 
-    Device&      m_Device;
     MaterialMap  m_MaterialMap;
     MaterialList m_Materials;
     MeshList     m_Meshes;

@@ -10,6 +10,7 @@
 #include <dx12lib/DynamicDescriptorHeap.h>
 #include <dx12lib/GenerateMipsPSO.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/Material.h>
 #include <dx12lib/PanoToCubemapPSO.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RenderTarget.h>
@@ -17,6 +18,7 @@
 #include <dx12lib/ResourceStateTracker.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/Scene.h>
+#include <dx12lib/SceneNode.h>
 #include <dx12lib/ShaderResourceView.h>
 #include <dx12lib/StructuredBuffer.h>
 #include <dx12lib/Texture.h>
@@ -714,7 +716,7 @@ void CommandList::PanoToCubemap( const std::shared_ptr<Texture>& cubemapTexture,
 std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring&                 fileName,
                                                        const std::function<bool( float )>& loadingProgress )
 {
-    auto scene = m_Device.CreateScene();
+    auto scene = std::make_shared<Scene>();
 
     scene->LoadSceneFromFile( *this, fileName, loadingProgress );
 
@@ -723,72 +725,97 @@ std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring&      
 
 std::shared_ptr<Scene> CommandList::LoadSceneFromString( const std::string& sceneString, const std::string& format )
 {
-    auto scene = m_Device.CreateScene();
+    auto scene = std::make_shared<Scene>();
 
     scene->LoadSceneFromString( *this, sceneString, format );
 
     return scene;
 }
 
-std::shared_ptr<Scene> CommandList::CreateCube( float size )
+// Helper function to create a Scene from an index and vertex buffer.
+std::shared_ptr<Scene> CommandList::CreateScene( const VertexCollection& vertices, const IndexCollection& indices )
 {
-    // Cube is centered.
+    if ( vertices.empty() )
+    {
+        return nullptr;
+    }
+
+    auto vertexBuffer = CopyVertexBuffer( vertices );
+    auto indexBuffer  = CopyIndexBuffer( indices );
+
+    auto mesh = std::make_shared<Mesh>();
+    // Create a default white material for new meshes.
+    auto material = std::make_shared<Material>( Material::White );
+
+    mesh->SetVertexBuffer( 0, vertexBuffer );
+    mesh->SetIndexBuffer( indexBuffer );
+    mesh->SetMaterial( material );
+
+    auto node = std::make_shared<SceneNode>();
+    node->AddMesh( mesh );
+
+    auto scene = std::make_shared<Scene>();
+    scene->SetRootNode( node );
+
+    return scene;
+}
+
+std::shared_ptr<Scene> CommandList::CreateCube( float size, bool reverseWinding )
+{
+    // Cube is centered at 0,0,0.
     float s = size * 0.5f;
 
     // 8 edges of cube.
-    XMFLOAT3 p[8] = { { s, s, s },   { s, -s, s },   { s, -s, -s }, { s, s, -s },
-                      { -s, s, -s }, { -s, -s, -s }, { -s, -s, s }, { -s, s, s } };
+    XMFLOAT3 p[8] = { { s, s, -s }, { s, s, s },   { s, -s, s },   { s, -s, -s },
+                      { -s, s, s }, { -s, s, -s }, { -s, -s, -s }, { -s, -s, s } };
     // 6 face normals
     XMFLOAT3 n[6] = { { 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 } };
     // 4 unique texture coordinates
-    XMFLOAT2 t[4] = { { 1, 0 }, { 1, 1 }, { 0, 1 }, { 0, 0 } };
+    XMFLOAT3 t[4] = { { 0, 0, 0 }, { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 } };
 
-    // Indices.
-    // 6 faces, 4 vertices each.
-    uint16_t index[6][4] = { { 3, 2, 1, 0 }, { 7, 6, 5, 4 }, { 3, 0, 7, 4 },
-                             { 5, 6, 1, 2 }, { 4, 5, 2, 3 }, { 0, 1, 6, 7 } };
+    // Indices for the vertex positions.
+    uint16_t i[24] = {
+        0, 1, 2, 3,  // +X
+        4, 5, 6, 7,  // -X
+        4, 1, 0, 5,  // +Y
+        2, 7, 6, 3,  // -Y
+        1, 4, 7, 2,  // +Z
+        5, 0, 3, 6   // -Z
+    };
 
-    std::stringstream ss;
+    VertexCollection verticies;
+    IndexCollection  indicies;
 
-    // Create a white diffuse material
-    // f red green blue Kd Ks Shine transmittance indexOfRefraction
-    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
-
-    for ( int f = 0; f < 6; ++f )  // For each face of the cube.
+    for ( uint16_t f = 0; f < 6; ++f )  // For each face of the cube.
     {
-        ss << "tpp 4" << std::endl;
-        for ( int v = 0; v < 4; ++v )  // For each vertex
-        {
-            int i = index[f][v];  // The index in the position buffer.
-            // px py pz nx ny nz tu tv
-            ss << p[i].x << " " << p[i].y << " " << p[i].z << " " << n[f].x << " " << n[f].y << " " << n[f].z << " "
-               << t[v].x << " " << t[v].y << std::endl;
-        }
+        // Four verticies per face.
+        verticies.emplace_back( p[i[f * 4 + 0]], n[f], t[0] );
+        verticies.emplace_back( p[i[f * 4 + 1]], n[f], t[1] );
+        verticies.emplace_back( p[i[f * 4 + 2]], n[f], t[2] );
+        verticies.emplace_back( p[i[f * 4 + 3]], n[f], t[3] );
+
+        // First triangle.
+        indicies.emplace_back( f * 4 + 0 );
+        indicies.emplace_back( f * 4 + 1 );
+        indicies.emplace_back( f * 4 + 2 );
+
+        // Second triangle
+        indicies.emplace_back( f * 4 + 2 );
+        indicies.emplace_back( f * 4 + 3 );
+        indicies.emplace_back( f * 4 + 0 );
     }
 
-    return LoadSceneFromString( ss.str(), "nff" );
+    return CreateScene( verticies, indicies );
 }
 
-std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessellation )
+std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessellation, bool reversWinding )
 {
 
     if ( tessellation < 3 )
         throw std::out_of_range( "tessellation parameter out of range" );
 
-    struct Vertex
-    {
-        XMVECTOR position;
-        XMVECTOR normal;
-        XMVECTOR textureCoordinate;
-    };
-
-    struct Face
-    {
-        uint16_t v0, v1, v2;
-    };
-
-    std::vector<Vertex> verts;
-    std::vector<Face>   indices;
+    VertexCollection verts;
+    IndexCollection  indices;
 
     size_t verticalSegments   = tessellation;
     size_t horizontalSegments = tessellation * 2;
@@ -796,7 +823,7 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
     // Create rings of vertices at progressively higher latitudes.
     for ( size_t i = 0; i <= verticalSegments; i++ )
     {
-        float v = (float)i / verticalSegments;
+        float v = 1 - (float)i / verticalSegments;
 
         float latitude = ( i * XM_PI / verticalSegments ) - XM_PIDIV2;
         float dy, dxz;
@@ -808,7 +835,7 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
         {
             float u = (float)j / horizontalSegments;
 
-            float longitude = j * XM_2PI / horizontalSegments + XM_PI;
+            float longitude = j * XM_2PI / horizontalSegments;
             float dx, dz;
 
             XMScalarSinCos( &dx, &dz, longitude );
@@ -816,12 +843,11 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
             dx *= dxz;
             dz *= dxz;
 
-            Vertex vert;
-            vert.normal            = XMVectorSet( dx, dy, dz, 0 );
-            vert.textureCoordinate = XMVectorSet( u, v, 0, 0 );
-            vert.position          = vert.normal * radius;
+            auto normal            = XMVectorSet( dx, dy, dz, 0 );
+            auto textureCoordinate = XMVectorSet( u, v, 0, 0 );
+            auto position          = normal * radius;
 
-            verts.push_back( vert );
+            verts.emplace_back( position, normal, textureCoordinate );
         }
     }
 
@@ -835,92 +861,43 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
             size_t nextI = i + 1;
             size_t nextJ = ( j + 1 ) % stride;
 
-            Face f0;
-            f0.v0 = i * stride + nextJ;
-            f0.v1 = nextI * stride + j;
-            f0.v2 = i * stride + j;
-            indices.push_back( f0 );
+            indices.push_back( i * stride + nextJ );
+            indices.push_back( nextI * stride + j );
+            indices.push_back( i * stride + j );
 
-            Face f1;
-            f1.v0 = nextI * stride + nextJ;
-            f1.v1 = nextI * stride + j;
-            f1.v2 = i * stride + nextJ;
-            indices.push_back( f1 );
+            indices.push_back( nextI * stride + nextJ );
+            indices.push_back( nextI * stride + j);
+            indices.push_back( i * stride + nextJ );
         }
     }
 
-    std::stringstream ss;
-
-    // NFF version 2.1
-    // See: http://www.netghost.narod.ru/gff/graphics/summary/sense8.htm
-    ss << "nff" << std::endl;
-    ss << "version 2.1" << std::endl;
-
-    ss << "Sphere" << std::endl;      // Object name.
-    ss << verts.size() << std::endl;  // Total vertices.
-    for ( auto& v: verts )
-    {
-        XMFLOAT3 p, n, t;
-        XMStoreFloat3( &p, v.position );
-        XMStoreFloat3( &n, v.normal );
-        XMStoreFloat3( &t, v.textureCoordinate );
-
-        ss << p.x << " " << p.y << " " << p.z << " norm " << n.x << " " << n.y << " " << n.z << " uv " << t.x << " "
-           << t.y << std::endl;
-    }
-    ss << indices.size() << std::endl;  // Total polygons
-    for ( auto& i: indices )
-    {
-        ss << "3 " << i.v0 << " " << i.v1 << " " << i.v2 << std::endl;
-    }
-
-    return LoadSceneFromString( ss.str(), "nff" );
+    return CreateScene( verts, indices );
 }
 
-std::shared_ptr<Scene> CommandList::CreateCylinder( float baseRadius, float apexRadius, float height,
-                                                    const XMFLOAT3& axis )
+std::shared_ptr<Scene> CommandList::CreateCylinder( float baseRadius, float height, uint32_t tessellation,
+                                                    bool reverseWinding )
 {
-    std::stringstream ss;
+    VertexCollection verticies;
+    IndexCollection  indices;
 
-    // Create a white diffuse material for the cylinder.
-    // f red green blue Kd Ks Shine transmittance indexOfRefraction
-    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
-
-    ss << "c" << std::endl;
-    // base.x base.y base.z baseRadius
-    ss << "0 0 0 " << baseRadius << std::endl;
-
-    XMFLOAT3 apex = { axis.x * height, axis.y * height, axis.z * height };
-    // apex.x apex.y apex.z apexRadius
-    ss << apex.x << " " << apex.y << " " << apex.z << " " << apexRadius << std::endl;
-
-    return LoadSceneFromString( ss.str(), "nff" );
+    return CreateScene( verticies, indices );
 }
 
-std::shared_ptr<Scene> CommandList::CreateCone( float baseRadius, float height, const XMFLOAT3& axis )
+std::shared_ptr<Scene> CommandList::CreateCone( float baseRadius, float height, uint32_t tessellation, bool reverseWinding )
 {
-    // A cone is just a cylinder with a 0 apex radius.
-    return CreateCylinder( baseRadius, 0.0f, height, axis );
+    VertexCollection verticies;
+    IndexCollection  indices;
+
+    return CreateScene( verticies, indices );
 }
 
-std::shared_ptr<Scene> CommandList::CreateTorus( float diameter, float thickness, uint32_t tessellation )
+std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, uint32_t tessellation,
+                                                 bool reverseWinding )
 {
     assert( tessellation > 3 );
 
-    struct Vertex
-    {
-        XMVECTOR position;
-        XMVECTOR normal;
-        XMVECTOR textureCoordinate;
-    };
-
-    struct Face
-    {
-        uint16_t v0, v1, v2;
-    };
-
-    std::vector<Vertex> verts;
-    std::vector<Face>   indices;
+    VertexCollection verticies;
+    IndexCollection  indices;
 
     size_t stride = tessellation + 1;
 
@@ -933,7 +910,7 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float diameter, float thickness
 
         // Create a transform matrix that will align geometry to
         // slice perpendicularly though the current ring position.
-        XMMATRIX transform = XMMatrixTranslation( diameter / 2, 0, 0 ) * XMMatrixRotationY( outerAngle );
+        XMMATRIX transform = XMMatrixTranslation( radius, 0, 0 ) * XMMatrixRotationY( outerAngle );
 
         // Now we loop along the other axis, around the side of the tube.
         for ( size_t j = 0; j <= tessellation; j++ )
@@ -946,84 +923,38 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float diameter, float thickness
             XMScalarSinCos( &dy, &dx, innerAngle );
 
             // Create a vertex.
-            Vertex vert;
-            vert.normal            = XMVectorSet( dx, dy, 0, 0 );
-            vert.position          = vert.normal * thickness / 2;
-            vert.textureCoordinate = XMVectorSet( u, v, 0, 0 );
+            auto normal            = XMVectorSet( dx, dy, 0, 0 );
+            auto position          = normal * thickness / 2;
+            auto textureCoordinate = XMVectorSet( u, v, 0, 0 );
 
-            vert.position = XMVector3Transform( vert.position, transform );
-            vert.normal   = XMVector3TransformNormal( vert.normal, transform );
+            position = XMVector3Transform( position, transform );
+            normal   = XMVector3TransformNormal( normal, transform );
 
-            verts.push_back( vert );
+            verticies.emplace_back( position, normal, textureCoordinate );
 
             // And create indices for two triangles.
             size_t nextI = ( i + 1 ) % stride;
             size_t nextJ = ( j + 1 ) % stride;
 
-            Face f0;
-            f0.v0 = nextI * stride + j;
-            f0.v1 = i * stride + nextJ;
-            f0.v2 = i * stride + j;
-            indices.push_back( f0 );
+            indices.push_back( nextI * stride + j );
+            indices.push_back( i * stride + nextJ );
+            indices.push_back( i * stride + j );
 
-            Face f1;
-            f1.v0 = nextI * stride + j;
-            f1.v1 = nextI * stride + nextJ;
-            f1.v2 = i * stride + nextJ;
-            indices.push_back( f1 );
+            indices.push_back( nextI * stride + j );
+            indices.push_back( nextI * stride + nextJ );
+            indices.push_back( i * stride + nextJ );
         }
     }
 
-    // NFF version 2.1
-    // See: http://www.netghost.narod.ru/gff/graphics/summary/sense8.htm
-    std::stringstream ss;
-
-    ss << "nff" << std::endl;
-    ss << "version 2.1" << std::endl;
-
-    ss << "Torus" << std::endl;       // Object name.
-    ss << verts.size() << std::endl;  // Total vertices.
-    for ( auto& v: verts )
-    {
-        XMFLOAT3 p, n, t;
-        XMStoreFloat3( &p, v.position );
-        XMStoreFloat3( &n, v.normal );
-        XMStoreFloat3( &t, v.textureCoordinate );
-
-        ss << p.x << " " << p.y << " " << p.z << " norm " << n.x << " " << n.y << " " << n.z << " uv " << t.x << " "
-           << t.y << std::endl;
-    }
-    ss << indices.size() << std::endl;  // Total polygons
-    for ( auto& i: indices )
-    {
-        ss << "3 " << i.v0 << " " << i.v1 << " " << i.v2 << std::endl;
-    }
-
-    return LoadSceneFromString( ss.str(), "nff" );
+    return CreateScene( verticies, indices );
 }
 
-std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height )
+std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height, bool reverseWinding )
 {
-    std::stringstream ss;
+    VertexCollection verticies;
+    IndexCollection  indices;
 
-    XMFLOAT3 p[4] = { { -0.5f * width, 0.0f, -0.5f * height },
-                      { 0.5f * width, 0.0f, -0.5f * height },
-                      { 0.5f * width, 0.0f, 0.5f * height },
-                      { -0.5f * width, 0.0f, 0.5f * height } };
-    XMFLOAT3 n    = { 0.0f, 1.0f, 0.0f };
-    XMFLOAT2 t[4] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
-
-    // Create a white diffuse material
-    // f red green blue Kd Ks Shine transmittance indexOfRefraction
-    ss << "f 1 1 1 1 0 0 0 0" << std::endl;
-    ss << "tpp 4" << std::endl;
-    for ( int i = 0; i < 4; ++i )
-    {
-        ss << p[i].x << " " << p[i].y << " " << p[i].z << " " << n.x << " " << n.y << " " << n.z << " " << t[i].x << " "
-           << t[i].y << std::endl;
-    }
-
-    return LoadSceneFromString( ss.str(), "nff" );
+    return CreateScene( verticies, indices );
 }
 
 void CommandList::ClearTexture( const std::shared_ptr<Texture>& texture, const float clearColor[4] )

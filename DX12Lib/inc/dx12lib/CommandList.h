@@ -32,6 +32,7 @@
  *  DirectX 12 applications easier.
  */
 #include "TextureUsage.h"
+#include "Mesh.h"
 
 #include <DirectXMath.h>
 #include <d3d12.h>
@@ -244,35 +245,57 @@ public:
      * Create a cube.
      *
      * @param size The size of one side of the cube.
+     * @param reverseWinding Whether to reverse the winding order of the triangles (useful for skyboxes).
      */
-    std::shared_ptr<Scene> CreateCube( float size = 1.0 );
+    std::shared_ptr<Scene> CreateCube( float size = 1.0, bool reverseWinding = false );
 
     /**
      * Create a sphere.
+     * 
+     * @param radius Radius of the sphere.
+     * @param tessellation Determines how smooth the sphere is.
+     * @param reverseWinding Whether to reverse the winding order of the triangles (useful for sydomes).
      */
-    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tessellation = 16 );
+    std::shared_ptr<Scene> CreateSphere( float radius = 0.5f, uint32_t tessellation = 16, bool reversWinding = false );
 
     /**
      * Create a Cylinder
+     * 
+     * @param radius The radius of the primary axis of the cylinder.
+     * @param hight The height of the cylinder.
+     * @param tessellation How smooth the cylinder will be.
+     * @param reverseWinding Whether to reverse the winding order of the triangles.
      */
-    std::shared_ptr<Scene> CreateCylinder( float baseRadius = 0.5f, float apexRadius = 0.5f, float height = 1.0f,
-                                           const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 0.0f, 1.0f ) );
+    std::shared_ptr<Scene> CreateCylinder( float radius = 0.5f, float height = 1.0f, uint32_t tessellation = 32, bool reverseWinding = false );
 
     /**
      * Create a cone.
+     * 
+     * @param radius The radius of the base of the cone.
+     * @param height The height of the cone.
+     * @param tessellation How smooth to make the cone.
+     * @param reverseWinding Whether to reverse the winding order of the triangles.
      */
-    std::shared_ptr<Scene> CreateCone( float baseRadius = 0.5f, float height = 1.0f,
-                                       const DirectX::XMFLOAT3& axis = DirectX::XMFLOAT3( 0.0f, 0.0f, 1.0f ) );
+    std::shared_ptr<Scene> CreateCone( float radius = 0.5f, float height = 1.0f, uint32_t tessellation = 32, bool reverseWinding = false );
 
     /**
      * Create a torus.
+     * 
+     * @param radius The radius of the torus.
+     * @param thickness The The thickness of the torus.
+     * @param tessellation The smoothness of the torus.
+     * @param reverseWinding Reverse the winding order of the vertices.
      */
-    std::shared_ptr<Scene> CreateTorus( float diameter = 1.0f, float thickness = 0.333f, uint32_t tessellation = 32 );
+    std::shared_ptr<Scene> CreateTorus( float radius = 0.5f, float thickness = 0.333f, uint32_t tessellation = 32, bool reverseWinding = false );
 
     /**
      * Create a plane.
+     * 
+     * @param width The width of the plane.
+     * @param height The height of the plane.
+     * @reverseWinding Whether to reverse the winding order of the plane.
      */
-    std::shared_ptr<Scene> CreatePlane( float width = 1.0f, float height = 1.0f );
+    std::shared_ptr<Scene> CreatePlane( float width = 1.0f, float height = 1.0f, bool reverseWinding = false );
 
     /**
      * Clear a texture.
@@ -524,6 +547,13 @@ protected:
     }
 
 private:
+    // Used for procedural mesh generation.
+    using VertexCollection = std::vector<Mesh::Vertex>;
+    using IndexCollection  = std::vector<uint16_t>;
+
+    // Create a scene that contains a single node with a single mesh.
+    std::shared_ptr<Scene> CreateScene( const VertexCollection& vertices, const IndexCollection& indicies );
+
     void TrackResource( Microsoft::WRL::ComPtr<ID3D12Object> object );
     void TrackResource( const std::shared_ptr<Resource>& res );
 

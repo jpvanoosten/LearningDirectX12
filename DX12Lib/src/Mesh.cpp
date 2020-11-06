@@ -1,13 +1,13 @@
 #include "DX12LibPCH.h"
 
-#include <dx12lib/Mesh.h>
 #include <dx12lib/IndexBuffer.h>
+#include <dx12lib/Mesh.h>
 #include <dx12lib/VertexBuffer.h>
 #include <dx12lib/Visitor.h>
 
 using namespace dx12lib;
 
-D3D12_INPUT_ELEMENT_DESC Mesh::Vertex::InputElements[] = {
+const D3D12_INPUT_ELEMENT_DESC Mesh::Vertex::InputElements[] = {
     { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
       D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
@@ -19,6 +19,9 @@ D3D12_INPUT_ELEMENT_DESC Mesh::Vertex::InputElements[] = {
     { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
       D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 };
+
+const D3D12_INPUT_LAYOUT_DESC Mesh::Vertex::InputLayout = { Mesh::Vertex::InputElements,
+                                                            Mesh::Vertex::InputElementCount };
 
 Mesh::Mesh()
 : m_PrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST )
@@ -57,27 +60,30 @@ std::shared_ptr<IndexBuffer> Mesh::GetIndexBuffer()
     return m_IndexBuffer;
 }
 
-size_t Mesh::GetIndexCount() const {
+size_t Mesh::GetIndexCount() const
+{
     size_t indexCount = 0;
-    if (m_IndexBuffer) {
+    if ( m_IndexBuffer )
+    {
         indexCount = m_IndexBuffer->GetNumIndicies();
     }
 
     return indexCount;
 }
 
-size_t Mesh::GetVertexCount() const {
+size_t Mesh::GetVertexCount() const
+{
     size_t vertexCount = 0;
 
     // To count the number of verticies in the mesh, just take the num vertices in the first bound vertex buffer.
-    BufferMap::const_iterator iter        = m_VertexBuffers.cbegin();
-    if (iter != m_VertexBuffers.cend()) {
+    BufferMap::const_iterator iter = m_VertexBuffers.cbegin();
+    if ( iter != m_VertexBuffers.cend() )
+    {
         vertexCount = iter->second->GetNumVertices();
     }
 
     return vertexCount;
 }
-
 
 void Mesh::SetMaterial( std::shared_ptr<Material> material )
 {
@@ -93,5 +99,3 @@ void Mesh::Accept( Visitor& visitor )
 {
     visitor.Visit( *this );
 }
-
-

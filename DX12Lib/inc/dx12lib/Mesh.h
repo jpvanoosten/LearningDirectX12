@@ -31,6 +31,8 @@
 
 #include <DirectXMath.h>  // For XMFLOAT3, XMFLOAT2
 
+#include <d3d12.h> // For D3D12_INPUT_LAYOUT_DESC, D3D12_INPUT_ELEMENT_DESC
+
 #include <map>     // For std::map
 #include <memory>  // For std::shared_ptr
 
@@ -49,14 +51,44 @@ public:
 
     struct alignas( 16 ) Vertex
     {
+        Vertex() = default;
+
+        explicit Vertex( const DirectX::XMFLOAT3& position,
+                         const DirectX::XMFLOAT3& normal,
+                         const DirectX::XMFLOAT3& texCoord,
+                         const DirectX::XMFLOAT3& tangent   = { 0, 0, 0 },
+                         const DirectX::XMFLOAT3& biTangent = { 0, 0, 0 } )
+        : Position( position )
+        , Normal( normal )
+        , Tangent( tangent )
+        , BiTangent( biTangent )
+        , TexCoord( texCoord )
+        {}
+
+        explicit Vertex( DirectX::FXMVECTOR  position,
+                         DirectX::FXMVECTOR normal,
+                         DirectX::FXMVECTOR texCoord,
+                         DirectX::GXMVECTOR tangent   = { 0, 0, 0, 0 },
+                         DirectX::HXMVECTOR biTangent = { 0, 0, 0, 0 } )
+        {
+            DirectX::XMStoreFloat3( &( this->Position ), position );
+            DirectX::XMStoreFloat3( &( this->Normal ), normal );
+            DirectX::XMStoreFloat3( &( this->Tangent ), tangent );
+            DirectX::XMStoreFloat3( &( this->BiTangent ), biTangent );
+            DirectX::XMStoreFloat3( &( this->TexCoord ), texCoord );
+        }
+
+
         DirectX::XMFLOAT3 Position;
         DirectX::XMFLOAT3 Normal;
         DirectX::XMFLOAT3 Tangent;
         DirectX::XMFLOAT3 BiTangent;
         DirectX::XMFLOAT3 TexCoord;
 
+        static const D3D12_INPUT_LAYOUT_DESC InputLayout;
+    private:
         static const int                InputElementCount = 5;
-        static D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
+        static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
     };
 
     Mesh();
