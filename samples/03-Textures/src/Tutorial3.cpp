@@ -158,7 +158,7 @@ bool Tutorial3::LoadContent()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
-    // Create a Cube mesh
+    // Create some geometry to render.
     m_Cube   = commandList->CreateCube();
     m_Sphere = commandList->CreateSphere();
     m_Cone   = commandList->CreateCone();
@@ -349,6 +349,8 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
         frameCount = 0;
         totalTime  = 0.0;
     }
+
+    m_SwapChain->WaitForSwapChain();
 
     // Update the camera.
     float speedMultipler = ( m_Shift ? 16.0f : 4.0f );

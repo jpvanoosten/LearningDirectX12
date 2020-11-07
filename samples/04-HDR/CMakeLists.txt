@@ -4,6 +4,7 @@ set( HEADER_FILES
     inc/Camera.h
     inc/Light.h
     inc/Material.h
+    inc/SceneVisitor.h
     inc/Tutorial4.h
 )
 
@@ -12,6 +13,7 @@ set( SRC_FILES
     src/main.cpp
     src/Light.cpp
     src/Material.cpp
+    src/SceneVisitor.cpp
     src/Tutorial4.cpp
 )
 

@@ -2,6 +2,7 @@
 
 #include <Light.h>
 #include <Material.h>
+#include <SceneVisitor.h>
 
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
@@ -11,6 +12,7 @@
 #include <dx12lib/Mesh.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
+#include <dx12lib/Scene.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/Texture.h>
 
@@ -202,14 +204,16 @@ bool Tutorial4::LoadContent()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
-    // Create a Cube mesh
-    m_CubeMesh   = Mesh::CreateCube( commandList );
-    m_SphereMesh = Mesh::CreateSphere( commandList );
-    m_ConeMesh   = Mesh::CreateCone( commandList );
-    m_TorusMesh  = Mesh::CreateTorus( commandList );
-    m_PlaneMesh  = Mesh::CreatePlane( commandList );
+    // Create some geometry to render.
+    m_Cube     = commandList->CreateCube();
+    m_Sphere   = commandList->CreateSphere();
+    m_Cone     = commandList->CreateCone();
+    m_Cylinder = commandList->CreateCylinder();
+    m_Torus    = commandList->CreateTorus();
+    m_Plane    = commandList->CreatePlane();
+
     // Create an inverted (reverse winding order) cube so the insides are not clipped.
-    m_SkyboxMesh = Mesh::CreateCube( commandList, 1.0f, true );
+    m_Skybox = commandList->CreateCube( 1.0f, true );
 
     // Load some textures
     m_DefaultTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp" );
@@ -393,8 +397,7 @@ bool Tutorial4::LoadContent()
         } hdrPipelineStateStream;
 
         hdrPipelineStateStream.pRootSignature        = m_HDRRootSignature->GetD3D12RootSignature().Get();
-        hdrPipelineStateStream.InputLayout           = { VertexPositionNormalTexture::InputElements,
-                                               VertexPositionNormalTexture::InputElementCount };
+        hdrPipelineStateStream.InputLayout           = Mesh::Vertex::InputLayout;
         hdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         hdrPipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vs.Get() );
         hdrPipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( ps.Get() );
@@ -491,11 +494,11 @@ void Tutorial4::OnDPIScaleChanged( DPIScaleEventArgs& e )
 
 void Tutorial4::UnloadContent()
 {
-    m_SphereMesh.reset();
-    m_ConeMesh.reset();
-    m_TorusMesh.reset();
-    m_PlaneMesh.reset();
-    m_SkyboxMesh.reset();
+    m_Sphere.reset();
+    m_Cone.reset();
+    m_Torus.reset();
+    m_Plane.reset();
+    m_Skybox.reset();
 
     m_DefaultTextureView.reset();
     m_DirectXTextureView.reset();
@@ -863,6 +866,9 @@ void Tutorial4::OnRender()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
 
+    // Create a scene visitor that is used to perform the actual rendering of the meshes in the scenes.
+    SceneVisitor visitor( *commandList );
+
     // Clear the render targets.
     {
         FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
@@ -891,7 +897,7 @@ void Tutorial4::OnRender()
         commandList->SetShaderResourceView( 1, 0, m_GraceCathedralCubemapView,
                                             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-        m_SkyboxMesh->Render( commandList );
+        m_Skybox->Accept( visitor );
     }
 
     commandList->SetPipelineState( m_HDRPipelineState );
@@ -918,11 +924,11 @@ void Tutorial4::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::White );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_SphereMesh->Render( commandList );
+    m_Sphere->Accept( visitor );
 
     // Draw a cube
     translationMatrix = XMMatrixTranslation( 4.0f, 4.0f, 4.0f );
@@ -933,11 +939,11 @@ void Tutorial4::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::White );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_CubeMesh->Render( commandList );
+    m_Cube->Accept( visitor );
 
     // Draw a torus
     translationMatrix = XMMatrixTranslation( 4.0f, 0.6f, -4.0f );
@@ -948,11 +954,26 @@ void Tutorial4::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Ruby );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_TorusMesh->Render( commandList );
+    m_Torus->Accept( visitor );
+
+    // Draw a cylinder
+    translationMatrix = XMMatrixTranslation( -4.0f, 4.0f, 4.0f );
+    rotationMatrix    = XMMatrixRotationY( XMConvertToRadians( 45.0f ) );
+    scaleMatrix       = XMMatrixScaling( 4.0f, 8.0f, 4.0f );
+    worldMatrix       = scaleMatrix * rotationMatrix * translationMatrix;
+
+    ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
+
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Gold );
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
+                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+
+    m_Cylinder->Accept( visitor );
 
     // Floor plane.
     float scalePlane      = 20.0f;
@@ -966,11 +987,11 @@ void Tutorial4::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::White );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_PlaneMesh->Render( commandList );
+    m_Plane->Accept( visitor );
 
     // Back wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, translateOffset );
@@ -981,7 +1002,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( commandList );
+    m_Plane->Accept( visitor );
 
     // Ceiling plane
     translationMatrix = XMMatrixTranslation( 0, translateOffset * 2.0f, 0 );
@@ -992,7 +1013,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( commandList );
+    m_Plane->Accept( visitor );
 
     // Front wall
     translationMatrix = XMMatrixTranslation( 0, translateOffset, -translateOffset );
@@ -1003,7 +1024,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
 
-    m_PlaneMesh->Render( commandList );
+    m_Plane->Accept( visitor );
 
     // Left wall
     translationMatrix = XMMatrixTranslation( -translateOffset, translateOffset, 0 );
@@ -1013,11 +1034,11 @@ void Tutorial4::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Red );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
-    m_PlaneMesh->Render( commandList );
+    m_Plane->Accept( visitor );
 
     // Right wall
     translationMatrix = XMMatrixTranslation( translateOffset, translateOffset, 0 );
@@ -1027,11 +1048,12 @@ void Tutorial4::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
-    m_PlaneMesh->Render( commandList );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Blue );
+
+    m_Plane->Accept( visitor );
 
     // Draw shapes to visualize the position of the lights in the scene.
-    Material lightMaterial;
+    ::Material lightMaterial;
     // No specular
     lightMaterial.Specular = { 0, 0, 0, 1 };
     for ( const auto& l: m_PointLights )
@@ -1044,7 +1066,7 @@ void Tutorial4::OnRender()
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_SphereMesh->Render( commandList );
+        m_Sphere->Accept( visitor );
     }
 
     for ( const auto& l: m_SpotLights )
@@ -1063,7 +1085,7 @@ void Tutorial4::OnRender()
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
         commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, lightMaterial );
 
-        m_ConeMesh->Render( commandList );
+        m_Cone->Accept( visitor );
     }
 
     // Perform HDR -> SDR tonemapping directly to the SwapChain's render target.
@@ -1103,7 +1125,7 @@ void Tutorial4::OnKeyPressed( KeyEventArgs& e )
             case KeyCode::F11:
                 if ( g_AllowFullscreenToggle )
                 {
-                    m_Fullscreen = !m_Fullscreen; // Defer window resizing until OnUpdate();
+                    m_Fullscreen = !m_Fullscreen;  // Defer window resizing until OnUpdate();
                     // Prevent the key repeat to cause multiple resizes.
                     g_AllowFullscreenToggle = false;
                 }

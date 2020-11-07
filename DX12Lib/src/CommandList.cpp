@@ -956,13 +956,13 @@ std::shared_ptr<Scene> CommandList::CreateCylinder( float radius, float height, 
         vertices.emplace_back( XMVectorSubtract( sideOffset, topOffset ), normal,
                                XMVectorAdd( textureCoordinate, g_XMIdentityR1 ) );
 
+        indices.push_back( i * 2 + 1 );
+        indices.push_back( ( i * 2 + 2 ) % ( stride * 2 ) );
         indices.push_back( i * 2 );
-        indices.push_back( ( i * 2 + 2 ) % ( stride * 2 ) );
-        indices.push_back( i * 2 + 1 );
 
-        indices.push_back( i * 2 + 1 );
-        indices.push_back( ( i * 2 + 2 ) % ( stride * 2 ) );
         indices.push_back( ( i * 2 + 3 ) % ( stride * 2 ) );
+        indices.push_back( ( i * 2 + 2 ) % ( stride * 2 ) );
+        indices.push_back( i * 2 + 1 );
     }
 
     // Create flat triangle fan caps to seal the top and bottom.

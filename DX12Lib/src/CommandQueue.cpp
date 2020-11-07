@@ -189,7 +189,10 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
     ResourceStateTracker::Unlock();
 
     // Queue command lists for reuse.
-    for ( auto commandList: toBeQueued ) { m_InFlightCommandLists.Push( { fenceValue, commandList } ); }
+    for ( auto commandList: toBeQueued )
+    {
+        m_InFlightCommandLists.Push( { fenceValue, commandList } );
+    }
 
     // If there are any command lists that generate mips then execute those
     // after the initial resource command lists have finished.
@@ -236,7 +239,7 @@ void CommandQueue::ProccessInFlightCommandLists()
         lock.unlock();
         m_ProcessInFlightCommandListsThreadCV.notify_one();
 
-        std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-        //        std::this_thread::yield();
+        // std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+        std::this_thread::yield();
     }
 }
