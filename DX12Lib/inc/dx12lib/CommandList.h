@@ -31,8 +31,8 @@
  *  The CommandList class provides additional functionality that makes working with
  *  DirectX 12 applications easier.
  */
-#include "TextureUsage.h"
 #include "Mesh.h"
+#include "TextureUsage.h"
 
 #include <DirectXMath.h>
 #include <d3d12.h>
@@ -251,7 +251,7 @@ public:
 
     /**
      * Create a sphere.
-     * 
+     *
      * @param radius Radius of the sphere.
      * @param tessellation Determines how smooth the sphere is.
      * @param reverseWinding Whether to reverse the winding order of the triangles (useful for sydomes).
@@ -260,37 +260,40 @@ public:
 
     /**
      * Create a Cylinder
-     * 
+     *
      * @param radius The radius of the primary axis of the cylinder.
      * @param hight The height of the cylinder.
      * @param tessellation How smooth the cylinder will be.
      * @param reverseWinding Whether to reverse the winding order of the triangles.
      */
-    std::shared_ptr<Scene> CreateCylinder( float radius = 0.5f, float height = 1.0f, uint32_t tessellation = 32, bool reverseWinding = false );
+    std::shared_ptr<Scene> CreateCylinder( float radius = 0.5f, float height = 1.0f, uint32_t tessellation = 32,
+                                           bool reverseWinding = false );
 
     /**
      * Create a cone.
-     * 
+     *
      * @param radius The radius of the base of the cone.
      * @param height The height of the cone.
      * @param tessellation How smooth to make the cone.
      * @param reverseWinding Whether to reverse the winding order of the triangles.
      */
-    std::shared_ptr<Scene> CreateCone( float radius = 0.5f, float height = 1.0f, uint32_t tessellation = 32, bool reverseWinding = false );
+    std::shared_ptr<Scene> CreateCone( float radius = 0.5f, float height = 1.0f, uint32_t tessellation = 32,
+                                       bool reverseWinding = false );
 
     /**
      * Create a torus.
-     * 
+     *
      * @param radius The radius of the torus.
      * @param thickness The The thickness of the torus.
      * @param tessellation The smoothness of the torus.
      * @param reverseWinding Reverse the winding order of the vertices.
      */
-    std::shared_ptr<Scene> CreateTorus( float radius = 0.5f, float thickness = 0.333f, uint32_t tessellation = 32, bool reverseWinding = false );
+    std::shared_ptr<Scene> CreateTorus( float radius = 0.5f, float thickness = 0.333f, uint32_t tessellation = 32,
+                                        bool reverseWinding = false );
 
     /**
      * Create a plane.
-     * 
+     *
      * @param width The width of the plane.
      * @param height The height of the plane.
      * @reverseWinding Whether to reverse the winding order of the plane.
@@ -554,6 +557,19 @@ private:
     // Create a scene that contains a single node with a single mesh.
     std::shared_ptr<Scene> CreateScene( const VertexCollection& vertices, const IndexCollection& indicies );
 
+    // Helper function for flipping winding of geometric primitives for LH vs. RH coords
+    inline void ReverseWinding( IndexCollection& indices, VertexCollection& vertices );
+    // Helper function for inverting normals for "inside" vs "outside" viewing.
+    inline void CommandList::InvertNormals( VertexCollection& vertices );
+    // Helper function to compute a point on a unit circle aligned to the x,z plane and centered at the origin.
+    inline DirectX::XMVECTOR GetCircleVector( size_t i, size_t tessellation ) noexcept;
+    // Helper function to compute a tangent vector at a point on a unit sphere aligned to the x,z plane.
+    inline DirectX::XMVECTOR GetCircleTangent( size_t i, size_t tessellation ) noexcept;
+    // Helper creates a triangle fan to close the end of a cylinder / cone
+    void CreateCylinderCap( VertexCollection& vertices, IndexCollection& indices, size_t tessellation, float height,
+                            float radius, bool isTop );
+
+    // Add a resource to a list of tracked resources (ensures lifetime while command list is in-flight on a command queue.
     void TrackResource( Microsoft::WRL::ComPtr<ID3D12Object> object );
     void TrackResource( const std::shared_ptr<Resource>& res );
 
@@ -619,4 +635,52 @@ private:
     static std::map<std::wstring, ID3D12Resource*> ms_TextureCache;
     static std::mutex                              ms_TextureCacheMutex;
 };
+
+// Definition for inline functions.
+inline DirectX::XMVECTOR CommandList::GetCircleVector( size_t i, size_t tessellation ) noexcept
+{
+    float angle = float( i ) * DirectX::XM_2PI / float( tessellation );
+    float dx, dz;
+
+    DirectX::XMScalarSinCos( &dx, &dz, angle );
+
+    DirectX::XMVECTORF32 v = { { { dx, 0, dz, 0 } } };
+    return v;
+}
+
+inline DirectX::XMVECTOR CommandList::GetCircleTangent( size_t i, size_t tessellation ) noexcept
+{
+    float angle = ( float( i ) * DirectX::XM_2PI / float( tessellation ) ) + DirectX::XM_PIDIV2;
+    float dx, dz;
+
+    DirectX::XMScalarSinCos( &dx, &dz, angle );
+
+    DirectX::XMVECTORF32 v = { { { dx, 0, dz, 0 } } };
+    return v;
+}
+
+inline void CommandList::ReverseWinding( IndexCollection& indices, VertexCollection& vertices )
+{
+    assert( ( indices.size() % 3 ) == 0 );
+    for ( auto it = indices.begin(); it != indices.end(); it += 3 )
+    {
+        std::swap( *it, *( it + 2 ) );
+    }
+
+    for ( auto it = vertices.begin(); it != vertices.end(); ++it )
+    {
+        it->TexCoord.x = ( 1.f - it->TexCoord.x );
+    }
+}
+
+inline void CommandList::InvertNormals( VertexCollection& vertices )
+{
+    for ( auto it = vertices.begin(); it != vertices.end(); ++it )
+    {
+        it->Normal.x = -it->Normal.x;
+        it->Normal.y = -it->Normal.y;
+        it->Normal.z = -it->Normal.z;
+    }
+}
+
 }  // namespace dx12lib

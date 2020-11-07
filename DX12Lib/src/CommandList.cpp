@@ -783,29 +783,34 @@ std::shared_ptr<Scene> CommandList::CreateCube( float size, bool reverseWinding 
         5, 0, 3, 6   // -Z
     };
 
-    VertexCollection verticies;
-    IndexCollection  indicies;
+    VertexCollection vertices;
+    IndexCollection  indices;
 
     for ( uint16_t f = 0; f < 6; ++f )  // For each face of the cube.
     {
-        // Four verticies per face.
-        verticies.emplace_back( p[i[f * 4 + 0]], n[f], t[0] );
-        verticies.emplace_back( p[i[f * 4 + 1]], n[f], t[1] );
-        verticies.emplace_back( p[i[f * 4 + 2]], n[f], t[2] );
-        verticies.emplace_back( p[i[f * 4 + 3]], n[f], t[3] );
+        // Four vertices per face.
+        vertices.emplace_back( p[i[f * 4 + 0]], n[f], t[0] );
+        vertices.emplace_back( p[i[f * 4 + 1]], n[f], t[1] );
+        vertices.emplace_back( p[i[f * 4 + 2]], n[f], t[2] );
+        vertices.emplace_back( p[i[f * 4 + 3]], n[f], t[3] );
 
         // First triangle.
-        indicies.emplace_back( f * 4 + 0 );
-        indicies.emplace_back( f * 4 + 1 );
-        indicies.emplace_back( f * 4 + 2 );
+        indices.emplace_back( f * 4 + 0 );
+        indices.emplace_back( f * 4 + 1 );
+        indices.emplace_back( f * 4 + 2 );
 
         // Second triangle
-        indicies.emplace_back( f * 4 + 2 );
-        indicies.emplace_back( f * 4 + 3 );
-        indicies.emplace_back( f * 4 + 0 );
+        indices.emplace_back( f * 4 + 2 );
+        indices.emplace_back( f * 4 + 3 );
+        indices.emplace_back( f * 4 + 0 );
     }
 
-    return CreateScene( verticies, indicies );
+    if ( reverseWinding )
+    {
+        ReverseWinding( indices, vertices );
+    }
+
+    return CreateScene( vertices, indices );
 }
 
 std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessellation, bool reversWinding )
@@ -814,7 +819,7 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
     if ( tessellation < 3 )
         throw std::out_of_range( "tessellation parameter out of range" );
 
-    VertexCollection verts;
+    VertexCollection vertices;
     IndexCollection  indices;
 
     size_t verticalSegments   = tessellation;
@@ -847,7 +852,7 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
             auto textureCoordinate = XMVectorSet( u, v, 0, 0 );
             auto position          = normal * radius;
 
-            verts.emplace_back( position, normal, textureCoordinate );
+            vertices.emplace_back( position, normal, textureCoordinate );
         }
     }
 
@@ -866,29 +871,162 @@ std::shared_ptr<Scene> CommandList::CreateSphere( float radius, uint32_t tessell
             indices.push_back( i * stride + j );
 
             indices.push_back( nextI * stride + nextJ );
-            indices.push_back( nextI * stride + j);
+            indices.push_back( nextI * stride + j );
             indices.push_back( i * stride + nextJ );
         }
     }
 
-    return CreateScene( verts, indices );
+    if ( reversWinding )
+    {
+        ReverseWinding( indices, vertices );
+    }
+
+    return CreateScene( vertices, indices );
 }
 
-std::shared_ptr<Scene> CommandList::CreateCylinder( float baseRadius, float height, uint32_t tessellation,
+void CommandList::CreateCylinderCap( VertexCollection& vertices, IndexCollection& indices, size_t tessellation,
+                                     float height, float radius, bool isTop )
+{
+    // Create cap indices.
+    for ( size_t i = 0; i < tessellation - 2; i++ )
+    {
+        size_t i1 = ( i + 1 ) % tessellation;
+        size_t i2 = ( i + 2 ) % tessellation;
+
+        if ( isTop )
+        {
+            std::swap( i1, i2 );
+        }
+
+        size_t vbase = vertices.size();
+        indices.push_back( vbase + i2 );
+        indices.push_back( vbase + i1 );
+        indices.push_back( vbase );
+    }
+
+    // Which end of the cylinder is this?
+    XMVECTOR normal       = g_XMIdentityR1;
+    XMVECTOR textureScale = g_XMNegativeOneHalf;
+
+    if ( !isTop )
+    {
+        normal       = XMVectorNegate( normal );
+        textureScale = XMVectorMultiply( textureScale, g_XMNegateX );
+    }
+
+    // Create cap vertices.
+    for ( size_t i = 0; i < tessellation; i++ )
+    {
+        XMVECTOR circleVector = GetCircleVector( i, tessellation );
+        XMVECTOR position     = XMVectorAdd( XMVectorScale( circleVector, radius ), XMVectorScale( normal, height ) );
+        XMVECTOR textureCoordinate =
+            XMVectorMultiplyAdd( XMVectorSwizzle<0, 2, 3, 3>( circleVector ), textureScale, g_XMOneHalf );
+
+        vertices.emplace_back( position, normal, textureCoordinate );
+    }
+}
+
+std::shared_ptr<Scene> CommandList::CreateCylinder( float radius, float height, uint32_t tessellation,
                                                     bool reverseWinding )
 {
-    VertexCollection verticies;
+    if ( tessellation < 3 )
+        throw std::out_of_range( "tessellation parameter out of range" );
+
+    VertexCollection vertices;
     IndexCollection  indices;
 
-    return CreateScene( verticies, indices );
+    height /= 2;
+
+    XMVECTOR topOffset = XMVectorScale( g_XMIdentityR1, height );
+
+    size_t stride = tessellation + 1;
+
+    // Create a ring of triangles around the outside of the cylinder.
+    for ( size_t i = 0; i <= tessellation; i++ )
+    {
+        XMVECTOR normal = GetCircleVector( i, tessellation );
+
+        XMVECTOR sideOffset = XMVectorScale( normal, radius );
+
+        float u = float( i ) / float( tessellation );
+
+        XMVECTOR textureCoordinate = XMLoadFloat( &u );
+
+        vertices.emplace_back( XMVectorAdd( sideOffset, topOffset ), normal, textureCoordinate );
+        vertices.emplace_back( XMVectorSubtract( sideOffset, topOffset ), normal,
+                               XMVectorAdd( textureCoordinate, g_XMIdentityR1 ) );
+
+        indices.push_back( i * 2 );
+        indices.push_back( ( i * 2 + 2 ) % ( stride * 2 ) );
+        indices.push_back( i * 2 + 1 );
+
+        indices.push_back( i * 2 + 1 );
+        indices.push_back( ( i * 2 + 2 ) % ( stride * 2 ) );
+        indices.push_back( ( i * 2 + 3 ) % ( stride * 2 ) );
+    }
+
+    // Create flat triangle fan caps to seal the top and bottom.
+    CreateCylinderCap( vertices, indices, tessellation, height, radius, true );
+    CreateCylinderCap( vertices, indices, tessellation, height, radius, false );
+
+    // Build RH above
+    if ( reverseWinding )
+    {
+        ReverseWinding( indices, vertices );
+    }
+
+    return CreateScene( vertices, indices );
 }
 
-std::shared_ptr<Scene> CommandList::CreateCone( float baseRadius, float height, uint32_t tessellation, bool reverseWinding )
+std::shared_ptr<Scene> CommandList::CreateCone( float radius, float height, uint32_t tessellation, bool reverseWinding )
 {
-    VertexCollection verticies;
+    if ( tessellation < 3 )
+        throw std::out_of_range( "tessellation parameter out of range" );
+
+    VertexCollection vertices;
     IndexCollection  indices;
 
-    return CreateScene( verticies, indices );
+    height /= 2;
+
+    XMVECTOR topOffset = XMVectorScale( g_XMIdentityR1, height );
+
+    size_t stride = tessellation + 1;
+
+    // Create a ring of triangles around the outside of the cone.
+    for ( size_t i = 0; i <= tessellation; i++ )
+    {
+        XMVECTOR circlevec = GetCircleVector( i, tessellation );
+
+        XMVECTOR sideOffset = XMVectorScale( circlevec, radius );
+
+        float u = float( i ) / float( tessellation );
+
+        XMVECTOR textureCoordinate = XMLoadFloat( &u );
+
+        XMVECTOR pt = XMVectorSubtract( sideOffset, topOffset );
+
+        XMVECTOR normal = XMVector3Cross( GetCircleTangent( i, tessellation ), XMVectorSubtract( topOffset, pt ) );
+        normal          = XMVector3Normalize( normal );
+
+        // Duplicate the top vertex for distinct normals
+        vertices.emplace_back( topOffset, normal, g_XMZero );
+        vertices.emplace_back( pt, normal, XMVectorAdd( textureCoordinate, g_XMIdentityR1 ) );
+
+        indices.push_back( ( i * 2 + 1 ) % ( stride * 2 ) );
+        indices.push_back( ( i * 2 + 3 ) % ( stride * 2 ) );
+        indices.push_back( i * 2 );
+    }
+
+    // Create flat triangle fan caps to seal the bottom.
+    CreateCylinderCap( vertices, indices, tessellation, height, radius, false );
+
+    // Build RH above
+    if ( reverseWinding )
+    {
+        ReverseWinding( indices, vertices );
+    }
+
+    return CreateScene( vertices, indices );
 }
 
 std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, uint32_t tessellation,
@@ -946,15 +1084,31 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, 
         }
     }
 
+    if ( reverseWinding )
+    {
+        ReverseWinding( indices, verticies );
+    }
+
     return CreateScene( verticies, indices );
 }
 
 std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height, bool reverseWinding )
 {
-    VertexCollection verticies;
-    IndexCollection  indices;
+    VertexCollection vertices = {
+        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 0.0f, 0.0f, 0.0f ) ),  // 0
+        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 1.0f, 0.0f, 0.0f ) ),   // 1
+        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 1.0f, 1.0f, 0.0f ) ),  // 2
+        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  // 3
+    };
 
-    return CreateScene( verticies, indices );
+    IndexCollection indices = { 1, 3, 0, 2, 3, 1 };
+
+    if ( reverseWinding )
+    {
+        ReverseWinding( indices, vertices );
+    }
+
+    return CreateScene( vertices, indices );
 }
 
 void CommandList::ClearTexture( const std::shared_ptr<Texture>& texture, const float clearColor[4] )
