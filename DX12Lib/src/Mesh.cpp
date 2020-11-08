@@ -1,5 +1,6 @@
 #include "DX12LibPCH.h"
 
+#include <dx12lib/CommandList.h>
 #include <dx12lib/IndexBuffer.h>
 #include <dx12lib/Mesh.h>
 #include <dx12lib/VertexBuffer.h>
@@ -93,6 +94,30 @@ void Mesh::SetMaterial( std::shared_ptr<Material> material )
 std::shared_ptr<Material> Mesh::GetMaterial() const
 {
     return m_Material;
+}
+
+void Mesh::Draw( CommandList& commandList, uint32_t instanceCount, uint32_t startInstance )
+{
+    commandList.SetPrimitiveTopology( GetPrimitiveTopology() );
+
+    for ( auto vertexBuffer: m_VertexBuffers )
+    {
+        commandList.SetVertexBuffer( vertexBuffer.first, vertexBuffer.second );
+    }
+
+    if ( m_IndexBuffer )
+    {
+        commandList.SetIndexBuffer( m_IndexBuffer );
+        commandList.DrawIndexed( m_IndexBuffer->GetNumIndicies(), instanceCount, 0u, 0u, startInstance );
+    }
+    else
+    {
+        auto vertexCount = GetVertexCount();
+        if ( vertexCount > 0 )
+        {
+            commandList.Draw( vertexCount, instanceCount, 0u, startInstance );
+        }
+    }
 }
 
 void Mesh::Accept( Visitor& visitor )

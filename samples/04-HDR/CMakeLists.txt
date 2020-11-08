@@ -3,7 +3,6 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 set( HEADER_FILES
     inc/Camera.h
     inc/Light.h
-    inc/Material.h
     inc/SceneVisitor.h
     inc/Tutorial4.h
 )
@@ -12,7 +11,6 @@ set( SRC_FILES
     src/Camera.cpp
     src/main.cpp
     src/Light.cpp
-    src/Material.cpp
     src/SceneVisitor.cpp
     src/Tutorial4.cpp
 )
@@ -27,6 +25,7 @@ set( PIXEL_SHADER_FILES
     shaders/HDR_PS.hlsl
     shaders/HDRtoSDR_PS.hlsl
     shaders/Skybox_PS.hlsl
+    shaders/Unlit_PS.hlsl
 )
 
 set( SHADER_FILES

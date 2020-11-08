@@ -164,6 +164,8 @@ private:
     std::shared_ptr<dx12lib::PipelineStateObject> m_HDRPipelineState;
     // HDR -> SDR tone mapping PSO.
     std::shared_ptr<dx12lib::PipelineStateObject> m_SDRPipelineState;
+    // Unlit pixel shader (for rendering the light sources)
+    std::shared_ptr<dx12lib::PipelineStateObject> m_UnlitPipelineState;
 
     D3D12_RECT m_ScissorRect;
 

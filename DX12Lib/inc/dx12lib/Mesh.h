@@ -39,6 +39,7 @@
 namespace dx12lib
 {
 
+class CommandList;
 class IndexBuffer;
 class Material;
 class VertexBuffer;
@@ -123,6 +124,15 @@ public:
     std::shared_ptr<Material> GetMaterial() const;
 
     /**
+     * Draw the mesh to a CommandList.
+     * 
+     * @param commandList The command list to draw to.
+     * @param instanceCount The number of instances to draw.
+     * @param startInstance The offset added to the instance ID when reading from the instance buffers.
+     */
+    void Draw( CommandList& commandList, uint32_t instanceCount = 1, uint32_t startInstance = 0 );
+
+    /**
      * Accept a visitor.
      */
     void Accept( Visitor& visitor );
@@ -132,6 +142,5 @@ private:
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
     std::shared_ptr<Material>    m_Material;
     D3D12_PRIMITIVE_TOPOLOGY     m_PrimitiveTopology;
-    size_t                       m_VertexCount;
 };
 }  // namespace dx12lib
