@@ -148,6 +148,7 @@ private:
 
     // Pipeline state object.
     std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineState;
+    std::shared_ptr<dx12lib::PipelineStateObject> m_UnlitPipelineState;
 
     D3D12_VIEWPORT m_Viewport;
     D3D12_RECT     m_ScissorRect;

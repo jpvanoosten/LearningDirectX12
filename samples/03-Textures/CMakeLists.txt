@@ -3,7 +3,6 @@ cmake_minimum_required( VERSION 3.16.1 ) # Latest version of CMake when this fil
 set( HEADER_FILES
     inc/Camera.h
     inc/Light.h
-    inc/Material.h
     inc/SceneVisitor.h
     inc/Tutorial3.h
 )
@@ -12,13 +11,13 @@ set( SRC_FILES
     src/Camera.cpp
     src/main.cpp
     src/Light.cpp
-    src/Material.cpp
     src/SceneVisitor.cpp
     src/Tutorial3.cpp
 )
 
 set( SHADER_FILES
     shaders/VertexShader.hlsl
+    shaders/UnlitPixelShader.hlsl
     shaders/PixelShader.hlsl
 )
 
@@ -32,12 +31,14 @@ set_source_files_properties( ${SHADER_FILES}
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( shaders/VertexShader.hlsl PROPERTIES 
-    VS_SHADER_TYPE Vertex
+set_source_files_properties( shaders/VertexShader.hlsl 
+    PROPERTIES 
+        VS_SHADER_TYPE Vertex
 )
 
-set_source_files_properties( shaders/PixelShader.hlsl PROPERTIES 
-    VS_SHADER_TYPE Pixel
+set_source_files_properties( shaders/PixelShader.hlsl shaders/UnlitPixelShader.hlsl
+    PROPERTIES 
+        VS_SHADER_TYPE Pixel
 )
 
 add_executable( 03-Textures WIN32

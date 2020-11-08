@@ -44,67 +44,67 @@ struct alignas( 16 ) MaterialProperties
 {
     // The Material properties must be aligned to a 16-byte boundary.
     // To guarantee alignment, the MaterialProperties structure will be allocated in aligned memory.
-    explicit MaterialProperties( const DirectX::XMFLOAT4 diffuseColor  = { 1, 1, 1, 1 },
-                                 const DirectX::XMFLOAT4 specularColor = { 1, 1, 1, 1 },
-                                 const float             specularPower = 128.0f,
-                                 const DirectX::XMFLOAT4 ambientColor  = { 0, 0, 0, 1 },
-                                 const DirectX::XMFLOAT4 emissiveColor = { 0, 0, 0, 1 },
-                                 const DirectX::XMFLOAT4 reflectance = { 0, 0, 0, 0 }, const float opacity = 1.0f,
-                                 const float indexOfRefraction = 1.0f, const float bumpIntensity = 1.0f,
-                                 const float alphaThreshold = 0.1f )
-    : m_DiffuseColor( diffuseColor )
-    , m_SpecularColor( specularColor )
-    , m_EmissiveColor( emissiveColor )
-    , m_AmbientColor( ambientColor )
-    , m_Reflectance( reflectance )
-    , m_Opacity( opacity )
-    , m_SpecularPower( specularPower )
-    , m_IndexOfRefraction( indexOfRefraction )
-    , m_BumpIntensity( bumpIntensity )
-    , m_AlphaThreshold( alphaThreshold )
-    , m_HasAmbientTexture( false )
-    , m_HasEmissiveTexture( false )
-    , m_HasDiffuseTexture( false )
-    , m_HasSpecularTexture( false )
-    , m_HasSpecularPowerTexture( false )
-    , m_HasNormalTexture( false )
-    , m_HasBumpTexture( false )
-    , m_HasOpacityTexture( false )
-    , m_Padding( 0.0f, 0.0f, 0.0f )
+    MaterialProperties( const DirectX::XMFLOAT4 diffuse  = { 1, 1, 1, 1 },
+                        const DirectX::XMFLOAT4 specular = { 1, 1, 1, 1 }, const float specularPower = 128.0f,
+                        const DirectX::XMFLOAT4 ambient  = { 0, 0, 0, 1 },
+                        const DirectX::XMFLOAT4 emissive = { 0, 0, 0, 1 },
+                        const DirectX::XMFLOAT4 reflectance = { 0, 0, 0, 0 }, const float opacity = 1.0f,
+                        const float indexOfRefraction = 0.0f, const float bumpIntensity = 1.0f,
+                        const float alphaThreshold = 0.1f )
+    : Diffuse( diffuse )
+    , Specular( specular )
+    , Emissive( emissive )
+    , Ambient( ambient )
+    , Reflectance( reflectance )
+    , Opacity( opacity )
+    , SpecularPower( specularPower )
+    , IndexOfRefraction( indexOfRefraction )
+    , BumpIntensity( bumpIntensity )
+    , AlphaThreshold( alphaThreshold )
+    , HasAmbientTexture( false )
+    , HasEmissiveTexture( false )
+    , HasDiffuseTexture( false )
+    , HasSpecularTexture( false )
+    , HasSpecularPowerTexture( false )
+    , HasNormalTexture( false )
+    , HasBumpTexture( false )
+    , HasOpacityTexture( false )
+    , Padding( 0.0f, 0.0f, 0.0f )
     {}
 
-    DirectX::XMFLOAT4 m_DiffuseColor;
-    //-------------------------- ( 16 bytes )
-    DirectX::XMFLOAT4 m_SpecularColor;
-    //-------------------------- ( 16 bytes )
-    DirectX::XMFLOAT4 m_EmissiveColor;
-    //-------------------------- ( 16 bytes )
-    DirectX::XMFLOAT4 m_AmbientColor;
-    //-------------------------- ( 16 bytes )
-    DirectX::XMFLOAT4 m_Reflectance;
-    //-------------------------- ( 16 bytes )
-    // If Opacity < 1, then the material is transparent.
-    float m_Opacity;
-    float m_SpecularPower;
-    // For transparent materials, IOR > 0.
-    float m_IndexOfRefraction;
-    float m_BumpIntensity;  // When using bump textures (heightmaps) we need
-                            // to scale the height values so the normals are visible.
-    //-------------------------- ( 16 bytes )
-    float    m_AlphaThreshold;  // Pixels with alpha < m_AlphaThreshold will be discarded.
-    uint32_t m_HasAmbientTexture;
-    uint32_t m_HasEmissiveTexture;
-    uint32_t m_HasDiffuseTexture;
-    //-------------------------- ( 16 bytes )
-    uint32_t m_HasSpecularTexture;
-    uint32_t m_HasSpecularPowerTexture;
-    uint32_t m_HasNormalTexture;
-    uint32_t m_HasBumpTexture;
-    //-------------------------- ( 16 bytes )
-    uint32_t          m_HasOpacityTexture;
-    DirectX::XMFLOAT3 m_Padding;  // Pad to 16 byte boundary.
-    //-------------------------- ( 16 bytes )
-};  //--------------------------- ( 16 * 9 = 144 bytes )
+    // clang-format off
+    DirectX::XMFLOAT4 Diffuse;
+    //------------------------------------ ( 16 bytes )
+    DirectX::XMFLOAT4 Specular;
+    //------------------------------------ ( 16 bytes )
+    DirectX::XMFLOAT4 Emissive;
+    //------------------------------------ ( 16 bytes )
+    DirectX::XMFLOAT4 Ambient;
+    //------------------------------------ ( 16 bytes )
+    DirectX::XMFLOAT4 Reflectance;
+    //------------------------------------ ( 16 bytes )
+    float Opacity;                       // If Opacity < 1, then the material is transparent.
+    float SpecularPower;
+    float IndexOfRefraction;             // For transparent materials, IOR > 0.
+    float BumpIntensity;                 // When using bump textures (height maps) we need
+                                           // to scale the height values so the normals are visible.
+    //------------------------------------ ( 16 bytes )
+    float    AlphaThreshold;             // Pixels with alpha < m_AlphaThreshold will be discarded.
+    uint32_t HasAmbientTexture;
+    uint32_t HasEmissiveTexture;
+    uint32_t HasDiffuseTexture;
+    //------------------------------------ ( 16 bytes )
+    uint32_t HasSpecularTexture;
+    uint32_t HasSpecularPowerTexture;
+    uint32_t HasNormalTexture;
+    uint32_t HasBumpTexture;
+    //------------------------------------ ( 16 bytes )
+    uint32_t          HasOpacityTexture;
+    DirectX::XMFLOAT3 Padding;           // Pad to 16 byte boundary.
+    //------------------------------------ ( 16 bytes )
+    // Total:                              ( 16 * 9 = 144 bytes )
+};
+// clang-format on
 
 class Material
 {
@@ -168,38 +168,39 @@ public:
     const MaterialProperties& GetMaterialProperties() const;
 
     // Define some interesting materials.
-    static const Material Red;
-    static const Material Green;
-    static const Material Blue;
-    static const Material Cyan;
-    static const Material Magenta;
-    static const Material Yellow;
-    static const Material White;
-    static const Material Black;
-    static const Material Emerald;
-    static const Material Jade;
-    static const Material Obsidian;
-    static const Material Pearl;
-    static const Material Ruby;
-    static const Material Turquoise;
-    static const Material Brass;
-    static const Material Bronze;
-    static const Material Chrome;
-    static const Material Copper;
-    static const Material Gold;
-    static const Material Silver;
-    static const Material BlackPlastic;
-    static const Material CyanPlastic;
-    static const Material GreenPlastic;
-    static const Material RedPlastic;
-    static const Material WhitePlastic;
-    static const Material YellowPlastic;
-    static const Material BlackRubber;
-    static const Material CyanRubber;
-    static const Material GreenRubber;
-    static const Material RedRubber;
-    static const Material WhiteRubber;
-    static const Material YellowRubber;
+    static const MaterialProperties Zero;
+    static const MaterialProperties Red;
+    static const MaterialProperties Green;
+    static const MaterialProperties Blue;
+    static const MaterialProperties Cyan;
+    static const MaterialProperties Magenta;
+    static const MaterialProperties Yellow;
+    static const MaterialProperties White;
+    static const MaterialProperties Black;
+    static const MaterialProperties Emerald;
+    static const MaterialProperties Jade;
+    static const MaterialProperties Obsidian;
+    static const MaterialProperties Pearl;
+    static const MaterialProperties Ruby;
+    static const MaterialProperties Turquoise;
+    static const MaterialProperties Brass;
+    static const MaterialProperties Bronze;
+    static const MaterialProperties Chrome;
+    static const MaterialProperties Copper;
+    static const MaterialProperties Gold;
+    static const MaterialProperties Silver;
+    static const MaterialProperties BlackPlastic;
+    static const MaterialProperties CyanPlastic;
+    static const MaterialProperties GreenPlastic;
+    static const MaterialProperties RedPlastic;
+    static const MaterialProperties WhitePlastic;
+    static const MaterialProperties YellowPlastic;
+    static const MaterialProperties BlackRubber;
+    static const MaterialProperties CyanRubber;
+    static const MaterialProperties GreenRubber;
+    static const MaterialProperties RedRubber;
+    static const MaterialProperties WhiteRubber;
+    static const MaterialProperties YellowRubber;
 
 protected:
 private:

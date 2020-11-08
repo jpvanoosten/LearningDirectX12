@@ -1,7 +1,6 @@
 #include <Tutorial3.h>
 
 #include <Light.h>
-#include <Material.h>
 #include <SceneVisitor.h>
 
 #include <GameFramework/GameFramework.h>
@@ -12,6 +11,7 @@
 #include <dx12lib/Device.h>
 #include <dx12lib/GUI.h>
 #include <dx12lib/Helpers.h>
+#include <dx12lib/Material.h>
 #include <dx12lib/Mesh.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RootSignature.h>
@@ -187,6 +187,10 @@ bool Tutorial3::LoadContent()
     ComPtr<ID3DBlob> pixelShaderBlob;
     ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/03-Textures/PixelShader.cso", &pixelShaderBlob ) );
 
+    // Load a pixel shader for unlit geometry (the geometric shapes representing the light sources should be unlit)
+    ComPtr<ID3DBlob> unlitPixeShaderlBlob;
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/03-Textures/UnlitPixelShader.cso", &unlitPixeShaderlBlob ) );
+
     // Create a root signature.
     // Allow input layout and deny unnecessary access to certain pipeline stages.
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -252,6 +256,11 @@ bool Tutorial3::LoadContent()
     pipelineStateStream.SampleDesc            = sampleDesc;
 
     m_PipelineState = m_Device->CreatePipelineStateObject( pipelineStateStream );
+
+    // For the unlit PSO, only the pixel shader is different.
+    pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE( unlitPixeShaderlBlob.Get() );
+
+    m_UnlitPipelineState = m_Device->CreatePipelineStateObject( pipelineStateStream );
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
     auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat, m_Width, m_Height, 1, 1, sampleDesc.Count,
@@ -482,7 +491,7 @@ void Tutorial3::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::White );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
@@ -498,7 +507,7 @@ void Tutorial3::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::White );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
@@ -514,7 +523,7 @@ void Tutorial3::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Ruby );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
@@ -532,7 +541,7 @@ void Tutorial3::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::White );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
@@ -583,7 +592,7 @@ void Tutorial3::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Red );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
     commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
@@ -598,15 +607,15 @@ void Tutorial3::OnRender()
     ComputeMatrices( worldMatrix, viewMatrix, viewProjectionMatrix, matrices );
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
-    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, ::Material::Blue );
+    commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Blue );
 
     // Render the plane using the SceneVisitor.
     m_Plane->Accept( visitor );
 
-    // Draw shapes to visualize the position of the lights in the scene.
-    ::Material lightMaterial;
-    // No specular
-    lightMaterial.Specular = { 0, 0, 0, 1 };
+    // Draw shapes to visualize the position of the lights in the scene using an unlit pixel shader.
+    commandList->SetPipelineState( m_UnlitPipelineState );
+
+    MaterialProperties lightMaterial = Material::Zero;
     for ( const auto& l: m_PointLights )
     {
         lightMaterial.Emissive = l.Color;
