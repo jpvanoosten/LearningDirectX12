@@ -33,12 +33,13 @@
  */
 
 #include "Camera.h"
+#include "CameraController.h"
 
 #include <GameFramework/GameFramework.h>
 
 #include <d3d12.h>  // For D3D12_RECT
 
-#include <future> // For std::future.
+#include <future>  // For std::future.
 #include <memory>
 #include <string>
 
@@ -101,6 +102,16 @@ protected:
     void OnKeyReleased( KeyEventArgs& e );
 
     /**
+     * Invoked when the mouse is moved over the registered window.
+     */
+    virtual void OnMouseMoved( MouseMotionEventArgs& e );
+
+    /**
+     * Invoked when the mouse wheel is scrolled while the registered window has focus.
+     */
+    void OnMouseWheel( MouseWheelEventArgs& e );
+
+    /**
      * Handle DPI change events.
      */
     void OnDPIScaleChanged( DPIScaleEventArgs& e );
@@ -111,7 +122,6 @@ protected:
     void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
 
 private:
-
     /**
      * Load all of the assets (scene file, shaders, etc...).
      * This is executed as an async task so that we can render a loading screen in the main thread.
@@ -119,10 +129,11 @@ private:
     bool LoadAssets();
 
     /**
-     * This function is called to report the loading progress of the scene. This is useful for updating the loading progress bar.
-     * 
+     * This function is called to report the loading progress of the scene. This is useful for updating the loading
+     * progress bar.
+     *
      * @param progress The loading progress (as a normalized float in the range [0...1].
-     * 
+     *
      * @returns true to continue loading or false to cancel loading.
      */
     bool LoadingProgress( float loadingProgress );
@@ -138,12 +149,23 @@ private:
     D3D12_RECT m_ScissorRect;
 
     Camera m_Camera;
+    CameraController m_CameraController;
     Logger m_Logger;
 
-    bool m_Fullscreen;
-    bool m_AllowFullscreenToggle;
-    std::atomic_bool m_IsLoading;
+    struct alignas( 16 ) CameraData
+    {
+        DirectX::XMVECTOR m_InitialCamPos;
+        DirectX::XMVECTOR m_InitialCamRot;
+    };
+    CameraData* m_pAlignedCameraData;
+
+    // Rotate the lights in a circle.
+    bool m_AnimateLights;
+
+    bool              m_Fullscreen;
+    bool              m_AllowFullscreenToggle;
+    std::atomic_bool  m_IsLoading;
     std::future<bool> m_LoadingTask;
-    float m_LoadingProgress;
-    std::string m_LoadingText;
+    float             m_LoadingProgress;
+    std::string       m_LoadingText;
 };

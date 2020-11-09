@@ -256,9 +256,9 @@ gainput::DeviceId GameFramework::GetPadId( unsigned index /*= 0 */ ) const
     return m_GamepadDevice[index];
 }
 
-std::shared_ptr<gainput::InputMap> GameFramework::CreateInputMap()
+std::shared_ptr<gainput::InputMap> GameFramework::CreateInputMap( const char* name )
 {
-    return std::make_shared<gainput::InputMap>( m_InputManager );
+    return std::make_shared<gainput::InputMap>( m_InputManager, name );
 }
 
 int32_t GameFramework::Run()
@@ -293,16 +293,9 @@ void GameFramework::SetDisplaySize( int width, int height )
     m_InputManager.SetDisplaySize( width, height );
 }
 
-void GameFramework::ProcessInput( uint64_t deltaTime )
+void GameFramework::ProcessInput()
 {
-    if ( deltaTime < std::numeric_limits<uint64_t>::max() )
-    {
-        m_InputManager.Update( deltaTime );
-    }
-    else
-    {
-        m_InputManager.Update();
-    }
+    m_InputManager.Update();
 }
 
 void GameFramework::Stop()

@@ -109,7 +109,7 @@ public:
     gainput::DeviceId GetPadId( unsigned index = 0 ) const;
 
     /**
-     * Get a device.
+     * Get an input device.
      *
      * @param InputDevice the Type of device to retrieve. (Must be derived from
      * gainput::InputDevice)
@@ -123,9 +123,11 @@ public:
 
     /**
      * Create a gainput input map.
+     * 
+     * @param [name] (Optional) name of the input map.
      * @see http://gainput.johanneskuhlmann.de/api/classgainput_1_1InputMap.html
      */
-    std::shared_ptr<gainput::InputMap> CreateInputMap();
+    std::shared_ptr<gainput::InputMap> CreateInputMap( const char* name = nullptr );
 
     /**
      * Start the main application run loop.
@@ -147,14 +149,8 @@ public:
     /**
      * Process joystick and keyboard events. This should be called once per
      * frame before updating the game logic.
-     *
-     * @param deltaTime The time (in milliseconds) elapsed since the previous
-     * call to ProcessInput. Only provide the deltaTime value if
-     * gainput::InputManager was initialized with `useSystemTime` set to
-     * `false`.
      */
-    void ProcessInput(
-        uint64_t deltaTime = std::numeric_limits<uint64_t>::max() );
+    void ProcessInput();
 
     /**
      * Stop the application.

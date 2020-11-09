@@ -17,6 +17,36 @@
 using namespace DirectX;
 using namespace dx12lib;
 
+// Matrices to be sent to the vertex shader.
+struct Matrices
+{
+    XMMATRIX ModelMatrix;
+    XMMATRIX ModelViewMatrix;
+    XMMATRIX InverseTransposeModelViewMatrix;
+    XMMATRIX ModelViewProjectionMatrix;
+};
+
+// Light properties for the pixel shader.
+struct LightProperties
+{
+    uint32_t NumPointLights;
+    uint32_t NumSpotLights;
+};
+
+// An enum for root signature parameters.
+// I'm not using scoped enums to avoid the explicit cast that would be required
+// to use these as root indices in the root signature.
+enum RootParameters
+{
+    MatricesCB,         // ConstantBuffer<Matrices> MatCB : register(b0);
+    MaterialCB,         // ConstantBuffer<Material> MaterialCB : register( b0, space1 );
+    LightPropertiesCB,  // ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
+    PointLights,        // StructuredBuffer<PointLight> PointLights : register( t0 );
+    SpotLights,         // StructuredBuffer<SpotLight> SpotLights : register( t1 );
+    Textures,           // Texture2D DiffuseTexture : register( t2 );
+    NumRootParameters
+};
+
 // A regular express used to extract the relavent part of an Assimp log message.
 static std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
 
@@ -51,6 +81,7 @@ using ErrorLogStream = LogStream<spdlog::level::err>;
 
 Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSync )
 : m_ScissorRect { 0, 0, LONG_MAX, LONG_MAX }
+, m_CameraController(m_Camera)
 , m_Fullscreen( false )
 , m_AllowFullscreenToggle( true )
 , m_IsLoading( true )
@@ -76,6 +107,7 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     assimpDefaultLogger->attachStream( new WarnLogStream( assimpLogger ), Assimp::Logger::Warn );
     assimpDefaultLogger->attachStream( new ErrorLogStream( assimpLogger ), Assimp::Logger::Err );
 
+    // Create  window for rendering to.
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
     m_Window->Update += UpdateEvent::slot( &Tutorial5::OnUpdate, this );
@@ -83,6 +115,8 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial5::OnDPIScaleChanged, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial5::OnKeyPressed, this );
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial5::OnKeyReleased, this );
+    m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial5::OnMouseMoved, this );
+    m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial5::OnMouseWheel, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -90,11 +124,18 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 
     m_Camera.set_LookAt( cameraPos, cameraTarget, cameraUp );
     m_Camera.set_Projection( 45.0f, width / (float)height, 0.1f, 100.0f );
+
+    m_pAlignedCameraData = (CameraData*)_aligned_malloc( sizeof( CameraData ), 16 );
+
+    m_pAlignedCameraData->m_InitialCamPos = m_Camera.get_Translation();
+    m_pAlignedCameraData->m_InitialCamRot = m_Camera.get_Rotation();
 }
 
 Tutorial5::~Tutorial5()
 {
     Assimp::DefaultLogger::kill();
+
+    _aligned_free( m_pAlignedCameraData );
 }
 
 uint32_t Tutorial5::Run()
@@ -123,14 +164,14 @@ bool Tutorial5::LoadingProgress( float loadingProgress )
 
 bool Tutorial5::LoadAssets()
 {
-    using namespace std::placeholders; // For _1 used to denote a placeholder argument for std::bind.
+    using namespace std::placeholders;  // For _1 used to denote a placeholder argument for std::bind.
 
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
     // Load a scene:
     m_LoadingText = "Loading Assets/Models/crytek-sponza/sponza_nobanner.obj ...";
-    m_Scene = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj",
+    m_Scene       = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj",
                                               std::bind( &Tutorial5::LoadingProgress, this, _1 ) );
 
     commandQueue.ExecuteCommandList( commandList );
@@ -183,12 +224,19 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         totalTime  = 0.0;
     }
 
+    // Process keyboard, mouse, and pad input.
+    GameFramework::Get().ProcessInput();
+    m_CameraController.Update( e );
+
     OnRender();
 }
 
 void Tutorial5::OnResize( ResizeEventArgs& e )
 {
     m_Logger->info( "Resize: {}, {}", e.Width, e.Height );
+
+    // This is required for gainput to normalize mouse movement.
+    GameFramework::Get().SetDisplaySize( e.Width, e.Height );
 
     auto width  = std::max( 1, e.Width );
     auto height = std::max( 1, e.Height );
@@ -239,6 +287,11 @@ void Tutorial5::OnKeyPressed( KeyEventArgs& e )
         case KeyCode::V:
             m_SwapChain->ToggleVSync();
             break;
+        case KeyCode::R:
+            // Reset camera transform
+            m_Camera.set_Translation( m_pAlignedCameraData->m_InitialCamPos );
+            m_Camera.set_Rotation( m_pAlignedCameraData->m_InitialCamRot );
+            break;
         }
     }
 }
@@ -257,6 +310,30 @@ void Tutorial5::OnKeyReleased( KeyEventArgs& e )
             }
             break;
         }
+    }
+}
+
+void Tutorial5::OnMouseMoved( MouseMotionEventArgs& e )
+{
+    const float mouseSpeed = 0.1f;
+
+    if ( !ImGui::GetIO().WantCaptureMouse )
+    {
+    }
+}
+
+void Tutorial5::OnMouseWheel( MouseWheelEventArgs& e )
+{
+    if ( !ImGui::GetIO().WantCaptureMouse )
+    {
+        auto fov = m_Camera.get_FoV();
+
+        fov -= e.WheelDelta;
+        fov = std::clamp( fov, 12.0f, 90.0f );
+
+        m_Camera.set_FoV( fov );
+
+        m_Logger->info( "FoV: {:.7}", fov );
     }
 }
 

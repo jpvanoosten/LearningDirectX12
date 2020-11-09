@@ -30,7 +30,7 @@ void Texture::Resize( uint32_t width, uint32_t height, uint32_t depthOrArraySize
 {
     if ( m_d3d12Resource )
     {
-        ResourceStateTracker::RemoveGlobalResourceState( m_d3d12Resource.Get() );
+        //ResourceStateTracker::RemoveGlobalResourceState( m_d3d12Resource.Get() );
 
         CD3DX12_RESOURCE_DESC resDesc( m_d3d12Resource->GetDesc() );
 

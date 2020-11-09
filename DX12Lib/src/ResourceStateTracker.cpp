@@ -11,7 +11,7 @@ using namespace dx12lib;
 std::mutex                             ResourceStateTracker::ms_GlobalMutex;
 bool                                   ResourceStateTracker::ms_IsLocked = false;
 ResourceStateTracker::ResourceStateMap ResourceStateTracker::ms_GlobalResourceState;
-ResourceStateTracker::ResourceList     ResourceStateTracker::ms_GarbageResources;
+//ResourceStateTracker::ResourceList     ResourceStateTracker::ms_GarbageResources;
 
 ResourceStateTracker::ResourceStateTracker() {}
 
@@ -205,7 +205,7 @@ void ResourceStateTracker::Reset()
     m_ResourceBarriers.clear();
     m_FinalResourceState.clear();
 
-    RemoveGarbageResources();
+    //RemoveGarbageResources();
 }
 
 void ResourceStateTracker::Lock()
@@ -229,48 +229,48 @@ void ResourceStateTracker::AddGlobalResourceState( ID3D12Resource* resource, D3D
     }
 }
 
-void ResourceStateTracker::RemoveGlobalResourceState( ID3D12Resource* resource, bool immediate )
-{
-    if ( resource != nullptr )
-    {
-        std::lock_guard<std::mutex> lock( ms_GlobalMutex );
-        if ( immediate )
-        {
-            // Perform immediate removal of the resource in the resource state tracker.
-             ms_GlobalResourceState.erase( resource );
-        }
-        else
-        {
-            // Defer the removal until all resources are no longer being referenced.
-            resource->AddRef();
-            ms_GarbageResources.push_back( resource );
-        }
-    }
-}
-
-// Check to see if a resource is unique (only a single strong ref).
-inline bool IsUnique( ID3D12Resource* res )
-{
-    res->AddRef();
-    return res->Release() == 1;
-}
-
-void ResourceStateTracker::RemoveGarbageResources()
-{
-    std::lock_guard<std::mutex> lock( ms_GlobalMutex );
-    ResourceList::iterator      iter = ms_GarbageResources.begin();
-    while ( iter != ms_GarbageResources.end() )
-    {
-        auto res = *iter;
-        if ( IsUnique( res ) )
-        {
-            res->Release();
-            ms_GlobalResourceState.erase( res );
-            iter = ms_GarbageResources.erase( iter );
-        }
-        else
-        {
-            ++iter;
-        }
-    }
-}
+//void ResourceStateTracker::RemoveGlobalResourceState( ID3D12Resource* resource, bool immediate )
+//{
+//    if ( resource != nullptr )
+//    {
+//        std::lock_guard<std::mutex> lock( ms_GlobalMutex );
+//        if ( immediate )
+//        {
+//            // Perform immediate removal of the resource in the resource state tracker.
+//             ms_GlobalResourceState.erase( resource );
+//        }
+//        else
+//        {
+//            // Defer the removal until all resources are no longer being referenced.
+//            resource->AddRef();
+//            ms_GarbageResources.push_back( resource );
+//        }
+//    }
+//}
+//
+//// Check to see if a resource is unique (only a single strong ref).
+//inline bool IsUnique( ID3D12Resource* res )
+//{
+//    res->AddRef();
+//    return res->Release() == 1;
+//}
+//
+//void ResourceStateTracker::RemoveGarbageResources()
+//{
+//    std::lock_guard<std::mutex> lock( ms_GlobalMutex );
+//    ResourceList::iterator      iter = ms_GarbageResources.begin();
+//    while ( iter != ms_GarbageResources.end() )
+//    {
+//        auto res = *iter;
+//        if ( IsUnique( res ) )
+//        {
+//            res->Release();
+//            ms_GlobalResourceState.erase( res );
+//            iter = ms_GarbageResources.erase( iter );
+//        }
+//        else
+//        {
+//            ++iter;
+//        }
+//    }
+//}

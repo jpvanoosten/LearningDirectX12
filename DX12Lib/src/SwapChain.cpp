@@ -130,7 +130,7 @@ void SwapChain::Resize( uint32_t width, uint32_t height )
         m_RenderTarget.Reset();
         for ( UINT i = 0; i < BufferCount; ++i )
         {
-            ResourceStateTracker::RemoveGlobalResourceState( m_BackBufferTextures[i]->GetD3D12Resource().Get(), true );
+            //ResourceStateTracker::RemoveGlobalResourceState( m_BackBufferTextures[i]->GetD3D12Resource().Get(), true );
             m_BackBufferTextures[i].reset();
         }
 

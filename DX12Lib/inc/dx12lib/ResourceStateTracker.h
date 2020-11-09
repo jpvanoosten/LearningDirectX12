@@ -146,16 +146,16 @@ public:
      */
     static void AddGlobalResourceState( ID3D12Resource* resource, D3D12_RESOURCE_STATES state );
 
-    /**
-     * Remove a resource from the global resource state array (map).
-     * This should only be done when the resource is destroyed.
-     */
-    static void RemoveGlobalResourceState( ID3D12Resource* resource, bool immediate = false );
+    ///**
+    // * Remove a resource from the global resource state array (map).
+    // * This should only be done when the resource is destroyed.
+    // */
+    //static void RemoveGlobalResourceState( ID3D12Resource* resource, bool immediate = false );
 
-    /**
-     * Remove garbage resources.
-     */
-    static void RemoveGarbageResources();
+    ///**
+    // * Remove garbage resources.
+    // */
+    //static void RemoveGarbageResources();
 
 protected:
 private:
@@ -225,7 +225,7 @@ private:
     // between command list execution.
     static ResourceStateMap ms_GlobalResourceState;
     // Resources that should be cleaned up when they are no longer being used.
-    static ResourceList ms_GarbageResources;
+    //static ResourceList ms_GarbageResources;
 
     // The mutex protects shared access to the GlobalResourceState map.
     static std::mutex ms_GlobalMutex;
