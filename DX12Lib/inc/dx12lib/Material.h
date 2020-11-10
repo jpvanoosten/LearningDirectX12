@@ -40,17 +40,21 @@ namespace dx12lib
 
 class Texture;
 
+// clang-format off
 struct alignas( 16 ) MaterialProperties
 {
     // The Material properties must be aligned to a 16-byte boundary.
     // To guarantee alignment, the MaterialProperties structure will be allocated in aligned memory.
-    MaterialProperties( const DirectX::XMFLOAT4 diffuse  = { 1, 1, 1, 1 },
-                        const DirectX::XMFLOAT4 specular = { 1, 1, 1, 1 }, const float specularPower = 128.0f,
-                        const DirectX::XMFLOAT4 ambient  = { 0, 0, 0, 1 },
-                        const DirectX::XMFLOAT4 emissive = { 0, 0, 0, 1 },
-                        const DirectX::XMFLOAT4 reflectance = { 0, 0, 0, 0 }, const float opacity = 1.0f,
-                        const float indexOfRefraction = 0.0f, const float bumpIntensity = 1.0f,
-                        const float alphaThreshold = 0.1f )
+    MaterialProperties( 
+        const DirectX::XMFLOAT4 diffuse  = { 1, 1, 1, 1 },
+        const DirectX::XMFLOAT4 specular = { 1, 1, 1, 1 }, 
+        const float specularPower = 128.0f,
+        const DirectX::XMFLOAT4 ambient  = { 0, 0, 0, 1 },
+        const DirectX::XMFLOAT4 emissive = { 0, 0, 0, 1 },
+        const DirectX::XMFLOAT4 reflectance = { 0, 0, 0, 0 }, const float opacity = 1.0f,
+        const float indexOfRefraction = 0.0f, const float bumpIntensity = 1.0f,
+        const float alphaThreshold = 0.1f 
+    )
     : Diffuse( diffuse )
     , Specular( specular )
     , Emissive( emissive )
@@ -72,7 +76,6 @@ struct alignas( 16 ) MaterialProperties
     , Padding( 0.0f, 0.0f, 0.0f )
     {}
 
-    // clang-format off
     DirectX::XMFLOAT4 Diffuse;
     //------------------------------------ ( 16 bytes )
     DirectX::XMFLOAT4 Specular;

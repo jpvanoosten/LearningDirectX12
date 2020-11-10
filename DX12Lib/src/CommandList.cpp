@@ -1095,10 +1095,14 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, 
 std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height, bool reverseWinding )
 {
     VertexCollection vertices = {
-        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 0.0f, 0.0f, 0.0f ) ),  // 0
-        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 1.0f, 0.0f, 0.0f ) ),   // 1
-        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 1.0f, 1.0f, 0.0f ) ),  // 2
-        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  // 3
+        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
+                      XMFLOAT3( 0.0f, 0.0f, 0.0f ) ),  // 0
+        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
+                      XMFLOAT3( 1.0f, 0.0f, 0.0f ) ),  // 1
+        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
+                      XMFLOAT3( 1.0f, 1.0f, 0.0f ) ),  // 2
+        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
+                      XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  // 3
     };
 
     IndexCollection indices = { 1, 3, 0, 2, 3, 1 };
@@ -1400,6 +1404,7 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t d
         {
             TransitionBarrier( resource, stateAfter );
         }
+
         TrackResource( resource );
     }
 
@@ -1407,7 +1412,32 @@ void CommandList::SetShaderResourceView( uint32_t rootParameterIndex, uint32_t d
         rootParameterIndex, descriptorOffset, 1, srv->GetDescriptorHandle() );
 }
 
-void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
+void CommandList::SetShaderResourceView( int32_t rootParameterIndex, uint32_t descriptorOffset,
+                                         const std::shared_ptr<Texture>& texture, D3D12_RESOURCE_STATES stateAfter,
+                                         UINT firstSubresource, UINT numSubresources )
+{
+    if ( texture )
+    {
+        if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+        {
+            for ( uint32_t i = 0; i < numSubresources; ++i )
+            {
+                TransitionBarrier( texture, stateAfter, firstSubresource + i );
+            }
+        }
+        else
+        {
+            TransitionBarrier( texture, stateAfter );
+        }
+
+        TrackResource( texture );
+
+        m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
+            rootParameterIndex, descriptorOffset, 1, texture->GetShaderResourceView() );
+    }
+}
+
+void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
                                           const std::shared_ptr<UnorderedAccessView>& uav,
                                           D3D12_RESOURCE_STATES stateAfter, UINT firstSubresource,
                                           UINT numSubresources )
@@ -1433,7 +1463,34 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t 
     }
 
     m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
-        rootParameterIndex, descrptorOffset, 1, uav->GetDescriptorHandle() );
+        rootParameterIndex, descriptorOffset, 1, uav->GetDescriptorHandle() );
+}
+
+void CommandList::SetUnorderedAccessView(uint32_t rootParameterIndex, uint32_t descriptorOffset,
+    const std::shared_ptr<Texture>& texture, UINT mip,
+    D3D12_RESOURCE_STATES stateAfter,
+    UINT                  firstSubresource,
+    UINT                  numSubresources)
+{
+    if ( texture )
+    {
+        if ( numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES )
+        {
+            for ( uint32_t i = 0; i < numSubresources; ++i )
+            {
+                TransitionBarrier( texture, stateAfter, firstSubresource + i );
+            }
+        }
+        else
+        {
+            TransitionBarrier( texture, stateAfter );
+        }
+
+        TrackResource( texture );
+
+        m_DynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->StageDescriptors(
+            rootParameterIndex, descriptorOffset, 1, texture->GetUnorderedAccessView( mip ) );
+    }
 }
 
 void CommandList::SetConstantBufferView( uint32_t rootParameterIndex, uint32_t descriptorOffset,

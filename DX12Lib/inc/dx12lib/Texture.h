@@ -72,6 +72,17 @@ public:
      */
     D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
 
+    /**
+     * Get the default SRV for the texture.
+     */
+    D3D12_CPU_DESCRIPTOR_HANDLE GetShaderResourceView() const;
+
+    /**
+     * Get the UAV for the texture at a specific mip level.
+     * Note: Only only supported for 1D and 2D textures.
+     */
+    D3D12_CPU_DESCRIPTOR_HANDLE GetUnorderedAccessView( uint32_t mip ) const;
+
     bool CheckSRVSupport() const
     {
         return CheckFormatSupport( D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE );
@@ -132,5 +143,7 @@ private:
 
     DescriptorAllocation m_RenderTargetView;
     DescriptorAllocation m_DepthStencilView;
+    DescriptorAllocation m_ShaderResourceView;
+    DescriptorAllocation m_UnorderedAccessView;
 };
 }  // namespace dx12lib

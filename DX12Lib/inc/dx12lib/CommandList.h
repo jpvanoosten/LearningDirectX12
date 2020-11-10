@@ -480,13 +480,32 @@ public:
                                 UINT numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
 
     /**
+     * Set an SRV on the graphics pipeline using the default SRV for the texture.
+     */
+    void SetShaderResourceView( int32_t rootParameterIndex, uint32_t descriptorOffset,
+                                const std::shared_ptr<Texture>& texture,
+                                D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+                                                                   D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                                UINT firstSubresource = 0,
+                                UINT numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
+    /**
      * Set the UAV on the graphics pipeline.
      */
-    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descrptorOffset,
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
                                  const std::shared_ptr<UnorderedAccessView>& uav,
                                  D3D12_RESOURCE_STATES stateAfter       = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
                                  UINT                  firstSubresource = 0,
                                  UINT                  numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
+
+    /**
+     * Set the UAV on the graphics pipline using a specific mip of the texture.
+     */
+    void SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
+                                 const std::shared_ptr<Texture>& texture, UINT mip,
+                                 D3D12_RESOURCE_STATES stateAfter       = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+                                 UINT                  firstSubresource = 0,
+                                 UINT                  numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
+
 
     /**
      * Set the render targets for the graphics rendering pipeline.

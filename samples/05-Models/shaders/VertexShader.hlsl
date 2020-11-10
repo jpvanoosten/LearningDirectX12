@@ -1,4 +1,4 @@
-struct Mat
+struct Matrices
 {
     matrix ModelMatrix;
     matrix ModelViewMatrix;
@@ -6,7 +6,7 @@ struct Mat
     matrix ModelViewProjectionMatrix;
 };
 
-ConstantBuffer<Mat> MatCB : register(b0);
+ConstantBuffer<Matrices> MatCB : register( b0 );
 
 struct VertexPositionNormalTexture
 {

@@ -1,30 +1,33 @@
 #include <Tutorial5.h>
 
+#include <SceneVisitor.h>
+
 #include <GameFramework/Window.h>
 
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
 #include <dx12lib/GUI.h>
+#include <dx12lib/Helpers.h>
+#include <dx12lib/Material.h>
+#include <dx12lib/RootSignature.h>
 #include <dx12lib/Scene.h>
+#include <dx12lib/SceneNode.h>
 #include <dx12lib/SwapChain.h>
+#include <dx12lib/Texture.h>
 
-#include <DirectXMath.h>
 #include <assimp/DefaultLogger.hpp>
+
+#include <DirectXColors.h>
+#include <DirectXMath.h>
+#include <d3dcompiler.h>
+#include <d3dx12.h>
 
 #include <regex>
 
+using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace dx12lib;
-
-// Matrices to be sent to the vertex shader.
-struct Matrices
-{
-    XMMATRIX ModelMatrix;
-    XMMATRIX ModelViewMatrix;
-    XMMATRIX InverseTransposeModelViewMatrix;
-    XMMATRIX ModelViewProjectionMatrix;
-};
 
 // Light properties for the pixel shader.
 struct LightProperties
@@ -81,9 +84,12 @@ using ErrorLogStream = LogStream<spdlog::level::err>;
 
 Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSync )
 : m_ScissorRect { 0, 0, LONG_MAX, LONG_MAX }
-, m_CameraController(m_Camera)
+, m_Viewport( CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( width ), static_cast<float>( height ) ) )
+, m_CameraController( m_Camera )
 , m_Fullscreen( false )
 , m_AllowFullscreenToggle( true )
+, m_Width( width )
+, m_Height( height )
 , m_IsLoading( true )
 {
 #if _DEBUG
@@ -118,12 +124,12 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial5::OnMouseMoved, this );
     m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial5::OnMouseWheel, this );
 
-    XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
-    XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
+    XMVECTOR cameraPos    = XMVectorSet( 0, 1, 0, 1 );
+    XMVECTOR cameraTarget = XMVectorSet( 1, 0, 0, 1 );
     XMVECTOR cameraUp     = XMVectorSet( 0, 1, 0, 0 );
 
     m_Camera.set_LookAt( cameraPos, cameraTarget, cameraUp );
-    m_Camera.set_Projection( 45.0f, width / (float)height, 0.1f, 100.0f );
+    m_Camera.set_Projection( 45.0f, width / (float)height, 0.1f, 1000.0f );
 
     m_pAlignedCameraData = (CameraData*)_aligned_malloc( sizeof( CameraData ), 16 );
 
@@ -169,12 +175,115 @@ bool Tutorial5::LoadAssets()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
-    // Load a scene:
+    // Load a scene, passing an optional function object for receiving loading progress events.
     m_LoadingText = "Loading Assets/Models/crytek-sponza/sponza_nobanner.obj ...";
     m_Scene       = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj",
                                               std::bind( &Tutorial5::LoadingProgress, this, _1 ) );
 
+    m_Scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( 0.01f, 0.01f, 0.01f ) );
+
     commandQueue.ExecuteCommandList( commandList );
+
+    // Load the vertex shader.
+    ComPtr<ID3DBlob> vertexShaderBlob;
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/05-Models/VertexShader.cso", &vertexShaderBlob ) );
+
+    // Load the pixel shader.
+    ComPtr<ID3DBlob> pixelShaderBlob;
+    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/05-Models/PixelShader.cso", &pixelShaderBlob ) );
+
+    // Create a root signature.
+    // Allow input layout and deny unnecessary access to certain pipeline stages.
+    D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+                                                    D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+                                                    D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+                                                    D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+
+    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
+
+    CD3DX12_ROOT_PARAMETER1 rootParameters[RootParameters::NumRootParameters];
+    rootParameters[RootParameters::MatricesCB].InitAsConstantBufferView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+                                                                         D3D12_SHADER_VISIBILITY_VERTEX );
+    rootParameters[RootParameters::MaterialCB].InitAsConstantBufferView( 0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+                                                                         D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::LightPropertiesCB].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0,
+                                                                       D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::PointLights].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+                                                                          D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::SpotLights].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
+                                                                         D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
+
+    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
+    CD3DX12_STATIC_SAMPLER_DESC anisotropicSampler( 0, D3D12_FILTER_ANISOTROPIC );
+
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
+    rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
+                                       rootSignatureFlags );
+
+    m_RootSignature = m_Device->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
+
+    // Setup the pipeline state.
+    struct PipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE        pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT          InputLayout;
+        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY    PrimitiveTopologyType;
+        CD3DX12_PIPELINE_STATE_STREAM_VS                    VS;
+        CD3DX12_PIPELINE_STATE_STREAM_PS                    PS;
+        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT  DSVFormat;
+        CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+        CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC           SampleDesc;
+    } pipelineStateStream;
+
+    // Create a color buffer with sRGB for gamma correction.
+    DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
+
+    // Check the best multisample quality level that can be used for the given back buffer format.
+    DXGI_SAMPLE_DESC sampleDesc = m_Device->GetMultisampleQualityLevels( backBufferFormat );
+
+    D3D12_RT_FORMAT_ARRAY rtvFormats = {};
+    rtvFormats.NumRenderTargets      = 1;
+    rtvFormats.RTFormats[0]          = backBufferFormat;
+
+    pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
+    pipelineStateStream.InputLayout           = Mesh::Vertex::InputLayout;
+    pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
+    pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
+    pipelineStateStream.DSVFormat             = depthBufferFormat;
+    pipelineStateStream.RTVFormats            = rtvFormats;
+    pipelineStateStream.SampleDesc            = sampleDesc;
+
+    m_PipelineState = m_Device->CreatePipelineStateObject( pipelineStateStream );
+
+    // Create an off-screen render target with a single color buffer and a depth buffer.
+    auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat, m_Width, m_Height, 1, 1, sampleDesc.Count,
+                                                   sampleDesc.Quality, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET );
+    D3D12_CLEAR_VALUE colorClearValue;
+    colorClearValue.Format   = colorDesc.Format;
+    colorClearValue.Color[0] = 0.4f;
+    colorClearValue.Color[1] = 0.6f;
+    colorClearValue.Color[2] = 0.9f;
+    colorClearValue.Color[3] = 1.0f;
+
+    auto colorTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    colorTexture->SetName( L"Color Render Target" );
+
+    // Create a depth buffer.
+    auto depthDesc = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, m_Width, m_Height, 1, 1, sampleDesc.Count,
+                                                   sampleDesc.Quality, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL );
+    D3D12_CLEAR_VALUE depthClearValue;
+    depthClearValue.Format       = depthDesc.Format;
+    depthClearValue.DepthStencil = { 1.0f, 0 };
+
+    auto depthTexture = m_Device->CreateTexture( depthDesc, TextureUsage::Depth, &depthClearValue );
+    depthTexture->SetName( L"Depth Render Target" );
+
+    // Attach the textures to the render target.
+    m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
+    m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
 
     // Ensure that the scene is completely loaded before rendering.
     commandQueue.Flush();
@@ -190,7 +299,7 @@ void Tutorial5::LoadContent()
     m_Device = Device::Create();
     m_Logger->info( L"Device created: {}", m_Device->GetDescription() );
 
-    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle() );
+    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
     m_GUI       = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
 
     // This magic here allows ImGui to process window messages.
@@ -224,9 +333,70 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         totalTime  = 0.0;
     }
 
+    m_SwapChain->WaitForSwapChain();
+
     // Process keyboard, mouse, and pad input.
     GameFramework::Get().ProcessInput();
     m_CameraController.Update( e );
+
+    XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
+
+    const int numPointLights = 4;
+    const int numSpotLights  = 4;
+
+    static const XMVECTORF32 LightColors[] = { Colors::White, Colors::Orange, Colors::Yellow, Colors::Green,
+                                               Colors::Blue,  Colors::Indigo, Colors::Violet, Colors::White };
+
+    static float lightAnimTime = 0.0f;
+    if ( m_AnimateLights )
+    {
+        lightAnimTime += static_cast<float>( e.DeltaTime ) * 0.5f * XM_PI;
+    }
+
+    const float radius  = 8.0f;
+    const float offset  = 2.0f * XM_PI / numPointLights;
+    const float offset2 = offset + ( offset / 2.0f );
+
+    // Setup the light buffers.
+    m_PointLights.resize( numPointLights );
+    for ( int i = 0; i < numPointLights; ++i )
+    {
+        PointLight& l = m_PointLights[i];
+
+        l.PositionWS        = { static_cast<float>( std::sin( lightAnimTime + offset * i ) ) * radius, 9.0f,
+                         static_cast<float>( std::cos( lightAnimTime + offset * i ) ) * radius, 1.0f };
+        XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
+        XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
+        XMStoreFloat4( &l.PositionVS, positionVS );
+
+        l.Color                = XMFLOAT4( LightColors[i] );
+        l.ConstantAttenuation  = 1.0f;
+        l.LinearAttenuation    = 0.08f;
+        l.QuadraticAttenuation = 0.0f;
+    }
+
+    m_SpotLights.resize( numSpotLights );
+    for ( int i = 0; i < numSpotLights; ++i )
+    {
+        SpotLight& l = m_SpotLights[i];
+
+        l.PositionWS        = { static_cast<float>( std::sin( lightAnimTime + offset * i + offset2 ) ) * radius, 9.0f,
+                         static_cast<float>( std::cos( lightAnimTime + offset * i + offset2 ) ) * radius, 1.0f };
+        XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
+        XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
+        XMStoreFloat4( &l.PositionVS, positionVS );
+
+        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorNegate( positionWS ), 0 ) );
+        XMVECTOR directionVS = XMVector3Normalize( XMVector3TransformNormal( directionWS, viewMatrix ) );
+        XMStoreFloat4( &l.DirectionWS, directionWS );
+        XMStoreFloat4( &l.DirectionVS, directionVS );
+
+        l.Color                = XMFLOAT4( LightColors[numPointLights + i] );
+        l.SpotAngle            = XMConvertToRadians( 45.0f );
+        l.ConstantAttenuation  = 1.0f;
+        l.LinearAttenuation    = 0.08f;
+        l.QuadraticAttenuation = 0.0f;
+    }
 
     OnRender();
 }
@@ -251,10 +421,54 @@ void Tutorial5::OnRender()
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
 
-    auto& renderTarget = m_SwapChain->GetRenderTarget();
+    const auto& renderTarget = m_IsLoading ? m_SwapChain->GetRenderTarget() : m_RenderTarget;
 
-    const FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-    commandList->ClearTexture( renderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
+    if ( m_IsLoading )
+    {
+        FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+        commandList->ClearTexture( renderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
+
+        // TODO: Render a loading screen.
+    }
+    else
+    {
+        SceneVisitor visitor( *commandList, m_Camera );
+
+        // Clear the render targets.
+        {
+            FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+
+            commandList->ClearTexture( renderTarget.GetTexture( AttachmentPoint::Color0 ), clearColor );
+            commandList->ClearDepthStencilTexture( renderTarget.GetTexture( AttachmentPoint::DepthStencil ),
+                                                   D3D12_CLEAR_FLAG_DEPTH );
+        }
+
+        commandList->SetPipelineState( m_PipelineState );
+        commandList->SetGraphicsRootSignature( m_RootSignature );
+
+        // Upload lights
+        LightProperties lightProps;
+        lightProps.NumPointLights = static_cast<uint32_t>( m_PointLights.size() );
+        lightProps.NumSpotLights  = static_cast<uint32_t>( m_SpotLights.size() );
+
+        commandList->SetGraphics32BitConstants( RootParameters::LightPropertiesCB, lightProps );
+        commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::PointLights, m_PointLights );
+        commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
+
+        commandList->SetViewport( m_Viewport );
+        commandList->SetScissorRect( m_ScissorRect );
+
+        commandList->SetRenderTarget( m_RenderTarget );
+
+        // Render the model.
+        m_Scene->Accept( visitor );
+
+        // Resolve the MSAA render target to the swapchain's backbuffer.
+        auto swapChainBackBuffer = m_SwapChain->GetRenderTarget().GetTexture( AttachmentPoint::Color0 );
+        auto msaaRenderTarget    = m_RenderTarget.GetTexture( AttachmentPoint::Color0 );
+
+        commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+    }
 
     OnGUI( commandList, renderTarget );
 
@@ -317,9 +531,7 @@ void Tutorial5::OnMouseMoved( MouseMotionEventArgs& e )
 {
     const float mouseSpeed = 0.1f;
 
-    if ( !ImGui::GetIO().WantCaptureMouse )
-    {
-    }
+    if ( !ImGui::GetIO().WantCaptureMouse ) {}
 }
 
 void Tutorial5::OnMouseWheel( MouseWheelEventArgs& e )

@@ -59,6 +59,7 @@ target_link_libraries( ${TARGET_NAME}
     GameFramework
     DX12Lib
     assimp
+    d3dcompiler.lib
 )
 
 # Set Local Debugger Settings (Command Arguments and Environment Variables)

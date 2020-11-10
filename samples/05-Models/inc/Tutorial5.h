@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 /*
  *  Copyright(c) 2020 Jeremiah van Oosten
  *
@@ -33,9 +31,12 @@
  */
 
 #include "Camera.h"
+#include "Light.h"
 #include "CameraController.h"
 
 #include <GameFramework/GameFramework.h>
+
+#include <dx12lib/RenderTarget.h>
 
 #include <d3d12.h>  // For D3D12_RECT
 
@@ -48,7 +49,9 @@ namespace dx12lib
 class CommandList;
 class Device;
 class GUI;
+class PipelineStateObject;
 class RenderTarget;
+class RootSignature;
 class Scene;
 class SwapChain;
 }  // namespace dx12lib
@@ -144,13 +147,23 @@ private:
 
     std::shared_ptr<dx12lib::Scene> m_Scene;
 
+    // Render target
+    dx12lib::RenderTarget m_RenderTarget;
+
+    // Root signature
+    std::shared_ptr<dx12lib::RootSignature> m_RootSignature;
+
+    // Pipeline state object.
+    std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineState;
+
     std::shared_ptr<Window> m_Window;
 
     D3D12_RECT m_ScissorRect;
+    D3D12_VIEWPORT m_Viewport;
 
-    Camera m_Camera;
+    Camera           m_Camera;
     CameraController m_CameraController;
-    Logger m_Logger;
+    Logger           m_Logger;
 
     struct alignas( 16 ) CameraData
     {
@@ -158,6 +171,14 @@ private:
         DirectX::XMVECTOR m_InitialCamRot;
     };
     CameraData* m_pAlignedCameraData;
+
+    int  m_Width;
+    int  m_Height;
+    bool m_VSync;
+
+    // Define some lights.
+    std::vector<PointLight> m_PointLights;
+    std::vector<SpotLight>  m_SpotLights;
 
     // Rotate the lights in a circle.
     bool m_AnimateLights;

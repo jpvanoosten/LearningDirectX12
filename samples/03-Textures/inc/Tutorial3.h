@@ -53,7 +53,6 @@ class Mesh;
 class RootSignature;
 class PipelineStateObject;
 class Scene;
-class ShaderResourceView;
 class SwapChain;
 class Texture;
 }  // namespace dx12lib
@@ -134,11 +133,6 @@ private:
     std::shared_ptr<dx12lib::Texture> m_DirectXTexture;
     std::shared_ptr<dx12lib::Texture> m_EarthTexture;
     std::shared_ptr<dx12lib::Texture> m_MonaLisaTexture;
-
-    std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_DirectXTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_EarthTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_MonaLisaTextureView;
 
     // Render target
     dx12lib::RenderTarget m_RenderTarget;

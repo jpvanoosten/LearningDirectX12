@@ -140,18 +140,11 @@ private:
     std::shared_ptr<dx12lib::Texture> m_MonaLisaTexture;
     std::shared_ptr<dx12lib::Texture> m_GraceCathedralTexture;
     std::shared_ptr<dx12lib::Texture> m_GraceCathedralCubemap;
-
-    std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_DirectXTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_EarthTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_MonaLisaTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_GraceCathedralTextureView;
-    std::shared_ptr<dx12lib::ShaderResourceView> m_GraceCathedralCubemapView;
+    std::shared_ptr<dx12lib::ShaderResourceView> m_GraceCathedralCubemapSRV;
 
     // HDR Render target
     dx12lib::RenderTarget m_HDRRenderTarget;
-    // SRV to allow the HDR render target to be used in a pixel shader.
-    std::shared_ptr<dx12lib::ShaderResourceView> m_HDRSRV;
+    std::shared_ptr<dx12lib::Texture> m_HDRTexture;
 
     // Root signatures
     std::shared_ptr<dx12lib::RootSignature> m_SkyboxSignature;

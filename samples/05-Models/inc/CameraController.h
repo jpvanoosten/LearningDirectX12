@@ -48,6 +48,8 @@ class CameraController
 public:
     enum Actions
     {
+        LMB,    // Is the left-mouse button pressed?
+        RMB,    // Is the right-mouse button pressed?
         MoveX,  // Move Left/right.
         MoveY,  // Move Forward/backward.
         MoveZ,  // Move Up/down.
@@ -65,7 +67,19 @@ public:
 
 private:
     Camera&                            m_Camera;
-    std::shared_ptr<gainput::InputMap> m_InputMap;
+    // Keyboard an mouse input.
+    std::shared_ptr<gainput::InputMap> m_KMInput;
+    // Pad input (seperate from Keyboard and mouse input since mouse input is handled differently than pad input)
+    std::shared_ptr<gainput::InputMap> m_PadInput;
 
     Logger m_Logger;
+
+    // Store previous values to apply smoothing.
+    double m_X;
+    double m_Y;
+    double m_Z;
+    double m_Pitch;
+    double m_Yaw;
+    double m_PreviousPitch;
+    double m_PreviousYaw;
 };

@@ -171,11 +171,6 @@ bool Tutorial3::LoadContent()
     m_EarthTexture    = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds" );
     m_MonaLisaTexture = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg" );
 
-    m_DefaultTextureView  = m_Device->CreateShaderResourceView( m_DefaultTexture );
-    m_DirectXTextureView  = m_Device->CreateShaderResourceView( m_DirectXTexture );
-    m_EarthTextureView    = m_Device->CreateShaderResourceView( m_EarthTexture );
-    m_MonaLisaTextureView = m_Device->CreateShaderResourceView( m_MonaLisaTexture );
-
     // Start loading resources...
     commandQueue.ExecuteCommandList( commandList );
 
@@ -321,11 +316,6 @@ void Tutorial3::UnloadContent()
     m_DirectXTexture.reset();
     m_EarthTexture.reset();
     m_MonaLisaTexture.reset();
-
-    m_DefaultTextureView.reset();
-    m_DirectXTextureView.reset();
-    m_EarthTextureView.reset();
-    m_MonaLisaTextureView.reset();
 
     m_RenderTarget.Reset();
 
@@ -492,7 +482,7 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     // Render the earth sphere using the SceneVisitor.
@@ -508,7 +498,7 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     // Render the Mona Lisa cube with the SceneVisitor.
@@ -524,7 +514,7 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Torus->Accept( visitor );
@@ -542,7 +532,7 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     // Render the plane using the SceneVisitor.
@@ -593,7 +583,7 @@ void Tutorial3::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     // Render the plane using the SceneVisitor.

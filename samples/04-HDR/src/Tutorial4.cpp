@@ -239,19 +239,13 @@ bool Tutorial4::LoadContent()
     // Start loading resources while the rest of the resources are created.
     commandQueue.ExecuteCommandList( commandList );
 
-    // Setup views for the textures.
-    m_DefaultTextureView  = m_Device->CreateShaderResourceView( m_DefaultTexture );
-    m_DirectXTextureView  = m_Device->CreateShaderResourceView( m_DirectXTexture );
-    m_EarthTextureView    = m_Device->CreateShaderResourceView( m_EarthTexture );
-    m_MonaLisaTextureView = m_Device->CreateShaderResourceView( m_MonaLisaTexture );
-
     D3D12_SHADER_RESOURCE_VIEW_DESC cubeMapSRVDesc = {};
     cubeMapSRVDesc.Format                          = cubemapDesc.Format;
     cubeMapSRVDesc.Shader4ComponentMapping         = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     cubeMapSRVDesc.ViewDimension                   = D3D12_SRV_DIMENSION_TEXTURECUBE;
     cubeMapSRVDesc.TextureCube.MipLevels           = (UINT)-1;  // Use all mips.
 
-    m_GraceCathedralCubemapView = m_Device->CreateShaderResourceView( m_GraceCathedralCubemap, &cubeMapSRVDesc );
+    m_GraceCathedralCubemapSRV = m_Device->CreateShaderResourceView( m_GraceCathedralCubemap, &cubeMapSRVDesc );
 
     // Create an HDR intermediate render target.
     DXGI_FORMAT HDRFormat         = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -268,11 +262,8 @@ bool Tutorial4::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    auto HDRTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
-    HDRTexture->SetName( L"HDR Texture" );
-
-    // Create SRV for use in a pixel shader.
-    m_HDRSRV = m_Device->CreateShaderResourceView( HDRTexture );
+    m_HDRTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    m_HDRTexture->SetName( L"HDR Texture" );
 
     // Create a depth buffer for the HDR render target.
     auto depthDesc  = CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, m_Width, m_Height );
@@ -286,7 +277,7 @@ bool Tutorial4::LoadContent()
     depthTexture->SetName( L"Depth Render Target" );
 
     // Attach the HDR texture to the HDR render target.
-    m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, HDRTexture );
+    m_HDRRenderTarget.AttachTexture( AttachmentPoint::Color0, m_HDRTexture );
     m_HDRRenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
 
     // Create a root signature and PSO for the skybox shaders.
@@ -476,9 +467,6 @@ void Tutorial4::RescaleHDRRenderTarget( float scale )
     height = std::clamp<uint32_t>( height, 1, D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION );
 
     m_HDRRenderTarget.Resize( width, height );
-
-    // Create SRV for use in a pixel shader.
-    m_HDRSRV = m_Device->CreateShaderResourceView( m_HDRRenderTarget.GetTexture( AttachmentPoint::Color0 ) );
 }
 
 void Tutorial4::OnResize( ResizeEventArgs& e )
@@ -507,13 +495,6 @@ void Tutorial4::UnloadContent()
     m_Torus.reset();
     m_Plane.reset();
     m_Skybox.reset();
-
-    m_DefaultTextureView.reset();
-    m_DirectXTextureView.reset();
-    m_EarthTextureView.reset();
-    m_MonaLisaTextureView.reset();
-    m_GraceCathedralTextureView.reset();
-    m_GraceCathedralCubemapView.reset();
 
     m_DefaultTexture.reset();
     m_DirectXTexture.reset();
@@ -903,7 +884,7 @@ void Tutorial4::OnRender()
 
         commandList->SetGraphics32BitConstants( 0, viewProjMatrix );
 
-        commandList->SetShaderResourceView( 1, 0, m_GraceCathedralCubemapView,
+        commandList->SetShaderResourceView( 1, 0, m_GraceCathedralCubemapSRV,
                                             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
         m_Skybox->Accept( visitor );
@@ -934,7 +915,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_EarthTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Sphere->Accept( visitor );
@@ -949,7 +930,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_MonaLisaTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Cube->Accept( visitor );
@@ -964,7 +945,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Ruby );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Torus->Accept( visitor );
@@ -979,7 +960,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Gold );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Cylinder->Accept( visitor );
@@ -997,7 +978,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::White );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DirectXTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Plane->Accept( visitor );
@@ -1044,7 +1025,7 @@ void Tutorial4::OnRender()
 
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, matrices );
     commandList->SetGraphicsDynamicConstantBuffer( RootParameters::MaterialCB, Material::Red );
-    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTextureView,
+    commandList->SetShaderResourceView( RootParameters::Textures, 0, m_DefaultTexture,
                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     m_Plane->Accept( visitor );
@@ -1104,7 +1085,7 @@ void Tutorial4::OnRender()
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     commandList->SetGraphicsRootSignature( m_SDRRootSignature );
     commandList->SetGraphics32BitConstants( 0, g_TonemapParameters );
-    commandList->SetShaderResourceView( 1, 0, m_HDRSRV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    commandList->SetShaderResourceView( 1, 0, m_HDRTexture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
 
     commandList->Draw( 3 );
 
