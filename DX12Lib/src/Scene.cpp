@@ -68,7 +68,7 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
         {
             // Export the preprocessed scene file for faster loading next time.
             Assimp::Exporter exporter;
-            exporter.Export( scene, "assbin", exportPath.string(), preprocessFlags );
+            exporter.Export( scene, "assbin", exportPath.string(), 0 );
         }
     }
 
