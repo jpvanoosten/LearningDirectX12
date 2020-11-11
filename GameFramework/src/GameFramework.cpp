@@ -151,6 +151,9 @@ GameFramework::GameFramework( HINSTANCE hInst )
     for ( unsigned i = 0; i < gainput::MaxPadCount; ++i )
     { m_GamepadDevice[i] = m_InputManager.CreateDevice<gainput::InputDevicePad>( i ); }
 
+    // This will prevent normalization of mouse coordinates.
+    m_InputManager.SetDisplaySize(1, 1);
+
     // Initializes the COM library for use by the calling thread, sets the thread's concurrency model, and creates a new
     // apartment for the thread if one is required.
     // This must be called at least once for each thread that uses the COM library.

@@ -36,8 +36,9 @@ CameraController::CameraController( Camera& camera )
 , m_Z( 0.0 )
 , m_Pitch( 0.0 )
 , m_Yaw( 0.0 )
-, m_PreviousPitch(0.0)
-, m_PreviousYaw(0.0)
+, m_PreviousPitch( 0.0 )
+, m_PreviousYaw( 0.0 )
+, m_InverseY( true )
 {
     auto& gf = GameFramework::Get();
 
@@ -78,20 +79,25 @@ CameraController::CameraController( Camera& camera )
     m_PadInput->MapFloat( Pitch, pad, gainput::PadButtonRightStickY );
     m_PadInput->MapFloat( Yaw, pad, gainput::PadButtonRightStickX );
     m_PadInput->MapBool( Boost, pad, gainput::PadButtonL3 );
+    m_PadInput->MapBool( Boost, pad, gainput::PadButtonR3 );
+
+    // Set policy for pitch/yaw so both mouse and keyboard works.
+    m_KMInput->SetUserButtonPolicy(Pitch, gainput::InputMap::UBP_MAX);
+    m_KMInput->SetUserButtonPolicy(Yaw, gainput::InputMap::UBP_MAX);
 }
 
 void CameraController::Update( UpdateEventArgs& e )
 {
     const double MOVE_SPEED        = 10.0;
     const double LOOK_SENSITIVITY  = 180.0;
-    const double MOUSE_SENSITIVITY = 180.0;
+    const double MOUSE_SENSITIVITY = 0.1;
 
     double speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.1;
     double rotationScale = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.5;
 
-    double X     = ( m_KMInput->GetFloat( MoveX ) + m_PadInput->GetFloat( MoveX ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    double Y     = ( m_KMInput->GetFloat( MoveY ) + m_PadInput->GetFloat( MoveY ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    double Z     = ( m_KMInput->GetFloat( MoveZ ) + m_PadInput->GetFloat( MoveZ ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    double X = ( m_KMInput->GetFloat( MoveX ) + m_PadInput->GetFloat( MoveX ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    double Y = ( m_KMInput->GetFloat( MoveY ) + m_PadInput->GetFloat( MoveY ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    double Z = ( m_KMInput->GetFloat( MoveZ ) + m_PadInput->GetFloat( MoveZ ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
     double pitch = m_PadInput->GetFloat( Pitch ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
     double yaw   = m_PadInput->GetFloat( Yaw ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
 
@@ -109,7 +115,7 @@ void CameraController::Update( UpdateEventArgs& e )
         yaw -= m_KMInput->GetFloatDelta( Yaw ) * MOUSE_SENSITIVITY * rotationScale;
     }
 
-    m_Pitch += pitch;
+    m_Pitch += pitch * ( m_InverseY ? 1.0 : -1.0 );
     m_Yaw += yaw;
 
     // Apply translation and rotation to the camera.

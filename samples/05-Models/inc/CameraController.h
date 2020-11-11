@@ -65,8 +65,18 @@ public:
     // in the main game loop.
     void Update( UpdateEventArgs& e );
 
+    // Whether the pitch should be inverted.
+    void SetInverseY( bool inverseY )
+    {
+        m_InverseY = inverseY;
+    }
+    bool IsInverseY() const
+    {
+        return m_InverseY;
+    }
+
 private:
-    Camera&                            m_Camera;
+    Camera& m_Camera;
     // Keyboard an mouse input.
     std::shared_ptr<gainput::InputMap> m_KMInput;
     // Pad input (seperate from Keyboard and mouse input since mouse input is handled differently than pad input)
@@ -82,4 +92,6 @@ private:
     double m_Yaw;
     double m_PreviousPitch;
     double m_PreviousYaw;
+
+    bool m_InverseY;
 };

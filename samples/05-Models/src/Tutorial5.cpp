@@ -129,7 +129,6 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     XMVECTOR cameraUp     = XMVectorSet( 0, 1, 0, 0 );
 
     m_Camera.set_LookAt( cameraPos, cameraTarget, cameraUp );
-    m_Camera.set_Projection( 45.0f, width / (float)height, 0.1f, 1000.0f );
 
     m_pAlignedCameraData = (CameraData*)_aligned_malloc( sizeof( CameraData ), 16 );
 
@@ -405,13 +404,15 @@ void Tutorial5::OnResize( ResizeEventArgs& e )
 {
     m_Logger->info( "Resize: {}, {}", e.Width, e.Height );
 
-    // This is required for gainput to normalize mouse movement.
-    GameFramework::Get().SetDisplaySize( e.Width, e.Height );
+    m_Width  = std::max( 1, e.Width );
+    m_Height = std::max( 1, e.Height );
 
-    auto width  = std::max( 1, e.Width );
-    auto height = std::max( 1, e.Height );
+    m_Camera.set_Projection( 45.0f, m_Width / (float)m_Height, 0.1f, 100.0f );
+    m_Viewport = CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( m_Width ), static_cast<float>( m_Height ) );
 
-    m_SwapChain->Resize( width, height );
+    m_RenderTarget.Resize( m_Width, m_Height );
+
+    m_SwapChain->Resize( m_Width, m_Height );
 }
 
 void Tutorial5::OnRender()
