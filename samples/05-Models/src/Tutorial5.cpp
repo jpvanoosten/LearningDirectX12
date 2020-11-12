@@ -103,24 +103,11 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial5::OnKeyReleased, this );
     m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial5::OnMouseMoved, this );
     m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial5::OnMouseWheel, this );
-
-    XMVECTOR cameraPos    = XMVectorSet( 0, 1, 0, 1 );
-    XMVECTOR cameraTarget = XMVectorSet( 1, 0, 0, 1 );
-    XMVECTOR cameraUp     = XMVectorSet( 0, 1, 0, 0 );
-
-    m_Camera.set_LookAt( cameraPos, cameraTarget, cameraUp );
-
-    m_pAlignedCameraData = (CameraData*)_aligned_malloc( sizeof( CameraData ), 16 );
-
-    m_pAlignedCameraData->m_InitialCamPos = m_Camera.get_Translation();
-    m_pAlignedCameraData->m_InitialCamRot = m_Camera.get_Rotation();
 }
 
 Tutorial5::~Tutorial5()
 {
     Assimp::DefaultLogger::kill();
-
-    _aligned_free( m_pAlignedCameraData );
 }
 
 uint32_t Tutorial5::Run()
@@ -412,8 +399,7 @@ void Tutorial5::OnKeyPressed( KeyEventArgs& e )
             break;
         case KeyCode::R:
             // Reset camera transform
-            m_Camera.set_Translation( m_pAlignedCameraData->m_InitialCamPos );
-            m_Camera.set_Rotation( m_pAlignedCameraData->m_InitialCamRot );
+            m_CameraController.ResetView();
             break;
         }
     }

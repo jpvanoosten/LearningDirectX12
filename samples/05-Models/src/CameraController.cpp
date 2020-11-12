@@ -7,22 +7,22 @@
 using namespace DirectX;
 
 // Perform a linear interpolation
-inline double Lerp( double x0, double x1, double a )
+inline double Lerp( float x0, float x1, float a )
 {
     return x0 + a * ( x1 - x0 );
 }
 
 // Apply smoothing
-inline void Smooth( double& x0, double& x1, double deltaTime )
+inline void Smooth( float& x0, float& x1, float deltaTime )
 {
-    double x;
-    if ( std::abs( x0 ) < std::abs( x1 ) )  // Speeding up
+    float x;
+    if ( std::fabsf( x0 ) < std::fabsf( x1 ) )  // Speeding up
     {
-        x = Lerp( x1, x0, std::pow( 0.6, deltaTime * 60.0 ) );
+        x = Lerp( x1, x0, std::powf( 0.6, deltaTime * 60.0 ) );
     }
     else  // Slowing down
     {
-        x = Lerp( x1, x0, std::pow( 0.8, deltaTime * 60.0 ) );
+        x = Lerp( x1, x0, std::powf( 0.8, deltaTime * 60.0 ) );
     }
 
     x0 = x;
@@ -32,7 +32,7 @@ inline void Smooth( double& x0, double& x1, double deltaTime )
 CameraController::CameraController( Camera& camera )
 : m_Camera( camera )
 , m_X( 0.0 )
-, m_Y( 0.0 )
+, m_Y( 1.0 )
 , m_Z( 0.0 )
 , m_Pitch( 0.0 )
 , m_Yaw( 0.0 )
@@ -82,24 +82,40 @@ CameraController::CameraController( Camera& camera )
     m_PadInput->MapBool( Boost, pad, gainput::PadButtonR3 );
 
     // Set policy for pitch/yaw so both mouse and keyboard works.
-    m_KMInput->SetUserButtonPolicy(Pitch, gainput::InputMap::UBP_MAX);
-    m_KMInput->SetUserButtonPolicy(Yaw, gainput::InputMap::UBP_MAX);
+    m_KMInput->SetUserButtonPolicy( Pitch, gainput::InputMap::UBP_MAX );
+    m_KMInput->SetUserButtonPolicy( Yaw, gainput::InputMap::UBP_MAX );
+
+    ResetView();
+}
+
+void CameraController::ResetView() 
+{
+    // Reset previous deltas.
+    m_X = m_Y = m_Z = m_PreviousPitch = m_PreviousYaw = 0.0f;
+    m_Pitch         = 0.0f;
+    m_Yaw           = 90.0f;
+
+    XMVECTOR rotation =
+        XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
+    m_Camera.set_Rotation( rotation );
+    m_Camera.set_Translation( { 0, 1.5, 0.25, 1 } );
+
 }
 
 void CameraController::Update( UpdateEventArgs& e )
 {
-    const double MOVE_SPEED        = 10.0;
-    const double LOOK_SENSITIVITY  = 180.0;
-    const double MOUSE_SENSITIVITY = 0.1;
+    const float  MOVE_SPEED        = 10.0;
+    const float  LOOK_SENSITIVITY  = 180.0;
+    const float  MOUSE_SENSITIVITY = 0.1;
 
-    double speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.1;
-    double rotationScale = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.5;
+    float  speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.1;
+    float rotationScale = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.5;
 
-    double X = ( m_KMInput->GetFloat( MoveX ) + m_PadInput->GetFloat( MoveX ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    double Y = ( m_KMInput->GetFloat( MoveY ) + m_PadInput->GetFloat( MoveY ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    double Z = ( m_KMInput->GetFloat( MoveZ ) + m_PadInput->GetFloat( MoveZ ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    double pitch = m_PadInput->GetFloat( Pitch ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
-    double yaw   = m_PadInput->GetFloat( Yaw ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
+    float  X = ( m_KMInput->GetFloat( MoveX ) + m_PadInput->GetFloat( MoveX ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    float  Y = ( m_KMInput->GetFloat( MoveY ) + m_PadInput->GetFloat( MoveY ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    float  Z = ( m_KMInput->GetFloat( MoveZ ) + m_PadInput->GetFloat( MoveZ ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    float  pitch = m_PadInput->GetFloat( Pitch ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
+    float  yaw   = m_PadInput->GetFloat( Yaw ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
 
     // Apply smoothing
     Smooth( m_X, X, e.DeltaTime );
@@ -116,12 +132,16 @@ void CameraController::Update( UpdateEventArgs& e )
     }
 
     m_Pitch += pitch * ( m_InverseY ? 1.0 : -1.0 );
+
+    m_Pitch = std::clamp( m_Pitch, -90.0f, 90.0f );
+
     m_Yaw += yaw;
 
     // Apply translation and rotation to the camera.
     XMVECTORF32 translation = { X, Y, Z };
     m_Camera.Translate( translation );
 
+    // Apply rotation
     XMVECTOR rotation =
         XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
     m_Camera.set_Rotation( rotation );

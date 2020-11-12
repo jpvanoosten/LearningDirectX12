@@ -146,7 +146,7 @@ void XM_CALLCONV Camera::Translate( FXMVECTOR translation, Space space )
 
 void Camera::Rotate( FXMVECTOR quaternion )
 {
-    pData->m_Rotation = XMQuaternionMultiply( pData->m_Rotation, quaternion );
+    pData->m_Rotation = XMQuaternionMultiply( quaternion, pData->m_Rotation );
 
     m_ViewDirty        = true;
     m_InverseViewDirty = true;

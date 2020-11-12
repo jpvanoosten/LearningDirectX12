@@ -164,13 +164,6 @@ private:
     CameraController m_CameraController;
     Logger           m_Logger;
 
-    struct alignas( 16 ) CameraData
-    {
-        DirectX::XMVECTOR m_InitialCamPos;
-        DirectX::XMVECTOR m_InitialCamRot;
-    };
-    CameraData* m_pAlignedCameraData;
-
     int  m_Width;
     int  m_Height;
     bool m_VSync;

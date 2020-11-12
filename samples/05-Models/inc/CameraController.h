@@ -60,6 +60,9 @@ public:
 
     CameraController( Camera& camera );
 
+    // Reset view to default settings.
+    void ResetView();
+
     // Update the camera based on mouse, keyboard and joystick events.
     // The CameraController assumes that the gainput::InputManger is updated
     // in the main game loop.
@@ -85,13 +88,16 @@ private:
     Logger m_Logger;
 
     // Store previous values to apply smoothing.
-    double m_X;
-    double m_Y;
-    double m_Z;
-    double m_Pitch;
-    double m_Yaw;
-    double m_PreviousPitch;
-    double m_PreviousYaw;
+    float m_X;
+    float m_Y;
+    float m_Z;
+
+    // Limit rotation to pitch and yaw.
+    float m_Pitch;
+    float m_Yaw;
+    // Used for smoothing:
+    float m_PreviousPitch;
+    float m_PreviousYaw;
 
     bool m_InverseY;
 };
