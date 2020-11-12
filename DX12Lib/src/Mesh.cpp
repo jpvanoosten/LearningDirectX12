@@ -8,22 +8,6 @@
 
 using namespace dx12lib;
 
-const D3D12_INPUT_ELEMENT_DESC Mesh::Vertex::InputElements[] = {
-    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-      D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-      D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-      D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-      D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    { "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-      D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-};
-
-const D3D12_INPUT_LAYOUT_DESC Mesh::Vertex::InputLayout = { Mesh::Vertex::InputElements,
-                                                            Mesh::Vertex::InputElementCount };
-
 Mesh::Mesh()
 : m_PrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST )
 {}
@@ -76,7 +60,7 @@ size_t Mesh::GetVertexCount() const
 {
     size_t vertexCount = 0;
 
-    // To count the number of verticies in the mesh, just take the num vertices in the first bound vertex buffer.
+    // To count the number of vertices in the mesh, just take the number of vertices in the first vertex buffer.
     BufferMap::const_iterator iter = m_VertexBuffers.cbegin();
     if ( iter != m_VertexBuffers.cend() )
     {
@@ -105,18 +89,17 @@ void Mesh::Draw( CommandList& commandList, uint32_t instanceCount, uint32_t star
         commandList.SetVertexBuffer( vertexBuffer.first, vertexBuffer.second );
     }
 
-    if ( m_IndexBuffer )
+    auto indexCount = GetIndexCount();
+    auto vertexCount = GetVertexCount();
+
+    if ( indexCount > 0 )
     {
         commandList.SetIndexBuffer( m_IndexBuffer );
-        commandList.DrawIndexed( m_IndexBuffer->GetNumIndicies(), instanceCount, 0u, 0u, startInstance );
+        commandList.DrawIndexed( indexCount, instanceCount, 0u, 0u, startInstance );
     }
-    else
+    else if ( vertexCount > 0 )
     {
-        auto vertexCount = GetVertexCount();
-        if ( vertexCount > 0 )
-        {
-            commandList.Draw( vertexCount, instanceCount, 0u, startInstance );
-        }
+        commandList.Draw( vertexCount, instanceCount, 0u, startInstance );
     }
 }
 

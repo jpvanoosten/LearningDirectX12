@@ -79,6 +79,7 @@ struct LightProperties
 {
     uint NumPointLights;
     uint NumSpotLights;
+    uint NumDirectionalLights;
 };
 
 struct LightResult

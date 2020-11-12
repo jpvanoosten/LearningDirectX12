@@ -37,6 +37,7 @@ set( HEADER_FILES
     inc/dx12lib/ThreadSafeQueue.h
     inc/dx12lib/UnorderedAccessView.h
     inc/dx12lib/UploadBuffer.h
+    inc/dx12lib/VertexTypes.h
     inc/dx12lib/VertexBuffer.h
     inc/dx12lib/Visitor.h
 )
@@ -76,6 +77,7 @@ set( SOURCE_FILES
     src/UnorderedAccessView.cpp
     src/UploadBuffer.cpp
     src/VertexBuffer.cpp
+    src/VertexTypes.cpp
 )
 
 set( IMGUI_HEADERS

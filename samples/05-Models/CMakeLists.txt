@@ -3,20 +3,28 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 set( TARGET_NAME 05-Models )
 
 set( HEADER_FILES
+    inc/BasicLightingPSO.h
     inc/Camera.h
     inc/CameraController.h
+    inc/DecalPSO.h
+    inc/EffectPSO.h
     inc/Light.h
     inc/SceneVisitor.h
     inc/Tutorial5.h
+    inc/UnlitPSO.h
 )
 
 set( SRC_FILES
+    src/BasicLightingPSO.cpp
     src/Camera.cpp
     src/CameraController.cpp
+    src/DecalPSO.cpp
+    src/EffectPSO.cpp
     src/Light.cpp
     src/main.cpp
     src/SceneVisitor.cpp
     src/Tutorial5.cpp
+    src/UnlitPSO.cpp
 )
 
 set( SHADER_FILES

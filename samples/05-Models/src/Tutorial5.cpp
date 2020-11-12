@@ -1,5 +1,6 @@
 #include <Tutorial5.h>
 
+#include <BasicLightingPSO.h>
 #include <SceneVisitor.h>
 
 #include <GameFramework/Window.h>
@@ -28,27 +29,6 @@
 using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace dx12lib;
-
-// Light properties for the pixel shader.
-struct LightProperties
-{
-    uint32_t NumPointLights;
-    uint32_t NumSpotLights;
-};
-
-// An enum for root signature parameters.
-// I'm not using scoped enums to avoid the explicit cast that would be required
-// to use these as root indices in the root signature.
-enum RootParameters
-{
-    MatricesCB,         // ConstantBuffer<Matrices> MatCB : register(b0);
-    MaterialCB,         // ConstantBuffer<Material> MaterialCB : register( b0, space1 );
-    LightPropertiesCB,  // ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
-    PointLights,        // StructuredBuffer<PointLight> PointLights : register( t0 );
-    SpotLights,         // StructuredBuffer<SpotLight> SpotLights : register( t1 );
-    Textures,           // Texture2D DiffuseTexture : register( t2 );
-    NumRootParameters
-};
 
 // A regular express used to extract the relavent part of an Assimp log message.
 static std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
@@ -183,57 +163,31 @@ bool Tutorial5::LoadAssets()
 
     commandQueue.ExecuteCommandList( commandList );
 
-    // Load the vertex shader.
-    ComPtr<ID3DBlob> vertexShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/05-Models/VertexShader.cso", &vertexShaderBlob ) );
+    // Ensure that the scene is completely loaded before rendering.
+    commandQueue.Flush();
 
-    // Load the pixel shader.
-    ComPtr<ID3DBlob> pixelShaderBlob;
-    ThrowIfFailed( D3DReadFileToBlob( L"data/shaders/05-Models/PixelShader.cso", &pixelShaderBlob ) );
+    // Loading is finished.
+    m_IsLoading = false;
 
-    // Create a root signature.
-    // Allow input layout and deny unnecessary access to certain pipeline stages.
-    D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-                                                    D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-                                                    D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-                                                    D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+    return true;
+}
 
-    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2 );
+void Tutorial5::LoadContent()
+{
+    m_Device = Device::Create();
+    m_Logger->info( L"Device created: {}", m_Device->GetDescription() );
 
-    CD3DX12_ROOT_PARAMETER1 rootParameters[RootParameters::NumRootParameters];
-    rootParameters[RootParameters::MatricesCB].InitAsConstantBufferView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-                                                                         D3D12_SHADER_VISIBILITY_VERTEX );
-    rootParameters[RootParameters::MaterialCB].InitAsConstantBufferView( 0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-                                                                         D3D12_SHADER_VISIBILITY_PIXEL );
-    rootParameters[RootParameters::LightPropertiesCB].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0,
-                                                                       D3D12_SHADER_VISIBILITY_PIXEL );
-    rootParameters[RootParameters::PointLights].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-                                                                          D3D12_SHADER_VISIBILITY_PIXEL );
-    rootParameters[RootParameters::SpotLights].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE,
-                                                                         D3D12_SHADER_VISIBILITY_PIXEL );
-    rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
+    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
+    m_GUI       = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
 
-    CD3DX12_STATIC_SAMPLER_DESC linearRepeatSampler( 0, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR );
-    CD3DX12_STATIC_SAMPLER_DESC anisotropicSampler( 0, D3D12_FILTER_ANISOTROPIC );
+    // This magic here allows ImGui to process window messages.
+    GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
 
-    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
-    rootSignatureDescription.Init_1_1( RootParameters::NumRootParameters, rootParameters, 1, &linearRepeatSampler,
-                                       rootSignatureFlags );
+    // Start the loading task to perform async loading of the scene file.
+    m_LoadingTask = std::async( std::launch::async, std::bind( &Tutorial5::LoadAssets, this ) );
 
-    m_RootSignature = m_Device->CreateRootSignature( rootSignatureDescription.Desc_1_1 );
-
-    // Setup the pipeline state.
-    struct PipelineStateStream
-    {
-        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE        pRootSignature;
-        CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT          InputLayout;
-        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY    PrimitiveTopologyType;
-        CD3DX12_PIPELINE_STATE_STREAM_VS                    VS;
-        CD3DX12_PIPELINE_STATE_STREAM_PS                    PS;
-        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT  DSVFormat;
-        CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
-        CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC           SampleDesc;
-    } pipelineStateStream;
+    // Create a PSO
+    m_PSO = std::make_shared<BasicLightingPSO>( m_Device );
 
     // Create a color buffer with sRGB for gamma correction.
     DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -241,21 +195,6 @@ bool Tutorial5::LoadAssets()
 
     // Check the best multisample quality level that can be used for the given back buffer format.
     DXGI_SAMPLE_DESC sampleDesc = m_Device->GetMultisampleQualityLevels( backBufferFormat );
-
-    D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-    rtvFormats.NumRenderTargets      = 1;
-    rtvFormats.RTFormats[0]          = backBufferFormat;
-
-    pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
-    pipelineStateStream.InputLayout           = Mesh::Vertex::InputLayout;
-    pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
-    pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
-    pipelineStateStream.DSVFormat             = depthBufferFormat;
-    pipelineStateStream.RTVFormats            = rtvFormats;
-    pipelineStateStream.SampleDesc            = sampleDesc;
-
-    m_PipelineState = m_Device->CreatePipelineStateObject( pipelineStateStream );
 
     // Create an off-screen render target with a single color buffer and a depth buffer.
     auto colorDesc = CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat, m_Width, m_Height, 1, 1, sampleDesc.Count,
@@ -284,28 +223,6 @@ bool Tutorial5::LoadAssets()
     m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
     m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
 
-    // Ensure that the scene is completely loaded before rendering.
-    commandQueue.Flush();
-
-    // Loading is finished.
-    m_IsLoading = false;
-
-    return true;
-}
-
-void Tutorial5::LoadContent()
-{
-    m_Device = Device::Create();
-    m_Logger->info( L"Device created: {}", m_Device->GetDescription() );
-
-    m_SwapChain = m_Device->CreateSwapChain( m_Window->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
-    m_GUI       = m_Device->CreateGUI( m_Window->GetWindowHandle(), m_SwapChain->GetRenderTarget() );
-
-    // This magic here allows ImGui to process window messages.
-    GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
-
-    // Start the loading task.
-    m_LoadingTask = std::async( std::launch::async, std::bind( &Tutorial5::LoadAssets, this ) );
 }
 
 void Tutorial5::UnloadContent() {}
@@ -374,6 +291,8 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         l.QuadraticAttenuation = 0.0f;
     }
 
+    m_PSO->SetPointLights( m_PointLights );
+
     m_SpotLights.resize( numSpotLights );
     for ( int i = 0; i < numSpotLights; ++i )
     {
@@ -396,6 +315,8 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         l.LinearAttenuation    = 0.08f;
         l.QuadraticAttenuation = 0.0f;
     }
+
+    m_PSO->SetSpotLights( m_SpotLights );
 
     OnRender();
 }
@@ -433,7 +354,7 @@ void Tutorial5::OnRender()
     }
     else
     {
-        SceneVisitor visitor( *commandList, m_Camera );
+        SceneVisitor visitor( *commandList, m_Camera, *m_PSO );
 
         // Clear the render targets.
         {
@@ -444,24 +365,11 @@ void Tutorial5::OnRender()
                                                    D3D12_CLEAR_FLAG_DEPTH );
         }
 
-        commandList->SetPipelineState( m_PipelineState );
-        commandList->SetGraphicsRootSignature( m_RootSignature );
-
-        // Upload lights
-        LightProperties lightProps;
-        lightProps.NumPointLights = static_cast<uint32_t>( m_PointLights.size() );
-        lightProps.NumSpotLights  = static_cast<uint32_t>( m_SpotLights.size() );
-
-        commandList->SetGraphics32BitConstants( RootParameters::LightPropertiesCB, lightProps );
-        commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::PointLights, m_PointLights );
-        commandList->SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
-
         commandList->SetViewport( m_Viewport );
         commandList->SetScissorRect( m_ScissorRect );
-
         commandList->SetRenderTarget( m_RenderTarget );
 
-        // Render the model.
+        // Render the scene.
         m_Scene->Accept( visitor );
 
         // Resolve the MSAA render target to the swapchain's backbuffer.

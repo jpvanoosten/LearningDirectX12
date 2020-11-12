@@ -31,8 +31,8 @@
  *  The CommandList class provides additional functionality that makes working with
  *  DirectX 12 applications easier.
  */
-#include "Mesh.h"
 #include "TextureUsage.h"
+#include "VertexTypes.h"
 
 #include <DirectXMath.h>
 #include <d3d12.h>
@@ -506,7 +506,6 @@ public:
                                  UINT                  firstSubresource = 0,
                                  UINT                  numSubresources  = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES );
 
-
     /**
      * Set the render targets for the graphics rendering pipeline.
      */
@@ -570,7 +569,7 @@ protected:
 
 private:
     // Used for procedural mesh generation.
-    using VertexCollection = std::vector<Mesh::Vertex>;
+    using VertexCollection = std::vector<dx12lib::VertexPositionNormalTangentBitangentTexture>;
     using IndexCollection  = std::vector<uint16_t>;
 
     // Create a scene that contains a single node with a single mesh.
@@ -588,7 +587,8 @@ private:
     void CreateCylinderCap( VertexCollection& vertices, IndexCollection& indices, size_t tessellation, float height,
                             float radius, bool isTop );
 
-    // Add a resource to a list of tracked resources (ensures lifetime while command list is in-flight on a command queue.
+    // Add a resource to a list of tracked resources (ensures lifetime while command list is in-flight on a command
+    // queue.
     void TrackResource( Microsoft::WRL::ComPtr<ID3D12Object> object );
     void TrackResource( const std::shared_ptr<Resource>& res );
 

@@ -1,5 +1,6 @@
 #include <SceneVisitor.h>
 
+#include <BasicLightingPSO.h>
 #include <Camera.h>
 
 #include <dx12lib/CommandList.h>
@@ -13,56 +14,29 @@
 using namespace dx12lib;
 using namespace DirectX;
 
-// Matrices to be sent to the vertex shader.
-struct Matrices
-{
-    XMMATRIX ModelMatrix;
-    XMMATRIX ModelViewMatrix;
-    XMMATRIX InverseTransposeModelViewMatrix;
-    XMMATRIX ModelViewProjectionMatrix;
-};
-
-// An enum for root signature parameters.
-// I'm not using scoped enums to avoid the explicit cast that would be required
-// to use these as root indices in the root signature.
-enum RootParameters
-{
-    MatricesCB,         // ConstantBuffer<Matrices> MatCB : register(b0);
-    MaterialCB,         // ConstantBuffer<Material> MaterialCB : register( b0, space1 );
-    LightPropertiesCB,  // ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
-    PointLights,        // StructuredBuffer<PointLight> PointLights : register( t0 );
-    SpotLights,         // StructuredBuffer<SpotLight> SpotLights : register( t1 );
-    Textures,           // Texture2D DiffuseTexture : register( t2 );
-    NumRootParameters
-};
-
-
-SceneVisitor::SceneVisitor( CommandList& commandList, const Camera& camera )
+SceneVisitor::SceneVisitor( CommandList& commandList, const Camera& camera, BasicLightingPSO& pso )
 : m_CommandList( commandList )
 , m_Camera( camera )
+, m_LightingPSO( pso )
 {}
+
+void SceneVisitor::Visit( dx12lib::Scene& scene )
+{
+    m_LightingPSO.SetViewMatrix( m_Camera.get_ViewMatrix() );
+    m_LightingPSO.SetProjectionMatrix( m_Camera.get_ProjectionMatrix() );
+}
 
 void SceneVisitor::Visit( dx12lib::SceneNode& sceneNode )
 {
-    auto     model = sceneNode.GetWorldTransform();
-    auto     view  = m_Camera.get_ViewMatrix();
-    auto     projection = m_Camera.get_ProjectionMatrix();
-
-    Matrices mat;
-    mat.ModelMatrix     = model;
-    mat.ModelViewMatrix = model * view;
-    mat.ModelViewProjectionMatrix = model * view * projection;
-    mat.InverseTransposeModelViewMatrix = XMMatrixTranspose( XMMatrixInverse( nullptr, mat.ModelViewMatrix ) );
-
-    m_CommandList.SetGraphicsDynamicConstantBuffer( RootParameters::MatricesCB, mat );
+    auto world = sceneNode.GetWorldTransform();
+    m_LightingPSO.SetWorldMatrix( world );
 }
 
 void SceneVisitor::Visit( Mesh& mesh )
 {
     auto material = mesh.GetMaterial();
+    m_LightingPSO.SetMaterial( material );
 
-    m_CommandList.SetShaderResourceView( RootParameters::Textures, 0, material->GetTexture(Material::TextureType::Diffuse),
-                                        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
-
+    m_LightingPSO.Apply( m_CommandList );
     mesh.Draw( m_CommandList );
 }

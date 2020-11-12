@@ -242,7 +242,7 @@ bool Tutorial3::LoadContent()
     rtvFormats.RTFormats[0]          = backBufferFormat;
 
     pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
-    pipelineStateStream.InputLayout           = Mesh::Vertex::InputLayout;
+    pipelineStateStream.InputLayout           = VertexPositionNormalTangentBitangentTexture::InputLayout;
     pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
     pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );

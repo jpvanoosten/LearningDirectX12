@@ -388,7 +388,7 @@ bool Tutorial4::LoadContent()
         } hdrPipelineStateStream;
 
         hdrPipelineStateStream.pRootSignature        = m_HDRRootSignature->GetD3D12RootSignature().Get();
-        hdrPipelineStateStream.InputLayout           = Mesh::Vertex::InputLayout;
+        hdrPipelineStateStream.InputLayout           = VertexPositionNormalTangentBitangentTexture::InputLayout;
         hdrPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         hdrPipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vs.Get() );
         hdrPipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( ps.Get() );

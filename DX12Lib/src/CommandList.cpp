@@ -11,6 +11,7 @@
 #include <dx12lib/GenerateMipsPSO.h>
 #include <dx12lib/IndexBuffer.h>
 #include <dx12lib/Material.h>
+#include <dx12lib/Mesh.h>
 #include <dx12lib/PanoToCubemapPSO.h>
 #include <dx12lib/PipelineStateObject.h>
 #include <dx12lib/RenderTarget.h>
@@ -1094,17 +1095,17 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, 
 
 std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height, bool reverseWinding )
 {
-    VertexCollection vertices = {
-        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
-                      XMFLOAT3( 0.0f, 0.0f, 0.0f ) ),  // 0
-        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
-                      XMFLOAT3( 1.0f, 0.0f, 0.0f ) ),  // 1
-        Mesh::Vertex( XMFLOAT3( 0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
-                      XMFLOAT3( 1.0f, 1.0f, 0.0f ) ),  // 2
-        Mesh::Vertex( XMFLOAT3( -0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ),
-                      XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  // 3
-    };
+    using Vertex = VertexPositionNormalTangentBitangentTexture;
 
+    // clang-format off
+    // Define a plane that is aligned with the X-Z plane and the normal is facing up in the Y-axis.
+    VertexCollection vertices = {
+        Vertex( XMFLOAT3( -0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 0.0f, 0.0f, 0.0f ) ),  // 0
+        Vertex( XMFLOAT3( 0.5f * width, 0.0f, 0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 1.0f, 0.0f, 0.0f ) ),   // 1
+        Vertex( XMFLOAT3( 0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 1.0f, 1.0f, 0.0f ) ),  // 2
+        Vertex( XMFLOAT3( -0.5f * width, 0.0f, -0.5f * height ), XMFLOAT3( 0.0f, 1.0f, 0.0f ), XMFLOAT3( 0.0f, 1.0f, 0.0f ) )  // 3
+    };
+    // clang-format on
     IndexCollection indices = { 1, 3, 0, 2, 3, 1 };
 
     if ( reverseWinding )
@@ -1466,11 +1467,10 @@ void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t 
         rootParameterIndex, descriptorOffset, 1, uav->GetDescriptorHandle() );
 }
 
-void CommandList::SetUnorderedAccessView(uint32_t rootParameterIndex, uint32_t descriptorOffset,
-    const std::shared_ptr<Texture>& texture, UINT mip,
-    D3D12_RESOURCE_STATES stateAfter,
-    UINT                  firstSubresource,
-    UINT                  numSubresources)
+void CommandList::SetUnorderedAccessView( uint32_t rootParameterIndex, uint32_t descriptorOffset,
+                                          const std::shared_ptr<Texture>& texture, UINT mip,
+                                          D3D12_RESOURCE_STATES stateAfter, UINT firstSubresource,
+                                          UINT numSubresources )
 {
     if ( texture )
     {

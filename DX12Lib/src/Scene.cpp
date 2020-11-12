@@ -8,6 +8,7 @@
 #include <dx12lib/Mesh.h>
 #include <dx12lib/SceneNode.h>
 #include <dx12lib/Texture.h>
+#include <dx12lib/VertexTypes.h>
 #include <dx12lib/Visitor.h>
 
 using namespace dx12lib;
@@ -47,7 +48,7 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
     Assimp::Importer importer;
     const aiScene*   scene;
 
-    importer.SetProgressHandler( new ProgressHandler(*this, loadingProgress) );
+    importer.SetProgressHandler( new ProgressHandler( *this, loadingProgress ) );
 
     // Check if a preprocessed file exists.
     if ( fs::exists( exportPath ) && fs::is_regular_file( exportPath ) )
@@ -305,8 +306,9 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
 
 void Scene::ImportMesh( CommandList& commandList, const aiMesh& aiMesh )
 {
-    auto                      mesh = std::make_shared<Mesh>();
-    std::vector<Mesh::Vertex> vertexData( aiMesh.mNumVertices );
+    auto mesh = std::make_shared<Mesh>();
+
+    std::vector<VertexPositionNormalTangentBitangentTexture> vertexData( aiMesh.mNumVertices );
 
     assert( aiMesh.mMaterialIndex < m_Materials.size() );
     mesh->SetMaterial( m_Materials[aiMesh.mMaterialIndex] );
@@ -333,7 +335,7 @@ void Scene::ImportMesh( CommandList& commandList, const aiMesh& aiMesh )
         for ( i = 0; i < aiMesh.mNumVertices; ++i )
         {
             vertexData[i].Tangent   = { aiMesh.mTangents[i].x, aiMesh.mTangents[i].y, aiMesh.mTangents[i].z };
-            vertexData[i].BiTangent = { aiMesh.mBitangents[i].x, aiMesh.mBitangents[i].y, aiMesh.mBitangents[i].z };
+            vertexData[i].Bitangent = { aiMesh.mBitangents[i].x, aiMesh.mBitangents[i].y, aiMesh.mBitangents[i].z };
         }
     }
 

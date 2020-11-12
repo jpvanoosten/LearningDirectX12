@@ -34,6 +34,8 @@
 #include <dx12lib/Visitor.h>
 
 class Camera;
+class BasicLightingPSO;
+
 namespace dx12lib
 {
 class CommandList;
@@ -46,11 +48,12 @@ public:
      * Constructor for the SceneVisitor.
      * @param commandList The CommandList that is used to render the meshes in the scene.
      * @param camera The camera that is used to render the scene. This is required for setting up the MVP matrix.
+     * @param pso The Pipeline state object to use for rendering the geometry in the scene.
      */
-    SceneVisitor( dx12lib::CommandList& commandList, const Camera& camera );
+    SceneVisitor( dx12lib::CommandList& commandList, const Camera& camera, BasicLightingPSO& pso );
 
     // For this sample, we don't need to do anything when visiting the Scene.
-    virtual void Visit( dx12lib::Scene& scene ) override {}
+    virtual void Visit( dx12lib::Scene& scene ) override;
     // For this sample, we need to set the MVP matrix of the scene node.
     virtual void Visit( dx12lib::SceneNode& sceneNode ) override;
     // When visiting a mesh, the mesh must be rendered.
@@ -59,4 +62,5 @@ public:
 private:
     dx12lib::CommandList& m_CommandList;
     const Camera&         m_Camera;
+    BasicLightingPSO&     m_LightingPSO;
 };

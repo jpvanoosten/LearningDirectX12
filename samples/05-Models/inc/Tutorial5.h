@@ -31,8 +31,8 @@
  */
 
 #include "Camera.h"
-#include "Light.h"
 #include "CameraController.h"
+#include "Light.h"
 
 #include <GameFramework/GameFramework.h>
 
@@ -55,6 +55,8 @@ class RootSignature;
 class Scene;
 class SwapChain;
 }  // namespace dx12lib
+
+class BasicLightingPSO;
 
 class Tutorial5
 {
@@ -147,18 +149,15 @@ private:
 
     std::shared_ptr<dx12lib::Scene> m_Scene;
 
+    // Pipeline state object for rendering the scene.
+    std::shared_ptr<BasicLightingPSO> m_PSO;
+
     // Render target
     dx12lib::RenderTarget m_RenderTarget;
 
-    // Root signature
-    std::shared_ptr<dx12lib::RootSignature> m_RootSignature;
-
-    // Pipeline state object.
-    std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineState;
-
     std::shared_ptr<Window> m_Window;
 
-    D3D12_RECT m_ScissorRect;
+    D3D12_RECT     m_ScissorRect;
     D3D12_VIEWPORT m_Viewport;
 
     Camera           m_Camera;
@@ -179,6 +178,7 @@ private:
     // Define some lights.
     std::vector<PointLight> m_PointLights;
     std::vector<SpotLight>  m_SpotLights;
+    std::vector<DirectionalLight> m_DirectionalLights;
 
     // Rotate the lights in a circle.
     bool m_AnimateLights;
