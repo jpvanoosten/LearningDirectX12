@@ -31,6 +31,7 @@
  */
 
 #include <cstdint>
+#include <codecvt>
 //#include <functional>
 #include <thread>   // For std::thread
 
@@ -51,6 +52,35 @@ inline void ThrowIfFailed(HRESULT hr)
 
         throw std::exception(err.ErrorMessage());
     }
+}
+
+// Convert a multi-byte character string (UTF-8) to a wide (UTF-16) encoded string.
+inline std::wstring ConvertString( const std::string& string )
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.from_bytes( string );
+}
+
+// Converts a wide (UTF-16) encoded string into a multi-byte (UTF-8) character string.
+inline std::string ConvertString( const std::wstring& wstring )
+{
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.to_bytes( wstring );
+}
+
+inline std::wstring to_wstring( const std::string& s )
+{
+    return ConvertString( s );
+}
+
+inline const std::wstring& to_wstring( const std::wstring& s )
+{
+    return s;
+}
+
+inline std::wstring to_wstring( char c )
+{
+    return to_wstring( std::string( 1, c ) );
 }
 
 // Set the name of an std::thread.

@@ -34,7 +34,7 @@
 #include <dx12lib/Visitor.h>
 
 class Camera;
-class BasicLightingPSO;
+class EffectPSO;
 
 namespace dx12lib
 {
@@ -51,7 +51,7 @@ public:
      * @param pso The Pipeline state object to use for rendering the geometry in the scene.
      * @param transparent Whether to draw transparent geometry during this pass.
      */
-    SceneVisitor( dx12lib::CommandList& commandList, const Camera& camera, BasicLightingPSO& pso, bool transparent );
+    SceneVisitor( dx12lib::CommandList& commandList, const Camera& camera, EffectPSO& pso, bool transparent );
 
     // For this sample, we don't need to do anything when visiting the Scene.
     virtual void Visit( dx12lib::Scene& scene ) override;
@@ -63,6 +63,6 @@ public:
 private:
     dx12lib::CommandList& m_CommandList;
     const Camera&         m_Camera;
-    BasicLightingPSO&     m_LightingPSO;
+    EffectPSO&     m_LightingPSO;
     bool                  m_TransparentPass;
 };

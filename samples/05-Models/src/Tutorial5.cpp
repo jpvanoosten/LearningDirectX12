@@ -1,6 +1,6 @@
 #include <Tutorial5.h>
 
-#include <BasicLightingPSO.h>
+#include <EffectPSO.h>
 #include <SceneVisitor.h>
 
 #include <GameFramework/Window.h>
@@ -10,8 +10,8 @@
 #include <dx12lib/Device.h>
 #include <dx12lib/GUI.h>
 #include <dx12lib/Helpers.h>
-#include <dx12lib/Mesh.h>
 #include <dx12lib/Material.h>
+#include <dx12lib/Mesh.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/Scene.h>
 #include <dx12lib/SceneNode.h>
@@ -24,6 +24,8 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 #include <d3dx12.h>
+
+#include <ShObjIdl.h>  // For IFileOpenDialog
 
 #include <regex>
 
@@ -90,9 +92,12 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 , m_AnimateLights( false )
 , m_Fullscreen( false )
 , m_AllowFullscreenToggle( true )
+, m_ShowFileOpenDialog( false )
+, m_CancelLoading(false)
 , m_Width( width )
 , m_Height( height )
 , m_IsLoading( true )
+, m_FPS( 0.0f )
 {
 #if _DEBUG
     Device::EnableDebugLayer();
@@ -153,25 +158,29 @@ bool Tutorial5::LoadingProgress( float loadingProgress )
 {
     m_LoadingProgress = loadingProgress;
 
-    return true;
+    return !m_CancelLoading;
 }
 
-bool Tutorial5::LoadAssets()
+bool Tutorial5::LoadScene( const std::wstring& sceneFile )
 {
     using namespace std::placeholders;  // For _1 used to denote a placeholder argument for std::bind.
+
+    m_IsLoading = true;
+    m_CancelLoading = false;
 
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
     auto  commandList  = commandQueue.GetCommandList();
 
     // Load a scene, passing an optional function object for receiving loading progress events.
-    m_LoadingText = "Loading Assets/Models/crytek-sponza/sponza_nobanner.obj ...";
-    m_Scene       = commandList->LoadSceneFromFile( L"Assets/Models/crytek-sponza/sponza_nobanner.obj",
-                                              std::bind( &Tutorial5::LoadingProgress, this, _1 ) );
+    m_LoadingText = std::string( "Loading " ) + ConvertString( sceneFile ) + "...";
+    auto scene    = commandList->LoadSceneFromFile( sceneFile, std::bind( &Tutorial5::LoadingProgress, this, _1 ) );
 
-    m_Scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( 0.01f, 0.01f, 0.01f ) );
-
-    m_Sphere = commandList->CreateSphere( 0.1f );
-    m_Cone   = commandList->CreateCone( 0.1f, 0.2f );
+    if ( scene )
+    {
+        // TODO: Compute the bounding box of the scene and make sure it fits in the view of the camera's frustum.
+        scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( 0.01f, 0.01f, 0.01f ) );
+        m_Scene = scene;
+    }
 
     commandQueue.ExecuteCommandList( commandList );
 
@@ -181,7 +190,7 @@ bool Tutorial5::LoadAssets()
     // Loading is finished.
     m_IsLoading = false;
 
-    return true;
+    return scene != nullptr;
 }
 
 void Tutorial5::LoadContent()
@@ -196,12 +205,22 @@ void Tutorial5::LoadContent()
     GameFramework::Get().WndProcHandler += WndProcEvent::slot( &GUI::WndProcHandler, m_GUI );
 
     // Start the loading task to perform async loading of the scene file.
-    m_LoadingTask = std::async( std::launch::async, std::bind( &Tutorial5::LoadAssets, this ) );
+    m_LoadingTask = std::async( std::launch::async, std::bind( &Tutorial5::LoadScene, this,
+                                                               L"Assets/Models/crytek-sponza/sponza_nobanner.obj" ) );
+
+    // Load a few (procedural) models to represent the light sources in the scene.
+    auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
+    auto  commandList  = commandQueue.GetCommandList();
+
+    m_Sphere = commandList->CreateSphere( 0.1f );
+    m_Cone   = commandList->CreateCone( 0.1f, 0.2f );
+
+    auto fence = commandQueue.ExecuteCommandList( commandList );
 
     // Create a PSOs
-    m_LightingPSO = std::make_shared<BasicLightingPSO>( m_Device, true, false );
-    m_DecalPSO    = std::make_shared<BasicLightingPSO>( m_Device, true, true );
-    m_UnlitPSO    = std::make_shared<BasicLightingPSO>( m_Device, false, false );
+    m_LightingPSO = std::make_shared<EffectPSO>( m_Device, true, false );
+    m_DecalPSO    = std::make_shared<EffectPSO>( m_Device, true, true );
+    m_UnlitPSO    = std::make_shared<EffectPSO>( m_Device, false, false );
 
     // Create a color buffer with sRGB for gamma correction.
     DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -236,6 +255,9 @@ void Tutorial5::LoadContent()
     // Attach the textures to the render target.
     m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
     m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
+
+    // Make sure the copy command queue is finished before leaving this function.
+    commandQueue.WaitForFenceValue( fence );
 }
 
 void Tutorial5::UnloadContent() {}
@@ -250,16 +272,20 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
     if ( totalTime > 1.0 )
     {
-        double fps = frameCount / totalTime;
-
-        m_Logger->info( "FPS: {:.7}", fps );
+        m_FPS = frameCount / totalTime;
 
         wchar_t buffer[512];
-        ::swprintf_s( buffer, L"Models [FPS: %f]", fps );
+        ::swprintf_s( buffer, L"Models [FPS: %f]", m_FPS );
         m_Window->SetWindowTitle( buffer );
 
         frameCount = 0;
         totalTime  = 0.0;
+    }
+
+    if ( m_ShowFileOpenDialog )
+    {
+        m_ShowFileOpenDialog = false;
+        OpenFile();
     }
 
     m_SwapChain->WaitForSwapChain();
@@ -273,8 +299,8 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     const int numPointLights = 3;
     const int numSpotLights  = 3;
 
-    static const XMVECTORF32 LightColors[] = { Colors::Red, Colors::Green, Colors::Blue, Colors::Cyan,
-                                               Colors::Magenta,  Colors::Yellow, Colors::Purple, Colors::White };
+    static const XMVECTORF32 LightColors[] = { Colors::Red,     Colors::Green,  Colors::Blue,   Colors::Cyan,
+                                               Colors::Magenta, Colors::Yellow, Colors::Purple, Colors::White };
 
     static float lightAnimTime = 0.0f;
     if ( m_AnimateLights )
@@ -283,9 +309,9 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     }
 
     // Spin the lights in a circle.
-    const float radius  = 1.0f;
+    const float radius = 1.0f;
     // Offset angle for light sources.
-    float pointLightOffset  = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
+    float pointLightOffset = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
     float spotLightOffset  = numSpotLights > 0 ? 2.0f * XM_PI / numSpotLights : 0;
 
     // Setup the lights.
@@ -326,7 +352,7 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
         XMStoreFloat4( &l.PositionVS, positionVS );
 
-        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorSetY(positionWS, 0), 0 ) );
+        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorSetY( positionWS, 0 ), 0 ) );
         XMVECTOR directionVS = XMVector3Normalize( XMVector3TransformNormal( directionWS, viewMatrix ) );
         XMStoreFloat4( &l.DirectionWS, directionWS );
         XMStoreFloat4( &l.DirectionVS, directionVS );
@@ -403,7 +429,7 @@ void Tutorial5::OnRender()
         {
             lightMaterial.Emissive = l.Color;
             auto lightPos          = XMLoadFloat4( &l.PositionWS );
-            auto worldMatrix = XMMatrixTranslationFromVector( lightPos );
+            auto worldMatrix       = XMMatrixTranslationFromVector( lightPos );
 
             m_Sphere->GetRootNode()->SetLocalTransform( worldMatrix );
             m_Sphere->GetRootNode()->GetMesh()->GetMaterial()->SetMaterialProperties( lightMaterial );
@@ -413,9 +439,9 @@ void Tutorial5::OnRender()
         for ( const auto& l: m_SpotLights )
         {
             lightMaterial.Emissive = l.Color;
-            XMVECTOR lightPos = XMLoadFloat4( &l.PositionWS );
-            XMVECTOR lightDir = XMLoadFloat4( &l.DirectionWS );
-            XMVECTOR up       = XMVectorSet( 0, 1, 0, 0 );
+            XMVECTOR lightPos      = XMLoadFloat4( &l.PositionWS );
+            XMVECTOR lightDir      = XMLoadFloat4( &l.DirectionWS );
+            XMVECTOR up            = XMVectorSet( 0, 1, 0, 0 );
 
             // Rotate the cone so it is facing the Z axis.
             auto rotationMatrix = XMMatrixRotationX( XMConvertToRadians( -90.0f ) );
@@ -433,7 +459,7 @@ void Tutorial5::OnRender()
         commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
     }
 
-    OnGUI( commandList, renderTarget );
+    OnGUI( commandList, m_SwapChain->GetRenderTarget() );
 
     commandQueue.ExecuteCommandList( commandList );
 
@@ -535,9 +561,101 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
                           ImGuiWindowFlags_NoScrollbar );
         ImGui::ProgressBar( m_LoadingProgress );
         ImGui::Text( m_LoadingText.c_str() );
+        if (!m_CancelLoading)
+        {
+            if ( ImGui::Button( "Cancel" ) )
+            {
+                m_CancelLoading = true;
+            }
+        }
+        else
+        {
+            ImGui::Text( "Canceling Loading..." );
+        }
 
         ImGui::End();
     }
 
+    if ( ImGui::BeginMainMenuBar() )
+    {
+        if ( ImGui::BeginMenu( "File" ) )
+        {
+            if ( ImGui::MenuItem( "Open file...", "Ctrl+O", nullptr, !m_IsLoading ) )
+            {
+                m_ShowFileOpenDialog = true;
+            }
+            ImGui::Separator();
+            if ( ImGui::MenuItem( "Exit", "Esc" ) )
+            {
+                GameFramework::Get().Stop();
+            }
+            ImGui::EndMenu();
+        }
+
+        if ( ImGui::BeginMenu( "Options" ) )
+        {
+            bool vSync = m_SwapChain->GetVSync();
+            if ( ImGui::MenuItem( "V-Sync", "V", &vSync ) )
+            {
+                m_SwapChain->SetVSync( vSync );
+            }
+
+            bool fullscreen = m_Window->IsFullscreen();
+            if ( ImGui::MenuItem( "Full screen", "Alt+Enter", &fullscreen ) )
+            {
+                // m_Window->SetFullscreen( fullscreen );
+                // Defer the window resizing until the reference to the render target is released.
+                m_Fullscreen = fullscreen;
+            }
+
+            ImGui::EndMenu();
+        }
+
+        char buffer[256];
+        {
+            sprintf_s( buffer, _countof( buffer ), "FPS: %.2f (%.2f ms)  ", m_FPS, 1.0 / m_FPS * 1000.0 );
+            auto fpsTextSize = ImGui::CalcTextSize( buffer );
+            ImGui::SameLine( ImGui::GetWindowWidth() - fpsTextSize.x );
+            ImGui::Text( buffer );
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
     m_GUI->Render( commandList, renderTarget );
+}
+
+// Open a file dialog for the user to select a scene to load.
+// @see https://docs.microsoft.com/en-us/windows/win32/learnwin32/example--the-open-dialog-box
+void Tutorial5::OpenFile()
+{
+    static const COMDLG_FILTERSPEC filters[] = { { L"Model files (*.fbx; *.max; *.obj)", L"*.fbx;*.max;*.obj;" } };
+
+    ComPtr<IFileOpenDialog> pFileOpen;
+    HRESULT                 hr = CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_PPV_ARGS( &pFileOpen ) );
+
+    if ( SUCCEEDED( hr ) )
+    {
+        // Setup filters.
+        hr = pFileOpen->SetFileTypes( _countof( filters ), filters );
+        pFileOpen->SetFileTypeIndex( 1 );
+
+        // Show the open dialog box.
+        if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )
+        {
+            ComPtr<IShellItem> pItem;
+            if ( SUCCEEDED( pFileOpen->GetResult( &pItem ) ) )
+            {
+                PWSTR pszFilePath;
+                if ( SUCCEEDED( pItem->GetDisplayName( SIGDN_FILESYSPATH, &pszFilePath ) ) )
+                {
+                    // try to load the scene file (asynchronously).
+                    m_LoadingTask =
+                        std::async( std::launch::async, std::bind( &Tutorial5::LoadScene, this, pszFilePath ) );
+
+                    CoTaskMemFree( pszFilePath );
+                }
+            }
+        }
+    }
 }

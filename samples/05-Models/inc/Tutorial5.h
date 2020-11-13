@@ -56,7 +56,7 @@ class Scene;
 class SwapChain;
 }  // namespace dx12lib
 
-class BasicLightingPSO;
+class EffectPSO;
 
 class Tutorial5
 {
@@ -131,7 +131,13 @@ private:
      * Load all of the assets (scene file, shaders, etc...).
      * This is executed as an async task so that we can render a loading screen in the main thread.
      */
-    bool LoadAssets();
+    bool LoadScene( const std::wstring& sceneFile );
+
+    /**
+     * Opens a File dialog and loads a new scene file.
+     */
+    void OpenFile();
+
 
     /**
      * This function is called to report the loading progress of the scene. This is useful for updating the loading
@@ -155,9 +161,9 @@ private:
 
 
     // Pipeline state object for rendering the scene.
-    std::shared_ptr<BasicLightingPSO> m_LightingPSO;
-    std::shared_ptr<BasicLightingPSO> m_DecalPSO;
-    std::shared_ptr<BasicLightingPSO> m_UnlitPSO;
+    std::shared_ptr<EffectPSO> m_LightingPSO;
+    std::shared_ptr<EffectPSO> m_DecalPSO;
+    std::shared_ptr<EffectPSO> m_UnlitPSO;
 
     // Render target
     dx12lib::RenderTarget m_RenderTarget;
@@ -185,8 +191,12 @@ private:
 
     bool              m_Fullscreen;
     bool              m_AllowFullscreenToggle;
+    bool              m_ShowFileOpenDialog;
+    bool              m_CancelLoading;
     std::atomic_bool  m_IsLoading;
     std::future<bool> m_LoadingTask;
     float             m_LoadingProgress;
     std::string       m_LoadingText;
+
+    float m_FPS;
 };

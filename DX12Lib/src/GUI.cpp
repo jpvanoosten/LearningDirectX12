@@ -107,14 +107,13 @@ GUI::GUI( Device& device, HWND hWnd, const RenderTarget& renderTarget )
 
     m_RootSignature = m_Device.CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
+    // clang-format off
     const D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, pos ),
-          D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, uv ),
-          D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof( ImDrawVert, col ),
-          D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, pos ), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof( ImDrawVert, uv ), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof( ImDrawVert, col ), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
+    // clang-format on
 
     D3D12_BLEND_DESC blendDesc                      = {};
     blendDesc.RenderTarget[0].BlendEnable           = true;
@@ -200,8 +199,8 @@ void GUI::Render( const std::shared_ptr<CommandList>& commandList, const RenderT
 
     ImVec2 displayPos = drawData->DisplayPos;
 
-    commandList->SetGraphicsRootSignature( m_RootSignature );
     commandList->SetPipelineState( m_PipelineState );
+    commandList->SetGraphicsRootSignature( m_RootSignature );
     commandList->SetRenderTarget( renderTarget );
 
     // Set root arguments.

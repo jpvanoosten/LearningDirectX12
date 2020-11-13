@@ -617,6 +617,8 @@ private:
     // Keep track of the currently bound root signatures to minimize root
     // signature changes.
     ID3D12RootSignature* m_RootSignature;
+    // Keep track of the currently bond pipeline state object to minimize PSO changes.
+    ID3D12PipelineState* m_PipelineState;
 
     // Resource created in an upload heap. Useful for drawing of dynamic geometry
     // or for uploading constant buffer data that changes every draw call.

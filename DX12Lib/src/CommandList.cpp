@@ -46,6 +46,8 @@ std::mutex                              CommandList::ms_TextureCacheMutex;
 CommandList::CommandList( Device& device, D3D12_COMMAND_LIST_TYPE type )
 : m_Device( device )
 , m_d3d12CommandListType( type )
+, m_RootSignature( nullptr )
+, m_PipelineState( nullptr )
 {
     auto d3d12Device = m_Device.GetD3D12Device();
 
@@ -719,9 +721,12 @@ std::shared_ptr<Scene> CommandList::LoadSceneFromFile( const std::wstring&      
 {
     auto scene = std::make_shared<Scene>();
 
-    scene->LoadSceneFromFile( *this, fileName, loadingProgress );
+    if ( scene->LoadSceneFromFile( *this, fileName, loadingProgress ) )
+    {
+        return scene;
+    }
 
-    return scene;
+    return nullptr;
 }
 
 std::shared_ptr<Scene> CommandList::LoadSceneFromString( const std::string& sceneString, const std::string& format )
@@ -1293,11 +1298,15 @@ void CommandList::SetPipelineState( const std::shared_ptr<PipelineStateObject>& 
 {
     assert( pipelineState );
 
-    auto d3d12PipelineStateObject = pipelineState->GetD3D12PipelineState();
+    auto d3d12PipelineStateObject = pipelineState->GetD3D12PipelineState().Get();
+    if ( m_PipelineState != d3d12PipelineStateObject )
+    {
+        m_PipelineState = d3d12PipelineStateObject;
 
-    m_d3d12CommandList->SetPipelineState( d3d12PipelineStateObject.Get() );
+        m_d3d12CommandList->SetPipelineState( d3d12PipelineStateObject );
 
-    TrackResource( d3d12PipelineStateObject );
+        TrackResource( d3d12PipelineStateObject );
+    }
 }
 
 void CommandList::SetGraphicsRootSignature( const std::shared_ptr<RootSignature>& rootSignature )
@@ -1623,6 +1632,7 @@ void CommandList::Reset()
     }
 
     m_RootSignature      = nullptr;
+    m_PipelineState      = nullptr;
     m_ComputeCommandList = nullptr;
 }
 

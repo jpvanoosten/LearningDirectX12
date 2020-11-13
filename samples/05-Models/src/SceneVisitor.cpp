@@ -1,6 +1,6 @@
 #include <SceneVisitor.h>
 
-#include <BasicLightingPSO.h>
+#include <EffectPSO.h>
 #include <Camera.h>
 
 #include <dx12lib/CommandList.h>
@@ -14,7 +14,7 @@
 using namespace dx12lib;
 using namespace DirectX;
 
-SceneVisitor::SceneVisitor( CommandList& commandList, const Camera& camera, BasicLightingPSO& pso, bool transparent )
+SceneVisitor::SceneVisitor( CommandList& commandList, const Camera& camera, EffectPSO& pso, bool transparent )
 : m_CommandList( commandList )
 , m_Camera( camera )
 , m_LightingPSO( pso )
