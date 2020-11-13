@@ -27,15 +27,29 @@ set( SRC_FILES
     src/UnlitPSO.cpp
 )
 
-set( SHADER_FILES
-    shaders/VertexShader.hlsl
-    shaders/UnlitPixelShader.hlsl
-    shaders/PixelShader.hlsl
+set( VERTEX_SHADERS 
+    shaders/Basic_VS.hlsl
 )
 
-source_group( "Resources\\Shaders" FILES ${SHADER_FILES} )
+set( PIXEL_SHADERS
+    shaders/Decal_PS.hlsl
+    shaders/Lighting_PS.hlsl
+    shaders/Unlit_PS.hlsl
+)
 
-set_source_files_properties( ${SHADER_FILES} 
+set( SHADER_INCLUDES
+    shaders/Base_PS.hlsli
+)
+
+set( SHADERS
+    ${VERTEX_SHADERS}
+    ${PIXEL_SHADERS}
+    ${SHADER_INCLUDES}
+)
+
+source_group( "Resources\\Shaders" FILES ${SHADERS} )
+
+set_source_files_properties( ${VERTEX_SHADERS} ${PIXEL_SHADERS}
     PROPERTIES
         VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/05-Models/%(Filename).cso"
         VS_SHADER_MODEL 5.1
@@ -43,12 +57,12 @@ set_source_files_properties( ${SHADER_FILES}
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
 )
 
-set_source_files_properties( shaders/VertexShader.hlsl 
+set_source_files_properties( ${VERTEX_SHADERS}
     PROPERTIES 
         VS_SHADER_TYPE Vertex
 )
 
-set_source_files_properties( shaders/PixelShader.hlsl shaders/UnlitPixelShader.hlsl
+set_source_files_properties( ${PIXEL_SHADERS}
     PROPERTIES 
         VS_SHADER_TYPE Pixel
 )
@@ -56,7 +70,7 @@ set_source_files_properties( shaders/PixelShader.hlsl shaders/UnlitPixelShader.h
 add_executable( ${TARGET_NAME} WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
-    ${SHADER_FILES}
+    ${SHADERS}
 )
 
 target_include_directories( ${TARGET_NAME}

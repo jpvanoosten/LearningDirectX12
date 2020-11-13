@@ -149,8 +149,15 @@ private:
 
     std::shared_ptr<dx12lib::Scene> m_Scene;
 
+    // Some scenes to represent the light sources.
+    std::shared_ptr<dx12lib::Scene> m_Sphere;
+    std::shared_ptr<dx12lib::Scene> m_Cone;
+
+
     // Pipeline state object for rendering the scene.
-    std::shared_ptr<BasicLightingPSO> m_PSO;
+    std::shared_ptr<BasicLightingPSO> m_LightingPSO;
+    std::shared_ptr<BasicLightingPSO> m_DecalPSO;
+    std::shared_ptr<BasicLightingPSO> m_UnlitPSO;
 
     // Render target
     dx12lib::RenderTarget m_RenderTarget;

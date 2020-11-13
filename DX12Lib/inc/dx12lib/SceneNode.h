@@ -30,9 +30,9 @@
  *  @brief A node in a scene graph.
  */
 
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
 #include <vector>
 
 #include <DirectXMath.h>
@@ -72,7 +72,6 @@ public:
      * world transform).
      */
     DirectX::XMMATRIX GetWorldTransform() const;
-    void              SetWorldTransform( const DirectX::XMMATRIX& worldTransform );
 
     /**
      * Get the inverse of the world transform (concatenated with its parent's
@@ -93,9 +92,15 @@ public:
 
     /**
      * Add a mesh to this scene node.
+     * @returns The index of the mesh in the mesh list.
      */
-    void AddMesh( std::shared_ptr<Mesh> mesh );
-    void RemoveMesh( std::shared_ptr<Mesh> mesh );
+    size_t AddMesh( std::shared_ptr<Mesh> mesh );
+    void   RemoveMesh( std::shared_ptr<Mesh> mesh );
+
+    /**
+     * Get a mesh in the list of meshes for this node.
+     */
+    std::shared_ptr<Mesh> GetMesh( size_t index = 0 );
 
     /**
      * Accept a visitor.

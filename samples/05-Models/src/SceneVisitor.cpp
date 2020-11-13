@@ -14,10 +14,11 @@
 using namespace dx12lib;
 using namespace DirectX;
 
-SceneVisitor::SceneVisitor( CommandList& commandList, const Camera& camera, BasicLightingPSO& pso )
+SceneVisitor::SceneVisitor( CommandList& commandList, const Camera& camera, BasicLightingPSO& pso, bool transparent )
 : m_CommandList( commandList )
 , m_Camera( camera )
 , m_LightingPSO( pso )
+, m_TransparentPass(transparent)
 {}
 
 void SceneVisitor::Visit( dx12lib::Scene& scene )
@@ -35,8 +36,11 @@ void SceneVisitor::Visit( dx12lib::SceneNode& sceneNode )
 void SceneVisitor::Visit( Mesh& mesh )
 {
     auto material = mesh.GetMaterial();
-    m_LightingPSO.SetMaterial( material );
+    if ( material->IsTransparent() == m_TransparentPass )
+    {
+        m_LightingPSO.SetMaterial( material );
 
-    m_LightingPSO.Apply( m_CommandList );
-    mesh.Draw( m_CommandList );
+        m_LightingPSO.Apply( m_CommandList );
+        mesh.Draw( m_CommandList );
+    }
 }

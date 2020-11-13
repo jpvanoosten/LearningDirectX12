@@ -140,16 +140,24 @@ void SceneNode::SetParent( std::shared_ptr<SceneNode> parentNode )
     }
 }
 
-void SceneNode::AddMesh( std::shared_ptr<Mesh> mesh )
+size_t SceneNode::AddMesh( std::shared_ptr<Mesh> mesh )
 {
+    size_t index = (size_t)-1;
     if ( mesh )
     {
         MeshList::const_iterator iter = std::find( m_Meshes.begin(), m_Meshes.end(), mesh );
         if ( iter == m_Meshes.cend() )
         {
+            index = m_Meshes.size();
             m_Meshes.push_back( mesh );
         }
+        else
+        {
+            index = iter - m_Meshes.begin();
+        }
     }
+
+    return index;
 }
 
 void SceneNode::RemoveMesh( std::shared_ptr<Mesh> mesh )
@@ -163,6 +171,18 @@ void SceneNode::RemoveMesh( std::shared_ptr<Mesh> mesh )
         }
     }
 }
+
+std::shared_ptr<Mesh> SceneNode::GetMesh(size_t pos) 
+{
+    std::shared_ptr<Mesh> mesh = nullptr;
+
+    if (pos < m_Meshes.size()) {
+        mesh = m_Meshes[pos];
+    }
+    
+    return mesh;
+}
+
 
 void SceneNode::Accept( Visitor& visitor )
 {

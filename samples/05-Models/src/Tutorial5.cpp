@@ -10,6 +10,7 @@
 #include <dx12lib/Device.h>
 #include <dx12lib/GUI.h>
 #include <dx12lib/Helpers.h>
+#include <dx12lib/Mesh.h>
 #include <dx12lib/Material.h>
 #include <dx12lib/RootSignature.h>
 #include <dx12lib/Scene.h>
@@ -29,6 +30,26 @@
 using namespace Microsoft::WRL;
 using namespace DirectX;
 using namespace dx12lib;
+
+// Builds a look-at (world) matrix from a point, up and direction vectors.
+XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMVECTOR Up )
+{
+    assert( !XMVector3Equal( Direction, XMVectorZero() ) );
+    assert( !XMVector3IsInfinite( Direction ) );
+    assert( !XMVector3Equal( Up, XMVectorZero() ) );
+    assert( !XMVector3IsInfinite( Up ) );
+
+    XMVECTOR R2 = XMVector3Normalize( Direction );
+
+    XMVECTOR R0 = XMVector3Cross( Up, R2 );
+    R0          = XMVector3Normalize( R0 );
+
+    XMVECTOR R1 = XMVector3Cross( R2, R0 );
+
+    XMMATRIX M( R0, R1, R2, Position );
+
+    return M;
+}
 
 // A regular express used to extract the relavent part of an Assimp log message.
 static std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
@@ -66,6 +87,7 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 : m_ScissorRect { 0, 0, LONG_MAX, LONG_MAX }
 , m_Viewport( CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( width ), static_cast<float>( height ) ) )
 , m_CameraController( m_Camera )
+, m_AnimateLights( false )
 , m_Fullscreen( false )
 , m_AllowFullscreenToggle( true )
 , m_Width( width )
@@ -148,6 +170,9 @@ bool Tutorial5::LoadAssets()
 
     m_Scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( 0.01f, 0.01f, 0.01f ) );
 
+    m_Sphere = commandList->CreateSphere( 0.1f );
+    m_Cone   = commandList->CreateCone( 0.1f, 0.2f );
+
     commandQueue.ExecuteCommandList( commandList );
 
     // Ensure that the scene is completely loaded before rendering.
@@ -173,8 +198,10 @@ void Tutorial5::LoadContent()
     // Start the loading task to perform async loading of the scene file.
     m_LoadingTask = std::async( std::launch::async, std::bind( &Tutorial5::LoadAssets, this ) );
 
-    // Create a PSO
-    m_PSO = std::make_shared<BasicLightingPSO>( m_Device );
+    // Create a PSOs
+    m_LightingPSO = std::make_shared<BasicLightingPSO>( m_Device, true, false );
+    m_DecalPSO    = std::make_shared<BasicLightingPSO>( m_Device, true, true );
+    m_UnlitPSO    = std::make_shared<BasicLightingPSO>( m_Device, false, false );
 
     // Create a color buffer with sRGB for gamma correction.
     DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -209,7 +236,6 @@ void Tutorial5::LoadContent()
     // Attach the textures to the render target.
     m_RenderTarget.AttachTexture( AttachmentPoint::Color0, colorTexture );
     m_RenderTarget.AttachTexture( AttachmentPoint::DepthStencil, depthTexture );
-
 }
 
 void Tutorial5::UnloadContent() {}
@@ -244,11 +270,11 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
 
-    const int numPointLights = 4;
-    const int numSpotLights  = 4;
+    const int numPointLights = 3;
+    const int numSpotLights  = 3;
 
-    static const XMVECTORF32 LightColors[] = { Colors::White, Colors::Orange, Colors::Yellow, Colors::Green,
-                                               Colors::Blue,  Colors::Indigo, Colors::Violet, Colors::White };
+    static const XMVECTORF32 LightColors[] = { Colors::Red, Colors::Green, Colors::Blue, Colors::Cyan,
+                                               Colors::Magenta,  Colors::Yellow, Colors::Purple, Colors::White };
 
     static float lightAnimTime = 0.0f;
     if ( m_AnimateLights )
@@ -256,18 +282,23 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         lightAnimTime += static_cast<float>( e.DeltaTime ) * 0.5f * XM_PI;
     }
 
-    const float radius  = 8.0f;
-    const float offset  = 2.0f * XM_PI / numPointLights;
-    const float offset2 = offset + ( offset / 2.0f );
+    // Spin the lights in a circle.
+    const float radius  = 1.0f;
+    // Offset angle for light sources.
+    float pointLightOffset  = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
+    float spotLightOffset  = numSpotLights > 0 ? 2.0f * XM_PI / numSpotLights : 0;
 
-    // Setup the light buffers.
+    // Setup the lights.
     m_PointLights.resize( numPointLights );
     for ( int i = 0; i < numPointLights; ++i )
     {
         PointLight& l = m_PointLights[i];
 
-        l.PositionWS        = { static_cast<float>( std::sin( lightAnimTime + offset * i ) ) * radius, 9.0f,
-                         static_cast<float>( std::cos( lightAnimTime + offset * i ) ) * radius, 1.0f };
+        float angle = lightAnimTime + pointLightOffset * i;
+
+        l.PositionWS = { static_cast<float>( std::sin( angle ) ) * radius, 2.0f,
+                         static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
+
         XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
         XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
         XMStoreFloat4( &l.PositionVS, positionVS );
@@ -278,32 +309,37 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         l.QuadraticAttenuation = 0.0f;
     }
 
-    m_PSO->SetPointLights( m_PointLights );
+    m_LightingPSO->SetPointLights( m_PointLights );
+    m_DecalPSO->SetPointLights( m_PointLights );
 
     m_SpotLights.resize( numSpotLights );
     for ( int i = 0; i < numSpotLights; ++i )
     {
         SpotLight& l = m_SpotLights[i];
 
-        l.PositionWS        = { static_cast<float>( std::sin( lightAnimTime + offset * i + offset2 ) ) * radius, 9.0f,
-                         static_cast<float>( std::cos( lightAnimTime + offset * i + offset2 ) ) * radius, 1.0f };
+        float angle = lightAnimTime + spotLightOffset * i + pointLightOffset / 2.0;
+
+        l.PositionWS = { static_cast<float>( std::sin( angle ) ) * radius, 2.0f,
+                         static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
+
         XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
         XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
         XMStoreFloat4( &l.PositionVS, positionVS );
 
-        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorNegate( positionWS ), 0 ) );
+        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorSetY(positionWS, 0), 0 ) );
         XMVECTOR directionVS = XMVector3Normalize( XMVector3TransformNormal( directionWS, viewMatrix ) );
         XMStoreFloat4( &l.DirectionWS, directionWS );
         XMStoreFloat4( &l.DirectionVS, directionVS );
 
-        l.Color                = XMFLOAT4( LightColors[numPointLights + i] );
+        l.Color                = XMFLOAT4( LightColors[( i + numPointLights ) % _countof( LightColors )] );
         l.SpotAngle            = XMConvertToRadians( 45.0f );
         l.ConstantAttenuation  = 1.0f;
         l.LinearAttenuation    = 0.08f;
         l.QuadraticAttenuation = 0.0f;
     }
 
-    m_PSO->SetSpotLights( m_SpotLights );
+    m_LightingPSO->SetSpotLights( m_SpotLights );
+    m_DecalPSO->SetSpotLights( m_SpotLights );
 
     OnRender();
 }
@@ -341,7 +377,9 @@ void Tutorial5::OnRender()
     }
     else
     {
-        SceneVisitor visitor( *commandList, m_Camera, *m_PSO );
+        SceneVisitor opaquePass( *commandList, m_Camera, *m_LightingPSO, false );
+        SceneVisitor transparentPass( *commandList, m_Camera, *m_DecalPSO, true );
+        SceneVisitor unlitPass( *commandList, m_Camera, *m_UnlitPSO, false );
 
         // Clear the render targets.
         {
@@ -357,7 +395,36 @@ void Tutorial5::OnRender()
         commandList->SetRenderTarget( m_RenderTarget );
 
         // Render the scene.
-        m_Scene->Accept( visitor );
+        m_Scene->Accept( opaquePass );
+        m_Scene->Accept( transparentPass );
+
+        MaterialProperties lightMaterial = Material::Black;
+        for ( const auto& l: m_PointLights )
+        {
+            lightMaterial.Emissive = l.Color;
+            auto lightPos          = XMLoadFloat4( &l.PositionWS );
+            auto worldMatrix = XMMatrixTranslationFromVector( lightPos );
+
+            m_Sphere->GetRootNode()->SetLocalTransform( worldMatrix );
+            m_Sphere->GetRootNode()->GetMesh()->GetMaterial()->SetMaterialProperties( lightMaterial );
+            m_Sphere->Accept( unlitPass );
+        }
+
+        for ( const auto& l: m_SpotLights )
+        {
+            lightMaterial.Emissive = l.Color;
+            XMVECTOR lightPos = XMLoadFloat4( &l.PositionWS );
+            XMVECTOR lightDir = XMLoadFloat4( &l.DirectionWS );
+            XMVECTOR up       = XMVectorSet( 0, 1, 0, 0 );
+
+            // Rotate the cone so it is facing the Z axis.
+            auto rotationMatrix = XMMatrixRotationX( XMConvertToRadians( -90.0f ) );
+            auto worldMatrix    = rotationMatrix * LookAtMatrix( lightPos, lightDir, up );
+
+            m_Cone->GetRootNode()->SetLocalTransform( worldMatrix );
+            m_Cone->GetRootNode()->GetMesh()->GetMaterial()->SetMaterialProperties( lightMaterial );
+            m_Cone->Accept( unlitPass );
+        }
 
         // Resolve the MSAA render target to the swapchain's backbuffer.
         auto swapChainBackBuffer = m_SwapChain->GetRenderTarget().GetTexture( AttachmentPoint::Color0 );
@@ -381,6 +448,9 @@ void Tutorial5::OnKeyPressed( KeyEventArgs& e )
         {
         case KeyCode::Escape:
             GameFramework::Get().Stop();
+            break;
+        case KeyCode::Space:
+            m_AnimateLights = !m_AnimateLights;
             break;
         case KeyCode::Enter:
             if ( e.Alt )

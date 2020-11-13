@@ -37,7 +37,7 @@
 namespace dx12lib
 {
 
-struct alignas(16) VertexPosition
+struct VertexPosition
 {
     VertexPosition() = default;
 
@@ -58,7 +58,7 @@ private:
     static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];
 };
 
-struct alignas(16) VertexPositionNormalTangentBitangentTexture
+struct VertexPositionNormalTangentBitangentTexture
 {
     VertexPositionNormalTangentBitangentTexture() = default;
 
@@ -93,7 +93,6 @@ struct alignas(16) VertexPositionNormalTangentBitangentTexture
     DirectX::XMFLOAT3 TexCoord;
 
     static const D3D12_INPUT_LAYOUT_DESC InputLayout;
-
 private:
     static const int                      InputElementCount = 5;
     static const D3D12_INPUT_ELEMENT_DESC InputElements[InputElementCount];

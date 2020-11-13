@@ -41,7 +41,9 @@ namespace dx12lib
 {
 class CommandList;
 class Material;
-}
+class ShaderResourceView;
+class Texture;
+}  // namespace dx12lib
 
 class BasicLightingPSO : public EffectPSO
 {
@@ -68,16 +70,28 @@ public:
     // to use these as root indices in the root signature.
     enum RootParameters
     {
-        MatricesCB,         // ConstantBuffer<Matrices> MatCB : register(b0);
+        // Vertex shader parameter
+        MatricesCB,  // ConstantBuffer<Matrices> MatCB : register(b0);
+
+        // Pixel shader parameters
         MaterialCB,         // ConstantBuffer<Material> MaterialCB : register( b0, space1 );
         LightPropertiesCB,  // ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
-        PointLights,        // StructuredBuffer<PointLight> PointLights : register( t0 );
-        SpotLights,         // StructuredBuffer<SpotLight> SpotLights : register( t1 );
-        Textures,           // Texture2D DiffuseTexture : register( t2 );
+
+        PointLights,  // StructuredBuffer<PointLight> PointLights : register( t0 );
+        SpotLights,   // StructuredBuffer<SpotLight> SpotLights : register( t1 );
+
+        Textures,  // Texture2D AmbientTexture       : register( t2 );
+                   // Texture2D EmissiveTexture : register( t3 );
+                   // Texture2D DiffuseTexture : register( t4 );
+                   // Texture2D SpecularTexture : register( t5 );
+                   // Texture2D SpecularPowerTexture : register( t6 );
+                   // Texture2D NormalTexture : register( t7 );
+                   // Texture2D BumpTexture : register( t8 );
+                   // Texture2D OpacityTexture : register( t9 );
         NumRootParameters
     };
 
-    BasicLightingPSO( std::shared_ptr<dx12lib::Device> device );
+    BasicLightingPSO( std::shared_ptr<dx12lib::Device> device, bool enableLigting, bool enableDecal );
     virtual ~BasicLightingPSO();
 
     const std::vector<PointLight>& GetPointLights() const
@@ -176,6 +190,10 @@ private:
         DirectX::XMMATRIX Projection;
     };
 
+    // Helper function to bind a texture to the rendering pipeline.
+    inline void BindTexture( dx12lib::CommandList& commandList, uint32_t offset,
+                             const std::shared_ptr<dx12lib::Texture>& texture );
+
     std::vector<PointLight>       m_PointLights;
     std::vector<SpotLight>        m_SpotLights;
     std::vector<DirectionalLight> m_DirectionalLights;
@@ -183,11 +201,17 @@ private:
     // The material to apply during rendering.
     std::shared_ptr<dx12lib::Material> m_Material;
 
+    // An SRV used pad unused texture slots.
+    std::shared_ptr<dx12lib::ShaderResourceView> m_DefaultSRV;
+
     // Matrices
-    MVP*            m_pAlignedMVP;
+    MVP* m_pAlignedMVP;
     // If the command list changes, all parameters need to be rebound.
     dx12lib::CommandList* m_pPreviousCommandList;
 
     // Which properties need to be bound to the
     uint32_t m_DirtyFlags;
+
+    bool m_EnableLighting;
+    bool m_EnableDecal;
 };

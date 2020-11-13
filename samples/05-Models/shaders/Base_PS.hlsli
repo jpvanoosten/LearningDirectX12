@@ -1,8 +1,11 @@
+// clang-format off
 struct PixelShaderInput
 {
-    float4 PositionVS : POSITION;
-    float3 NormalVS   : NORMAL;
-    float2 TexCoord   : TEXCOORD;
+    float4 PositionVS  : POSITION;
+    float3 NormalVS    : NORMAL;
+    float3 TangentVS   : TANGENT;
+    float3 BitangentVS : BITANGENT;
+    float2 TexCoord    : TEXCOORD;
 };
 
 struct Material
@@ -23,22 +26,20 @@ struct Material
     float BumpIntensity;      // When using bump textures (height maps) we need
                               // to scale the height values so the normals are visible.
     //------------------------------------ ( 16 bytes )
-    float AlphaThreshold;     // Pixels with alpha < m_AlphaThreshold will be discarded.
     bool  HasAmbientTexture;
     bool  HasEmissiveTexture;
     bool  HasDiffuseTexture;
-    //------------------------------------ ( 16 bytes )
     bool  HasSpecularTexture;
+    //------------------------------------ ( 16 bytes )
     bool  HasSpecularPowerTexture;
     bool  HasNormalTexture;
     bool  HasBumpTexture;
-    //------------------------------------ ( 16 bytes )
     bool  HasOpacityTexture;
-    float3 Padding;           // Pad to 16 byte boundary.
     //------------------------------------ ( 16 bytes )
-    // Total:                              ( 16 * 9 = 144 bytes )
+    // Total:                              ( 16 * 8 = 128 bytes )
 };
 
+#if ENABLE_LIGHTING
 struct PointLight
 {
     float4 PositionWS; // Light position in world space.
@@ -88,14 +89,25 @@ struct LightResult
     float4 Specular;
 };
 
-ConstantBuffer<Material> MaterialCB : register( b0, space1 );
 ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
 
 StructuredBuffer<PointLight> PointLights : register( t0 );
 StructuredBuffer<SpotLight> SpotLights : register( t1 );
-Texture2D DiffuseTexture            : register( t2 );
+#endif // ENABLE_LIGHTING
 
-SamplerState LinearRepeatSampler    : register(s0);
+ConstantBuffer<Material> MaterialCB : register( b0, space1 );
+
+// Textures
+Texture2D AmbientTexture       : register( t2 );
+Texture2D EmissiveTexture      : register( t3 );
+Texture2D DiffuseTexture       : register( t4 );
+Texture2D SpecularTexture      : register( t5 );
+Texture2D SpecularPowerTexture : register( t6 );
+Texture2D NormalTexture        : register( t7 );
+Texture2D BumpTexture          : register( t8 );
+Texture2D OpacityTexture       : register( t9 );
+
+SamplerState TextureSampler    : register(s0);
 
 float3 LinearToSRGB( float3 x )
 {
@@ -106,6 +118,7 @@ float3 LinearToSRGB( float3 x )
     return x < 0.0031308 ? 12.92 * x : 1.13005 * sqrt( abs( x - 0.00228 ) ) - 0.13448 * x + 0.005719;
 }
 
+#if ENABLE_LIGHTING
 float DoDiffuse( float3 N, float3 L )
 {
     return max( 0, dot( N, L ) );
@@ -179,6 +192,7 @@ LightResult DoLighting( float3 P, float3 N )
 
     LightResult totalResult = (LightResult)0;
 
+    // Iterate point lights.
     for ( i = 0; i < LightPropertiesCB.NumPointLights; ++i )
     {
         LightResult result = DoPointLight( PointLights[i], V, P, N );
@@ -187,6 +201,7 @@ LightResult DoLighting( float3 P, float3 N )
         totalResult.Specular += result.Specular;
     }
 
+    // Iterate spot lights.
     for ( i = 0; i < LightPropertiesCB.NumSpotLights; ++i )
     {
         LightResult result = DoSpotLight( SpotLights[i], V, P, N );
@@ -200,17 +215,103 @@ LightResult DoLighting( float3 P, float3 N )
 
     return totalResult;
 }
+#endif // ENABLE_LIGHTING
 
-float4 main( PixelShaderInput IN ) : SV_Target
+float3 ExpandNormal( float3 n )
 {
-    LightResult lit = DoLighting( IN.PositionVS.xyz, normalize( IN.NormalVS ) );
+    return n * 2.0f - 1.0f;
+}
 
-    float4 emissive = MaterialCB.Emissive;
-    float4 ambient = MaterialCB.Ambient;
-    float4 diffuse = MaterialCB.Diffuse * lit.Diffuse;
-    float4 specular = MaterialCB.Specular * lit.Specular;
-    float4 texColor = DiffuseTexture.Sample( LinearRepeatSampler, IN.TexCoord.xy );
+float3 DoNormalMapping( float3x3 TBN, Texture2D tex, float2 uv )
+{
+    float3 N = tex.Sample( TextureSampler, uv ).xyz;
+    N = ExpandNormal( N );
 
-    return texColor;
-    return ( emissive + ambient + diffuse + specular ) * texColor;
+    // Transform normal from tangent space to view space.
+    N = mul( N, TBN );
+    return normalize( N );
+}
+
+// If c is not black, then blend the color with the texture
+// otherwise, replace the color with the texture.
+float4 SampleTexture(Texture2D t, float2 uv, float4 c)
+{
+    if (any(c.rgb))
+    {
+        c *= t.Sample( TextureSampler, uv );
+    }
+    else
+    {
+        c = t.Sample( TextureSampler, uv );
+    }
+
+    return c;
+}
+
+float4 main( PixelShaderInput IN ): SV_Target
+{
+    Material material = MaterialCB;
+
+    // By default, use the alpha component of the diffuse color.
+    float  alpha    = material.Diffuse.a;
+    if (material.HasOpacityTexture) 
+    {
+        alpha = OpacityTexture.Sample( TextureSampler, IN.TexCoord.xy ).r;
+    }
+
+#if ENABLE_DECAL
+    if ( alpha < 0.1f )
+    {
+        discard; // Discard the pixel if it is below a certain threshold.
+    }
+#endif // ENABLE_DECAL
+
+    float4 ambient = material.Ambient * 0.01f;
+    float4 emissive = material.Emissive;
+    float4 diffuse = material.Diffuse;
+    float4 specular = material.Specular;
+    float2 uv = IN.TexCoord.xy;
+
+    if (material.HasAmbientTexture)
+    {
+        ambient = SampleTexture( AmbientTexture, uv, ambient );
+    }
+    if (material.HasEmissiveTexture)
+    {
+        emissive = SampleTexture( EmissiveTexture, uv, emissive );
+    }
+    if ( material.HasDiffuseTexture )
+    {
+        diffuse = SampleTexture( DiffuseTexture, uv, diffuse );
+    }
+    if (material.HasSpecularTexture)
+    {
+        specular = SampleTexture( SpecularTexture, uv, specular );
+    }
+
+    float3 N;
+    // Normal mapping
+    if ( material.HasNormalTexture)
+    {
+        // For scense with normal mapping, I don't have to invert the binormal.
+        float3x3 TBN = float3x3( normalize( IN.TangentVS ),
+                                 normalize( IN.BitangentVS ),
+                                 normalize( IN.NormalVS ) );
+
+        N = DoNormalMapping( TBN, NormalTexture, uv );
+    }
+    else
+    {
+        N = normalize( IN.NormalVS );
+    }
+
+    float shadow = 1;
+#if ENABLE_LIGHTING
+    LightResult lit = DoLighting( IN.PositionVS.xyz, N );
+    diffuse *= lit.Diffuse;
+    specular *= lit.Specular;
+#else 
+    shadow = -IN.NormalVS.z;
+#endif // ENABLE_LIGHTING
+    return float4( ( emissive + ambient + diffuse + specular ).rgb, alpha * material.Opacity ) * shadow;
 }

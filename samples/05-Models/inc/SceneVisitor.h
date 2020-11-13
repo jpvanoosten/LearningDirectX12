@@ -49,8 +49,9 @@ public:
      * @param commandList The CommandList that is used to render the meshes in the scene.
      * @param camera The camera that is used to render the scene. This is required for setting up the MVP matrix.
      * @param pso The Pipeline state object to use for rendering the geometry in the scene.
+     * @param transparent Whether to draw transparent geometry during this pass.
      */
-    SceneVisitor( dx12lib::CommandList& commandList, const Camera& camera, BasicLightingPSO& pso );
+    SceneVisitor( dx12lib::CommandList& commandList, const Camera& camera, BasicLightingPSO& pso, bool transparent );
 
     // For this sample, we don't need to do anything when visiting the Scene.
     virtual void Visit( dx12lib::Scene& scene ) override;
@@ -63,4 +64,5 @@ private:
     dx12lib::CommandList& m_CommandList;
     const Camera&         m_Camera;
     BasicLightingPSO&     m_LightingPSO;
+    bool                  m_TransparentPass;
 };

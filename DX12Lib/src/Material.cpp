@@ -25,9 +25,9 @@ Material::Material( const MaterialProperties& materialProperties )
 : m_MaterialProperties( NewMaterialProperties( materialProperties ), &DeleteMaterialProperties )
 {}
 
-Material::Material(const Material& copy) 
+Material::Material( const Material& copy )
 : m_MaterialProperties( NewMaterialProperties( *copy.m_MaterialProperties ), &DeleteMaterialProperties )
-, m_Textures(copy.m_Textures)
+, m_Textures( copy.m_Textures )
 {}
 
 const DirectX::XMFLOAT4& Material::GetAmbientColor() const
@@ -183,13 +183,17 @@ void Material::SetTexture( TextureType type, std::shared_ptr<Texture> texture )
 bool Material::IsTransparent() const
 {
     return ( m_MaterialProperties->Opacity < 1.0f || m_MaterialProperties->HasOpacityTexture ||
-             ( m_MaterialProperties->HasDiffuseTexture && GetTexture( TextureType::Diffuse )->HasAlpha() ) ||
-             m_MaterialProperties->AlphaThreshold <= 0.0f );  // Objects with an alpha threshold > 0 should be drawn in the opaque pass.
+             ( m_MaterialProperties->HasDiffuseTexture && GetTexture( TextureType::Diffuse )->HasAlpha() ) );
 }
 
 const MaterialProperties& Material::GetMaterialProperties() const
 {
     return *m_MaterialProperties;
+}
+
+void Material::SetMaterialProperties( const MaterialProperties& materialProperties )
+{
+    *m_MaterialProperties = materialProperties;
 }
 
 // clang-format off
@@ -249,10 +253,17 @@ const MaterialProperties Material::White = {
     { 0.1f, 0.1f, 0.1f, 1.0f }
 };
 
+const MaterialProperties Material::WhiteDiffuse = {
+    { 1.0f, 1.0f, 1.0f, 1.0f },
+    { 0.0f, 0.0f, 0.0f, 1.0f },
+    0.0f, 
+    { 0.0f, 0.0f, 0.0f, 1.0f }
+};
+
 const MaterialProperties Material::Black = {
     { 0.0f, 0.0f, 0.0f, 1.0f },
-    { 1.0f, 1.0f, 1.0f, 1.0f },
-    128.0f, 
+    { 0.0f, 0.0f, 0.0f, 1.0f },
+    0.0f, 
     { 0.0f, 0.0f, 0.0f, 1.0f }
 };
 

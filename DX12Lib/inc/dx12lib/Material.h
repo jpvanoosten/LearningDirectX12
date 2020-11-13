@@ -64,7 +64,6 @@ struct alignas( 16 ) MaterialProperties
     , SpecularPower( specularPower )
     , IndexOfRefraction( indexOfRefraction )
     , BumpIntensity( bumpIntensity )
-    , AlphaThreshold( alphaThreshold )
     , HasAmbientTexture( false )
     , HasEmissiveTexture( false )
     , HasDiffuseTexture( false )
@@ -73,7 +72,6 @@ struct alignas( 16 ) MaterialProperties
     , HasNormalTexture( false )
     , HasBumpTexture( false )
     , HasOpacityTexture( false )
-    , Padding( 0.0f, 0.0f, 0.0f )
     {}
 
     DirectX::XMFLOAT4 Diffuse;
@@ -90,22 +88,19 @@ struct alignas( 16 ) MaterialProperties
     float SpecularPower;
     float IndexOfRefraction;             // For transparent materials, IOR > 0.
     float BumpIntensity;                 // When using bump textures (height maps) we need
-                                           // to scale the height values so the normals are visible.
+                                         // to scale the height values so the normals are visible.
     //------------------------------------ ( 16 bytes )
-    float    AlphaThreshold;             // Pixels with alpha < m_AlphaThreshold will be discarded.
     uint32_t HasAmbientTexture;
     uint32_t HasEmissiveTexture;
     uint32_t HasDiffuseTexture;
-    //------------------------------------ ( 16 bytes )
     uint32_t HasSpecularTexture;
+    //------------------------------------ ( 16 bytes )
     uint32_t HasSpecularPowerTexture;
     uint32_t HasNormalTexture;
     uint32_t HasBumpTexture;
+    uint32_t HasOpacityTexture;
     //------------------------------------ ( 16 bytes )
-    uint32_t          HasOpacityTexture;
-    DirectX::XMFLOAT3 Padding;           // Pad to 16 byte boundary.
-    //------------------------------------ ( 16 bytes )
-    // Total:                              ( 16 * 9 = 144 bytes )
+    // Total:                              ( 16 * 8 = 128 bytes )
 };
 // clang-format on
 
@@ -169,6 +164,7 @@ public:
     bool IsTransparent() const;
 
     const MaterialProperties& GetMaterialProperties() const;
+    void                      SetMaterialProperties( const MaterialProperties& materialProperties );
 
     // Define some interesting materials.
     static const MaterialProperties Zero;
@@ -179,6 +175,7 @@ public:
     static const MaterialProperties Magenta;
     static const MaterialProperties Yellow;
     static const MaterialProperties White;
+    static const MaterialProperties WhiteDiffuse;
     static const MaterialProperties Black;
     static const MaterialProperties Emerald;
     static const MaterialProperties Jade;
