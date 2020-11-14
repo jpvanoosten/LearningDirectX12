@@ -52,6 +52,6 @@ if ( DX12LIB_BUILD_SAMPLES )
 
     # Set the startup project.
     set_directory_properties( PROPERTIES 
-        VS_STARTUP_PROJECT 04-Models
+        VS_STARTUP_PROJECT 05-Models
     )
 endif( DX12LIB_BUILD_SAMPLES )
