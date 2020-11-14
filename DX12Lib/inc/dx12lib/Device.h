@@ -206,7 +206,7 @@ public:
      */
     CommandQueue& GetCommandQueue( D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT );
 
-    Microsoft::WRL::ComPtr<ID3D12Device8> GetD3D12Device() const
+    Microsoft::WRL::ComPtr<ID3D12Device2> GetD3D12Device() const
     {
         return m_d3d12Device;
     }
@@ -231,7 +231,7 @@ protected:
         DoCreatePipelineStateObject( const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc );
 
 private:
-    Microsoft::WRL::ComPtr<ID3D12Device8> m_d3d12Device;
+    Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;
 
     // The adapter that was used to create the device:
     std::shared_ptr<Adapter> m_Adapter;

@@ -629,7 +629,50 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
 // @see https://docs.microsoft.com/en-us/windows/win32/learnwin32/example--the-open-dialog-box
 void Tutorial5::OpenFile()
 {
-    static const COMDLG_FILTERSPEC filters[] = { { L"Model files (*.fbx; *.max; *.obj)", L"*.fbx;*.max;*.obj;" } };
+    // clang-format off
+    static const COMDLG_FILTERSPEC filters[] = { 
+        { L"Autodesk (*.fbx)", L"*.fbx" }, 
+        { L"Collada (*.dae)", L"*.dae" },
+        { L"glTF (*.gltf; *.glb", L"*.gltf;*.glb" },
+        { L"Blender 3D (*.blend)", L"*.blend" },
+        { L"3ds Max 3DS (*.3ds)", L"*.3ds" },
+        { L"3ds Max ASE (*.ase)", L"*.ase" },
+        { L"Wavefront Object (*.obj)", L"*.obj" },
+        { L"Industry Foundation Classes (IFC/Step) (*.ifc )", L"*.ifc" },
+        { L"XGL (*.xgl; *.zgl)", L"*.xgl;*.zgl" },
+        { L"Stanford Polygon Library (*.ply )", L"*.ply" },
+        { L"AutoCAD DXF (*.dxf)", L"*.dxf" },
+        { L"LightWave (*.lwo)", L"*.lws" },
+        { L"LightWave Scene (*.lws)", L"*.lws" },
+        { L"Modo (*.lxo)", L"*.lxo" },
+        { L"Stereolithography (*.stl)", L"*.stl" },
+        { L"DirectX X (*.x )", L"*.x" },
+        { L"AC3D (*.ac)", L"*.ac" },
+        { L"Milkshape 3D (*.ms3d )", L"*.ms3d" },
+        { L"TrueSpace (*.cob; *.scn)", L"*.cob;*.scn" },
+        { L"Ogre XML (*.xml )", L"*.xml" },
+        { L"Irrlicht Mesh (*.irrmesh)", L"*.irrmesh" },
+        { L"Irrlicht Scene (*.irr )", L"*.irr" },
+        { L"Quake I (*.mdl)", L"*.mdl" },
+        { L"Quake II (*.md2 )", L"*.md2" },
+        { L"Quake III (*.md3)", L"*.md3" },
+        { L"Quake III Map/BSP (*.pk3 )", L"*.pk3" },
+        { L"Return to Castle Wolfenstein (*.mdc )", L"*.mdc" },
+        { L"Doom 3 (*.md5*)", L"*.md5*" },
+        { L"Valve Model (*.smd; *.vta)", L"*.smd;*.vta" },
+        { L"Open Game Engine Exchange (*.ogex)", L"*.ogx" },
+        { L"Unreal (*.3d )", L"*.3d" },
+        { L"BlitzBasic 3D (*.b3d )", L"*.b3d" },
+        { L"Quick3D (*.q3d; *.q3s)", L"*.q3d;*.q3s" },
+        { L"Neutral File Format (*.nff )", L"*.nff" },
+        { L"Sense8 WorldToolKit (*.nff)", L"*.nff" },
+        { L"Object File Format (*.off )", L"*.off" },
+        { L"PovRAY Raw (*.raw )", L"*.raw" },
+        { L"Terragen Terrain (*.ter )", L"*.ter" },
+        { L"Izware Nendo (*.ndo)", L"*.ndo" },
+        { L"All Files (*.*)", L"*.*" }
+    };
+    // clang-format on
 
     ComPtr<IFileOpenDialog> pFileOpen;
     HRESULT                 hr = CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_PPV_ARGS( &pFileOpen ) );
@@ -638,7 +681,7 @@ void Tutorial5::OpenFile()
     {
         // Setup filters.
         hr = pFileOpen->SetFileTypes( _countof( filters ), filters );
-        pFileOpen->SetFileTypeIndex( 1 );
+        pFileOpen->SetFileTypeIndex( 7 ); // By default, choose OBJ files.
 
         // Show the open dialog box.
         if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )
