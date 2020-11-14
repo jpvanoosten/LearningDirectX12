@@ -10,10 +10,11 @@ CTestTestfile.cmake
 /build_vs*
 .vs/
 *.aps
-/DX12Lib/inc/GenerateMips_CS.inc
-/Data/Shaders/*.cso
+/Data/*/*/*.cso
 *.cso
 imgui.ini
 *.nsight-gfxproj
 /out
 /logs
+/Assets
+Assets.7z
