@@ -30,6 +30,8 @@
  *  @brief Scene file for storing scene data.
  */
 
+#include <DirectXCollision.h> // For DirectX::BoundingBox
+
 #include <filesystem>
 #include <functional>
 #include <map>
@@ -39,6 +41,7 @@
 class aiMaterial;
 class aiMesh;
 class aiNode;
+class aiScene;
 
 namespace dx12lib
 {
@@ -66,6 +69,12 @@ public:
     }
 
     /**
+     * Get the AABB of the scene.
+     * This returns the AABB of the root node of the scene.
+     */
+    DirectX::BoundingBox GetAABB() const;
+
+    /**
      * Accept a visitor.
      * This will first visit the scene, then it will visit the root node of the scene.
      */
@@ -91,6 +100,7 @@ protected:
     bool LoadSceneFromString( CommandList& commandList, const std::string& sceneStr, const std::string& format );
 
 private:
+    void ImportScene( CommandList& commandList, const aiScene& scene, std::filesystem::path parentPath );
     void ImportMaterial( CommandList& commandList, const aiMaterial& material, std::filesystem::path parentPath );
     void ImportMesh( CommandList& commandList, const aiMesh& mesh );
     std::shared_ptr<SceneNode> ImportSceneNode( CommandList& commandList, std::shared_ptr<SceneNode> parent,

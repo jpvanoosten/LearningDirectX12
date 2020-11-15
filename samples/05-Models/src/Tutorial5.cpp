@@ -93,7 +93,7 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 , m_Fullscreen( false )
 , m_AllowFullscreenToggle( true )
 , m_ShowFileOpenDialog( false )
-, m_CancelLoading(false)
+, m_CancelLoading( false )
 , m_Width( width )
 , m_Height( height )
 , m_IsLoading( true )
@@ -123,6 +123,7 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     // Create  window for rendering to.
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
+    // Hookup Window callbacks.
     m_Window->Update += UpdateEvent::slot( &Tutorial5::OnUpdate, this );
     m_Window->Resize += ResizeEvent::slot( &Tutorial5::OnResize, this );
     m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial5::OnDPIScaleChanged, this );
@@ -142,6 +143,7 @@ uint32_t Tutorial5::Run()
 
     LoadContent();
 
+    // Only show the window after content has been loaded.
     m_Window->Show();
 
     auto retCode = GameFramework::Get().Run();
@@ -158,6 +160,7 @@ bool Tutorial5::LoadingProgress( float loadingProgress )
 {
     m_LoadingProgress = loadingProgress;
 
+    // This function should return false to cancel the loading process.
     return !m_CancelLoading;
 }
 
@@ -165,7 +168,7 @@ bool Tutorial5::LoadScene( const std::wstring& sceneFile )
 {
     using namespace std::placeholders;  // For _1 used to denote a placeholder argument for std::bind.
 
-    m_IsLoading = true;
+    m_IsLoading     = true;
     m_CancelLoading = false;
 
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
@@ -177,8 +180,26 @@ bool Tutorial5::LoadScene( const std::wstring& sceneFile )
 
     if ( scene )
     {
-        // TODO: Compute the bounding box of the scene and make sure it fits in the view of the camera's frustum.
-        scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( 0.01f, 0.01f, 0.01f ) );
+        // Scale the scene so it fits in the camera frustum.
+        auto aabb      = scene->GetAABB();
+        auto maxExtent = std::max( aabb.Extents.x, std::max( aabb.Extents.y, aabb.Extents.z ) );
+        auto scale     = 50.0f / ( maxExtent * 2.0f );
+        maxExtent *= scale;
+
+        scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( scale, scale, scale ) );
+
+        // Position the camera so that it is looking at the loaded scene.
+        auto cameraRotation   = m_Camera.get_Rotation();
+        auto cameraFoV        = m_Camera.get_FoV();
+        auto distanceToObject = maxExtent * 1.5f / std::tanf( XMConvertToRadians( cameraFoV ) / 2.0f );
+
+        auto cameraPosition = XMVectorSet( 0, 0, -distanceToObject, 1 );
+        cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
+        auto focusPoint     = XMVectorSet( aabb.Center.x * scale, aabb.Center.y * scale, aabb.Center.z * scale, 1.0f );
+        cameraPosition      = cameraPosition + focusPoint;
+
+        m_Camera.set_Translation( cameraPosition );
+
         m_Scene = scene;
     }
 
@@ -296,8 +317,9 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
 
-    const int numPointLights = 3;
-    const int numSpotLights  = 3;
+    const int numPointLights       = 0;
+    const int numSpotLights        = 0;
+    const int numDirectionalLights = 2;
 
     static const XMVECTORF32 LightColors[] = { Colors::Red,     Colors::Green,  Colors::Blue,   Colors::Cyan,
                                                Colors::Magenta, Colors::Yellow, Colors::Purple, Colors::White };
@@ -313,6 +335,7 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     // Offset angle for light sources.
     float pointLightOffset = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
     float spotLightOffset  = numSpotLights > 0 ? 2.0f * XM_PI / numSpotLights : 0;
+    float directionalLightOffset = numDirectionalLights > 0 ? 2.0f * XM_PI / numDirectionalLights : 0;
 
     // Setup the lights.
     m_PointLights.resize( numPointLights );
@@ -366,6 +389,28 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
     m_LightingPSO->SetSpotLights( m_SpotLights );
     m_DecalPSO->SetSpotLights( m_SpotLights );
+
+    m_DirectionalLights.resize( numDirectionalLights );
+    for ( int i = 0; i < numDirectionalLights; ++i )
+    {
+        DirectionalLight& l = m_DirectionalLights[i];
+
+        float angle = lightAnimTime + directionalLightOffset * i;
+
+        XMVECTORF32 positionWS = { static_cast<float>( std::sin( angle ) ) * radius, 0.0f,
+                                   static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
+
+        XMVECTOR directionWS = XMVector3Normalize( XMVectorNegate( positionWS ) );
+        XMVECTOR directionVS = XMVector3TransformNormal( directionWS, viewMatrix );
+
+        XMStoreFloat4( &l.DirectionWS, directionWS );
+        XMStoreFloat4( &l.DirectionVS, directionVS );
+
+        l.Color = XMFLOAT4( Colors::White );
+    }
+
+    m_LightingPSO->SetDirectionalLights( m_DirectionalLights );
+    m_DecalPSO->SetDirectionalLights( m_DirectionalLights );
 
     OnRender();
 }
@@ -561,7 +606,7 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
                           ImGuiWindowFlags_NoScrollbar );
         ImGui::ProgressBar( m_LoadingProgress );
         ImGui::Text( m_LoadingText.c_str() );
-        if (!m_CancelLoading)
+        if ( !m_CancelLoading )
         {
             if ( ImGui::Button( "Cancel" ) )
             {
@@ -570,7 +615,7 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
         }
         else
         {
-            ImGui::Text( "Canceling Loading..." );
+            ImGui::Text( "Cancel Loading..." );
         }
 
         ImGui::End();
@@ -681,7 +726,7 @@ void Tutorial5::OpenFile()
     {
         // Setup filters.
         hr = pFileOpen->SetFileTypes( _countof( filters ), filters );
-        pFileOpen->SetFileTypeIndex( 7 ); // By default, choose OBJ files.
+        pFileOpen->SetFileTypeIndex( 7 );  // By default, choose OBJ files.
 
         // Show the open dialog box.
         if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )

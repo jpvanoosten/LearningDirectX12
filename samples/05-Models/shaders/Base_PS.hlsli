@@ -76,6 +76,15 @@ struct SpotLight
     // Total:                              16 * 6 = 96 bytes
 };
 
+struct DirectionalLight
+{
+    float4 DirectionWS;  // Light direction in world space.
+    //----------------------------------- (16 byte boundary)
+    float4 DirectionVS;  // Light direction in view space.
+    //----------------------------------- (16 byte boundary)
+    float4 Color;
+};
+
 struct LightProperties
 {
     uint NumPointLights;
@@ -93,19 +102,20 @@ ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
 
 StructuredBuffer<PointLight> PointLights : register( t0 );
 StructuredBuffer<SpotLight> SpotLights : register( t1 );
+StructuredBuffer<DirectionalLight> DirectionalLights : register( t2 );
 #endif // ENABLE_LIGHTING
 
 ConstantBuffer<Material> MaterialCB : register( b0, space1 );
 
 // Textures
-Texture2D AmbientTexture       : register( t2 );
-Texture2D EmissiveTexture      : register( t3 );
-Texture2D DiffuseTexture       : register( t4 );
-Texture2D SpecularTexture      : register( t5 );
-Texture2D SpecularPowerTexture : register( t6 );
-Texture2D NormalTexture        : register( t7 );
-Texture2D BumpTexture          : register( t8 );
-Texture2D OpacityTexture       : register( t9 );
+Texture2D AmbientTexture       : register( t3 );
+Texture2D EmissiveTexture      : register( t4 );
+Texture2D DiffuseTexture       : register( t5 );
+Texture2D SpecularTexture      : register( t6 );
+Texture2D SpecularPowerTexture : register( t7 );
+Texture2D NormalTexture        : register( t8 );
+Texture2D BumpTexture          : register( t9 );
+Texture2D OpacityTexture       : register( t10 );
 
 SamplerState TextureSampler    : register(s0);
 
@@ -183,6 +193,18 @@ LightResult DoSpotLight( SpotLight light, float3 V, float3 P, float3 N )
     return result;
 }
 
+LightResult DoDirectionalLight( DirectionalLight light, float3 V, float3 P, float3 N )
+{
+    LightResult result;
+
+    float3 L = normalize( -light.DirectionVS.xyz );
+
+    result.Diffuse = light.Color * DoDiffuse( N, L );
+    result.Specular = light.Color * DoSpecular( V, N, L );
+
+    return result;
+}
+
 LightResult DoLighting( float3 P, float3 N )
 {
     uint i;
@@ -210,6 +232,15 @@ LightResult DoLighting( float3 P, float3 N )
         totalResult.Specular += result.Specular;
     }
 
+    // Iterate directinal lights
+    for (i = 0; i < LightPropertiesCB.NumDirectionalLights; ++i)
+    {
+        LightResult result = DoDirectionalLight( DirectionalLights[i], V, P, N );
+
+        totalResult.Diffuse += result.Diffuse;
+        totalResult.Specular += result.Specular;
+    }
+
     totalResult.Diffuse = saturate( totalResult.Diffuse );
     totalResult.Specular = saturate( totalResult.Specular );
 
@@ -229,7 +260,7 @@ float3 DoNormalMapping( float3x3 TBN, Texture2D tex, float2 uv )
 
     // Transform normal from tangent space to view space.
     N = mul( N, TBN );
-    return normalize( N );
+    return normalize(N);
 }
 
 // If c is not black, then blend the color with the texture
@@ -266,7 +297,7 @@ float4 main( PixelShaderInput IN ): SV_Target
     }
 #endif // ENABLE_DECAL
 
-    float4 ambient = material.Ambient * 0.01f;
+    float4 ambient = material.Ambient * 0.1f;
     float4 emissive = material.Emissive;
     float4 diffuse = material.Diffuse;
     float4 specular = material.Specular;
@@ -293,7 +324,6 @@ float4 main( PixelShaderInput IN ): SV_Target
     // Normal mapping
     if ( material.HasNormalTexture)
     {
-        // For scense with normal mapping, I don't have to invert the binormal.
         float3x3 TBN = float3x3( normalize( IN.TangentVS ),
                                  normalize( IN.BitangentVS ),
                                  normalize( IN.NormalVS ) );
@@ -313,5 +343,6 @@ float4 main( PixelShaderInput IN ): SV_Target
 #else 
     shadow = -IN.NormalVS.z;
 #endif // ENABLE_LIGHTING
-    return float4( ( emissive + ambient + diffuse + specular ).rgb, alpha * material.Opacity ) * shadow;
+
+    return float4( ( emissive + ambient + diffuse + specular ).rgb * shadow, alpha * material.Opacity );
 }

@@ -29,9 +29,10 @@
  *  @brief A mesh class encapsulates the index and vertex buffers for a geometric primitive.
  */
 
-#include <DirectXMath.h>  // For XMFLOAT3, XMFLOAT2
+#include <DirectXCollision.h>  // For BoundingBox
+#include <DirectXMath.h>       // For XMFLOAT3, XMFLOAT2
 
-#include <d3d12.h> // For D3D12_INPUT_LAYOUT_DESC, D3D12_INPUT_ELEMENT_DESC
+#include <d3d12.h>  // For D3D12_INPUT_LAYOUT_DESC, D3D12_INPUT_ELEMENT_DESC
 
 #include <map>     // For std::map
 #include <memory>  // For std::shared_ptr
@@ -82,8 +83,14 @@ public:
     std::shared_ptr<Material> GetMaterial() const;
 
     /**
+     * Set the AABB bounding volume for the geometry in this mesh.
+     */
+    void                        SetAABB( const DirectX::BoundingBox& aabb );
+    const DirectX::BoundingBox& GetAABB() const;
+
+    /**
      * Draw the mesh to a CommandList.
-     * 
+     *
      * @param commandList The command list to draw to.
      * @param instanceCount The number of instances to draw.
      * @param startInstance The offset added to the instance ID when reading from the instance buffers.
@@ -100,5 +107,6 @@ private:
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
     std::shared_ptr<Material>    m_Material;
     D3D12_PRIMITIVE_TOPOLOGY     m_PrimitiveTopology;
+    DirectX::BoundingBox         m_AABB;
 };
 }  // namespace dx12lib

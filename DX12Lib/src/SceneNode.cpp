@@ -11,6 +11,7 @@ using namespace DirectX;
 
 SceneNode::SceneNode( const DirectX::XMMATRIX& localTransform )
 : m_Name( "SceneNode" )
+, m_AABB( { 0, 0, 0 }, {0, 0, 0} )
 {
     m_AlignedData                     = (AlignedData*)_aligned_malloc( sizeof( AlignedData ), 16 );
     m_AlignedData->m_LocalTransform   = localTransform;
@@ -150,6 +151,9 @@ size_t SceneNode::AddMesh( std::shared_ptr<Mesh> mesh )
         {
             index = m_Meshes.size();
             m_Meshes.push_back( mesh );
+
+            // Merge the mesh's AABB with AABB of the scene node.
+            BoundingBox::CreateMerged( m_AABB, m_AABB, mesh->GetAABB() );
         }
         else
         {
@@ -183,6 +187,10 @@ std::shared_ptr<Mesh> SceneNode::GetMesh(size_t pos)
     return mesh;
 }
 
+const DirectX::BoundingBox& SceneNode::GetAABB() const 
+{
+    return m_AABB;
+}
 
 void SceneNode::Accept( Visitor& visitor )
 {

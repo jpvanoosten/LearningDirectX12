@@ -81,17 +81,18 @@ public:
         MaterialCB,         // ConstantBuffer<Material> MaterialCB : register( b0, space1 );
         LightPropertiesCB,  // ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
 
-        PointLights,  // StructuredBuffer<PointLight> PointLights : register( t0 );
-        SpotLights,   // StructuredBuffer<SpotLight> SpotLights : register( t1 );
+        PointLights,        // StructuredBuffer<PointLight> PointLights : register( t0 );
+        SpotLights,         // StructuredBuffer<SpotLight> SpotLights : register( t1 );
+        DirectionalLights,  // StructuredBuffer<DirectionalLight> DirectionalLights : register( t2 )
 
-        Textures,  // Texture2D AmbientTexture       : register( t2 );
-                   // Texture2D EmissiveTexture : register( t3 );
-                   // Texture2D DiffuseTexture : register( t4 );
-                   // Texture2D SpecularTexture : register( t5 );
-                   // Texture2D SpecularPowerTexture : register( t6 );
-                   // Texture2D NormalTexture : register( t7 );
-                   // Texture2D BumpTexture : register( t8 );
-                   // Texture2D OpacityTexture : register( t9 );
+        Textures,  // Texture2D AmbientTexture       : register( t3 );
+                   // Texture2D EmissiveTexture : register( t4 );
+                   // Texture2D DiffuseTexture : register( t5 );
+                   // Texture2D SpecularTexture : register( t6 );
+                   // Texture2D SpecularPowerTexture : register( t7 );
+                   // Texture2D NormalTexture : register( t8 );
+                   // Texture2D BumpTexture : register( t9 );
+                   // Texture2D OpacityTexture : register( t10 );
         NumRootParameters
     };
 

@@ -92,24 +92,22 @@ void CameraController::ResetView()
 {
     // Reset previous deltas.
     m_X = m_Y = m_Z = m_PreviousPitch = m_PreviousYaw = 0.0f;
-    m_Pitch         = 0.0f;
-    m_Yaw           = 90.0f;
+    m_Pitch         = m_Yaw = 0.0f;
 
     XMVECTOR rotation =
         XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
     m_Camera.set_Rotation( rotation );
-    m_Camera.set_Translation( { 0, 1.5, 0.25, 1 } );
-
+    m_Camera.set_Translation( { 0, 0, 0, 1 } );
 }
 
 void CameraController::Update( UpdateEventArgs& e )
 {
     const float  MOVE_SPEED        = 10.0;
-    const float  LOOK_SENSITIVITY  = 180.0;
+    const float  LOOK_SENSITIVITY  = 90.0;
     const float  MOUSE_SENSITIVITY = 0.1;
 
-    float  speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.1;
-    float rotationScale = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 1.0 : 0.5;
+    float  speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 2.0 : 1.0;
+    float rotationScale = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 2.0 : 1.0;
 
     float  X = ( m_KMInput->GetFloat( MoveX ) + m_PadInput->GetFloat( MoveX ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
     float  Y = ( m_KMInput->GetFloat( MoveY ) + m_PadInput->GetFloat( MoveY ) ) * MOVE_SPEED * speedScale * e.DeltaTime;

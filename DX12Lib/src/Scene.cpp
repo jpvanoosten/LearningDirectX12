@@ -38,12 +38,34 @@ private:
     std::function<bool( float )> m_ProgressCallback;
 };
 
+// Helper function to create an DirectX::BoundingBox from an aiAABB.
+inline DirectX::BoundingBox CreateBoundingBox( const aiAABB& aabb )
+{
+    XMVECTOR min = XMVectorSet( aabb.mMin.x, aabb.mMin.y, aabb.mMin.z, 1.0f );
+    XMVECTOR max = XMVectorSet( aabb.mMax.x, aabb.mMax.y, aabb.mMax.z, 1.0f );
+
+    DirectX::BoundingBox bb;
+    BoundingBox::CreateFromPoints( bb, min, max );
+
+    return bb;
+}
+
 bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fileName,
                                const std::function<bool( float )>& loadingProgress )
 {
 
     fs::path filePath   = fileName;
     fs::path exportPath = fs::path( filePath ).replace_extension( "assbin" );
+
+    fs::path parentPath;
+    if ( filePath.has_parent_path() )
+    {
+        parentPath = filePath.parent_path();
+    }
+    else
+    {
+        parentPath = fs::current_path();
+    }
 
     Assimp::Importer importer;
     const aiScene*   scene;
@@ -53,7 +75,7 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
     // Check if a preprocessed file exists.
     if ( fs::exists( exportPath ) && fs::is_regular_file( exportPath ) )
     {
-        scene = importer.ReadFile( exportPath.string(), 0 );
+        scene = importer.ReadFile( exportPath.string(), aiProcess_GenBoundingBoxes );
     }
     else
     {
@@ -78,38 +100,12 @@ bool Scene::LoadSceneFromFile( CommandList& commandList, const std::wstring& fil
         return false;
     }
 
-    m_MaterialMap.clear();
-    m_Materials.clear();
-    m_Meshes.clear();
-
-    fs::path parentPath;
-    if ( filePath.has_parent_path() )
-    {
-        parentPath = filePath.parent_path();
-    }
-    else
-    {
-        parentPath = fs::current_path();
-    }
-
-    // Import scene materials.
-    for ( unsigned int i = 0; i < scene->mNumMaterials; ++i )
-    {
-        ImportMaterial( commandList, *( scene->mMaterials[i] ), parentPath );
-    }
-    // Import meshes
-    for ( unsigned int i = 0; i < scene->mNumMeshes; ++i )
-    {
-        ImportMesh( commandList, *( scene->mMeshes[i] ) );
-    }
-
-    m_RootNode = ImportSceneNode( commandList, m_RootNode, scene->mRootNode );
+    ImportScene( commandList, *scene, parentPath );
 
     return true;
 }
 
-bool dx12lib::Scene::LoadSceneFromString( CommandList& commandList, const std::string& sceneStr,
-                                          const std::string& format )
+bool Scene::LoadSceneFromString( CommandList& commandList, const std::string& sceneStr, const std::string& format )
 {
     Assimp::Importer importer;
     const aiScene*   scene = nullptr;
@@ -126,39 +122,37 @@ bool dx12lib::Scene::LoadSceneFromString( CommandList& commandList, const std::s
     {
         return false;
     }
-    else
-    {
-        // If we have a previously loaded scene, delete it.
-        if ( m_RootNode )
-        {
-            m_RootNode.reset();
-        }
 
-        // Import scene materials.
-        for ( unsigned int i = 0; i < scene->mNumMaterials; ++i )
-        {
-            ImportMaterial( commandList, *scene->mMaterials[i], fs::current_path() );
-        }
-
-        // Import meshes
-        for ( unsigned int i = 0; i < scene->mNumMeshes; ++i )
-        {
-            ImportMesh( commandList, *scene->mMeshes[i] );
-        }
-
-        m_RootNode = ImportSceneNode( commandList, m_RootNode, scene->mRootNode );
-    }
+    ImportScene( commandList, *scene, fs::current_path() );
 
     return true;
 }
 
-void Scene::Accept( Visitor& visitor )
+void Scene::ImportScene( CommandList& commandList, const aiScene& scene, std::filesystem::path parentPath )
 {
-    visitor.Visit( *this );
+
     if ( m_RootNode )
     {
-        m_RootNode->Accept( visitor );
+        m_RootNode.reset();
     }
+
+    m_MaterialMap.clear();
+    m_Materials.clear();
+    m_Meshes.clear();
+
+    // Import scene materials.
+    for ( unsigned int i = 0; i < scene.mNumMaterials; ++i )
+    {
+        ImportMaterial( commandList, *( scene.mMaterials[i] ), parentPath );
+    }
+    // Import meshes
+    for ( unsigned int i = 0; i < scene.mNumMeshes; ++i )
+    {
+        ImportMesh( commandList, *( scene.mMeshes[i] ) );
+    }
+
+    // Import the root node.
+    m_RootNode = ImportSceneNode( commandList, nullptr, scene.mRootNode );
 }
 
 void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material, std::filesystem::path parentPath )
@@ -376,6 +370,9 @@ void Scene::ImportMesh( CommandList& commandList, const aiMesh& aiMesh )
         }
     }
 
+    // Set the AABB from the AI Mesh's AABB.
+    mesh->SetAABB( CreateBoundingBox( aiMesh.mAABB ) );
+
     m_Meshes.push_back( mesh );
 }
 
@@ -411,4 +408,25 @@ std::shared_ptr<SceneNode> Scene::ImportSceneNode( CommandList& commandList, std
     }
 
     return node;
+}
+
+void Scene::Accept( Visitor& visitor )
+{
+    visitor.Visit( *this );
+    if ( m_RootNode )
+    {
+        m_RootNode->Accept( visitor );
+    }
+}
+
+DirectX::BoundingBox Scene::GetAABB() const
+{
+    DirectX::BoundingBox aabb { { 0, 0, 0 }, { 0, 0, 0 } };
+
+    if ( m_RootNode )
+    {
+        aabb = m_RootNode->GetAABB();
+    }
+
+    return aabb;
 }

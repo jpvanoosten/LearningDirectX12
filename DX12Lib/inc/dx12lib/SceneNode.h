@@ -103,6 +103,12 @@ public:
     std::shared_ptr<Mesh> GetMesh( size_t index = 0 );
 
     /**
+     * Get the AABB for this scene node.
+     * The AABB is formed from the combination of all mesh AABB's.
+     */
+    const DirectX::BoundingBox& GetAABB() const;
+
+    /**
      * Accept a visitor.
      */
     void Accept( Visitor& visitor );
@@ -131,5 +137,9 @@ private:
     NodeList                 m_Children;
     NodeNameMap              m_ChildrenByName;
     MeshList                 m_Meshes;
+
+    // The AABB for this scene node. 
+    // Created by merging the AABB of the meshes.
+    DirectX::BoundingBox m_AABB;
 };
 }  // namespace dx12lib

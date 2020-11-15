@@ -107,3 +107,12 @@ void Mesh::Accept( Visitor& visitor )
 {
     visitor.Visit( *this );
 }
+
+void Mesh::SetAABB( const DirectX::BoundingBox& aabb ) {
+    m_AABB = aabb;
+}
+
+const DirectX::BoundingBox& dx12lib::Mesh::GetAABB() const {
+    return m_AABB;
+}
+

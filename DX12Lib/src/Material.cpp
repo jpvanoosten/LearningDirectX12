@@ -182,8 +182,7 @@ void Material::SetTexture( TextureType type, std::shared_ptr<Texture> texture )
 
 bool Material::IsTransparent() const
 {
-    return ( m_MaterialProperties->Opacity < 1.0f || m_MaterialProperties->HasOpacityTexture ||
-             ( m_MaterialProperties->HasDiffuseTexture && GetTexture( TextureType::Diffuse )->HasAlpha() ) );
+    return ( m_MaterialProperties->Opacity < 1.0f || m_MaterialProperties->HasOpacityTexture );
 }
 
 const MaterialProperties& Material::GetMaterialProperties() const

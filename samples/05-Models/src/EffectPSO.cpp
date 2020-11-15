@@ -53,7 +53,7 @@ EffectPSO::EffectPSO( std::shared_ptr<dx12lib::Device> device, bool enableLighti
                                                     D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
 
     // Descriptor range for the textures.
-    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 2 );
+    CD3DX12_DESCRIPTOR_RANGE1 descriptorRage( D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 3 );
 
     // clang-format off
     CD3DX12_ROOT_PARAMETER1 rootParameters[RootParameters::NumRootParameters];
@@ -62,6 +62,7 @@ EffectPSO::EffectPSO( std::shared_ptr<dx12lib::Device> device, bool enableLighti
     rootParameters[RootParameters::LightPropertiesCB].InitAsConstants( sizeof( LightProperties ) / 4, 1, 0, D3D12_SHADER_VISIBILITY_PIXEL );
     rootParameters[RootParameters::PointLights].InitAsShaderResourceView( 0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
     rootParameters[RootParameters::SpotLights].InitAsShaderResourceView( 1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
+    rootParameters[RootParameters::DirectionalLights].InitAsShaderResourceView( 2, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE, D3D12_SHADER_VISIBILITY_PIXEL );
     rootParameters[RootParameters::Textures].InitAsDescriptorTable( 1, &descriptorRage, D3D12_SHADER_VISIBILITY_PIXEL );
 
     CD3DX12_STATIC_SAMPLER_DESC anisotropicSampler( 0, D3D12_FILTER_ANISOTROPIC );
@@ -194,10 +195,9 @@ void EffectPSO::Apply( CommandList& commandList )
         commandList.SetGraphicsDynamicStructuredBuffer( RootParameters::SpotLights, m_SpotLights );
     }
 
-    if ( m_DirtyFlags & DF_SpotLights )
+    if ( m_DirtyFlags & DF_DirectionalLights )
     {
-        // TODO:
-        // commandList.SetGraphicsDynamicStructuredBuffer( RootParameters::DirectionalLights, m_DirectionalLights );
+        commandList.SetGraphicsDynamicStructuredBuffer( RootParameters::DirectionalLights, m_DirectionalLights );
     }
 
     if ( m_DirtyFlags & ( DF_PointLights | DF_SpotLights | DF_DirectionalLights ) )
