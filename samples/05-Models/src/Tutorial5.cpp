@@ -319,7 +319,7 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
     const int numPointLights       = 0;
     const int numSpotLights        = 0;
-    const int numDirectionalLights = 2;
+    const int numDirectionalLights = 1;
 
     static const XMVECTORF32 LightColors[] = { Colors::Red,     Colors::Green,  Colors::Blue,   Colors::Cyan,
                                                Colors::Magenta, Colors::Yellow, Colors::Purple, Colors::White };

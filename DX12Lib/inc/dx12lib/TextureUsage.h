@@ -40,11 +40,15 @@ namespace dx12lib
 {
 enum class TextureUsage
 {
-    Albedo,
+    Albedo,            // Albedo textures use sRGB formats.
     Diffuse = Albedo,  // Treat Diffuse and Albedo textures the same.
+    Ambient = Albedo,  // Treat Ambient textures like Albedo textures.
+    Emissive = Albedo, // Treat Emissive textures like Albedo textures.
+    Specular,
     Heightmap,
     Depth = Heightmap,  // Treat height and depth textures the same.
     Normalmap,
+    Opacity,
     RenderTarget,  // Texture is used as a render target.
 };
 } // namespace dx12lib

@@ -297,10 +297,10 @@ float4 main( PixelShaderInput IN ): SV_Target
     }
 #endif // ENABLE_DECAL
 
-    float4 ambient = material.Ambient * 0.1f;
+    float4 ambient = material.Ambient;
     float4 emissive = material.Emissive;
     float4 diffuse = material.Diffuse;
-    float4 specular = material.Specular;
+    float specularPower = material.SpecularPower;
     float2 uv = IN.TexCoord.xy;
 
     if (material.HasAmbientTexture)
@@ -315,18 +315,18 @@ float4 main( PixelShaderInput IN ): SV_Target
     {
         diffuse = SampleTexture( DiffuseTexture, uv, diffuse );
     }
-    if (material.HasSpecularTexture)
-    {
-        specular = SampleTexture( SpecularTexture, uv, specular );
-    }
 
     float3 N;
     // Normal mapping
     if ( material.HasNormalTexture)
     {
-        float3x3 TBN = float3x3( normalize( IN.TangentVS ),
-                                 normalize( IN.BitangentVS ),
-                                 normalize( IN.NormalVS ) );
+        float3 tangent = normalize(IN.TangentVS);
+        float3 bitangent = normalize(IN.BitangentVS);
+        float3 normal = normalize(IN.NormalVS);
+
+        float3x3 TBN = float3x3( tangent,
+                                 bitangent,
+                                 normal );
 
         N = DoNormalMapping( TBN, NormalTexture, uv );
     }
@@ -336,10 +336,21 @@ float4 main( PixelShaderInput IN ): SV_Target
     }
 
     float shadow = 1;
+    float4 specular = 0;
 #if ENABLE_LIGHTING
     LightResult lit = DoLighting( IN.PositionVS.xyz, N );
     diffuse *= lit.Diffuse;
-    specular *= lit.Specular;
+    // Specular power less than 1 doesn't really make sense.
+    // Ignore specular on materials with a specular power less than 1.
+    if (material.SpecularPower > 1.0f)
+    {
+        specular = material.Specular;
+        if (material.HasSpecularTexture)
+        {
+            specular = SampleTexture( SpecularTexture, uv, specular );
+        }
+        specular *= lit.Specular;
+    }
 #else 
     shadow = -IN.NormalVS.z;
 #endif // ENABLE_LIGHTING
