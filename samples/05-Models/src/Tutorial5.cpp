@@ -194,11 +194,12 @@ bool Tutorial5::LoadScene( const std::wstring& sceneFile )
         auto distanceToObject = s.Radius / std::tanf( XMConvertToRadians( cameraFoV ) / 2.0f );
 
         auto cameraPosition = XMVectorSet( 0, 0, -distanceToObject, 1 );
-        cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
+//        cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
         auto focusPoint     = XMVectorSet( s.Center.x * scale, s.Center.y * scale, s.Center.z * scale, 1.0f );
         cameraPosition      = cameraPosition + focusPoint;
 
         m_Camera.set_Translation( cameraPosition );
+        m_Camera.set_FocalPoint( focusPoint );
 
         m_Scene = scene;
     }

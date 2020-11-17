@@ -15,6 +15,7 @@ Camera::Camera()
     pData                = (AlignedData*)_aligned_malloc( sizeof( AlignedData ), 16 );
     pData->m_Translation = XMVectorZero();
     pData->m_Rotation    = XMQuaternionIdentity();
+    pData->m_FocalPoint  = XMVectorZero();
 }
 
 Camera::~Camera()
@@ -44,9 +45,9 @@ XMMATRIX Camera::get_ViewMatrix() const
 
 XMMATRIX Camera::get_InverseViewMatrix() const
 {
-    if ( m_InverseViewDirty )
+    if ( m_ViewDirty || m_InverseViewDirty )
     {
-        pData->m_InverseViewMatrix = XMMatrixInverse( nullptr, pData->m_ViewMatrix );
+        pData->m_InverseViewMatrix = XMMatrixInverse( nullptr, get_ViewMatrix() );
         m_InverseViewDirty         = false;
     }
 
@@ -76,7 +77,7 @@ XMMATRIX Camera::get_ProjectionMatrix() const
 
 XMMATRIX Camera::get_InverseProjectionMatrix() const
 {
-    if ( m_InverseProjectionDirty )
+    if ( m_ProjectionDirty || m_InverseProjectionDirty )
     {
         UpdateInverseProjectionMatrix();
     }
@@ -110,11 +111,21 @@ XMVECTOR Camera::get_Translation() const
     return pData->m_Translation;
 }
 
+void XM_CALLCONV Camera::set_FocalPoint(DirectX::FXMVECTOR focalPoint) 
+{
+    pData->m_FocalPoint = focalPoint;
+    m_ViewDirty         = true;
+}
+
+DirectX::XMVECTOR Camera::get_FocalPoint() const 
+{
+    return pData->m_FocalPoint;
+}
+
 void Camera::set_Rotation( FXMVECTOR rotation )
 {
     pData->m_Rotation  = rotation;
     m_ViewDirty        = true;
-    m_InverseViewDirty = true;
 }
 
 XMVECTOR Camera::get_Rotation() const
@@ -141,23 +152,44 @@ void XM_CALLCONV Camera::Translate( FXMVECTOR translation, Space space )
     pData->m_Translation = XMVectorSetW( pData->m_Translation, 1.0f );
 
     m_ViewDirty        = true;
-    m_InverseViewDirty = true;
 }
+
+void XM_CALLCONV Camera::MoveFocalPoint( DirectX::FXMVECTOR focalPoint, Space space )
+{
+    switch ( space )
+    {
+    case Space::Local:
+    {
+        pData->m_FocalPoint += XMVector3Rotate( focalPoint, pData->m_Rotation );
+    }
+    break;
+    case Space::World:
+    {
+        pData->m_FocalPoint += focalPoint;
+    }
+    break;
+    }
+
+    pData->m_FocalPoint = XMVectorSetW( pData->m_FocalPoint, 1.0f );
+
+    m_ViewDirty = true;
+}
+
 
 void Camera::Rotate( FXMVECTOR quaternion )
 {
     pData->m_Rotation = XMQuaternionMultiply( quaternion, pData->m_Rotation );
 
     m_ViewDirty        = true;
-    m_InverseViewDirty = true;
 }
 
 void Camera::UpdateViewMatrix() const
 {
     XMMATRIX rotationMatrix    = XMMatrixTranspose( XMMatrixRotationQuaternion( pData->m_Rotation ) );
     XMMATRIX translationMatrix = XMMatrixTranslationFromVector( -( pData->m_Translation ) );
+    XMMATRIX focalMatrix       = XMMatrixTranslationFromVector( -( pData->m_FocalPoint ) );
 
-    pData->m_ViewMatrix = translationMatrix * rotationMatrix;
+    pData->m_ViewMatrix = focalMatrix * rotationMatrix * translationMatrix;
 
     m_InverseViewDirty = true;
     m_ViewDirty        = false;
@@ -185,11 +217,6 @@ void Camera::UpdateProjectionMatrix() const
 
 void Camera::UpdateInverseProjectionMatrix() const
 {
-    if ( m_ProjectionDirty )
-    {
-        UpdateProjectionMatrix();
-    }
-
-    pData->m_InverseProjectionMatrix = XMMatrixInverse( nullptr, pData->m_ProjectionMatrix );
+    pData->m_InverseProjectionMatrix = XMMatrixInverse( nullptr, get_ProjectionMatrix() );
     m_InverseProjectionDirty         = false;
 }

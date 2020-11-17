@@ -97,7 +97,8 @@ void CameraController::ResetView()
     XMVECTOR rotation =
         XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
     m_Camera.set_Rotation( rotation );
-    m_Camera.set_Translation( { 0, 0, 0, 1 } );
+    m_Camera.set_Translation( { 0, 0, 1, 1 } );
+    m_Camera.set_FocalPoint( { 0, 0, 0, 1 } );
 }
 
 void CameraController::Update( UpdateEventArgs& e )
@@ -125,8 +126,8 @@ void CameraController::Update( UpdateEventArgs& e )
     // Add mouse motion without smoothing.
     if ( m_KMInput->GetBool( LMB ) )
     {
-        pitch -= m_KMInput->GetFloatDelta( Pitch ) * MOUSE_SENSITIVITY * rotationScale;
-        yaw -= m_KMInput->GetFloatDelta( Yaw ) * MOUSE_SENSITIVITY * rotationScale;
+        pitch += m_KMInput->GetFloatDelta( Pitch ) * MOUSE_SENSITIVITY * rotationScale;
+        yaw += m_KMInput->GetFloatDelta( Yaw ) * MOUSE_SENSITIVITY * rotationScale;
     }
 
     m_Pitch += pitch * ( m_InverseY ? 1.0 : -1.0 );
@@ -137,7 +138,7 @@ void CameraController::Update( UpdateEventArgs& e )
 
     // Apply translation and rotation to the camera.
     XMVECTORF32 translation = { X, Y, Z };
-    m_Camera.Translate( translation );
+    m_Camera.Translate( translation, Space::World );
 
     // Apply rotation
     XMVECTOR rotation =

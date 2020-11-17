@@ -81,6 +81,12 @@ public:
     DirectX::XMVECTOR get_Translation() const;
 
     /**
+     * Set the focal point for the camera (in world-space).
+     */
+    void XM_CALLCONV set_FocalPoint( DirectX::FXMVECTOR focalPoint );
+    DirectX::XMVECTOR get_FocalPoint() const;
+
+    /**
      * Set the camera's rotation in world-space.
      * @param rotation The rotation quaternion.
      */
@@ -93,6 +99,7 @@ public:
 
     void XM_CALLCONV Translate( DirectX::FXMVECTOR translation, Space space = Space::Local );
     void Rotate( DirectX::FXMVECTOR quaternion );
+    void XM_CALLCONV MoveFocalPoint( DirectX::FXMVECTOR focalPoint, Space space = Space::Local );
 
 protected:
     virtual void UpdateViewMatrix() const;
@@ -109,6 +116,9 @@ protected:
         // World-space rotation of the camera.
         // THIS IS A QUATERNION!!!!
         DirectX::XMVECTOR m_Rotation;
+
+        // World-space position of the focus object.
+        DirectX::XMVECTOR m_FocalPoint;
 
         DirectX::XMMATRIX m_ViewMatrix, m_InverseViewMatrix;
         DirectX::XMMATRIX m_ProjectionMatrix, m_InverseProjectionMatrix;
