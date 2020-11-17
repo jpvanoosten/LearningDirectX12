@@ -90,14 +90,12 @@ public:
 class MakeTexture : public Texture
 {
 public:
-    MakeTexture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, TextureUsage texturUsage,
-                 const D3D12_CLEAR_VALUE* clearValue )
-    : Texture( device, resourceDesc, texturUsage, clearValue )
+    MakeTexture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue )
+    : Texture( device, resourceDesc, clearValue )
     {}
 
-    MakeTexture( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, TextureUsage textureUsage,
-                 const D3D12_CLEAR_VALUE* clearValue )
-    : Texture( device, resource, textureUsage, clearValue )
+    MakeTexture( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, const D3D12_CLEAR_VALUE* clearValue )
+    : Texture( device, resource, clearValue )
     {}
 
     virtual ~MakeTexture() {}
@@ -444,18 +442,16 @@ std::shared_ptr<dx12lib::VertexBuffer>
     return vertexBuffer;
 }
 
-std::shared_ptr<Texture> Device::CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc, TextureUsage textureUsage,
-                                                const D3D12_CLEAR_VALUE* clearValue )
+std::shared_ptr<Texture> Device::CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue )
 {
-    std::shared_ptr<Texture> texture = std::make_shared<MakeTexture>( *this, resourceDesc, textureUsage, clearValue );
+    std::shared_ptr<Texture> texture = std::make_shared<MakeTexture>( *this, resourceDesc, clearValue );
 
     return texture;
 }
 
-std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-                                                TextureUsage textureUsage, const D3D12_CLEAR_VALUE* clearValue )
+std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource, const D3D12_CLEAR_VALUE* clearValue )
 {
-    std::shared_ptr<Texture> texture = std::make_shared<MakeTexture>( *this, resource, textureUsage, clearValue );
+    std::shared_ptr<Texture> texture = std::make_shared<MakeTexture>( *this, resource, clearValue );
 
     return texture;
 }

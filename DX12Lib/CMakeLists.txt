@@ -33,7 +33,6 @@ set( HEADER_FILES
     inc/dx12lib/StructuredBuffer.h
     inc/dx12lib/SwapChain.h
     inc/dx12lib/Texture.h
-    inc/dx12lib/TextureUsage.h
     inc/dx12lib/ThreadSafeQueue.h
     inc/dx12lib/UnorderedAccessView.h
     inc/dx12lib/UploadBuffer.h

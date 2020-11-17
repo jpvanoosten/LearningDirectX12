@@ -216,11 +216,11 @@ bool Tutorial4::LoadContent()
     m_Skybox = commandList->CreateCube( 1.0f, true );
 
     // Load some textures
-    m_DefaultTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp" );
-    m_DirectXTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/Directx9.png" );
-    m_EarthTexture          = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds" );
-    m_MonaLisaTexture       = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg" );
-    m_GraceCathedralTexture = commandList->LoadTextureFromFile( L"Assets/Textures/grace-new.hdr" );
+    m_DefaultTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp", true );
+    m_DirectXTexture        = commandList->LoadTextureFromFile( L"Assets/Textures/Directx9.png", true );
+    m_EarthTexture          = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds", true );
+    m_MonaLisaTexture       = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg", true );
+    m_GraceCathedralTexture = commandList->LoadTextureFromFile( L"Assets/Textures/grace-new.hdr", true );
 
     // m_GraceCathedralTexture = commandList->LoadTextureFromFile( L"Assets/Textures/UV_Test_Pattern.png" );
 
@@ -230,7 +230,7 @@ bool Tutorial4::LoadContent()
     cubemapDesc.DepthOrArraySize           = 6;
     cubemapDesc.MipLevels                  = 0;
 
-    m_GraceCathedralCubemap = m_Device->CreateTexture( cubemapDesc, TextureUsage::Albedo );
+    m_GraceCathedralCubemap = m_Device->CreateTexture( cubemapDesc );
     m_GraceCathedralCubemap->SetName( L"Grace Cathedral Cubemap" );
 
     // Convert the 2D panorama to a 3D cubemap.
@@ -262,7 +262,7 @@ bool Tutorial4::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    m_HDRTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    m_HDRTexture = m_Device->CreateTexture( colorDesc, &colorClearValue );
     m_HDRTexture->SetName( L"HDR Texture" );
 
     // Create a depth buffer for the HDR render target.
@@ -273,7 +273,7 @@ bool Tutorial4::LoadContent()
     depthClearValue.Format       = depthDesc.Format;
     depthClearValue.DepthStencil = { 1.0f, 0 };
 
-    auto depthTexture = m_Device->CreateTexture( depthDesc, TextureUsage::Depth, &depthClearValue );
+    auto depthTexture = m_Device->CreateTexture( depthDesc, &depthClearValue );
     depthTexture->SetName( L"Depth Render Target" );
 
     // Attach the HDR texture to the HDR render target.

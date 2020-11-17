@@ -166,10 +166,10 @@ bool Tutorial3::LoadContent()
     m_Plane  = commandList->CreatePlane();
 
     // Load some textures
-    m_DefaultTexture  = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp" );
-    m_DirectXTexture  = commandList->LoadTextureFromFile( L"Assets/Textures/Directx9.png" );
-    m_EarthTexture    = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds" );
-    m_MonaLisaTexture = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg" );
+    m_DefaultTexture  = commandList->LoadTextureFromFile( L"Assets/Textures/DefaultWhite.bmp", true );
+    m_DirectXTexture  = commandList->LoadTextureFromFile( L"Assets/Textures/Directx9.png", true );
+    m_EarthTexture    = commandList->LoadTextureFromFile( L"Assets/Textures/earth.dds", true );
+    m_MonaLisaTexture = commandList->LoadTextureFromFile( L"Assets/Textures/Mona_Lisa.jpg", true );
 
     // Start loading resources...
     commandQueue.ExecuteCommandList( commandList );
@@ -267,7 +267,7 @@ bool Tutorial3::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    auto colorTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    auto colorTexture = m_Device->CreateTexture( colorDesc, &colorClearValue );
     colorTexture->SetName( L"Color Render Target" );
 
     // Create a depth buffer.
@@ -277,7 +277,7 @@ bool Tutorial3::LoadContent()
     depthClearValue.Format       = depthDesc.Format;
     depthClearValue.DepthStencil = { 1.0f, 0 };
 
-    auto depthTexture = m_Device->CreateTexture( depthDesc, TextureUsage::Depth, &depthClearValue );
+    auto depthTexture = m_Device->CreateTexture( depthDesc, &depthClearValue );
     depthTexture->SetName( L"Depth Render Target" );
 
     // Attach the textures to the render target.

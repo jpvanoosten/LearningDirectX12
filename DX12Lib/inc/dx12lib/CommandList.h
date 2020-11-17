@@ -31,7 +31,6 @@
  *  The CommandList class provides additional functionality that makes working with
  *  DirectX 12 applications easier.
  */
-#include "TextureUsage.h"
 #include "VertexTypes.h"
 
 #include <DirectXMath.h>
@@ -218,8 +217,7 @@ public:
     /**
      * Load a texture by a filename.
      */
-    std::shared_ptr<Texture> LoadTextureFromFile( const std::wstring& fileName,
-                                                  TextureUsage        textureUsage = TextureUsage::Albedo );
+    std::shared_ptr<Texture> LoadTextureFromFile( const std::wstring& fileName, bool sRGB = false );
 
     /**
      * Load a scene file.

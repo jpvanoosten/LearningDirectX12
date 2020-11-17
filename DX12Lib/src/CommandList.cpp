@@ -289,7 +289,7 @@ void CommandList::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY primitiveTopology
     m_d3d12CommandList->IASetPrimitiveTopology( primitiveTopology );
 }
 
-std::shared_ptr<Texture> CommandList::LoadTextureFromFile( const std::wstring& fileName, TextureUsage textureUsage )
+std::shared_ptr<Texture> CommandList::LoadTextureFromFile( const std::wstring& fileName, bool sRGB )
 {
     std::shared_ptr<Texture> texture;
     fs::path                 filePath( fileName );
@@ -302,7 +302,7 @@ std::shared_ptr<Texture> CommandList::LoadTextureFromFile( const std::wstring& f
     auto                        iter = ms_TextureCache.find( fileName );
     if ( iter != ms_TextureCache.end() )
     {
-        texture = m_Device.CreateTexture( iter->second, textureUsage );
+        texture = m_Device.CreateTexture( iter->second );
     }
     else
     {
@@ -326,8 +326,8 @@ std::shared_ptr<Texture> CommandList::LoadTextureFromFile( const std::wstring& f
             ThrowIfFailed( LoadFromWICFile( fileName.c_str(), WIC_FLAGS_FORCE_RGB, &metadata, scratchImage ) );
         }
 
-        // Force albedo textures to use sRGB
-        if ( textureUsage == TextureUsage::Albedo )
+        // Force the texture format to be sRGB to convert to linear when sampling the texture in a shader.
+        if ( sRGB )
         {
             metadata.format = MakeSRGB( metadata.format );
         }
@@ -361,7 +361,7 @@ std::shared_ptr<Texture> CommandList::LoadTextureFromFile( const std::wstring& f
             &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE, &textureDesc,
             D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS( &textureResource ) ) );
 
-        texture = m_Device.CreateTexture( textureResource, textureUsage );
+        texture = m_Device.CreateTexture( textureResource );
         texture->SetName( fileName );
 
         // Update the global state tracker.
@@ -501,7 +501,7 @@ void CommandList::GenerateMips( const std::shared_ptr<Texture>& texture )
     }
 
     // Generate mips with the UAV compatible resource.
-    auto uavTexture = m_Device.CreateTexture( uavResource, texture->GetTextureUsage() );
+    auto uavTexture = m_Device.CreateTexture( uavResource );
     GenerateMips_UAV( uavTexture, Texture::IsSRGBFormat( resourceDesc.Format ) );
 
     if ( aliasResource )

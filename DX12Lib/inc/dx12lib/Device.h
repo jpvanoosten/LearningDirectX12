@@ -33,7 +33,6 @@
  */
 
 #include "DescriptorAllocation.h"
-#include "TextureUsage.h"
 
 #include "d3dx12.h"
 #include <dxgi1_6.h>
@@ -73,7 +72,6 @@ public:
      * DX12 objects are caught by the debug layer.
      */
     static void EnableDebugLayer();
-
 
     static void ReportLiveObjects();
 
@@ -142,11 +140,9 @@ public:
      * @returns A pointer to the created texture.
      */
     std::shared_ptr<Texture> CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc,
-                                            TextureUsage               textureUsage = TextureUsage::Albedo,
-                                            const D3D12_CLEAR_VALUE*   clearValue   = nullptr );
+                                            const D3D12_CLEAR_VALUE*   clearValue = nullptr );
     std::shared_ptr<Texture> CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-                                            TextureUsage                           textureUsage = TextureUsage::Albedo,
-                                            const D3D12_CLEAR_VALUE*               clearValue   = nullptr );
+                                            const D3D12_CLEAR_VALUE*               clearValue = nullptr );
 
     std::shared_ptr<IndexBuffer> CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat );
     std::shared_ptr<IndexBuffer> CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,

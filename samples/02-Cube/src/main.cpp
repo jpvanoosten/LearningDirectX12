@@ -332,7 +332,7 @@ void OnResized( ResizeEventArgs& e )
     optimizedClearValue.Format            = DXGI_FORMAT_D32_FLOAT;
     optimizedClearValue.DepthStencil      = { 1.0F, 0 };
 
-    pDepthTexture = pDevice->CreateTexture( depthTextureDesc, TextureUsage::Depth, &optimizedClearValue );
+    pDepthTexture = pDevice->CreateTexture( depthTextureDesc, &optimizedClearValue );
 }
 
 void OnWindowClose( WindowCloseEventArgs& e )

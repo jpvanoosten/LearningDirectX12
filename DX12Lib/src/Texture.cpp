@@ -8,18 +8,15 @@
 
 using namespace dx12lib;
 
-Texture::Texture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, TextureUsage textureUsage,
-                  const D3D12_CLEAR_VALUE* clearValue )
+Texture::Texture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue )
 : Resource( device, resourceDesc, clearValue )
-, m_TextureUsage( textureUsage )
 {
     CreateViews();
 }
 
-Texture::Texture( Device& device, ComPtr<ID3D12Resource> resource, TextureUsage textureUsage,
+Texture::Texture( Device& device, ComPtr<ID3D12Resource> resource,
                   const D3D12_CLEAR_VALUE* clearValue )
 : Resource( device, resource, clearValue )
-, m_TextureUsage( textureUsage )
 {
     CreateViews();
 }

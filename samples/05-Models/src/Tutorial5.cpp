@@ -260,7 +260,7 @@ void Tutorial5::LoadContent()
     colorClearValue.Color[2] = 0.9f;
     colorClearValue.Color[3] = 1.0f;
 
-    auto colorTexture = m_Device->CreateTexture( colorDesc, TextureUsage::RenderTarget, &colorClearValue );
+    auto colorTexture = m_Device->CreateTexture( colorDesc, &colorClearValue );
     colorTexture->SetName( L"Color Render Target" );
 
     // Create a depth buffer.
@@ -270,7 +270,7 @@ void Tutorial5::LoadContent()
     depthClearValue.Format       = depthDesc.Format;
     depthClearValue.DepthStencil = { 1.0f, 0 };
 
-    auto depthTexture = m_Device->CreateTexture( depthDesc, TextureUsage::Depth, &depthClearValue );
+    auto depthTexture = m_Device->CreateTexture( depthDesc, &depthClearValue );
     depthTexture->SetName( L"Depth Render Target" );
 
     // Attach the textures to the render target.

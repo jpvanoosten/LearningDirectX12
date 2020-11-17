@@ -32,7 +32,6 @@
 
 #include "DescriptorAllocation.h"
 #include "Resource.h"
-#include "TextureUsage.h"
 
 #include "d3dx12.h"
 
@@ -47,16 +46,6 @@ class Device;
 class Texture : public Resource
 {
 public:
-    TextureUsage GetTextureUsage() const
-    {
-        return m_TextureUsage;
-    }
-
-    void SetTextureUsage( TextureUsage textureUsage )
-    {
-        m_TextureUsage = textureUsage;
-    }
-
     /**
      * Resize the texture.
      */
@@ -127,10 +116,9 @@ public:
     static DXGI_FORMAT GetUAVCompatableFormat( DXGI_FORMAT format );
 
 protected:
-    Texture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, TextureUsage texturUsage = TextureUsage::Albedo,
-             const D3D12_CLEAR_VALUE* clearValue = nullptr );
+    Texture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue = nullptr );
     Texture( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource,
-             TextureUsage textureUsage = TextureUsage::Albedo, const D3D12_CLEAR_VALUE* clearValue = nullptr );
+             const D3D12_CLEAR_VALUE* clearValue = nullptr );
     virtual ~Texture();
 
     /**
@@ -139,8 +127,6 @@ protected:
     void CreateViews();
 
 private:
-    TextureUsage m_TextureUsage;
-
     DescriptorAllocation m_RenderTargetView;
     DescriptorAllocation m_DepthStencilView;
     DescriptorAllocation m_ShaderResourceView;

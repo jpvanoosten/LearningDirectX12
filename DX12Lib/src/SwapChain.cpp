@@ -197,7 +197,7 @@ void SwapChain::UpdateRenderTargetViews()
 
         ResourceStateTracker::AddGlobalResourceState( backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON );
 
-        m_BackBufferTextures[i] = m_Device.CreateTexture( backBuffer, TextureUsage::RenderTarget );
+        m_BackBufferTextures[i] = m_Device.CreateTexture( backBuffer );
 
         // Set the names for the backbuffer textures.
         // Useful for debugging.

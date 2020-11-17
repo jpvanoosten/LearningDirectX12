@@ -216,7 +216,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                               &aiBlendOperation ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Ambient );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, true );
         pMaterial->SetTexture( Material::TextureType::Ambient, texture );
     }
 
@@ -226,7 +226,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                               &aiBlendOperation ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Emissive );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, true );
         pMaterial->SetTexture( Material::TextureType::Emissive, texture );
     }
 
@@ -236,7 +236,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                               &aiBlendOperation ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Albedo );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, true );
         pMaterial->SetTexture( Material::TextureType::Diffuse, texture );
     }
 
@@ -246,7 +246,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                               &aiBlendOperation ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Specular );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, true );
         pMaterial->SetTexture( Material::TextureType::Specular, texture );
     }
 
@@ -256,7 +256,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                               &aiBlendOperation ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Specular );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, false );
         pMaterial->SetTexture( Material::TextureType::SpecularPower, texture );
     }
 
@@ -265,7 +265,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                               &aiBlendOperation ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Opacity );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, false );
         pMaterial->SetTexture( Material::TextureType::Opacity, texture );
     }
 
@@ -274,7 +274,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
          material.GetTexture( aiTextureType_NORMALS, 0, &aiTexturePath ) == aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Normalmap );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, false );
         pMaterial->SetTexture( Material::TextureType::Normal, texture );
     }
     // Load bump map (only if there is no normal map).
@@ -283,7 +283,7 @@ void Scene::ImportMaterial( CommandList& commandList, const aiMaterial& material
                   aiReturn_SUCCESS )
     {
         fs::path texturePath( aiTexturePath.C_Str() );
-        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, TextureUsage::Heightmap );
+        auto     texture = commandList.LoadTextureFromFile( parentPath / texturePath, false );
 
         // Some materials actually store normal maps in the bump map slot. Assimp can't tell the difference between
         // these two texture types, so we try to make an assumption about whether the texture is a normal map or a bump
