@@ -48,10 +48,10 @@ struct PointLight
     //----------------------------------- (16 byte boundary)
     float4 Color;
     //----------------------------------- (16 byte boundary)
+    float  Ambient;
     float  ConstantAttenuation;
     float  LinearAttenuation;
     float  QuadraticAttenuation;
-    float  Padding;
     //----------------------------------- (16 byte boundary)
     // Total:                              16 * 4 = 64 bytes
 };
@@ -68,12 +68,15 @@ struct SpotLight
     //----------------------------------- (16 byte boundary)
     float4 Color;
     //----------------------------------- (16 byte boundary)
+    float  Ambient;
     float  SpotAngle;
     float  ConstantAttenuation;
     float  LinearAttenuation;
-    float  QuadraticAttenuation;
     //----------------------------------- (16 byte boundary)
-    // Total:                              16 * 6 = 96 bytes
+    float  QuadraticAttenuation;
+    float3 Padding;
+    //----------------------------------- (16 byte boundary)
+    // Total:                              16 * 7 = 112 bytes
 };
 
 struct DirectionalLight
@@ -83,6 +86,11 @@ struct DirectionalLight
     float4 DirectionVS;  // Light direction in view space.
     //----------------------------------- (16 byte boundary)
     float4 Color;
+    //----------------------------------- (16 byte boundary)
+    float Ambient;
+    float3 Padding;
+    //----------------------------------- (16 byte boundary)
+    // Total:                              16 * 4 = 64 bytes
 };
 
 struct LightProperties
@@ -96,6 +104,7 @@ struct LightResult
 {
     float4 Diffuse;
     float4 Specular;
+    float4 Ambient;
 };
 
 ConstantBuffer<LightProperties> LightPropertiesCB : register( b1 );
@@ -134,12 +143,12 @@ float DoDiffuse( float3 N, float3 L )
     return max( 0, dot( N, L ) );
 }
 
-float DoSpecular( float3 V, float3 N, float3 L )
+float DoSpecular( float3 V, float3 N, float3 L, float specularPower )
 {
     float3 R = normalize( reflect( -L, N ) );
     float RdotV = max( 0, dot( R, V ) );
 
-    return pow( RdotV, MaterialCB.SpecularPower );
+    return pow( RdotV, specularPower );
 }
 
 float DoAttenuation( float c, float l, float q, float d )
@@ -155,7 +164,7 @@ float DoSpotCone( float3 spotDir, float3 L, float spotAngle )
     return smoothstep( minCos, maxCos, cosAngle );
 }
 
-LightResult DoPointLight( PointLight light, float3 V, float3 P, float3 N )
+LightResult DoPointLight( PointLight light, float3 V, float3 P, float3 N, float specularPower )
 {
     LightResult result;
     float3 L = ( light.PositionVS.xyz - P );
@@ -168,12 +177,13 @@ LightResult DoPointLight( PointLight light, float3 V, float3 P, float3 N )
                                        d );
 
     result.Diffuse = DoDiffuse( N, L ) * attenuation * light.Color;
-    result.Specular = DoSpecular( V, N, L ) * attenuation * light.Color;
+    result.Specular = DoSpecular( V, N, L, specularPower ) * attenuation * light.Color;
+    result.Ambient = light.Color * light.Ambient;
 
     return result;
 }
 
-LightResult DoSpotLight( SpotLight light, float3 V, float3 P, float3 N )
+LightResult DoSpotLight( SpotLight light, float3 V, float3 P, float3 N, float specularPower )
 {
     LightResult result;
     float3 L = ( light.PositionVS.xyz - P );
@@ -188,24 +198,26 @@ LightResult DoSpotLight( SpotLight light, float3 V, float3 P, float3 N )
     float spotIntensity = DoSpotCone( light.DirectionVS.xyz, L, light.SpotAngle );
 
     result.Diffuse = DoDiffuse( N, L ) * attenuation * spotIntensity * light.Color;
-    result.Specular = DoSpecular( V, N, L ) * attenuation * spotIntensity * light.Color;
+    result.Specular = DoSpecular( V, N, L, specularPower ) * attenuation * spotIntensity * light.Color;
+    result.Ambient = light.Color * light.Ambient;
 
     return result;
 }
 
-LightResult DoDirectionalLight( DirectionalLight light, float3 V, float3 P, float3 N )
+LightResult DoDirectionalLight( DirectionalLight light, float3 V, float3 P, float3 N, float specularPower )
 {
     LightResult result;
 
     float3 L = normalize( -light.DirectionVS.xyz );
 
     result.Diffuse = light.Color * DoDiffuse( N, L );
-    result.Specular = light.Color * DoSpecular( V, N, L );
+    result.Specular = light.Color * DoSpecular( V, N, L, specularPower );
+    result.Ambient = light.Color * light.Ambient;
 
     return result;
 }
 
-LightResult DoLighting( float3 P, float3 N )
+LightResult DoLighting( float3 P, float3 N, float specularPower )
 {
     uint i;
 
@@ -217,32 +229,36 @@ LightResult DoLighting( float3 P, float3 N )
     // Iterate point lights.
     for ( i = 0; i < LightPropertiesCB.NumPointLights; ++i )
     {
-        LightResult result = DoPointLight( PointLights[i], V, P, N );
+        LightResult result = DoPointLight( PointLights[i], V, P, N, specularPower );
 
         totalResult.Diffuse += result.Diffuse;
         totalResult.Specular += result.Specular;
+        totalResult.Ambient += result.Ambient;
     }
 
     // Iterate spot lights.
     for ( i = 0; i < LightPropertiesCB.NumSpotLights; ++i )
     {
-        LightResult result = DoSpotLight( SpotLights[i], V, P, N );
+        LightResult result = DoSpotLight( SpotLights[i], V, P, N, specularPower );
 
         totalResult.Diffuse += result.Diffuse;
         totalResult.Specular += result.Specular;
+        totalResult.Ambient += result.Ambient;
     }
 
     // Iterate directinal lights
     for (i = 0; i < LightPropertiesCB.NumDirectionalLights; ++i)
     {
-        LightResult result = DoDirectionalLight( DirectionalLights[i], V, P, N );
+        LightResult result = DoDirectionalLight( DirectionalLights[i], V, P, N, specularPower );
 
         totalResult.Diffuse += result.Diffuse;
         totalResult.Specular += result.Specular;
+        totalResult.Ambient += result.Ambient;
     }
 
     totalResult.Diffuse = saturate( totalResult.Diffuse );
     totalResult.Specular = saturate( totalResult.Specular );
+    totalResult.Ambient = saturate( totalResult.Ambient );
 
     return totalResult;
 }
@@ -262,6 +278,32 @@ float3 DoNormalMapping( float3x3 TBN, Texture2D tex, float2 uv )
     N = mul( N, TBN );
     return normalize(N);
 }
+
+float3 DoBumpMapping( float3x3 TBN, Texture2D tex, float2 uv, float bumpScale )
+{
+    // Sample the heightmap at the current texture coordinate.
+    float height_00 = tex.Sample( TextureSampler, uv ).r * bumpScale;
+    // Sample the heightmap in the U texture coordinate direction.
+    float height_10 = tex.Sample( TextureSampler, uv, int2( 1, 0 ) ).r * bumpScale;
+    // Sample the heightmap in the V texture coordinate direction.
+    float height_01 = tex.Sample( TextureSampler, uv, int2( 0, 1 ) ).r * bumpScale;
+
+    float3 p_00 = { 0, 0, height_00 };
+    float3 p_10 = { 1, 0, height_10 };
+    float3 p_01 = { 0, 1, height_01 };
+
+    // normal = tangent x bitangent
+    float3 tangent = normalize( p_10 - p_00 );
+    float3 bitangent = normalize( p_01 - p_00 );
+
+    float3 normal = cross( tangent, bitangent );
+
+    // Transform normal from tangent space to view space.
+    normal = mul( normal, TBN );
+
+    return normal;
+}
+
 
 // If c is not black, then blend the color with the texture
 // otherwise, replace the color with the texture.
@@ -315,10 +357,14 @@ float4 main( PixelShaderInput IN ): SV_Target
     {
         diffuse = SampleTexture( DiffuseTexture, uv, diffuse );
     }
+    if (material.HasSpecularPowerTexture)
+    {
+        specularPower *= SpecularPowerTexture.Sample( TextureSampler, uv ).r;
+    }
 
     float3 N;
     // Normal mapping
-    if ( material.HasNormalTexture)
+    if ( material.HasNormalTexture )
     {
         float3 tangent = normalize(IN.TangentVS);
         float3 bitangent = normalize(IN.BitangentVS);
@@ -330,6 +376,18 @@ float4 main( PixelShaderInput IN ): SV_Target
 
         N = DoNormalMapping( TBN, NormalTexture, uv );
     }
+    else if ( material.HasBumpTexture )
+    {
+        float3 tangent = normalize(IN.TangentVS);
+        float3 bitangent = normalize(IN.BitangentVS);
+        float3 normal = normalize(IN.NormalVS);
+
+        float3x3 TBN = float3x3( tangent,
+                                 -bitangent,
+                                 normal );
+
+        N = DoBumpMapping( TBN, BumpTexture, uv, material.BumpIntensity );
+    }
     else
     {
         N = normalize( IN.NormalVS );
@@ -338,8 +396,9 @@ float4 main( PixelShaderInput IN ): SV_Target
     float shadow = 1;
     float4 specular = 0;
 #if ENABLE_LIGHTING
-    LightResult lit = DoLighting( IN.PositionVS.xyz, N );
+    LightResult lit = DoLighting( IN.PositionVS.xyz, N, specularPower );
     diffuse *= lit.Diffuse;
+    ambient *= lit.Ambient;
     // Specular power less than 1 doesn't really make sense.
     // Ignore specular on materials with a specular power less than 1.
     if (material.SpecularPower > 1.0f)

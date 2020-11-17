@@ -181,21 +181,21 @@ bool Tutorial5::LoadScene( const std::wstring& sceneFile )
     if ( scene )
     {
         // Scale the scene so it fits in the camera frustum.
-        auto aabb      = scene->GetAABB();
-        auto maxExtent = std::max( aabb.Extents.x, std::max( aabb.Extents.y, aabb.Extents.z ) );
-        auto scale     = 50.0f / ( maxExtent * 2.0f );
-        maxExtent *= scale;
+        DirectX::BoundingSphere s;
+        BoundingSphere::CreateFromBoundingBox( s, scene->GetAABB() );
+        auto scale     = 50.0f / ( s.Radius * 2.0f );
+        s.Radius *= scale;
 
         scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( scale, scale, scale ) );
 
         // Position the camera so that it is looking at the loaded scene.
         auto cameraRotation   = m_Camera.get_Rotation();
         auto cameraFoV        = m_Camera.get_FoV();
-        auto distanceToObject = maxExtent * 1.5f / std::tanf( XMConvertToRadians( cameraFoV ) / 2.0f );
+        auto distanceToObject = s.Radius / std::tanf( XMConvertToRadians( cameraFoV ) / 2.0f );
 
         auto cameraPosition = XMVectorSet( 0, 0, -distanceToObject, 1 );
         cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
-        auto focusPoint     = XMVectorSet( aabb.Center.x * scale, aabb.Center.y * scale, aabb.Center.z * scale, 1.0f );
+        auto focusPoint     = XMVectorSet( s.Center.x * scale, s.Center.y * scale, s.Center.z * scale, 1.0f );
         cameraPosition      = cameraPosition + focusPoint;
 
         m_Camera.set_Translation( cameraPosition );
@@ -397,7 +397,7 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
         float angle = lightAnimTime + directionalLightOffset * i;
 
-        XMVECTORF32 positionWS = { static_cast<float>( std::sin( angle ) ) * radius, 0.0f,
+        XMVECTORF32 positionWS = { static_cast<float>( std::sin( angle ) ) * radius, radius,
                                    static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
 
         XMVECTOR directionWS = XMVector3Normalize( XMVectorNegate( positionWS ) );

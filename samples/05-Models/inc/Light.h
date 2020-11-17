@@ -38,6 +38,7 @@ struct PointLight
     : PositionWS( 0.0f, 0.0f, 0.0f, 1.0f )
     , PositionVS( 0.0f, 0.0f, 0.0f, 1.0f )
     , Color( 1.0f, 1.0f, 1.0f, 1.0f )
+    , Ambient( 0.01f )
     , ConstantAttenuation( 1.0f )
     , LinearAttenuation( 0.0f )
     , QuadraticAttenuation( 0.0f )
@@ -49,11 +50,10 @@ struct PointLight
     //----------------------------------- (16 byte boundary)
     DirectX::XMFLOAT4 Color;
     //----------------------------------- (16 byte boundary)
+    float Ambient;
     float ConstantAttenuation;
     float LinearAttenuation;
     float QuadraticAttenuation;
-    // Add some padding to align to 16 bytes.
-    float Padding;
     //----------------------------------- (16 byte boundary)
     // Total:                              16 * 4 = 64 bytes
 };
@@ -66,6 +66,7 @@ struct SpotLight
     , DirectionWS( 0.0f, 0.0f, 1.0f, 0.0f )
     , DirectionVS( 0.0f, 0.0f, 1.0f, 0.0f )
     , Color( 1.0f, 1.0f, 1.0f, 1.0f )
+    , Ambient( 0.01f )
     , SpotAngle( DirectX::XM_PIDIV2 )
     , ConstantAttenuation( 1.0f )
     , LinearAttenuation( 0.0f )
@@ -82,12 +83,15 @@ struct SpotLight
     //----------------------------------- (16 byte boundary)
     DirectX::XMFLOAT4 Color;
     //----------------------------------- (16 byte boundary)
+    float Ambient;
     float SpotAngle;
     float ConstantAttenuation;
     float LinearAttenuation;
-    float QuadraticAttenuation;
     //----------------------------------- (16 byte boundary)
-    // Total:                              16 * 6 = 96 bytes
+    float QuadraticAttenuation;
+    float Padding[3];
+    //----------------------------------- (16 byte boundary)
+    // Total:                              16 * 7 = 112 bytes
 };
 
 struct DirectionalLight
@@ -96,6 +100,7 @@ struct DirectionalLight
     : DirectionWS( 0.0f, 0.0f, 1.0f, 0.0f )
     , DirectionVS( 0.0f, 0.0f, 1.0f, 0.0f )
     , Color( 1.0f, 1.0f, 1.0f, 1.0f )
+    , Ambient( 0.01f )
     {}
 
     DirectX::XMFLOAT4 DirectionWS;  // Light direction in world space.
@@ -104,6 +109,8 @@ struct DirectionalLight
     //----------------------------------- (16 byte boundary)
     DirectX::XMFLOAT4 Color;
     //----------------------------------- (16 byte boundary)
-    // Total:                              16 * 3 = 48 bytes
+    float Ambient;
+    float Padding[3];
+    //----------------------------------- (16 byte boundary)
+    // Total:                              16 * 4 = 64 bytes
 };
-
