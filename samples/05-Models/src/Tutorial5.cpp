@@ -544,6 +544,12 @@ void Tutorial5::OnKeyPressed( KeyEventArgs& e )
             // Reset camera transform
             m_CameraController.ResetView();
             break;
+        case KeyCode::O:
+            if (e.Control) 
+            {
+                OpenFile();
+            }
+            break;
         }
     }
 }
@@ -717,125 +723,6 @@ static const COMDLG_FILTERSPEC g_FileFilters[] = {
 };
 // clang-format on
 
-// Handle events for the IFileOpenDialog.
-// @see
-// https://github.com/microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/winui/shell/appplatform/commonfiledialog/CommonFileDialogApp.cpp
-// @see https://stackoverflow.com/questions/1481255/refreshing-ifiledialog-view
-class DialogEventHandler : public IFileDialogEvents
-{
-public:
-    DialogEventHandler()
-    : _cRef( 1 )
-    , first(true)
-    {}
-
-    // IUnknown methods
-    IFACEMETHODIMP QueryInterface( REFIID riid, _COM_Outptr_ void** ppvObject )
-    {
-        static const QITAB qit[] = { QITABENT( DialogEventHandler, IFileDialogEvents ), { 0 } };
-        return QISearch( this, qit, riid, ppvObject );
-    }
-
-    IFACEMETHODIMP_( ULONG ) AddRef()
-    {
-        return InterlockedIncrement( &_cRef );
-    }
-
-    IFACEMETHODIMP_( ULONG ) Release()
-    {
-        long cRef = InterlockedDecrement( &_cRef );
-        if ( !cRef )
-        {
-            delete this;
-        }
-        return cRef;
-    }
-
-    // IFileDialogEvents methods
-    IFACEMETHODIMP OnFileOk( IFileDialog* )
-    {
-        return S_OK;
-    }
-
-    IFACEMETHODIMP OnFolderChange( IFileDialog* )
-    {
-        return S_OK;
-    }
-
-    IFACEMETHODIMP OnFolderChanging( IFileDialog*, IShellItem* )
-    {
-        return S_OK;
-    }
-
-    IFACEMETHODIMP OnHelp( IFileDialog* )
-    {
-        return S_OK;
-    }
-
-    IFACEMETHODIMP OnSelectionChange( IFileDialog* )
-    {
-        return S_OK;
-    }
-
-    IFACEMETHODIMP OnShareViolation( IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE* )
-    {
-        return S_OK;
-    }
-
-    IFACEMETHODIMP OnTypeChange( IFileDialog* pfd )
-    {
-        HRESULT hr = S_OK;
-        if ( !first )
-        {
-            hr = pfd->SetFileName( L"*.*" );
-            if ( SUCCEEDED( hr ) )
-            {
-                hr = pfd->SetFileName( L"" );
-                if ( SUCCEEDED( hr ) )
-                {
-                    ComPtr<IOleWindow> pOleWindow;
-                    hr = pfd->QueryInterface( IID_PPV_ARGS( &pOleWindow ) );
-                    if ( SUCCEEDED( hr ) )
-                    {
-                        HWND hwnd;
-                        hr = pOleWindow->GetWindow( &hwnd );
-                        if ( SUCCEEDED( hr ) )
-                        {
-                            PostMessage( hwnd, WM_COMMAND, IDOK, 0 );
-                        }
-                    }
-                }
-            }
-        }
-        first = false;
-        return hr;
-    }
-
-    IFACEMETHODIMP OnOverwrite( IFileDialog*, IShellItem*, FDE_OVERWRITE_RESPONSE* )
-    {
-        return S_OK;
-    }
-
-private:
-    ~DialogEventHandler() {};
-    long _cRef;
-    bool first;
-};
-
-// Instance creation helper
-HRESULT DialogEventHandler_CreateInstance( REFIID riid, void** ppv )
-{
-    *ppv                                    = NULL;
-    DialogEventHandler* pDialogEventHandler = new ( std::nothrow ) DialogEventHandler();
-    HRESULT             hr                  = pDialogEventHandler ? S_OK : E_OUTOFMEMORY;
-    if ( SUCCEEDED( hr ) )
-    {
-        hr = pDialogEventHandler->QueryInterface( riid, ppv );
-        pDialogEventHandler->Release();
-    }
-    return hr;
-}
-
 // Open a file dialog for the user to select a scene to load.
 // @see https://docs.microsoft.com/en-us/windows/win32/learnwin32/example--the-open-dialog-box
 // @see
@@ -849,40 +736,32 @@ void Tutorial5::OpenFile()
     if ( SUCCEEDED( hr ) )
     {
         // Create an event handling object, and hook it up to the dialog.
-        ComPtr<IFileDialogEvents> pDialogEvents;
-        hr = DialogEventHandler_CreateInstance( IID_PPV_ARGS( &pDialogEvents ) );
+        // ComPtr<IFileDialogEvents> pDialogEvents;
+        // hr = DialogEventHandler_CreateInstance( IID_PPV_ARGS( &pDialogEvents ) );
 
         if ( SUCCEEDED( hr ) )
         {
-            // Hook up the event handler.
-            DWORD dwCookie;
-            hr = pFileOpen->Advise( pDialogEvents.Get(), &dwCookie );
-            if ( SUCCEEDED( hr ) )
+            // Setup filters.
+            hr = pFileOpen->SetFileTypes( _countof( g_FileFilters ), g_FileFilters );
+            pFileOpen->SetFileTypeIndex( 40 );  // All Files (*.*)
+
+            // Show the open dialog box.
+            if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )
             {
-                // Setup filters.
-                hr = pFileOpen->SetFileTypes( _countof( g_FileFilters ), g_FileFilters );
-                pFileOpen->SetFileTypeIndex( 40 );
-
-                // Show the open dialog box.
-                if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )
+                ComPtr<IShellItem> pItem;
+                if ( SUCCEEDED( pFileOpen->GetResult( &pItem ) ) )
                 {
-                    ComPtr<IShellItem> pItem;
-                    if ( SUCCEEDED( pFileOpen->GetResult( &pItem ) ) )
+                    PWSTR pszFilePath;
+                    if ( SUCCEEDED( pItem->GetDisplayName( SIGDN_FILESYSPATH, &pszFilePath ) ) )
                     {
-                        PWSTR pszFilePath;
-                        if ( SUCCEEDED( pItem->GetDisplayName( SIGDN_FILESYSPATH, &pszFilePath ) ) )
-                        {
-                            // try to load the scene file (asynchronously).
-                            m_LoadingTask =
-                                std::async( std::launch::async, std::bind( &Tutorial5::LoadScene, this, pszFilePath ) );
+                        // try to load the scene file (asynchronously).
+                        m_LoadingTask =
+                            std::async( std::launch::async, std::bind( &Tutorial5::LoadScene, this, pszFilePath ) );
 
-                            CoTaskMemFree( pszFilePath );
-                        }
+                        CoTaskMemFree( pszFilePath );
                     }
                 }
             }
-            // Unhook event handler.
-            pFileOpen->Unadvise( dwCookie );
         }
     }
 }

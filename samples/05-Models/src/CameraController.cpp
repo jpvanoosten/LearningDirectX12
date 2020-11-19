@@ -92,12 +92,13 @@ void CameraController::ResetView()
 {
     // Reset previous deltas.
     m_X = m_Y = m_Z = m_PreviousPitch = m_PreviousYaw = 0.0f;
-    m_Pitch         = m_Yaw = 0.0f;
+    m_Pitch                                           = 0.0f;
+    m_Yaw                                             = 90.0f;
 
     XMVECTOR rotation =
         XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
     m_Camera.set_Rotation( rotation );
-    m_Camera.set_Translation( { 0, 0, 1, 1 } );
+    m_Camera.set_Translation( { 0, 2, -2, 1 } );
     m_Camera.set_FocalPoint( { 0, 0, 0, 1 } );
 }
 
