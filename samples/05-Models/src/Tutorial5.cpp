@@ -95,6 +95,7 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
 , m_AllowFullscreenToggle( true )
 , m_ShowFileOpenDialog( false )
 , m_CancelLoading( false )
+, m_ShowControls( true )
 , m_Width( width )
 , m_Height( height )
 , m_IsLoading( true )
@@ -545,7 +546,7 @@ void Tutorial5::OnKeyPressed( KeyEventArgs& e )
             m_CameraController.ResetView();
             break;
         case KeyCode::O:
-            if (e.Control) 
+            if ( e.Control )
             {
                 OpenFile();
             }
@@ -573,8 +574,6 @@ void Tutorial5::OnKeyReleased( KeyEventArgs& e )
 
 void Tutorial5::OnMouseMoved( MouseMotionEventArgs& e )
 {
-    const float mouseSpeed = 0.1f;
-
     if ( !ImGui::GetIO().WantCaptureMouse ) {}
 }
 
@@ -596,6 +595,19 @@ void Tutorial5::OnMouseWheel( MouseWheelEventArgs& e )
 void Tutorial5::OnDPIScaleChanged( DPIScaleEventArgs& e )
 {
     m_GUI->SetScaling( e.DPIScale );
+}
+
+static void HelpMarker( const char* desc )
+{
+    ImGui::TextDisabled( "(?)" );
+    if ( ImGui::IsItemHovered() )
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos( ImGui::GetFontSize() * 35.0f );
+        ImGui::TextUnformatted( desc );
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
 }
 
 void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const RenderTarget& renderTarget )
@@ -645,6 +657,13 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
             ImGui::EndMenu();
         }
 
+        if ( ImGui::BeginMenu( "View" ) )
+        {
+            ImGui::MenuItem( "Controls", nullptr, &m_ShowControls );
+
+            ImGui::EndMenu();
+        }
+
         if ( ImGui::BeginMenu( "Options" ) )
         {
             bool vSync = m_SwapChain->GetVSync();
@@ -661,6 +680,18 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
                 m_Fullscreen = fullscreen;
             }
 
+            ImGui::MenuItem( "Animate Lights", "Space", &m_AnimateLights );
+
+            bool invertY = m_CameraController.IsInverseY();
+            if ( ImGui::MenuItem( "Inverse Y", nullptr, &invertY ) )
+            {
+                m_CameraController.SetInverseY( invertY );
+            }
+            if ( ImGui::MenuItem( "Reset view", "R" ) )
+            {
+                m_CameraController.ResetView();
+            }
+
             ImGui::EndMenu();
         }
 
@@ -675,53 +706,39 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
         ImGui::EndMainMenuBar();
     }
 
+    if ( m_ShowControls && ImGui::Begin( "Controls", &m_ShowControls ) )
+    {
+        ImGui::Text( "KEYBOARD CONTROLS" );
+        ImGui::BulletText( "ESC: Terminate application" );
+        ImGui::BulletText( "Alt+Enter: Toggle fullscreen" );
+        ImGui::BulletText( "F11: Toggle fullscreen" );
+        ImGui::BulletText( "W: Move camera forward" );
+        ImGui::BulletText( "A: Move camera left" );
+        ImGui::BulletText( "S: Move camera backward" );
+        ImGui::BulletText( "D: Move camera right" );
+        ImGui::BulletText( "Q: Move camera down" );
+        ImGui::BulletText( "E: Move camera up" );
+        ImGui::BulletText( "R: Reset view" );
+        ImGui::BulletText( "Shift: Boost move/rotate speed" );
+        ImGui::BulletText( "Space: Animate lights" );
+        ImGui::Separator();
+
+        ImGui::Text( "MOUSE CONTROLS" );
+        ImGui::BulletText( "LMB: Rotate camera" );
+        ImGui::BulletText( "Mouse wheel: Change field of view" );
+        ImGui::Separator();
+
+        ImGui::Text( "GAMEPAD CONTROLS" );
+        ImGui::BulletText( "Left analog stick: Move camera" );
+        ImGui::BulletText( "Right analog stick: Rotate camera around the focal point" );
+        ImGui::BulletText( "Left trigger: Move camera down" );
+        ImGui::BulletText( "Right trigger: Move camera up" );
+        ImGui::BulletText( "Hold left or right stick: Boost move/rotate speed" );
+
+        ImGui::End();
+    }
     m_GUI->Render( commandList, renderTarget );
 }
-
-// clang-format off
-static const COMDLG_FILTERSPEC g_FileFilters[] = { 
-    { L"Autodesk", L"*.fbx" }, 
-    { L"Collada", L"*.dae" },
-    { L"glTF", L"*.gltf;*.glb" },
-    { L"Blender 3D", L"*.blend" },
-    { L"3ds Max 3DS", L"*.3ds" },
-    { L"3ds Max ASE", L"*.ase" },
-    { L"Wavefront Object", L"*.obj" },
-    { L"Industry Foundation Classes (IFC/Step)", L"*.ifc" },
-    { L"XGL", L"*.xgl;*.zgl" },
-    { L"Stanford Polygon Library", L"*.ply" },
-    { L"AutoCAD DXF", L"*.dxf" },
-    { L"LightWave", L"*.lws" },
-    { L"LightWave Scene", L"*.lws" },
-    { L"Modo", L"*.lxo" },
-    { L"Stereolithography", L"*.stl" },
-    { L"DirectX X", L"*.x" },
-    { L"AC3D", L"*.ac" },
-    { L"Milkshape 3D", L"*.ms3d" },
-    { L"TrueSpace", L"*.cob;*.scn" },
-    { L"Ogre XML", L"*.xml" },
-    { L"Irrlicht Mesh", L"*.irrmesh" },
-    { L"Irrlicht Scene", L"*.irr" },
-    { L"Quake I", L"*.mdl" },
-    { L"Quake II", L"*.md2" },
-    { L"Quake III", L"*.md3" },
-    { L"Quake III Map/BSP", L"*.pk3" },
-    { L"Return to Castle Wolfenstein", L"*.mdc" },
-    { L"Doom 3", L"*.md5*" },
-    { L"Valve Model", L"*.smd;*.vta" },
-    { L"Open Game Engine Exchange", L"*.ogx" },
-    { L"Unreal", L"*.3d" },
-    { L"BlitzBasic 3D", L"*.b3d" },
-    { L"Quick3D", L"*.q3d;*.q3s" },
-    { L"Neutral File Format", L"*.nff" },
-    { L"Sense8 WorldToolKit", L"*.nff" },
-    { L"Object File Format", L"*.off" },
-    { L"PovRAY Raw", L"*.raw" },
-    { L"Terragen Terrain", L"*.ter" },
-    { L"Izware Nendo", L"*.ndo" },
-    { L"All Files", L"*.*" }
-};
-// clang-format on
 
 // Open a file dialog for the user to select a scene to load.
 // @see https://docs.microsoft.com/en-us/windows/win32/learnwin32/example--the-open-dialog-box
@@ -730,6 +747,51 @@ static const COMDLG_FILTERSPEC g_FileFilters[] = {
 // @see https://www.codeproject.com/Articles/16678/Vista-Goodies-in-C-Using-the-New-Vista-File-Dialog
 void Tutorial5::OpenFile()
 {
+    // clang-format off
+    static const COMDLG_FILTERSPEC g_FileFilters[] = { 
+        { L"Autodesk", L"*.fbx" }, 
+        { L"Collada", L"*.dae" },
+        { L"glTF", L"*.gltf;*.glb" },
+        { L"Blender 3D", L"*.blend" },
+        { L"3ds Max 3DS", L"*.3ds" },
+        { L"3ds Max ASE", L"*.ase" },
+        { L"Wavefront Object", L"*.obj" },
+        { L"Industry Foundation Classes (IFC/Step)", L"*.ifc" },
+        { L"XGL", L"*.xgl;*.zgl" },
+        { L"Stanford Polygon Library", L"*.ply" },
+        { L"AutoCAD DXF", L"*.dxf" },
+        { L"LightWave", L"*.lws" },
+        { L"LightWave Scene", L"*.lws" },
+        { L"Modo", L"*.lxo" },
+        { L"Stereolithography", L"*.stl" },
+        { L"DirectX X", L"*.x" },
+        { L"AC3D", L"*.ac" },
+        { L"Milkshape 3D", L"*.ms3d" },
+        { L"TrueSpace", L"*.cob;*.scn" },
+        { L"Ogre XML", L"*.xml" },
+        { L"Irrlicht Mesh", L"*.irrmesh" },
+        { L"Irrlicht Scene", L"*.irr" },
+        { L"Quake I", L"*.mdl" },
+        { L"Quake II", L"*.md2" },
+        { L"Quake III", L"*.md3" },
+        { L"Quake III Map/BSP", L"*.pk3" },
+        { L"Return to Castle Wolfenstein", L"*.mdc" },
+        { L"Doom 3", L"*.md5*" },
+        { L"Valve Model", L"*.smd;*.vta" },
+        { L"Open Game Engine Exchange", L"*.ogx" },
+        { L"Unreal", L"*.3d" },
+        { L"BlitzBasic 3D", L"*.b3d" },
+        { L"Quick3D", L"*.q3d;*.q3s" },
+        { L"Neutral File Format", L"*.nff" },
+        { L"Sense8 WorldToolKit", L"*.nff" },
+        { L"Object File Format", L"*.off" },
+        { L"PovRAY Raw", L"*.raw" },
+        { L"Terragen Terrain", L"*.ter" },
+        { L"Izware Nendo", L"*.ndo" },
+        { L"All Files", L"*.*" }
+    };
+    // clang-format on
+
     ComPtr<IFileOpenDialog> pFileOpen;
     HRESULT                 hr = CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_PPV_ARGS( &pFileOpen ) );
 

@@ -1,7 +1,8 @@
 #include <CameraController.h>
 
-#include <Camera.h>
+#include <imgui/imgui.h>  // Need to check if ImGui wants to capture mouse or keyboard input.
 
+#include <Camera.h>
 #include <cmath>  // for std::abs and std::pow
 
 using namespace DirectX;
@@ -88,7 +89,7 @@ CameraController::CameraController( Camera& camera )
     ResetView();
 }
 
-void CameraController::ResetView() 
+void CameraController::ResetView()
 {
     // Reset previous deltas.
     m_X = m_Y = m_Z = m_PreviousPitch = m_PreviousYaw = 0.0f;
@@ -104,18 +105,25 @@ void CameraController::ResetView()
 
 void CameraController::Update( UpdateEventArgs& e )
 {
-    const float  MOVE_SPEED        = 10.0;
-    const float  LOOK_SENSITIVITY  = 90.0;
-    const float  MOUSE_SENSITIVITY = 0.1;
+    const float MOVE_SPEED        = 10.0;
+    const float LOOK_SENSITIVITY  = 90.0;
+    const float MOUSE_SENSITIVITY = 0.1;
 
-    float  speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 2.0 : 1.0;
+    float speedScale    = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 2.0 : 1.0;
     float rotationScale = m_PadInput->GetBool( Boost ) || m_KMInput->GetBool( Boost ) ? 2.0 : 1.0;
 
-    float  X = ( m_KMInput->GetFloat( MoveX ) + m_PadInput->GetFloat( MoveX ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    float  Y = ( m_KMInput->GetFloat( MoveY ) + m_PadInput->GetFloat( MoveY ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    float  Z = ( m_KMInput->GetFloat( MoveZ ) + m_PadInput->GetFloat( MoveZ ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
-    float  pitch = m_PadInput->GetFloat( Pitch ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
-    float  yaw   = m_PadInput->GetFloat( Yaw ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
+    float X     = m_PadInput->GetFloat( MoveX ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    float Y     = m_PadInput->GetFloat( MoveY ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    float Z     = m_PadInput->GetFloat( MoveZ ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    float pitch = m_PadInput->GetFloat( Pitch ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
+    float yaw   = m_PadInput->GetFloat( Yaw ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
+
+    if ( !ImGui::GetIO().WantCaptureKeyboard )
+    {
+        X += m_KMInput->GetFloat( MoveX ) * MOVE_SPEED * speedScale * e.DeltaTime;
+        Y += m_KMInput->GetFloat( MoveY ) * MOVE_SPEED * speedScale * e.DeltaTime;
+        Z += m_KMInput->GetFloat( MoveZ ) * MOVE_SPEED * speedScale * e.DeltaTime;
+    }
 
     // Apply smoothing
     Smooth( m_X, X, e.DeltaTime );
@@ -125,7 +133,7 @@ void CameraController::Update( UpdateEventArgs& e )
     Smooth( m_PreviousYaw, yaw, e.DeltaTime );
 
     // Add mouse motion without smoothing.
-    if ( m_KMInput->GetBool( LMB ) )
+    if ( m_KMInput->GetBool( LMB ) && !ImGui::GetIO().WantCaptureMouse )
     {
         pitch += m_KMInput->GetFloatDelta( Pitch ) * MOUSE_SENSITIVITY * rotationScale;
         yaw += m_KMInput->GetFloatDelta( Yaw ) * MOUSE_SENSITIVITY * rotationScale;

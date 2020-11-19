@@ -193,6 +193,7 @@ private:
     bool              m_AllowFullscreenToggle;
     bool              m_ShowFileOpenDialog;
     bool              m_CancelLoading;
+    bool              m_ShowControls;
     std::atomic_bool  m_IsLoading;
     std::future<bool> m_LoadingTask;
     float             m_LoadingProgress;
