@@ -26,6 +26,7 @@
 #include <d3dx12.h>
 
 #include <ShObjIdl.h>  // For IFileOpenDialog
+#include <shlwapi.h>
 
 #include <regex>
 
@@ -54,7 +55,7 @@ XMMATRIX XM_CALLCONV LookAtMatrix( FXMVECTOR Position, FXMVECTOR Direction, FXMV
 }
 
 // A regular express used to extract the relavent part of an Assimp log message.
-static std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
+static const std::regex gs_AssimpLogRegex( R"((?:Debug|Info|Warn|Error),\s*(.*)\n)" );
 
 template<spdlog::level::level_enum lvl>
 class LogStream : public Assimp::LogStream
@@ -183,7 +184,7 @@ bool Tutorial5::LoadScene( const std::wstring& sceneFile )
         // Scale the scene so it fits in the camera frustum.
         DirectX::BoundingSphere s;
         BoundingSphere::CreateFromBoundingBox( s, scene->GetAABB() );
-        auto scale     = 50.0f / ( s.Radius * 2.0f );
+        auto scale = 50.0f / ( s.Radius * 2.0f );
         s.Radius *= scale;
 
         scene->GetRootNode()->SetLocalTransform( XMMatrixScaling( scale, scale, scale ) );
@@ -194,9 +195,9 @@ bool Tutorial5::LoadScene( const std::wstring& sceneFile )
         auto distanceToObject = s.Radius / std::tanf( XMConvertToRadians( cameraFoV ) / 2.0f );
 
         auto cameraPosition = XMVectorSet( 0, 0, -distanceToObject, 1 );
-//        cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
-        auto focusPoint     = XMVectorSet( s.Center.x * scale, s.Center.y * scale, s.Center.z * scale, 1.0f );
-        cameraPosition      = cameraPosition + focusPoint;
+        //        cameraPosition      = XMVector3Rotate( cameraPosition, cameraRotation );
+        auto focusPoint = XMVectorSet( s.Center.x * scale, s.Center.y * scale, s.Center.z * scale, 1.0f );
+        cameraPosition  = cameraPosition + focusPoint;
 
         m_Camera.set_Translation( cameraPosition );
         m_Camera.set_FocalPoint( focusPoint );
@@ -334,8 +335,8 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     // Spin the lights in a circle.
     const float radius = 1.0f;
     // Offset angle for light sources.
-    float pointLightOffset = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
-    float spotLightOffset  = numSpotLights > 0 ? 2.0f * XM_PI / numSpotLights : 0;
+    float pointLightOffset       = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
+    float spotLightOffset        = numSpotLights > 0 ? 2.0f * XM_PI / numSpotLights : 0;
     float directionalLightOffset = numDirectionalLights > 0 ? 2.0f * XM_PI / numDirectionalLights : 0;
 
     // Setup the lights.
@@ -671,80 +672,217 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
     m_GUI->Render( commandList, renderTarget );
 }
 
+// clang-format off
+static const COMDLG_FILTERSPEC g_FileFilters[] = { 
+    { L"Autodesk", L"*.fbx" }, 
+    { L"Collada", L"*.dae" },
+    { L"glTF", L"*.gltf;*.glb" },
+    { L"Blender 3D", L"*.blend" },
+    { L"3ds Max 3DS", L"*.3ds" },
+    { L"3ds Max ASE", L"*.ase" },
+    { L"Wavefront Object", L"*.obj" },
+    { L"Industry Foundation Classes (IFC/Step)", L"*.ifc" },
+    { L"XGL", L"*.xgl;*.zgl" },
+    { L"Stanford Polygon Library", L"*.ply" },
+    { L"AutoCAD DXF", L"*.dxf" },
+    { L"LightWave", L"*.lws" },
+    { L"LightWave Scene", L"*.lws" },
+    { L"Modo", L"*.lxo" },
+    { L"Stereolithography", L"*.stl" },
+    { L"DirectX X", L"*.x" },
+    { L"AC3D", L"*.ac" },
+    { L"Milkshape 3D", L"*.ms3d" },
+    { L"TrueSpace", L"*.cob;*.scn" },
+    { L"Ogre XML", L"*.xml" },
+    { L"Irrlicht Mesh", L"*.irrmesh" },
+    { L"Irrlicht Scene", L"*.irr" },
+    { L"Quake I", L"*.mdl" },
+    { L"Quake II", L"*.md2" },
+    { L"Quake III", L"*.md3" },
+    { L"Quake III Map/BSP", L"*.pk3" },
+    { L"Return to Castle Wolfenstein", L"*.mdc" },
+    { L"Doom 3", L"*.md5*" },
+    { L"Valve Model", L"*.smd;*.vta" },
+    { L"Open Game Engine Exchange", L"*.ogx" },
+    { L"Unreal", L"*.3d" },
+    { L"BlitzBasic 3D", L"*.b3d" },
+    { L"Quick3D", L"*.q3d;*.q3s" },
+    { L"Neutral File Format", L"*.nff" },
+    { L"Sense8 WorldToolKit", L"*.nff" },
+    { L"Object File Format", L"*.off" },
+    { L"PovRAY Raw", L"*.raw" },
+    { L"Terragen Terrain", L"*.ter" },
+    { L"Izware Nendo", L"*.ndo" },
+    { L"All Files", L"*.*" }
+};
+// clang-format on
+
+// Handle events for the IFileOpenDialog.
+// @see
+// https://github.com/microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/winui/shell/appplatform/commonfiledialog/CommonFileDialogApp.cpp
+// @see https://stackoverflow.com/questions/1481255/refreshing-ifiledialog-view
+class DialogEventHandler : public IFileDialogEvents
+{
+public:
+    DialogEventHandler()
+    : _cRef( 1 )
+    , first(true)
+    {}
+
+    // IUnknown methods
+    IFACEMETHODIMP QueryInterface( REFIID riid, _COM_Outptr_ void** ppvObject )
+    {
+        static const QITAB qit[] = { QITABENT( DialogEventHandler, IFileDialogEvents ), { 0 } };
+        return QISearch( this, qit, riid, ppvObject );
+    }
+
+    IFACEMETHODIMP_( ULONG ) AddRef()
+    {
+        return InterlockedIncrement( &_cRef );
+    }
+
+    IFACEMETHODIMP_( ULONG ) Release()
+    {
+        long cRef = InterlockedDecrement( &_cRef );
+        if ( !cRef )
+        {
+            delete this;
+        }
+        return cRef;
+    }
+
+    // IFileDialogEvents methods
+    IFACEMETHODIMP OnFileOk( IFileDialog* )
+    {
+        return S_OK;
+    }
+
+    IFACEMETHODIMP OnFolderChange( IFileDialog* )
+    {
+        return S_OK;
+    }
+
+    IFACEMETHODIMP OnFolderChanging( IFileDialog*, IShellItem* )
+    {
+        return S_OK;
+    }
+
+    IFACEMETHODIMP OnHelp( IFileDialog* )
+    {
+        return S_OK;
+    }
+
+    IFACEMETHODIMP OnSelectionChange( IFileDialog* )
+    {
+        return S_OK;
+    }
+
+    IFACEMETHODIMP OnShareViolation( IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE* )
+    {
+        return S_OK;
+    }
+
+    IFACEMETHODIMP OnTypeChange( IFileDialog* pfd )
+    {
+        HRESULT hr = S_OK;
+        if ( !first )
+        {
+            hr = pfd->SetFileName( L"*.*" );
+            if ( SUCCEEDED( hr ) )
+            {
+                hr = pfd->SetFileName( L"" );
+                if ( SUCCEEDED( hr ) )
+                {
+                    ComPtr<IOleWindow> pOleWindow;
+                    hr = pfd->QueryInterface( IID_PPV_ARGS( &pOleWindow ) );
+                    if ( SUCCEEDED( hr ) )
+                    {
+                        HWND hwnd;
+                        hr = pOleWindow->GetWindow( &hwnd );
+                        if ( SUCCEEDED( hr ) )
+                        {
+                            PostMessage( hwnd, WM_COMMAND, IDOK, 0 );
+                        }
+                    }
+                }
+            }
+        }
+        first = false;
+        return hr;
+    }
+
+    IFACEMETHODIMP OnOverwrite( IFileDialog*, IShellItem*, FDE_OVERWRITE_RESPONSE* )
+    {
+        return S_OK;
+    }
+
+private:
+    ~DialogEventHandler() {};
+    long _cRef;
+    bool first;
+};
+
+// Instance creation helper
+HRESULT DialogEventHandler_CreateInstance( REFIID riid, void** ppv )
+{
+    *ppv                                    = NULL;
+    DialogEventHandler* pDialogEventHandler = new ( std::nothrow ) DialogEventHandler();
+    HRESULT             hr                  = pDialogEventHandler ? S_OK : E_OUTOFMEMORY;
+    if ( SUCCEEDED( hr ) )
+    {
+        hr = pDialogEventHandler->QueryInterface( riid, ppv );
+        pDialogEventHandler->Release();
+    }
+    return hr;
+}
+
 // Open a file dialog for the user to select a scene to load.
 // @see https://docs.microsoft.com/en-us/windows/win32/learnwin32/example--the-open-dialog-box
+// @see
+// https://github.com/microsoft/Windows-classic-samples/blob/master/Samples/Win7Samples/winui/shell/appplatform/commonfiledialog/CommonFileDialogApp.cpp
+// @see https://www.codeproject.com/Articles/16678/Vista-Goodies-in-C-Using-the-New-Vista-File-Dialog
 void Tutorial5::OpenFile()
 {
-    // clang-format off
-    static const COMDLG_FILTERSPEC filters[] = { 
-        { L"Autodesk (*.fbx)", L"*.fbx" }, 
-        { L"Collada (*.dae)", L"*.dae" },
-        { L"glTF (*.gltf; *.glb", L"*.gltf;*.glb" },
-        { L"Blender 3D (*.blend)", L"*.blend" },
-        { L"3ds Max 3DS (*.3ds)", L"*.3ds" },
-        { L"3ds Max ASE (*.ase)", L"*.ase" },
-        { L"Wavefront Object (*.obj)", L"*.obj" },
-        { L"Industry Foundation Classes (IFC/Step) (*.ifc )", L"*.ifc" },
-        { L"XGL (*.xgl; *.zgl)", L"*.xgl;*.zgl" },
-        { L"Stanford Polygon Library (*.ply )", L"*.ply" },
-        { L"AutoCAD DXF (*.dxf)", L"*.dxf" },
-        { L"LightWave (*.lwo)", L"*.lws" },
-        { L"LightWave Scene (*.lws)", L"*.lws" },
-        { L"Modo (*.lxo)", L"*.lxo" },
-        { L"Stereolithography (*.stl)", L"*.stl" },
-        { L"DirectX X (*.x )", L"*.x" },
-        { L"AC3D (*.ac)", L"*.ac" },
-        { L"Milkshape 3D (*.ms3d )", L"*.ms3d" },
-        { L"TrueSpace (*.cob; *.scn)", L"*.cob;*.scn" },
-        { L"Ogre XML (*.xml )", L"*.xml" },
-        { L"Irrlicht Mesh (*.irrmesh)", L"*.irrmesh" },
-        { L"Irrlicht Scene (*.irr )", L"*.irr" },
-        { L"Quake I (*.mdl)", L"*.mdl" },
-        { L"Quake II (*.md2 )", L"*.md2" },
-        { L"Quake III (*.md3)", L"*.md3" },
-        { L"Quake III Map/BSP (*.pk3 )", L"*.pk3" },
-        { L"Return to Castle Wolfenstein (*.mdc )", L"*.mdc" },
-        { L"Doom 3 (*.md5*)", L"*.md5*" },
-        { L"Valve Model (*.smd; *.vta)", L"*.smd;*.vta" },
-        { L"Open Game Engine Exchange (*.ogex)", L"*.ogx" },
-        { L"Unreal (*.3d )", L"*.3d" },
-        { L"BlitzBasic 3D (*.b3d )", L"*.b3d" },
-        { L"Quick3D (*.q3d; *.q3s)", L"*.q3d;*.q3s" },
-        { L"Neutral File Format (*.nff )", L"*.nff" },
-        { L"Sense8 WorldToolKit (*.nff)", L"*.nff" },
-        { L"Object File Format (*.off )", L"*.off" },
-        { L"PovRAY Raw (*.raw )", L"*.raw" },
-        { L"Terragen Terrain (*.ter )", L"*.ter" },
-        { L"Izware Nendo (*.ndo)", L"*.ndo" },
-        { L"All Files (*.*)", L"*.*" }
-    };
-    // clang-format on
-
     ComPtr<IFileOpenDialog> pFileOpen;
     HRESULT                 hr = CoCreateInstance( CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_PPV_ARGS( &pFileOpen ) );
 
     if ( SUCCEEDED( hr ) )
     {
-        // Setup filters.
-        hr = pFileOpen->SetFileTypes( _countof( filters ), filters );
-        pFileOpen->SetFileTypeIndex( 7 );  // By default, choose OBJ files.
+        // Create an event handling object, and hook it up to the dialog.
+        ComPtr<IFileDialogEvents> pDialogEvents;
+        hr = DialogEventHandler_CreateInstance( IID_PPV_ARGS( &pDialogEvents ) );
 
-        // Show the open dialog box.
-        if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )
+        if ( SUCCEEDED( hr ) )
         {
-            ComPtr<IShellItem> pItem;
-            if ( SUCCEEDED( pFileOpen->GetResult( &pItem ) ) )
+            // Hook up the event handler.
+            DWORD dwCookie;
+            hr = pFileOpen->Advise( pDialogEvents.Get(), &dwCookie );
+            if ( SUCCEEDED( hr ) )
             {
-                PWSTR pszFilePath;
-                if ( SUCCEEDED( pItem->GetDisplayName( SIGDN_FILESYSPATH, &pszFilePath ) ) )
-                {
-                    // try to load the scene file (asynchronously).
-                    m_LoadingTask =
-                        std::async( std::launch::async, std::bind( &Tutorial5::LoadScene, this, pszFilePath ) );
+                // Setup filters.
+                hr = pFileOpen->SetFileTypes( _countof( g_FileFilters ), g_FileFilters );
+                pFileOpen->SetFileTypeIndex( 40 );
 
-                    CoTaskMemFree( pszFilePath );
+                // Show the open dialog box.
+                if ( SUCCEEDED( pFileOpen->Show( m_Window->GetWindowHandle() ) ) )
+                {
+                    ComPtr<IShellItem> pItem;
+                    if ( SUCCEEDED( pFileOpen->GetResult( &pItem ) ) )
+                    {
+                        PWSTR pszFilePath;
+                        if ( SUCCEEDED( pItem->GetDisplayName( SIGDN_FILESYSPATH, &pszFilePath ) ) )
+                        {
+                            // try to load the scene file (asynchronously).
+                            m_LoadingTask =
+                                std::async( std::launch::async, std::bind( &Tutorial5::LoadScene, this, pszFilePath ) );
+
+                            CoTaskMemFree( pszFilePath );
+                        }
+                    }
                 }
             }
+            // Unhook event handler.
+            pFileOpen->Unadvise( dwCookie );
         }
     }
 }
