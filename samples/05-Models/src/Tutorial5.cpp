@@ -320,12 +320,9 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
 
-    const int numPointLights       = 0;
-    const int numSpotLights        = 0;
-    const int numDirectionalLights = 1;
+    const int numDirectionalLights = 3;
 
-    static const XMVECTORF32 LightColors[] = { Colors::Red,     Colors::Green,  Colors::Blue,   Colors::Cyan,
-                                               Colors::Magenta, Colors::Yellow, Colors::Purple, Colors::White };
+    static const XMVECTORF32 LightColors[] = { Colors::White, Colors::OrangeRed, Colors::Blue };
 
     static float lightAnimTime = 0.0f;
     if ( m_AnimateLights )
@@ -333,65 +330,8 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         lightAnimTime += static_cast<float>( e.DeltaTime ) * 0.5f * XM_PI;
     }
 
-    // Spin the lights in a circle.
-    const float radius = 1.0f;
-    // Offset angle for light sources.
-    float pointLightOffset       = numPointLights > 0 ? 2.0f * XM_PI / numPointLights : 0;
-    float spotLightOffset        = numSpotLights > 0 ? 2.0f * XM_PI / numSpotLights : 0;
-    float directionalLightOffset = numDirectionalLights > 0 ? 2.0f * XM_PI / numDirectionalLights : 0;
-
-    // Setup the lights.
-    m_PointLights.resize( numPointLights );
-    for ( int i = 0; i < numPointLights; ++i )
-    {
-        PointLight& l = m_PointLights[i];
-
-        float angle = lightAnimTime + pointLightOffset * i;
-
-        l.PositionWS = { static_cast<float>( std::sin( angle ) ) * radius, 2.0f,
-                         static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
-
-        XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
-        XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
-        XMStoreFloat4( &l.PositionVS, positionVS );
-
-        l.Color                = XMFLOAT4( LightColors[i] );
-        l.ConstantAttenuation  = 1.0f;
-        l.LinearAttenuation    = 0.08f;
-        l.QuadraticAttenuation = 0.0f;
-    }
-
-    m_LightingPSO->SetPointLights( m_PointLights );
-    m_DecalPSO->SetPointLights( m_PointLights );
-
-    m_SpotLights.resize( numSpotLights );
-    for ( int i = 0; i < numSpotLights; ++i )
-    {
-        SpotLight& l = m_SpotLights[i];
-
-        float angle = lightAnimTime + spotLightOffset * i + pointLightOffset / 2.0;
-
-        l.PositionWS = { static_cast<float>( std::sin( angle ) ) * radius, 2.0f,
-                         static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
-
-        XMVECTOR positionWS = XMLoadFloat4( &l.PositionWS );
-        XMVECTOR positionVS = XMVector3TransformCoord( positionWS, viewMatrix );
-        XMStoreFloat4( &l.PositionVS, positionVS );
-
-        XMVECTOR directionWS = XMVector3Normalize( XMVectorSetW( XMVectorSetY( positionWS, 0 ), 0 ) );
-        XMVECTOR directionVS = XMVector3Normalize( XMVector3TransformNormal( directionWS, viewMatrix ) );
-        XMStoreFloat4( &l.DirectionWS, directionWS );
-        XMStoreFloat4( &l.DirectionVS, directionVS );
-
-        l.Color                = XMFLOAT4( LightColors[( i + numPointLights ) % _countof( LightColors )] );
-        l.SpotAngle            = XMConvertToRadians( 45.0f );
-        l.ConstantAttenuation  = 1.0f;
-        l.LinearAttenuation    = 0.08f;
-        l.QuadraticAttenuation = 0.0f;
-    }
-
-    m_LightingPSO->SetSpotLights( m_SpotLights );
-    m_DecalPSO->SetSpotLights( m_SpotLights );
+    const float radius                 = 1.0f;
+    float       directionalLightOffset = numDirectionalLights > 0 ? 2.0f * XM_PI / numDirectionalLights : 0;
 
     m_DirectionalLights.resize( numDirectionalLights );
     for ( int i = 0; i < numDirectionalLights; ++i )
@@ -400,8 +340,8 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
 
         float angle = lightAnimTime + directionalLightOffset * i;
 
-        XMVECTORF32 positionWS = { static_cast<float>( std::sin( angle ) ) * radius, radius,
-                                   static_cast<float>( std::cos( angle ) ) * radius, 1.0f };
+        XMVECTORF32 positionWS = { static_cast<float>( std::cos( angle ) ) * radius,
+                                   static_cast<float>( std::sin( angle ) ) * radius, radius, 1.0f };
 
         XMVECTOR directionWS = XMVector3Normalize( XMVectorNegate( positionWS ) );
         XMVECTOR directionVS = XMVector3TransformNormal( directionWS, viewMatrix );
@@ -409,7 +349,7 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
         XMStoreFloat4( &l.DirectionWS, directionWS );
         XMStoreFloat4( &l.DirectionVS, directionVS );
 
-        l.Color = XMFLOAT4( Colors::White );
+        l.Color = XMFLOAT4( LightColors[i] );
     }
 
     m_LightingPSO->SetDirectionalLights( m_DirectionalLights );
