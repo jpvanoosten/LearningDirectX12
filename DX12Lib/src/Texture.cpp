@@ -133,7 +133,7 @@ void Texture::CreateViews()
                                                    m_ShaderResourceView.GetDescriptorHandle() );
         }
         // Create UAV for each mip (only supported for 1D and 2D textures).
-        if ( ( desc.Flags & D3D12_RESOURCE_STATE_UNORDERED_ACCESS ) != 0 && CheckUAVSupport() &&
+        if ( ( desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS ) != 0 && CheckUAVSupport() &&
              desc.DepthOrArraySize == 1 )
         {
             m_UnorderedAccessView =
