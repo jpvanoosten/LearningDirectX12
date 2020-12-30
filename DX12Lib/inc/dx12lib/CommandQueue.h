@@ -36,8 +36,7 @@
 #include <atomic>              // For std::atomic_bool
 #include <condition_variable>  // For std::condition_variable.
 #include <cstdint>             // For uint64_t
-
-#include "ThreadSafeQueue.h"
+#include <queue>               // For std::queue
 
 namespace dx12lib
 {
@@ -74,13 +73,21 @@ protected:
     virtual ~CommandQueue();
 
 private:
-    // Free any command lists that are finished processing on the command queue.
-    void ProccessInFlightCommandLists();
-
     // Keep track of command allocators that are "in-flight"
     // The first member is the fence value to wait for, the second is the
     // a shared pointer to the "in-flight" command list.
-    using CommandListEntry = std::tuple<uint64_t, std::shared_ptr<CommandList>>;
+    struct CommandListEntry
+    {
+        CommandListEntry( uint64_t _fenceValue, std::shared_ptr<CommandList> _commandList )
+        : fenceValue( _fenceValue )
+        , commandList( _commandList )
+        {}
+
+        uint64_t                     fenceValue;
+        std::shared_ptr<CommandList> commandList;
+    };
+
+    using CommandListQueue = std::queue<CommandListEntry>;
 
     Device&                                    m_Device;
     D3D12_COMMAND_LIST_TYPE                    m_CommandListType;
@@ -88,13 +95,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Fence>        m_d3d12Fence;
     std::atomic_uint64_t                       m_FenceValue;
 
-    ThreadSafeQueue<CommandListEntry>             m_InFlightCommandLists;
-    ThreadSafeQueue<std::shared_ptr<CommandList>> m_AvailableCommandLists;
-
-    // A thread to process in-flight command lists.
-    std::thread             m_ProcessInFlightCommandListsThread;
-    std::atomic_bool        m_bProcessInFlightCommandLists;
-    std::mutex              m_ProcessInFlightCommandListsThreadMutex;
-    std::condition_variable m_ProcessInFlightCommandListsThreadCV;
+    CommandListQueue m_CommandLists;
+    std::mutex       m_CommandListsMutex;
 };
 }  // namespace dx12lib

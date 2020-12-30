@@ -67,6 +67,13 @@ CommandList::CommandList( Device& device, D3D12_COMMAND_LIST_TYPE type )
             std::make_unique<DynamicDescriptorHeap>( device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>( i ) );
         m_DescriptorHeaps[i] = nullptr;
     }
+
+    static int numCommandLists = 0;
+    ++numCommandLists;
+
+    char msg[512];
+    sprintf( msg, "Num command lists: %i\n", numCommandLists );
+    OutputDebugStringA( msg );
 }
 
 CommandList::~CommandList() {}

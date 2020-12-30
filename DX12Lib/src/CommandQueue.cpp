@@ -23,7 +23,6 @@ CommandQueue::CommandQueue( Device& device, D3D12_COMMAND_LIST_TYPE type )
 : m_Device( device )
 , m_CommandListType( type )
 , m_FenceValue( 0 )
-, m_bProcessInFlightCommandLists( true )
 {
     auto d3d12Device = m_Device.GetD3D12Device();
 
@@ -48,34 +47,9 @@ CommandQueue::CommandQueue( Device& device, D3D12_COMMAND_LIST_TYPE type )
         m_d3d12CommandQueue->SetName( L"Direct Command Queue" );
         break;
     }
-
-    // Set the thread name for easy debugging.
-    char threadName[256];
-    sprintf_s( threadName, "ProccessInFlightCommandLists " );
-    switch ( type )
-    {
-    case D3D12_COMMAND_LIST_TYPE_DIRECT:
-        strcat_s( threadName, "(Direct)" );
-        break;
-    case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-        strcat_s( threadName, "(Compute)" );
-        break;
-    case D3D12_COMMAND_LIST_TYPE_COPY:
-        strcat_s( threadName, "(Copy)" );
-        break;
-    default:
-        break;
-    }
-
-    m_ProcessInFlightCommandListsThread = std::thread( &CommandQueue::ProccessInFlightCommandLists, this );
-    SetThreadName( m_ProcessInFlightCommandListsThread, threadName );
 }
 
-CommandQueue::~CommandQueue()
-{
-    m_bProcessInFlightCommandLists = false;
-    m_ProcessInFlightCommandListsThread.join();
-}
+CommandQueue::~CommandQueue() {}
 
 uint64_t CommandQueue::Signal()
 {
@@ -96,10 +70,8 @@ void CommandQueue::WaitForFenceValue( uint64_t fenceValue )
         auto event = ::CreateEvent( NULL, FALSE, FALSE, NULL );
         if ( event )
         {
-            // Is this function thread safe?
             m_d3d12Fence->SetEventOnCompletion( fenceValue, event );
             ::WaitForSingleObject( event, DWORD_MAX );
-
             ::CloseHandle( event );
         }
     }
@@ -107,24 +79,37 @@ void CommandQueue::WaitForFenceValue( uint64_t fenceValue )
 
 void CommandQueue::Flush()
 {
-    std::unique_lock<std::mutex> lock( m_ProcessInFlightCommandListsThreadMutex );
-    m_ProcessInFlightCommandListsThreadCV.wait( lock, [this] { return m_InFlightCommandLists.Empty(); } );
+    std::lock_guard<std::mutex> lock( m_CommandListsMutex );
 
     // In case the command queue was signaled directly
     // using the CommandQueue::Signal method then the
     // fence value of the command queue might be higher than the fence
     // value of any of the executed command lists.
     WaitForFenceValue( m_FenceValue );
+
+    // Reset command lists to release any allocations and references.
+    CommandListQueue tmpQueue = m_CommandLists;
+    while ( !tmpQueue.empty() )
+    {
+        CommandListEntry commandListEntry = tmpQueue.front();
+        commandListEntry.commandList->Reset();
+        commandListEntry.commandList->Close();  // The command list is expected to be in a closed state.
+        tmpQueue.pop();
+    }
 }
 
 std::shared_ptr<CommandList> CommandQueue::GetCommandList()
 {
     std::shared_ptr<CommandList> commandList;
 
-    // If there is a command list on the queue.
-    if ( !m_AvailableCommandLists.Empty() )
+    // If there is a finished command list on the queue.
+    std::lock_guard<std::mutex> lock( m_CommandListsMutex );
+    if ( !m_CommandLists.empty() && IsFenceComplete( m_CommandLists.front().fenceValue ) )
     {
-        m_AvailableCommandLists.TryPop( commandList );
+        commandList = m_CommandLists.front().commandList;
+        m_CommandLists.pop();
+
+        commandList->Reset();
     }
     else
     {
@@ -189,9 +174,12 @@ uint64_t CommandQueue::ExecuteCommandLists( const std::vector<std::shared_ptr<Co
     ResourceStateTracker::Unlock();
 
     // Queue command lists for reuse.
-    for ( auto commandList: toBeQueued )
     {
-        m_InFlightCommandLists.Push( { fenceValue, commandList } );
+        std::lock_guard<std::mutex> lock( m_CommandListsMutex );
+        for ( auto commandList: toBeQueued )
+        {
+            m_CommandLists.emplace( fenceValue, commandList );
+        }
     }
 
     // If there are any command lists that generate mips then execute those
@@ -214,32 +202,4 @@ void CommandQueue::Wait( const CommandQueue& other )
 Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::GetD3D12CommandQueue() const
 {
     return m_d3d12CommandQueue;
-}
-
-void CommandQueue::ProccessInFlightCommandLists()
-{
-    std::unique_lock<std::mutex> lock( m_ProcessInFlightCommandListsThreadMutex, std::defer_lock );
-
-    while ( m_bProcessInFlightCommandLists )
-    {
-        CommandListEntry commandListEntry;
-
-        lock.lock();
-        while ( m_InFlightCommandLists.TryPop( commandListEntry ) )
-        {
-            auto fenceValue  = std::get<0>( commandListEntry );
-            auto commandList = std::get<1>( commandListEntry );
-
-            WaitForFenceValue( fenceValue );
-
-            commandList->Reset();
-
-            m_AvailableCommandLists.Push( commandList );
-        }
-        lock.unlock();
-        m_ProcessInFlightCommandListsThreadCV.notify_one();
-
-        // std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-        std::this_thread::yield();
-    }
 }

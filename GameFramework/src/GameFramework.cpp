@@ -145,6 +145,8 @@ GameFramework::GameFramework( HINSTANCE hInst )
     spdlog::register_logger( m_Logger );
     spdlog::set_default_logger( m_Logger );
 
+    spdlog::info( "Logging started." );
+
     // Init gainput.
     m_KeyboardDevice = m_InputManager.CreateDevice<gainput::InputDeviceKeyboard>();
     m_MouseDevice    = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();

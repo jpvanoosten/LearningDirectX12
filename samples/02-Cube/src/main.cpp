@@ -69,6 +69,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 {
     int retCode = 0;
 
+    MessageBoxW( NULL, L"Attach the debugger now.", L"Attach Debugger", MB_OK );
+
 #if defined( _DEBUG )
     Device::EnableDebugLayer();
 #endif
