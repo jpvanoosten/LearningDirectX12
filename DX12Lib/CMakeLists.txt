@@ -162,10 +162,11 @@ set_source_files_properties( src/DX12LibPCH.cpp
 
 set_source_files_properties( ${SHADER_FILES}
     PROPERTIES
-        VS_SHADER_MODEL 5.1
+        VS_SHADER_MODEL 6.0
         VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
+        VS_SHADER_FLAGS -Qembed_debug
 )
 
 set_source_files_properties( Resources/Shaders/GenerateMips_CS.hlsl
