@@ -21,6 +21,8 @@ Logger logger;
 
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow )
 {
+    MessageBoxW( NULL, L"Attach the debugger now.", L"Attach Debugger", MB_OK );
+
 #if defined( _DEBUG )
     // Always enable the Debug layer before doing anything with DX12.
     Device::EnableDebugLayer();
