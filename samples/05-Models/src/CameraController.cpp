@@ -71,6 +71,8 @@ CameraController::CameraController( Camera& camera )
     m_KMInput->MapBool( RMB, mouse, gainput::MouseButtonRight );
     m_KMInput->MapFloat( Pitch, mouse, gainput::MouseAxisY );
     m_KMInput->MapFloat( Yaw, mouse, gainput::MouseAxisX );
+    m_KMInput->MapBool( ZoomIn, mouse, gainput::MouseButtonWheelUp );
+    m_KMInput->MapBool( ZoomOut, mouse, gainput::MouseButtonWheelDown );
 
     // Map pad events.
     m_PadInput->MapFloat( MoveX, pad, gainput::PadButtonLeftStickX );
@@ -79,6 +81,8 @@ CameraController::CameraController( Camera& camera )
     m_PadInput->MapFloat( MoveY, pad, gainput::PadButtonAxis5, 0.0f, 1.0f );   // Right trigger (move up)
     m_PadInput->MapFloat( Pitch, pad, gainput::PadButtonRightStickY );
     m_PadInput->MapFloat( Yaw, pad, gainput::PadButtonRightStickX );
+    m_PadInput->MapFloat( ZoomIn, pad, gainput::PadButtonUp );    // D-Pad Up.
+    m_PadInput->MapFloat( ZoomOut, pad, gainput::PadButtonDown );  // D-Pad Down.
     m_PadInput->MapBool( Boost, pad, gainput::PadButtonL3 );
     m_PadInput->MapBool( Boost, pad, gainput::PadButtonR3 );
 
@@ -93,13 +97,14 @@ void CameraController::ResetView()
 {
     // Reset previous deltas.
     m_X = m_Y = m_Z = m_PreviousPitch = m_PreviousYaw = 0.0f;
-    m_Pitch                                           = 0.0f;
+    m_Pitch                                           = 15.0f;
     m_Yaw                                             = 90.0f;
+    m_Zoom                                            = 10.0;
 
     XMVECTOR rotation =
         XMQuaternionRotationRollPitchYaw( XMConvertToRadians( m_Pitch ), XMConvertToRadians( m_Yaw ), 0.0f );
     m_Camera.set_Rotation( rotation );
-    m_Camera.set_Translation( { 0, 2, -2, 1 } );
+    m_Camera.set_Translation( { 0, 0, -m_Zoom, 1 } );
     m_Camera.set_FocalPoint( { 0, 0, 0, 1 } );
 }
 
@@ -117,12 +122,16 @@ void CameraController::Update( UpdateEventArgs& e )
     float Z     = m_PadInput->GetFloat( MoveZ ) * MOVE_SPEED * speedScale * e.DeltaTime;
     float pitch = m_PadInput->GetFloat( Pitch ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
     float yaw   = m_PadInput->GetFloat( Yaw ) * LOOK_SENSITIVITY * rotationScale * e.DeltaTime;
+    float zoom  = ( m_PadInput->GetFloat( ZoomOut ) - m_PadInput->GetFloat( ZoomIn ) ) * MOVE_SPEED * speedScale * e.DeltaTime;
 
-    if ( !ImGui::GetIO().WantCaptureKeyboard )
+    if ( !ImGui::GetIO().WantCaptureKeyboard && !ImGui::GetIO().WantCaptureMouse )
     {
         X += m_KMInput->GetFloat( MoveX ) * MOVE_SPEED * speedScale * e.DeltaTime;
         Y += m_KMInput->GetFloat( MoveY ) * MOVE_SPEED * speedScale * e.DeltaTime;
         Z += m_KMInput->GetFloat( MoveZ ) * MOVE_SPEED * speedScale * e.DeltaTime;
+        zoom += m_KMInput->GetBool( ZoomOut ) ? 1.0f : 0.0f;
+        zoom -= m_KMInput->GetBool( ZoomIn ) ? 1.0f : 0.0f;
+
     }
 
     // Apply smoothing
@@ -146,8 +155,13 @@ void CameraController::Update( UpdateEventArgs& e )
     m_Yaw += yaw;
 
     // Apply translation and rotation to the camera.
-    XMVECTORF32 translation = { X, Y, Z };
-    m_Camera.Translate( translation, Space::World );
+    XMVECTORF32 focalPoint = { X, Y, Z };
+    m_Camera.MoveFocalPoint( focalPoint, Space::Local );
+
+    m_Zoom += zoom;
+    m_Zoom = std::max( 0.0f, m_Zoom );
+    XMVECTORF32 translation = { 0, 0, -m_Zoom };
+    m_Camera.set_Translation( translation );
 
     // Apply rotation
     XMVECTOR rotation =

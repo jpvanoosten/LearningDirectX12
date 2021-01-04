@@ -1,0 +1,84 @@
+# Red +X axis
+# f red gree blue Kd Ks Shine transmittance indexOfRefraction
+f 1 0 0 1 0 0 0 0
+
+# Create a cylinder for the +X axis
+c
+0 0 0 1
+10 0 0 1
+
+# Create a cone for the +X axis
+c
+10 0 0 2
+15 0 0 0
+
+# Green +Y axis
+# f red gree blue Kd Ks Shine transmittance indexOfRefraction
+f 0 1 0 1 0 0 0 0
+
+# Create a cylinder for the +Y axis
+c
+0 0 0 1
+0 10 0 1
+
+# Create a cone for the +Y axis
+c
+0 10 0 2
+0 15 0 0
+
+# Blue +Z axis
+# f red gree blue Kd Ks Shine transmittance indexOfRefraction
+f 0 0 1 1 0 0 0 0
+
+# Create a cylinder for the +Z axis
+c
+0 0 0 1
+0 0 10 1
+
+# Create a cone for the +Z axis
+c
+0 0 10 2
+0 0 15 0
+
+# Cyan -X axis
+# f red gree blue Kd Ks Shine transmittance indexOfRefraction
+f 0 1 1 1 0 0 0 0
+
+# Create a cylinder for the -X axis
+c
+0 0 0 1
+-10 0 0 1
+
+# Create a cone for the -X axis
+c
+-10 0 0 2
+-15 0 0 0
+
+# Magenta -Y axis
+# f red gree blue Kd Ks Shine transmittance indexOfRefraction
+f 1 0 1 1 0 0 0 0
+
+# Create a cylinder for the -Y axis
+c
+0 0 0 1
+0 -10 0 1
+
+# Create a cone for the -Y axis
+c
+0 -15 0 0
+0 -10 0 2
+
+# Blue +Z axis
+# f red gree blue Kd Ks Shine transmittance indexOfRefraction
+f 1 1 0 1 0 0 0 0
+
+# Create a cylinder for the +X axis
+c
+0 0 0 1
+0 0 -10 1
+
+# Create a cone for the +X axis
+c
+0 0 -10 2
+0 0 -15 0
+ 

@@ -53,6 +53,8 @@ public:
         MoveX,  // Move Left/right.
         MoveY,  // Move Forward/backward.
         MoveZ,  // Move Up/down.
+        ZoomIn, // Zoom camera towards focal point.
+        ZoomOut,// Zoom camera away from focal point.
         Pitch,  // Look up/down
         Yaw,    // Look left/right.
         Boost,  // Move/look faster
@@ -82,7 +84,7 @@ private:
     Camera& m_Camera;
     // Keyboard an mouse input.
     std::shared_ptr<gainput::InputMap> m_KMInput;
-    // Pad input (seperate from Keyboard and mouse input since mouse input is handled differently than pad input)
+    // Pad input (separate from Keyboard and mouse input since mouse input is handled differently than pad input)
     std::shared_ptr<gainput::InputMap> m_PadInput;
 
     Logger m_Logger;
@@ -91,6 +93,7 @@ private:
     float m_X;
     float m_Y;
     float m_Z;
+    float m_Zoom;
 
     // Limit rotation to pitch and yaw.
     float m_Pitch;

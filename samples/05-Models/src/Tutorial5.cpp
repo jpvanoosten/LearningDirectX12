@@ -132,7 +132,6 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial5::OnKeyPressed, this );
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial5::OnKeyReleased, this );
     m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial5::OnMouseMoved, this );
-    m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial5::OnMouseWheel, this );
 }
 
 Tutorial5::~Tutorial5()
@@ -238,6 +237,7 @@ void Tutorial5::LoadContent()
 
     m_Sphere = commandList->CreateSphere( 0.1f );
     m_Cone   = commandList->CreateCone( 0.1f, 0.2f );
+    m_Axis   = commandList->LoadSceneFromFile( L"Assets/Models/axis_of_evil.nff" );
 
     auto fence = commandQueue.ExecuteCommandList( commandList );
 
@@ -318,6 +318,12 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     GameFramework::Get().ProcessInput();
     m_CameraController.Update( e );
 
+    // Move the Axis model to the focal point of the camera.
+    XMVECTOR cameraPoint = m_Camera.get_FocalPoint();
+    XMMATRIX translationMatrix = XMMatrixTranslationFromVector( cameraPoint );
+    XMMATRIX scaleMatrix = XMMatrixScaling( 0.01f, 0.01f, 0.01f );
+    m_Axis->GetRootNode()->SetLocalTransform( scaleMatrix * translationMatrix );
+
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
 
     const int numDirectionalLights = 3;
@@ -375,6 +381,7 @@ void Tutorial5::OnResize( ResizeEventArgs& e )
 
 void Tutorial5::OnRender()
 {
+    // This is done here to prevent the window switching to fullscreen while rendering the GUI.
     m_Window->SetFullscreen( m_Fullscreen );
 
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
@@ -409,7 +416,11 @@ void Tutorial5::OnRender()
         commandList->SetRenderTarget( m_RenderTarget );
 
         // Render the scene.
+        // Opaque pass.
         m_Scene->Accept( opaquePass );
+        m_Axis->Accept( unlitPass );
+
+        // Transparent pass.
         m_Scene->Accept( transparentPass );
 
         MaterialProperties lightMaterial = Material::Black;
@@ -515,21 +526,6 @@ void Tutorial5::OnKeyReleased( KeyEventArgs& e )
 void Tutorial5::OnMouseMoved( MouseMotionEventArgs& e )
 {
     if ( !ImGui::GetIO().WantCaptureMouse ) {}
-}
-
-void Tutorial5::OnMouseWheel( MouseWheelEventArgs& e )
-{
-    if ( !ImGui::GetIO().WantCaptureMouse )
-    {
-        auto fov = m_Camera.get_FoV();
-
-        fov -= e.WheelDelta;
-        fov = std::clamp( fov, 12.0f, 90.0f );
-
-        m_Camera.set_FoV( fov );
-
-        m_Logger->info( "FoV: {:.7}", fov );
-    }
 }
 
 void Tutorial5::OnDPIScaleChanged( DPIScaleEventArgs& e )
@@ -665,7 +661,7 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
 
         ImGui::Text( "MOUSE CONTROLS" );
         ImGui::BulletText( "LMB: Rotate camera" );
-        ImGui::BulletText( "Mouse wheel: Change field of view" );
+        ImGui::BulletText( "Mouse wheel: Zoom in/out on focal point" );
         ImGui::Separator();
 
         ImGui::Text( "GAMEPAD CONTROLS" );
@@ -674,6 +670,7 @@ void Tutorial5::OnGUI( const std::shared_ptr<CommandList>& commandList, const Re
         ImGui::BulletText( "Left trigger: Move camera down" );
         ImGui::BulletText( "Right trigger: Move camera up" );
         ImGui::BulletText( "Hold left or right stick: Boost move/rotate speed" );
+        ImGui::BulletText( "D-Pad up/down: Zoom in/out on focal point" );
 
         ImGui::End();
     }

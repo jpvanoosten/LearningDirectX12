@@ -112,11 +112,6 @@ protected:
     virtual void OnMouseMoved( MouseMotionEventArgs& e );
 
     /**
-     * Invoked when the mouse wheel is scrolled while the registered window has focus.
-     */
-    void OnMouseWheel( MouseWheelEventArgs& e );
-
-    /**
      * Handle DPI change events.
      */
     void OnDPIScaleChanged( DPIScaleEventArgs& e );
@@ -158,6 +153,7 @@ private:
     // Some scenes to represent the light sources.
     std::shared_ptr<dx12lib::Scene> m_Sphere;
     std::shared_ptr<dx12lib::Scene> m_Cone;
+    std::shared_ptr<dx12lib::Scene> m_Axis;
 
 
     // Pipeline state object for rendering the scene.
