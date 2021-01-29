@@ -87,6 +87,14 @@ public:
     std::wstring GetDescription() const;
 
     /**
+     * Query if Raytracing is supported.
+     */
+    bool IsRaytracingSupported() const
+    {
+        return m_FeatureOptions5.RaytracingTier >= D3D12_RAYTRACING_TIER_1_0;
+    }
+
+    /**
      * Allocate a number of CPU visible descriptors.
      */
     DescriptorAllocation AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors = 1 );
@@ -96,7 +104,7 @@ public:
      */
     UINT GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE type ) const
     {
-        return m_d3d12Device->GetDescriptorHandleIncrementSize( type );
+        return m_d3d12Device2->GetDescriptorHandleIncrementSize( type );
     }
 
     /**
@@ -204,7 +212,7 @@ public:
 
     Microsoft::WRL::ComPtr<ID3D12Device2> GetD3D12Device() const
     {
-        return m_d3d12Device;
+        return m_d3d12Device2;
     }
 
     D3D_ROOT_SIGNATURE_VERSION GetHighestRootSignatureVersion() const
@@ -227,7 +235,8 @@ protected:
         DoCreatePipelineStateObject( const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc );
 
 private:
-    Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device;
+    Microsoft::WRL::ComPtr<ID3D12Device2> m_d3d12Device2;
+    Microsoft::WRL::ComPtr<ID3D12Device5> m_d3d12Device5;
 
     // The adapter that was used to create the device:
     std::shared_ptr<Adapter> m_Adapter;
@@ -240,6 +249,7 @@ private:
     // Descriptor allocators.
     std::unique_ptr<DescriptorAllocator> m_DescriptorAllocators[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-    D3D_ROOT_SIGNATURE_VERSION m_HighestRootSignatureVersion;
+    D3D_ROOT_SIGNATURE_VERSION        m_HighestRootSignatureVersion;
+    D3D12_FEATURE_DATA_D3D12_OPTIONS5 m_FeatureOptions5;
 };
 }  // namespace dx12lib

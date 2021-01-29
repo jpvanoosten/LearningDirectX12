@@ -247,11 +247,14 @@ Device::Device( std::shared_ptr<Adapter> adapter )
 
     auto dxgiAdapter = m_Adapter->GetDXGIAdapter();
 
-    ThrowIfFailed( D3D12CreateDevice( dxgiAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_d3d12Device ) ) );
+    ThrowIfFailed( D3D12CreateDevice( dxgiAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS( &m_d3d12Device2 ) ) );
+
+    // Get a ID3D12Device5 for ray tracing (if supported on end-user's computer)
+    m_d3d12Device2.As( &m_d3d12Device5 );
 
     // Enable debug messages (only works if the debug layer has already been enabled).
     ComPtr<ID3D12InfoQueue> pInfoQueue;
-    if ( SUCCEEDED( m_d3d12Device.As( &pInfoQueue ) ) )
+    if ( SUCCEEDED( m_d3d12Device2.As( &pInfoQueue ) ) )
     {
         pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE );
         pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_ERROR, TRUE );
@@ -301,12 +304,19 @@ Device::Device( std::shared_ptr<Adapter> adapter )
     {
         D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData;
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-        if ( FAILED( m_d3d12Device->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData,
+        if ( FAILED( m_d3d12Device2->CheckFeatureSupport( D3D12_FEATURE_ROOT_SIGNATURE, &featureData,
                                                          sizeof( D3D12_FEATURE_DATA_ROOT_SIGNATURE ) ) ) )
         {
             featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
         }
         m_HighestRootSignatureVersion = featureData.HighestVersion;
+
+        // The OPTIONS5 structure contains information about the ray tracing tier.
+        if (FAILED(m_d3d12Device2->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &m_FeatureOptions5,
+            sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5))))
+        {
+            std::cerr << "Failed to query feature support." << std::endl;
+        }
     }
 }
 
@@ -348,7 +358,9 @@ DescriptorAllocation Device::AllocateDescriptors( D3D12_DESCRIPTOR_HEAP_TYPE typ
 void Device::ReleaseStaleDescriptors()
 {
     for ( int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i )
-    { m_DescriptorAllocators[i]->ReleaseStaleDescriptors(); }
+    {
+        m_DescriptorAllocators[i]->ReleaseStaleDescriptors();
+    }
 }
 
 std::shared_ptr<SwapChain> Device::CreateSwapChain( HWND hWnd, DXGI_FORMAT backBufferFormat )
@@ -442,14 +454,16 @@ std::shared_ptr<dx12lib::VertexBuffer>
     return vertexBuffer;
 }
 
-std::shared_ptr<Texture> Device::CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue )
+std::shared_ptr<Texture> Device::CreateTexture( const D3D12_RESOURCE_DESC& resourceDesc,
+                                                const D3D12_CLEAR_VALUE*   clearValue )
 {
     std::shared_ptr<Texture> texture = std::make_shared<MakeTexture>( *this, resourceDesc, clearValue );
 
     return texture;
 }
 
-std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource, const D3D12_CLEAR_VALUE* clearValue )
+std::shared_ptr<Texture> Device::CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
+                                                const D3D12_CLEAR_VALUE*               clearValue )
 {
     std::shared_ptr<Texture> texture = std::make_shared<MakeTexture>( *this, resource, clearValue );
 
@@ -464,8 +478,8 @@ std::shared_ptr<dx12lib::RootSignature>
     return rootSignature;
 }
 
-std::shared_ptr<PipelineStateObject> Device::DoCreatePipelineStateObject(
-    const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc )
+std::shared_ptr<PipelineStateObject>
+    Device::DoCreatePipelineStateObject( const D3D12_PIPELINE_STATE_STREAM_DESC& pipelineStateStreamDesc )
 {
     std::shared_ptr<PipelineStateObject> pipelineStateObject =
         std::make_shared<MakePipelineStateObject>( *this, pipelineStateStreamDesc );
@@ -515,7 +529,7 @@ DXGI_SAMPLE_DESC Device::GetMultisampleQualityLevels( DXGI_FORMAT format, UINT n
 
     while (
         qualityLevels.SampleCount <= numSamples &&
-        SUCCEEDED( m_d3d12Device->CheckFeatureSupport( D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &qualityLevels,
+        SUCCEEDED( m_d3d12Device2->CheckFeatureSupport( D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &qualityLevels,
                                                        sizeof( D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS ) ) ) &&
         qualityLevels.NumQualityLevels > 0 )
     {
