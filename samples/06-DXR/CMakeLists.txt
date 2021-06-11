@@ -31,13 +31,21 @@ set( PIXEL_SHADERS
     shaders/Unlit_PS.hlsl
 )
 
+set( RAYTRACE_SHADERS 
+    shaders/Hit_RT.hlsl
+    shaders/Miss_RT.hlsl
+    shaders/RayGen_RT.hlsl
+)
+
 set( SHADER_INCLUDES
     shaders/Base_PS.hlsli
+    shaders/Common.hlsli
 )
 
 set( SHADERS
     ${VERTEX_SHADERS}
     ${PIXEL_SHADERS}
+    ${RAYTRACE_SHADERS}
     ${SHADER_INCLUDES}
 )
 

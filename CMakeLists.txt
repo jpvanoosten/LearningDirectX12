@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.16.1 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 3.19.5 ) # Latest version of CMake required to work with this project.
 
 option( DX12LIB_BUILD_SAMPLES "Build samples for DX12Lib" ON )
 

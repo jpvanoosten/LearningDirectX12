@@ -1,7 +1,7 @@
 # clang-format style options.
 # see: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 Language: Cpp
-Standard: c++11
+Standard: c++17
 AccessModifierOffset: -4
 AlignAfterOpenBracket: true
 AlignConsecutiveAssignments: true

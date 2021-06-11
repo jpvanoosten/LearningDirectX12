@@ -576,7 +576,7 @@ private:
     // Helper function for flipping winding of geometric primitives for LH vs. RH coords
     inline void ReverseWinding( IndexCollection& indices, VertexCollection& vertices );
     // Helper function for inverting normals for "inside" vs "outside" viewing.
-    inline void CommandList::InvertNormals( VertexCollection& vertices );
+    inline void InvertNormals( VertexCollection& vertices );
     // Helper function to compute a point on a unit circle aligned to the x,z plane and centered at the origin.
     inline DirectX::XMVECTOR GetCircleVector( size_t i, size_t tessellation ) noexcept;
     // Helper function to compute a tangent vector at a point on a unit sphere aligned to the x,z plane.

@@ -205,7 +205,6 @@ ComPtr<ID3D12Resource> CommandList::CopyBuffer( size_t bufferSize, const void* b
 
         if ( bufferData != nullptr )
         {
-            // Create an upload resource to use as an intermediate buffer to copy the buffer resource
             ComPtr<ID3D12Resource> uploadResource;
             ThrowIfFailed( d3d12Device->CreateCommittedResource(
                 &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
