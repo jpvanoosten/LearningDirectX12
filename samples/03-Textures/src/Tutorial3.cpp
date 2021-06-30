@@ -34,7 +34,7 @@ using namespace DirectX;
 #include <algorithm>  // For std::min, std::max, and std::clamp.
 //#include <cstdio>      // For swprintf_s
 #include <functional>  // For std::bind
-#include <string>      // For std::wstring
+#include <string>  // For std::wstring
 
 struct Mat
 {
@@ -104,12 +104,14 @@ Tutorial3::Tutorial3( const std::wstring& name, uint32_t width, uint32_t height,
     m_Logger = GameFramework::Get().CreateLogger( "Textures" );
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
-    m_Window->Update += UpdateEvent::slot( &Tutorial3::OnUpdate, this );
+    GameFramework::Get().Update += UpdateEvent::slot( &Tutorial3::OnUpdate, this );
+    m_Window->Render += RenderEvent::slot( &Tutorial3::OnRender, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial3::OnKeyPressed, this );
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial3::OnKeyReleased, this );
     m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial3::OnMouseMoved, this );
     m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial3::OnMouseWheel, this );
     m_Window->Resize += ResizeEvent::slot( &Tutorial3::OnResize, this );
+    m_Window->Close += WindowCloseEvent::slot( &Tutorial3::OnClosed, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -424,7 +426,7 @@ void Tutorial3::OnUpdate( UpdateEventArgs& e )
         l.QuadraticAttenuation = 0.0f;
     }
 
-    OnRender();
+    m_Window->Redraw();
 }
 
 void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX viewProjection, Mat& mat )
@@ -435,7 +437,7 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
     mat.ModelViewProjectionMatrix       = model * viewProjection;
 }
 
-void Tutorial3::OnRender()
+void Tutorial3::OnRender( RenderEventArgs& e )
 {
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
@@ -799,4 +801,9 @@ void Tutorial3::OnMouseWheel( MouseWheelEventArgs& e )
 
         m_Logger->info( "FoV: {:.7}", fov );
     }
+}
+
+void Tutorial3::OnClosed( WindowCloseEventArgs& e )
+{
+    GameFramework::Get().Stop();
 }

@@ -149,10 +149,12 @@ GameFramework::GameFramework( HINSTANCE hInst )
     m_KeyboardDevice = m_InputManager.CreateDevice<gainput::InputDeviceKeyboard>();
     m_MouseDevice    = m_InputManager.CreateDevice<gainput::InputDeviceMouse>();
     for ( unsigned i = 0; i < gainput::MaxPadCount; ++i )
-    { m_GamepadDevice[i] = m_InputManager.CreateDevice<gainput::InputDevicePad>( i ); }
+    {
+        m_GamepadDevice[i] = m_InputManager.CreateDevice<gainput::InputDevicePad>( i );
+    }
 
     // This will prevent normalization of mouse coordinates.
-    m_InputManager.SetDisplaySize(1, 1);
+    m_InputManager.SetDisplaySize( 1, 1 );
 
     // Initializes the COM library for use by the calling thread, sets the thread's concurrency model, and creates a new
     // apartment for the thread if one is required.
@@ -271,12 +273,29 @@ int32_t GameFramework::Run()
     m_bIsRunning = true;
 
     MSG msg = {};
-    while ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) && msg.message != WM_QUIT )
+    while ( true )
     {
-        ::TranslateMessage( &msg );
-        ::DispatchMessage( &msg );
+        if ( ::PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
+        {
+            if ( msg.message == WM_QUIT )
+                break;
 
-        m_InputManager.HandleMessage( msg );
+            ::TranslateMessage( &msg );
+            ::DispatchMessage( &msg );
+
+            m_InputManager.HandleMessage( msg );
+        }
+        else
+        {
+            m_Timer.Tick();
+
+            double elapsedTime = m_Timer.ElapsedSeconds();
+            double totalTime   = m_Timer.TotalSeconds();
+
+            UpdateEventArgs e( elapsedTime, totalTime );
+
+            OnUpdate( e );
+        }
 
         // Check to see of the application wants to quit.
         if ( m_RequestQuit )
@@ -413,6 +432,11 @@ void GameFramework::CheckFileChanges()
     }
 }
 
+void GameFramework::OnUpdate(UpdateEventArgs& e) 
+{
+    Update( e );
+}
+
 void GameFramework::OnFileChange( FileChangedEventArgs& e )
 {
     FileChanged( e );
@@ -540,8 +564,9 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         case WM_PAINT:
         {
             // Delta and total time will be filled in by the Window.
-            UpdateEventArgs updateEventArgs( 0.0, 0.0 );
-            pWindow->OnUpdate( updateEventArgs );
+            RenderEventArgs renderEventArgs;
+            pWindow->OnRender( renderEventArgs );
+            ValidateRect( hwnd, nullptr );
         }
         break;
         case WM_SYSKEYDOWN:
@@ -556,7 +581,7 @@ static LRESULT CALLBACK WndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             // KeyPressed event. Inspired by the SDL 1.2 implementation.
             if ( PeekMessage( &charMsg, hwnd, 0, 0, PM_NOREMOVE ) && charMsg.message == WM_CHAR )
             {
-//                GetMessage( &charMsg, hwnd, 0, 0 );
+                //                GetMessage( &charMsg, hwnd, 0, 0 );
                 c = static_cast<unsigned int>( charMsg.wParam );
             }
 

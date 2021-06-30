@@ -9,6 +9,7 @@
 using namespace dx12lib;
 
 void OnUpdate( UpdateEventArgs& e );
+void OnRender( RenderEventArgs& e );
 void OnKeyPressed( KeyEventArgs& e );
 void OnWindowResized( ResizeEventArgs& e );
 void OnWindowClose( WindowCloseEventArgs& e );
@@ -47,9 +48,10 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pSwapChain->SetVSync( false );
 
         // Register events.
+        gf.Update += &OnUpdate;
         pGameWindow->KeyPressed += &OnKeyPressed;
         pGameWindow->Resize += &OnWindowResized;
-        pGameWindow->Update += &OnUpdate;
+        pGameWindow->Render += &OnRender;
         pGameWindow->Close += &OnWindowClose;
 
         pGameWindow->Show();
@@ -71,10 +73,13 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 
 void OnUpdate( UpdateEventArgs& e )
 {
-    static uint64_t frameCount = 0;
-    static double   totalTime  = 0.0;
+    static HighResolutionTimer timer;
+    static uint64_t            frameCount = 0;
+    static double              totalTime  = 0.0;
 
-    totalTime += e.DeltaTime;
+    timer.Tick();
+
+    totalTime += timer.ElapsedSeconds();
     ++frameCount;
 
     if ( totalTime > 1.0 )
@@ -90,6 +95,11 @@ void OnUpdate( UpdateEventArgs& e )
         pGameWindow->SetWindowTitle( buffer );
     }
 
+    pGameWindow->Redraw();
+}
+
+void OnRender( RenderEventArgs& e )
+{
     auto& commandQueue = pDevice->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
 

@@ -31,6 +31,7 @@
  */
 
 #include "Events.h"
+#include "HighResolutionTimer.h"
 #include "ReadDirectoryChanges.h"
 
 #include <gainput/gainput.h>
@@ -189,6 +190,11 @@ public:
         GetWindowByName( const std::wstring& windowName ) const;
 
     /**
+     * Invoked when the game state should be updated.
+     */
+    UpdateEvent Update;
+
+    /**
      * Invoked when a message is sent to a window.
      */
     WndProcEvent WndProcHandler;
@@ -208,6 +214,9 @@ protected:
 
     GameFramework( HINSTANCE hInst );
     virtual ~GameFramework();
+
+    // Update game state.
+    virtual void OnUpdate( UpdateEventArgs& e );
 
     // A file modification was detected.
     virtual void OnFileChange( FileChangedEventArgs& e );
@@ -252,4 +261,6 @@ private:
     std::mutex  m_DirectoryChangeMutex;
     // Flag to terminate directory change thread.
     std::atomic_bool m_bTerminateDirectoryChangeThread;
+
+    HighResolutionTimer m_Timer;
 };

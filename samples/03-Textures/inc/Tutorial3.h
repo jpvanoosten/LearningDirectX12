@@ -85,7 +85,7 @@ protected:
      *  Update the game logic.
      */
     void OnUpdate( UpdateEventArgs& e );
-    void OnRender();
+    void OnRender( RenderEventArgs& e);
     void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
 
     /**
@@ -113,6 +113,11 @@ protected:
      * Invoked when the window is resized.
      */
     void OnResize( ResizeEventArgs& e );
+
+    /**
+     * Invoked when the window is closed.
+     */
+    void OnClosed( WindowCloseEventArgs& e );
 
 private:
     std::shared_ptr<Window> m_Window;  // Render window (from GameFramework)

@@ -87,7 +87,7 @@ protected:
     /**
      *  Render stuff.
      */
-    void OnRender();
+    void OnRender( RenderEventArgs& e );
 
     /**
      * Invoked by the registered window when a key is pressed
@@ -116,6 +116,8 @@ protected:
     void OnDPIScaleChanged( DPIScaleEventArgs& e );
 
     void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
+
+    void OnWindowClose( WindowCloseEventArgs& e );
 
 private:
     std::shared_ptr<dx12lib::Device>    m_Device;

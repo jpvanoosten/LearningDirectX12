@@ -44,14 +44,14 @@ void Window::Hide()
     ::ShowWindow( m_hWnd, SW_HIDE );
 }
 
-void Window::OnUpdate( UpdateEventArgs& e )
+void Window::Redraw()
 {
-    m_Timer.Tick();
+    ::RedrawWindow( m_hWnd, nullptr, 0, RDW_INTERNALPAINT );
+}
 
-    e.DeltaTime = m_Timer.ElapsedSeconds();
-    e.TotalTime = m_Timer.TotalSeconds();
-
-    Update( e );
+void Window::OnRender( RenderEventArgs& e )
+{
+    Render( e );
 }
 
 void Window::OnClose( WindowCloseEventArgs& e )

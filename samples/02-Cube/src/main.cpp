@@ -26,6 +26,7 @@ using namespace DirectX;
 using namespace Microsoft::WRL;
 
 void OnUpdate( UpdateEventArgs& e );
+void OnRender( RenderEventArgs& e );
 void OnKeyPressed( KeyEventArgs& e );
 void OnMouseWheel( MouseWheelEventArgs& e );
 void OnResized( ResizeEventArgs& e );
@@ -98,8 +99,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         auto  commandList  = commandQueue.GetCommandList();
 
         // Load vertex data:
-        pVertexBuffer =
-            commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
+        pVertexBuffer = commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
 
         // Load index data:
         pIndexBuffer = commandList->CopyIndexBuffer( _countof( g_Indicies ), DXGI_FORMAT_R16_UINT, g_Indicies );
@@ -115,10 +115,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pSwapChain->SetVSync( false );
 
         // Register events.
+        gf.Update += &OnUpdate;
         pGameWindow->KeyPressed += &OnKeyPressed;
         pGameWindow->MouseWheel += &OnMouseWheel;
         pGameWindow->Resize += &OnResized;
-        pGameWindow->Update += &OnUpdate;
+        pGameWindow->Render += &OnRender;
         pGameWindow->Close += &OnWindowClose;
 
         // Create the vertex input layout
@@ -224,6 +225,14 @@ void OnUpdate( UpdateEventArgs& e )
         pGameWindow->SetWindowTitle( buffer );
     }
 
+    pGameWindow->Redraw();
+}
+
+void OnRender( RenderEventArgs& e )
+{
+    static HighResolutionTimer timer;
+    timer.Tick();
+
     // Use the render target from the swapchain.
     auto renderTarget = pSwapChain->GetRenderTarget();
     // Set the render target (with the depth texture).
@@ -232,7 +241,7 @@ void OnUpdate( UpdateEventArgs& e )
     auto viewport = renderTarget.GetViewport();
 
     // Update the model matrix.
-    float          angle        = static_cast<float>( e.TotalTime * 90.0 );
+    float          angle        = static_cast<float>( timer.TotalSeconds() * 90.0 );
     const XMVECTOR rotationAxis = XMVectorSet( 0, 1, 1, 0 );
     XMMATRIX       modelMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
 

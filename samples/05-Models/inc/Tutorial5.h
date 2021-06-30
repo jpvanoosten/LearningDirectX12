@@ -93,7 +93,7 @@ protected:
     /**
      * Render stuff.
      */
-    void OnRender();
+    void OnRender(RenderEventArgs& e);
 
     /**
      * Invoked by the registered window when a key is pressed
@@ -120,6 +120,11 @@ protected:
      * Render ImGUI stuff.
      */
     void OnGUI( const std::shared_ptr<dx12lib::CommandList>& commandList, const dx12lib::RenderTarget& renderTarget );
+
+    /**
+     * Invoked when the window is closed.
+     */
+    void OnWindowClosed( WindowCloseEventArgs& e );
 
 private:
     /**

@@ -150,13 +150,15 @@ Tutorial4::Tutorial4( const std::wstring& name, int width, int height, bool vSyn
     m_Logger = GameFramework::Get().CreateLogger( "HDR" );
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
-    m_Window->Update += UpdateEvent::slot( &Tutorial4::OnUpdate, this );
+    GameFramework::Get().Update += UpdateEvent::slot( &Tutorial4::OnUpdate, this );
+    m_Window->Render += RenderEvent::slot( &Tutorial4::OnRender, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial4::OnKeyPressed, this );
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial4::OnKeyReleased, this );
     m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial4::OnMouseMoved, this );
     m_Window->MouseWheel += MouseWheelEvent::slot( &Tutorial4::OnMouseWheel, this );
     m_Window->Resize += ResizeEvent::slot( &Tutorial4::OnResize, this );
     m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial4::OnDPIScaleChanged, this );
+    m_Window->Close += WindowCloseEvent::slot( &Tutorial4::OnWindowClose, this );
 
     XMVECTOR cameraPos    = XMVectorSet( 0, 5, -20, 1 );
     XMVECTOR cameraTarget = XMVectorSet( 0, 5, 0, 1 );
@@ -618,7 +620,7 @@ void Tutorial4::OnUpdate( UpdateEventArgs& e )
         l.Attenuation = 0.0f;
     }
 
-    OnRender();
+    m_Window->Redraw();
 }
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -851,7 +853,7 @@ void XM_CALLCONV ComputeMatrices( FXMMATRIX model, CXMMATRIX view, CXMMATRIX vie
     mat.ModelViewProjectionMatrix       = model * viewProjection;
 }
 
-void Tutorial4::OnRender()
+void Tutorial4::OnRender( RenderEventArgs& e )
 {
     auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
     auto  commandList  = commandQueue.GetCommandList();
@@ -1235,4 +1237,9 @@ void Tutorial4::OnMouseWheel( MouseWheelEventArgs& e )
 
         m_Logger->info( "FoV: {:.7}", fov );
     }
+}
+
+void Tutorial4::OnWindowClose( WindowCloseEventArgs& e )
+{
+    GameFramework::Get().Stop();
 }

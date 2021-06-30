@@ -125,13 +125,15 @@ Tutorial5::Tutorial5( const std::wstring& name, int width, int height, bool vSyn
     // Create  window for rendering to.
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
-    // Hookup Window callbacks.
-    m_Window->Update += UpdateEvent::slot( &Tutorial5::OnUpdate, this );
+    // Hookup callbacks.
+    GameFramework::Get().Update += UpdateEvent::slot( &Tutorial5::OnUpdate, this );
+    m_Window->Render += RenderEvent::slot( &Tutorial5::OnRender, this );
     m_Window->Resize += ResizeEvent::slot( &Tutorial5::OnResize, this );
     m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial5::OnDPIScaleChanged, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial5::OnKeyPressed, this );
     m_Window->KeyReleased += KeyboardEvent::slot( &Tutorial5::OnKeyReleased, this );
     m_Window->MouseMoved += MouseMotionEvent::slot( &Tutorial5::OnMouseMoved, this );
+    m_Window->Close += WindowCloseEvent::slot( &Tutorial5::OnWindowClosed, this );
 }
 
 Tutorial5::~Tutorial5()
@@ -319,9 +321,9 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     m_CameraController.Update( e );
 
     // Move the Axis model to the focal point of the camera.
-    XMVECTOR cameraPoint = m_Camera.get_FocalPoint();
+    XMVECTOR cameraPoint       = m_Camera.get_FocalPoint();
     XMMATRIX translationMatrix = XMMatrixTranslationFromVector( cameraPoint );
-    XMMATRIX scaleMatrix = XMMatrixScaling( 0.01f, 0.01f, 0.01f );
+    XMMATRIX scaleMatrix       = XMMatrixScaling( 0.01f, 0.01f, 0.01f );
     m_Axis->GetRootNode()->SetLocalTransform( scaleMatrix * translationMatrix );
 
     XMMATRIX viewMatrix = m_Camera.get_ViewMatrix();
@@ -361,7 +363,7 @@ void Tutorial5::OnUpdate( UpdateEventArgs& e )
     m_LightingPSO->SetDirectionalLights( m_DirectionalLights );
     m_DecalPSO->SetDirectionalLights( m_DirectionalLights );
 
-    OnRender();
+    m_Window->Redraw();
 }
 
 void Tutorial5::OnResize( ResizeEventArgs& e )
@@ -379,7 +381,7 @@ void Tutorial5::OnResize( ResizeEventArgs& e )
     m_SwapChain->Resize( m_Width, m_Height );
 }
 
-void Tutorial5::OnRender()
+void Tutorial5::OnRender(RenderEventArgs& e)
 {
     // This is done here to prevent the window switching to fullscreen while rendering the GUI.
     m_Window->SetFullscreen( m_Fullscreen );
@@ -763,4 +765,9 @@ void Tutorial5::OpenFile()
             }
         }
     }
+}
+
+void Tutorial5::OnWindowClosed( WindowCloseEventArgs& e )
+{
+    GameFramework::Get().Stop();
 }
