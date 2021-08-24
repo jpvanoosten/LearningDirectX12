@@ -35,7 +35,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
 
     GameFramework::Create( hInstance );
     {
-        auto demo = std::make_unique<Tutorial6>( L"Models", 1920, 1080 );
+        auto demo = std::make_unique<Tutorial6>( L"Ray Tracing", 1920, 1080 );
         retCode = demo->Run();
     }
     // Destroy game framework resource.

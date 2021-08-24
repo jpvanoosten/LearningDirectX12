@@ -54,7 +54,7 @@ source_group( "Resources\\Shaders" FILES ${SHADERS} )
 set_source_files_properties( ${VERTEX_SHADERS} ${PIXEL_SHADERS}
     PROPERTIES
         VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/${TARGET_NAME}/%(Filename).cso"
-        VS_SHADER_MODEL 6.0
+        VS_SHADER_MODEL 6.3
         VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
         VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
         VS_SHADER_FLAGS $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-Qembed_debug>
@@ -68,6 +68,11 @@ set_source_files_properties( ${VERTEX_SHADERS}
 set_source_files_properties( ${PIXEL_SHADERS}
     PROPERTIES 
         VS_SHADER_TYPE Pixel
+)
+
+set_source_files_properties( ${RAYTRACE_SHADERS}
+    PROPERTIES
+        VS_SHADER_TYPE Library
 )
 
 add_executable( ${TARGET_NAME} WIN32

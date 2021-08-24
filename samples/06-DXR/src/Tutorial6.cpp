@@ -129,7 +129,7 @@ Tutorial6::Tutorial6( const std::wstring& name, int width, int height, bool vSyn
     m_Window = GameFramework::Get().CreateWindow( name, width, height );
 
     // Hookup Window callbacks.
-    m_Window->Update += UpdateEvent::slot( &Tutorial6::OnUpdate, this );
+    GameFramework::Get().Update += UpdateEvent::slot( &Tutorial6::OnUpdate, this );
     m_Window->Resize += ResizeEvent::slot( &Tutorial6::OnResize, this );
     m_Window->DPIScaleChanged += DPIScaleEvent::slot( &Tutorial6::OnDPIScaleChanged, this );
     m_Window->KeyPressed += KeyboardEvent::slot( &Tutorial6::OnKeyPressed, this );

@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 /*
  *  Copyright(c) 2020 Jeremiah van Oosten
  *
