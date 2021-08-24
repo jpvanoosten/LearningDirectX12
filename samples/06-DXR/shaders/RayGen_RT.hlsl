@@ -15,7 +15,7 @@ void RayGen()
 
     // Get the location within the dispatched 2D grid of work items
     // (often maps to pixels, so this could represent a pixel coordinate).
-    uint2 launchIndex = DispatchRaysIndex();
+    uint2 launchIndex = DispatchRaysIndex().xy;
 
     gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1.f);
 }

@@ -51,7 +51,7 @@ set( SHADERS
 
 source_group( "Resources\\Shaders" FILES ${SHADERS} )
 
-set_source_files_properties( ${VERTEX_SHADERS} ${PIXEL_SHADERS}
+set_source_files_properties( ${VERTEX_SHADERS} ${PIXEL_SHADERS} ${RAYTRACE_SHADERS}
     PROPERTIES
         VS_SHADER_OBJECT_FILE_NAME "${CMAKE_SOURCE_DIR}/Data/Shaders/${TARGET_NAME}/%(Filename).cso"
         VS_SHADER_MODEL 6.3
@@ -73,6 +73,7 @@ set_source_files_properties( ${PIXEL_SHADERS}
 set_source_files_properties( ${RAYTRACE_SHADERS}
     PROPERTIES
         VS_SHADER_TYPE Library
+        VS_SHADER_ENTRYPOINT ""
 )
 
 add_executable( ${TARGET_NAME} WIN32
