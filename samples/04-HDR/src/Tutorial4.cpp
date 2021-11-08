@@ -325,14 +325,19 @@ bool Tutorial4::LoadContent()
             CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY    PrimitiveTopologyType;
             CD3DX12_PIPELINE_STATE_STREAM_VS                    VS;
             CD3DX12_PIPELINE_STATE_STREAM_PS                    PS;
+            CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL         DepthStencilState;
             CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
         } skyboxPipelineStateStream;
+
+        auto depthStencilState = CD3DX12_DEPTH_STENCIL_DESC();
+        depthStencilState.DepthEnable = FALSE;
 
         skyboxPipelineStateStream.pRootSignature        = m_SkyboxSignature->GetD3D12RootSignature().Get();
         skyboxPipelineStateStream.InputLayout           = { inputLayout, 1 };
         skyboxPipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         skyboxPipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vs.Get() );
         skyboxPipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( ps.Get() );
+        skyboxPipelineStateStream.DepthStencilState     = depthStencilState;
         skyboxPipelineStateStream.RTVFormats            = m_HDRRenderTarget.GetRenderTargetFormats();
 
         m_SkyboxPipelineState = m_Device->CreatePipelineStateObject( skyboxPipelineStateStream );
