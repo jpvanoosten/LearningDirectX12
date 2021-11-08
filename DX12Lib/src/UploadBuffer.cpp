@@ -71,10 +71,12 @@ UploadBuffer::Page::Page( Device& device, size_t sizeInBytes )
 {
     auto d3d12Device = m_Device.GetD3D12Device();
 
-    ThrowIfFailed( d3d12Device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Buffer( m_PageSize ), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-        IID_PPV_ARGS( &m_d3d12Resource ) ) );
+    auto heapProperties = CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD );
+    auto resourceDesc   = CD3DX12_RESOURCE_DESC::Buffer( m_PageSize );
+
+    ThrowIfFailed( d3d12Device->CreateCommittedResource( &heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc,
+                                                         D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+                                                         IID_PPV_ARGS( &m_d3d12Resource ) ) );
 
     m_d3d12Resource->SetName( L"Upload Buffer (Page)" );
 

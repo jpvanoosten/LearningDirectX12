@@ -14,8 +14,7 @@ Texture::Texture( Device& device, const D3D12_RESOURCE_DESC& resourceDesc, const
     CreateViews();
 }
 
-Texture::Texture( Device& device, ComPtr<ID3D12Resource> resource,
-                  const D3D12_CLEAR_VALUE* clearValue )
+Texture::Texture( Device& device, ComPtr<ID3D12Resource> resource, const D3D12_CLEAR_VALUE* clearValue )
 : Resource( device, resource, clearValue )
 {
     CreateViews();
@@ -38,9 +37,11 @@ void Texture::Resize( uint32_t width, uint32_t height, uint32_t depthOrArraySize
 
         auto d3d12Device = m_Device.GetD3D12Device();
 
-        ThrowIfFailed( d3d12Device->CreateCommittedResource(
-            &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE, &resDesc,
-            D3D12_RESOURCE_STATE_COMMON, m_d3d12ClearValue.get(), IID_PPV_ARGS( &m_d3d12Resource ) ) );
+        auto heapProperties = CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT );
+
+        ThrowIfFailed( d3d12Device->CreateCommittedResource( &heapProperties, D3D12_HEAP_FLAG_NONE, &resDesc,
+                                                             D3D12_RESOURCE_STATE_COMMON, m_d3d12ClearValue.get(),
+                                                             IID_PPV_ARGS( &m_d3d12Resource ) ) );
 
         // Retain the name of the resource if one was already specified.
         m_d3d12Resource->SetName( m_ResourceName.c_str() );

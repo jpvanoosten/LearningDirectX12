@@ -126,9 +126,9 @@ add_library( DX12Lib STATIC
     ../.clang-format
 )
 
-# Enable C++17 compiler features.
+# Enable C++20 compiler features.
 target_compile_features( DX12Lib 
-	PUBLIC cxx_std_17
+	PUBLIC cxx_std_20
 )
 
 target_compile_definitions( DX12Lib
