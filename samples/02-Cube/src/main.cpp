@@ -61,7 +61,7 @@ static VertexPosColor g_Vertices[8] = {
     { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT3( 1.0f, 0.0f, 1.0f ) }     // 7
 };
 
-static WORD g_Indicies[36] = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1, 0,
+static WORD g_Indices[36] = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1, 0,
                                3, 2, 6, 3, 6, 7, 1, 5, 6, 1, 6, 2, 4, 0, 3, 4, 3, 7 };
 
 float fieldOfView = 45.0f;
@@ -102,7 +102,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLi
         pVertexBuffer = commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
 
         // Load index data:
-        pIndexBuffer = commandList->CopyIndexBuffer( _countof( g_Indicies ), DXGI_FORMAT_R16_UINT, g_Indicies );
+        pIndexBuffer = commandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
 
         // Execute the command list to upload the resources to the GPU.
         commandQueue.ExecuteCommandList( commandList );
@@ -282,7 +282,7 @@ void OnRender( RenderEventArgs& e )
     commandList->SetVertexBuffer( 0, pVertexBuffer );
     commandList->SetIndexBuffer( pIndexBuffer );
     commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-    commandList->DrawIndexed( pIndexBuffer->GetNumIndicies() );
+    commandList->DrawIndexed( pIndexBuffer->GetNumIndices() );
 
     commandQueue.ExecuteCommandList( commandList );
 

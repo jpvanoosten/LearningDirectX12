@@ -150,7 +150,7 @@ public:
     std::shared_ptr<Texture> CreateTexture( Microsoft::WRL::ComPtr<ID3D12Resource> resource,
                                             const D3D12_CLEAR_VALUE*               clearValue = nullptr );
 
-    std::shared_ptr<IndexBuffer> CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat );
+    std::shared_ptr<IndexBuffer> CreateIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat );
     std::shared_ptr<IndexBuffer> CreateIndexBuffer( Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
                                                     DXGI_FORMAT indexFormat );
 

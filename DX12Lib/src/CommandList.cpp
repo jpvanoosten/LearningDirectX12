@@ -245,14 +245,14 @@ std::shared_ptr<VertexBuffer> CommandList::CopyVertexBuffer( size_t numVertices,
     return vertexBuffer;
 }
 
-std::shared_ptr<IndexBuffer> CommandList::CopyIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat,
+std::shared_ptr<IndexBuffer> CommandList::CopyIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat,
                                                            const void* indexBufferData )
 {
     size_t elementSize = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
 
-    auto d3d12Resource = CopyBuffer( numIndicies * elementSize, indexBufferData );
+    auto d3d12Resource = CopyBuffer( numIndices * elementSize, indexBufferData );
 
-    std::shared_ptr<IndexBuffer> indexBuffer = m_Device.CreateIndexBuffer( d3d12Resource, numIndicies, indexFormat );
+    std::shared_ptr<IndexBuffer> indexBuffer = m_Device.CreateIndexBuffer( d3d12Resource, numIndices, indexFormat );
 
     return indexBuffer;
 }
@@ -1047,7 +1047,7 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, 
 {
     assert( tessellation > 3 );
 
-    VertexCollection verticies;
+    VertexCollection vertices;
     IndexCollection  indices;
 
     size_t stride = tessellation + 1;
@@ -1081,7 +1081,7 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, 
             position = XMVector3Transform( position, transform );
             normal   = XMVector3TransformNormal( normal, transform );
 
-            verticies.emplace_back( position, normal, textureCoordinate );
+            vertices.emplace_back( position, normal, textureCoordinate );
 
             // And create indices for two triangles.
             size_t nextI = ( i + 1 ) % stride;
@@ -1099,10 +1099,10 @@ std::shared_ptr<Scene> CommandList::CreateTorus( float radius, float thickness, 
 
     if ( reverseWinding )
     {
-        ReverseWinding( indices, verticies );
+        ReverseWinding( indices, vertices );
     }
 
-    return CreateScene( verticies, indices );
+    return CreateScene( vertices, indices );
 }
 
 std::shared_ptr<Scene> CommandList::CreatePlane( float width, float height, bool reverseWinding )
@@ -1257,10 +1257,10 @@ void CommandList::SetIndexBuffer( const std::shared_ptr<IndexBuffer>& indexBuffe
     }
 }
 
-void CommandList::SetDynamicIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData )
+void CommandList::SetDynamicIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat, const void* indexBufferData )
 {
     size_t indexSizeInBytes = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
-    size_t bufferSize       = numIndicies * indexSizeInBytes;
+    size_t bufferSize       = numIndices * indexSizeInBytes;
 
     auto heapAllocation = m_UploadBuffer->Allocate( bufferSize, indexSizeInBytes );
     memcpy( heapAllocation.CPU, indexBufferData, bufferSize );
