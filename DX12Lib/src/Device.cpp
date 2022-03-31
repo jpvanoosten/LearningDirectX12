@@ -132,16 +132,16 @@ public:
 class MakeIndexBuffer : public IndexBuffer
 {
 public:
-    MakeIndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat )
-    : IndexBuffer( device, numIndicies, indexFormat )
+    MakeIndexBuffer( Device& device, size_t numIndices, DXGI_FORMAT indexFormat )
+    : IndexBuffer( device, numIndices, indexFormat )
     {}
 
-    MakeIndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
+    MakeIndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
                      DXGI_FORMAT indexFormat )
-    : IndexBuffer( device, resource, numIndicies, indexFormat )
+    : IndexBuffer( device, resource, numIndices, indexFormat )
     {}
 
-    virtual ~MakeIndexBuffer() {}
+    virtual ~MakeIndexBuffer() = default;
 };
 
 class MakeConstantBuffer : public ConstantBuffer
@@ -151,7 +151,7 @@ public:
     : ConstantBuffer( device, resource )
     {}
 
-    virtual ~MakeConstantBuffer() {}
+    virtual ~MakeConstantBuffer() = default;
 };
 
 class MakeByteAddressBuffer : public ByteAddressBuffer
@@ -161,11 +161,11 @@ public:
     : ByteAddressBuffer( device, desc )
     {}
 
-    MakeByteAddressBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resoruce )
-    : ByteAddressBuffer( device, resoruce )
+    MakeByteAddressBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource )
+    : ByteAddressBuffer( device, resource )
     {}
 
-    virtual ~MakeByteAddressBuffer() {}
+    virtual ~MakeByteAddressBuffer() = default;
 };
 
 class MakeDescriptorAllocator : public DescriptorAllocator
@@ -408,9 +408,9 @@ std::shared_ptr<StructuredBuffer> Device::CreateStructuredBuffer( ComPtr<ID3D12R
     return structuredBuffer;
 }
 
-std::shared_ptr<IndexBuffer> Device::CreateIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat )
+std::shared_ptr<IndexBuffer> Device::CreateIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat )
 {
-    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<MakeIndexBuffer>( *this, numIndicies, indexFormat );
+    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<MakeIndexBuffer>( *this, numIndices, indexFormat );
 
     return indexBuffer;
 }

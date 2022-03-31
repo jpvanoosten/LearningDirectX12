@@ -45,9 +45,9 @@ public:
         return m_IndexBufferView;
     }
 
-    size_t GetNumIndicies() const
+    size_t GetNumIndices() const
     {
-        return m_NumIndicies;
+        return m_NumIndices;
     }
 
     DXGI_FORMAT GetIndexFormat() const
@@ -56,15 +56,15 @@ public:
     }
 
 protected:
-    IndexBuffer( Device& device, size_t numIndicies, DXGI_FORMAT indexFormat );
-    IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndicies,
+    IndexBuffer( Device& device, size_t numIndices, DXGI_FORMAT indexFormat );
+    IndexBuffer( Device& device, Microsoft::WRL::ComPtr<ID3D12Resource> resource, size_t numIndices,
                  DXGI_FORMAT indexFormat );
     virtual ~IndexBuffer() = default;
 
     void CreateIndexBufferView();
 
 private:
-    size_t      m_NumIndicies;
+    size_t      m_NumIndices;
     DXGI_FORMAT m_IndexFormat;
     D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 };

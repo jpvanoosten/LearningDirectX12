@@ -50,7 +50,7 @@ size_t Mesh::GetIndexCount() const
     size_t indexCount = 0;
     if ( m_IndexBuffer )
     {
-        indexCount = m_IndexBuffer->GetNumIndicies();
+        indexCount = m_IndexBuffer->GetNumIndices();
     }
 
     return indexCount;

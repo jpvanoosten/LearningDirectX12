@@ -242,14 +242,14 @@ std::shared_ptr<VertexBuffer> CommandList::CopyVertexBuffer( size_t numVertices,
     return vertexBuffer;
 }
 
-std::shared_ptr<IndexBuffer> CommandList::CopyIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat,
+std::shared_ptr<IndexBuffer> CommandList::CopyIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat,
                                                            const void* indexBufferData )
 {
     size_t elementSize = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
 
-    auto d3d12Resource = CopyBuffer( numIndicies * elementSize, indexBufferData );
+    auto d3d12Resource = CopyBuffer( numIndices * elementSize, indexBufferData );
 
-    std::shared_ptr<IndexBuffer> indexBuffer = m_Device.CreateIndexBuffer( d3d12Resource, numIndicies, indexFormat );
+    std::shared_ptr<IndexBuffer> indexBuffer = m_Device.CreateIndexBuffer( d3d12Resource, numIndices, indexFormat );
 
     return indexBuffer;
 }
@@ -1245,10 +1245,10 @@ void CommandList::SetIndexBuffer( const std::shared_ptr<IndexBuffer>& indexBuffe
     }
 }
 
-void CommandList::SetDynamicIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData )
+void CommandList::SetDynamicIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat, const void* indexBufferData )
 {
     size_t indexSizeInBytes = indexFormat == DXGI_FORMAT_R16_UINT ? 2 : 4;
-    size_t bufferSize       = numIndicies * indexSizeInBytes;
+    size_t bufferSize       = numIndices * indexSizeInBytes;
 
     auto heapAllocation = m_UploadBuffer->Allocate( bufferSize, indexSizeInBytes );
     memcpy( heapAllocation.CPU, indexBufferData, bufferSize );

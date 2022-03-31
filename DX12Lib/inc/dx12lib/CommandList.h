@@ -166,7 +166,7 @@ public:
     /**
      * Copy the contents to a index buffer in GPU memory.
      */
-    std::shared_ptr<IndexBuffer> CopyIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat,
+    std::shared_ptr<IndexBuffer> CopyIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat,
                                                   const void* indexBufferData );
     template<typename T>
     std::shared_ptr<IndexBuffer> CopyIndexBuffer( const std::vector<T>& indexBufferData )
@@ -389,7 +389,7 @@ public:
     /**
      * Bind dynamic index buffer data to the rendering pipeline.
      */
-    void SetDynamicIndexBuffer( size_t numIndicies, DXGI_FORMAT indexFormat, const void* indexBufferData );
+    void SetDynamicIndexBuffer( size_t numIndices, DXGI_FORMAT indexFormat, const void* indexBufferData );
     template<typename T>
     void SetDynamicIndexBuffer( const std::vector<T>& indexBufferData )
     {
@@ -571,7 +571,7 @@ private:
     using IndexCollection  = std::vector<uint16_t>;
 
     // Create a scene that contains a single node with a single mesh.
-    std::shared_ptr<Scene> CreateScene( const VertexCollection& vertices, const IndexCollection& indicies );
+    std::shared_ptr<Scene> CreateScene( const VertexCollection& vertices, const IndexCollection& indices );
 
     // Helper function for flipping winding of geometric primitives for LH vs. RH coords
     inline void ReverseWinding( IndexCollection& indices, VertexCollection& vertices );

@@ -68,13 +68,13 @@ public:
     std::shared_ptr<IndexBuffer> GetIndexBuffer();
 
     /**
-     * Get the number if indicies in the index buffer.
+     * Get the number if indices in the index buffer.
      * If no index buffer is bound to the mesh, this function returns 0.
      */
     size_t GetIndexCount() const;
 
     /**
-     * Get the number of verticies in the mesh.
+     * Get the number of vertices in the mesh.
      * If this mesh does not have a vertex buffer, the function returns 0.
      */
     size_t GetVertexCount() const;
