@@ -253,9 +253,9 @@ Device::Device( std::shared_ptr<Adapter> adapter )
     ComPtr<ID3D12InfoQueue> pInfoQueue;
     if ( SUCCEEDED( m_d3d12Device.As( &pInfoQueue ) ) )
     {
-        pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE );
-        pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_ERROR, TRUE );
-        pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_WARNING, TRUE );
+        //pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE );
+        //pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_ERROR, TRUE );
+        //pInfoQueue->SetBreakOnSeverity( D3D12_MESSAGE_SEVERITY_WARNING, TRUE );
 
         // Suppress whole categories of messages
         // D3D12_MESSAGE_CATEGORY Categories[] = {};
