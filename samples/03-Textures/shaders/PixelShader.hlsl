@@ -1,7 +1,7 @@
 struct PixelShaderInput
 {
     float4 PositionVS : POSITION;
-    float3 NormalVS   : NORMAL;
+    float3  NormalVS : NORMAL;
     float2 TexCoord   : TEXCOORD;
 };
 

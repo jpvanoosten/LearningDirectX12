@@ -27,7 +27,7 @@
  *  @date November 6, 2020
  *  @author Jeremiah van Oosten
  *
- *  @brief A scene visitor is used to render the meshes in a scene. It uses the Visitor design pattern to iterate the 
+ *  @brief A scene visitor is used to render the meshes in a scene. It uses the Visitor design pattern to iterate the
  * nodes of a scene.
  */
 
@@ -63,6 +63,6 @@ public:
 private:
     dx12lib::CommandList& m_CommandList;
     const Camera&         m_Camera;
-    EffectPSO&     m_LightingPSO;
+    EffectPSO&            m_LightingPSO;
     bool                  m_TransparentPass;
 };
