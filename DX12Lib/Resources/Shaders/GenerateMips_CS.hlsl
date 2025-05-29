@@ -82,13 +82,16 @@ float4 LoadColor( uint Index )
 // Source: https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
 float3 ConvertToLinear(float3 x)
 {
-    return x < 0.04045f ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
+//    return x < 0.04045f ? x / 12.92 : pow((x + 0.055) / 1.055, 2.4);
+    return select(x < 0.04045f, x / 12.92, pow((x + 0.055) / 1.055, 2.4));
+
 }
 
 // Source: https://en.wikipedia.org/wiki/SRGB#The_forward_transformation_(CIE_XYZ_to_sRGB)
 float3 ConvertToSRGB( float3 x )
 {
-    return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
+    //return x < 0.0031308 ? 12.92 * x : 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055;
+    return select(x < 0.0031308f, 12.92 * x, 1.055 * pow(abs(x), 1.0 / 2.4) - 0.055);
 }
 
 // Convert linear color to sRGB before storing if the original source is 
