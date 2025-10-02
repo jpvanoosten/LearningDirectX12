@@ -28,7 +28,7 @@ set( GAINPUT_TESTS OFF CACHE BOOL "Build Tests for Gainput" FORCE)
 
 add_subdirectory( extern/assimp )
 
-set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDLLs zlib zlibstatic 
+set_target_properties( assimp uninstall UpdateAssimpLibsDebugSymbolsAndDLLs zlibstatic 
     PROPERTIES
         FOLDER assimp 
 )
