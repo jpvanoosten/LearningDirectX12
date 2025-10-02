@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2008, assimp team
+Copyright (c) 2006-2020, assimp team
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/fast_atof.h>
 #include <assimp/ParsingUtils.h>
 
-namespace Assimp    {
+namespace Assimp {
 
 inline bool IsHex(char s) {
     return (s>='0' && s<='9') || (s>='a' && s<='f') || (s>='A' && s<='F');
@@ -76,7 +76,7 @@ public:
         if (std::string::npos != (ss2 = mBase.find_last_of("\\/")))  {
             mBase.erase(ss2,mBase.length()-ss2);
         } else {
-            mBase = "";
+            mBase = std::string();
         }
 
         // make sure the directory is terminated properly
@@ -89,19 +89,17 @@ public:
             mBase += getOsSeparator();
         }
 
-        DefaultLogger::get()->info("Import root directory is \'" + mBase + "\'");
+        DefaultLogger::get()->info("Import root directory is \'", mBase, "\'");
     }
 
     /** Destructor. */
-    ~FileSystemFilter() {
-        // empty
-    }
+    ~FileSystemFilter() = default;
 
     // -------------------------------------------------------------------
     /** Tests for the existence of a file at the given path. */
     bool Exists( const char* pFile) const {
         ai_assert( nullptr != mWrapped );
-        
+
         std::string tmp = pFile;
 
         // Currently this IOSystem is also used to open THE ONE FILE.
@@ -126,7 +124,7 @@ public:
         if ( nullptr == pFile || nullptr == pMode ) {
             return nullptr;
         }
-        
+
         ai_assert( nullptr != pFile );
         ai_assert( nullptr != pMode );
 
@@ -299,14 +297,15 @@ private:
         }
 
         const char separator = getOsSeparator();
-        for (it = in.begin(); it != in.end(); ++it) {
+        for (it = in.begin(); it < in.end(); ++it) {
+            const size_t remaining = std::distance(in.end(), it);
             // Exclude :// and \\, which remain untouched.
             // https://sourceforge.net/tracker/?func=detail&aid=3031725&group_id=226462&atid=1067632
-            if ( !strncmp(&*it, "://", 3 )) {
+            if (remaining >= 3u && !strncmp(&*it, "://", 3 )) {
                 it += 3;
                 continue;
             }
-            if (it == in.begin() && !strncmp(&*it, "\\\\", 2)) {
+            if (it == in.begin() && remaining >= 2 && !strncmp(&*it, "\\\\", 2)) {
                 it += 2;
                 continue;
             }

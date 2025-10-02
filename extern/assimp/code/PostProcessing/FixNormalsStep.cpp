@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2025, assimp team
 
 
 
@@ -56,32 +56,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace Assimp;
 
-
-// ------------------------------------------------------------------------------------------------
-// Constructor to be privately used by Importer
-FixInfacingNormalsProcess::FixInfacingNormalsProcess()
-{
-    // nothing to do here
-}
-
-// ------------------------------------------------------------------------------------------------
-// Destructor, private as well
-FixInfacingNormalsProcess::~FixInfacingNormalsProcess()
-{
-    // nothing to do here
-}
-
 // ------------------------------------------------------------------------------------------------
 // Returns whether the processing step is present in the given flag field.
-bool FixInfacingNormalsProcess::IsActive( unsigned int pFlags) const
-{
+bool FixInfacingNormalsProcess::IsActive( unsigned int pFlags) const {
     return (pFlags & aiProcess_FixInfacingNormals) != 0;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Executes the post processing step on the given imported data.
-void FixInfacingNormalsProcess::Execute( aiScene* pScene)
-{
+void FixInfacingNormalsProcess::Execute( aiScene* pScene) {
     ASSIMP_LOG_DEBUG("FixInfacingNormalsProcess begin");
 
     bool bHas( false );
@@ -164,7 +147,7 @@ bool FixInfacingNormalsProcess::ProcessMesh( aiMesh* pcMesh, unsigned int index)
     // now compare the volumes of the bounding boxes
     if (std::fabs(fDelta0_x * fDelta0_y * fDelta0_z) < std::fabs(fDelta1_x * fDelta1_yz)) {
         if (!DefaultLogger::isNullLogger()) {
-            ASSIMP_LOG_INFO_F("Mesh ", index, ": Normals are facing inwards (or the mesh is planar)", index);
+            ASSIMP_LOG_INFO("Mesh ", index, ": Normals are facing inwards (or the mesh is planar)", index);
         }
 
         // Invert normals

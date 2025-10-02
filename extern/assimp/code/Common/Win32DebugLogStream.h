@@ -3,9 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
-
+Copyright (c) 2006-2025, assimp team
 
 All rights reserved.
 
@@ -52,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/LogStream.hpp>
 #include "windows.h"
 
-namespace Assimp    {
+namespace Assimp {
 
 // ---------------------------------------------------------------------------
 /** @class  Win32DebugLogStream
@@ -71,19 +69,19 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-inline 
-Win32DebugLogStream::Win32DebugLogStream(){ 
+inline
+Win32DebugLogStream::Win32DebugLogStream(){
     // empty
 }
 
 // ---------------------------------------------------------------------------
-inline 
+inline
 Win32DebugLogStream::~Win32DebugLogStream(){
     // empty
 }
 
 // ---------------------------------------------------------------------------
-inline 
+inline
 void Win32DebugLogStream::write(const char* message) {
     ::OutputDebugStringA( message);
 }

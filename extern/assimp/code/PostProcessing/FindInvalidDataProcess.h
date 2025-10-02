@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2025, assimp team
 
 All rights reserved.
 
@@ -48,14 +47,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Common/BaseProcess.h"
 
-#include <assimp/types.h>
 #include <assimp/anim.h>
+#include <assimp/types.h>
 
 struct aiMesh;
 
 class FindInvalidDataProcessTest;
 
-namespace Assimp    {
+namespace Assimp {
 
 // ---------------------------------------------------------------------------
 /** The FindInvalidData post-processing step. It searches the mesh data
@@ -65,36 +64,38 @@ namespace Assimp    {
  *  which have zero normal vectors. */
 class ASSIMP_API FindInvalidDataProcess : public BaseProcess {
 public:
+    // -------------------------------------------------------------------
+    /// The default class constructor / destructor.
     FindInvalidDataProcess();
-    ~FindInvalidDataProcess();
+    ~FindInvalidDataProcess() override = default;
 
     // -------------------------------------------------------------------
-    //
-    bool IsActive( unsigned int pFlags) const;
+    /// Returns active state.
+    bool IsActive(unsigned int pFlags) const override;
 
     // -------------------------------------------------------------------
-    // Setup import settings
-    void SetupProperties(const Importer* pImp);
+    /// Setup import settings
+    void SetupProperties(const Importer *pImp) override;
 
     // -------------------------------------------------------------------
-    // Run the step
-    void Execute( aiScene* pScene);
+    /// Run the step
+    void Execute(aiScene *pScene) override;
 
     // -------------------------------------------------------------------
-    /** Executes the post-processing step on the given mesh
-     * @param pMesh The mesh to process.
-     * @return 0 - nothing, 1 - removed sth, 2 - please delete me  */
-    int ProcessMesh( aiMesh* pMesh);
+    /// Executes the post-processing step on the given mesh
+    /// @param pMesh The mesh to process.
+    /// @return 0 - nothing, 1 - removed sth, 2 - please delete me  */
+    int ProcessMesh(aiMesh *pMesh);
 
     // -------------------------------------------------------------------
-    /** Executes the post-processing step on the given animation
-     * @param anim The animation to process.  */
-    void ProcessAnimation (aiAnimation* anim);
+    /// Executes the post-processing step on the given animation
+    /// @param anim The animation to process.  */
+    void ProcessAnimation(aiAnimation *anim);
 
     // -------------------------------------------------------------------
-    /** Executes the post-processing step on the given anim channel
-     * @param anim The animation channel to process.*/
-    void ProcessAnimationChannel (aiNodeAnim* anim);
+    /// Executes the post-processing step on the given anim channel
+    /// @param anim The animation channel to process.*/
+    void ProcessAnimationChannel(aiNodeAnim *anim);
 
 private:
     ai_real configEpsilon;

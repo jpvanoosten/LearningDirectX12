@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
+Copyright (c) 2006-2025, assimp team
 
 All rights reserved.
 
@@ -54,18 +54,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace Assimp {
 
-/** Post-processing process to find axis-aligned bounding volumes for amm meshes
- *  used in a scene
+/**
+ * @brief Post-processing process to find axis-aligned bounding volumes for amm meshes
+ *        used in a scene.
  */
 class ASSIMP_API GenBoundingBoxesProcess : public BaseProcess {
 public:
-    /// The class constructor.
-    GenBoundingBoxesProcess();
-    /// The class destructor.
-    ~GenBoundingBoxesProcess();
-    /// Will return true, if aiProcess_GenBoundingBoxes is defined.
+    // -------------------------------------------------------------------
+    /// The default class constructor / destructor.
+    GenBoundingBoxesProcess() = default;
+    ~GenBoundingBoxesProcess() override = default;
+
+    // -------------------------------------------------------------------
+    /// @brief Will return true, if aiProcess_GenBoundingBoxes is defined.
     bool IsActive(unsigned int pFlags) const override;
-    /// The execution callback.
+
+    // -------------------------------------------------------------------
+    /// @brief The execution callback.
     void Execute(aiScene* pScene) override;
 };
 

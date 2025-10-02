@@ -2,8 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2019, assimp team
-
+Copyright (c) 2006-2025, assimp team
 
 All rights reserved.
 
@@ -55,18 +54,17 @@ namespace Assimp {
 // ---------------------------------------------------------------------------
 /** ScaleProcess: Class to rescale the whole model.
  * Now rescales animations, bones, and blend shapes properly.
- * Please note this will not write to 'scale' transform it will rewrite mesh 
- * and matrixes so that your scale values 
+ * Please note this will not write to 'scale' transform it will rewrite mesh
+ * and matrixes so that your scale values
  * from your model package are preserved, so this is completely intentional
  * bugs should be reported as soon as they are found.
 */
 class ASSIMP_API ScaleProcess : public BaseProcess {
 public:
-    /// The default class constructor.
+    // -------------------------------------------------------------------
+    /// The default class constructor / destructor.
     ScaleProcess();
-
-    /// The class destructor.
-    virtual ~ScaleProcess();
+    ~ScaleProcess() override = default;
 
     /// Will set the scale manually.
     void setScale( ai_real scale );
@@ -75,13 +73,13 @@ public:
     ai_real getScale() const;
 
     /// Overwritten, @see BaseProcess
-    virtual bool IsActive( unsigned int pFlags ) const;
+    bool IsActive( unsigned int pFlags ) const override;
 
     /// Overwritten, @see BaseProcess
-    virtual void SetupProperties( const Importer* pImp );
+    void SetupProperties( const Importer* pImp ) override;
 
     /// Overwritten, @see BaseProcess
-    virtual void Execute( aiScene* pScene );
+    void Execute( aiScene* pScene ) override;
 
 private:
     void traverseNodes( aiNode *currentNode, unsigned int nested_node_id = 0 );
