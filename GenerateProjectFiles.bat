@@ -10,18 +10,26 @@ FOR /F "usebackq delims=." %%i IN (`%VSWHERE% -latest -prerelease -requires Micr
     SET VS_VERSION=%%i
 )
 
-IF %VS_VERSION% == 17 (
+IF %VS_VERSION% == 18 (
+    SET CMAKE_GENERATOR="Visual Studio 18 2026"
+    SET CMAKE_BINARY_DIR=build_vs2026
+	SET SOLUTION_FILE=LearningDirectX12.slnx
+) ELSE IF %VS_VERSION% == 17 (
     SET CMAKE_GENERATOR="Visual Studio 17 2022"
     SET CMAKE_BINARY_DIR=build_vs2022
+	SET SOLUTION_FILE=LearningDirectX12.sln
 ) ELSE IF %VS_VERSION% == 16 (
     SET CMAKE_GENERATOR="Visual Studio 16 2019"
     SET CMAKE_BINARY_DIR=build_vs2019
+	SET SOLUTION_FILE=LearningDirectX12.sln
 ) ELSE IF %VS_VERSION% == 15 (
     SET CMAKE_GENERATOR="Visual Studio 15 2017"
     SET CMAKE_BINARY_DIR=build_vs2017
+	SET SOLUTION_FILE=LearningDirectX12.sln
 ) ELSE IF %VS_VERSION% == 14 (
     SET CMAKE_GENERATOR="Visual Studio 14 2015"
     SET CMAKE_BINARY_DIR=build_vs2015
+	SET SOLUTION_FILE=LearningDirectX12.sln
 ) ELSE (
     ECHO.
     ECHO ***********************************************************************
@@ -38,18 +46,20 @@ IF %VS_VERSION% == 17 (
 )
 
 ECHO CMake Generator: %CMAKE_GENERATOR%
+ECHO CMake Source Directory: %~dp0
 ECHO CMake Binary Directory: %CMAKE_BINARY_DIR%
+ECHO Solution file: %SOLUTION_FILE%
 ECHO.
 
 MKDIR %CMAKE_BINARY_DIR% 2>NUL
 PUSHD %CMAKE_BINARY_DIR%
 
-%CMAKE% -G %CMAKE_GENERATOR% -A x64 -Wno-dev "%~dp0"
+%CMAKE% -G %CMAKE_GENERATOR% -A x64 -Wno-dev "%~dp0."
 
 IF %ERRORLEVEL% NEQ 0 (
     PAUSE
 ) ELSE (
-    START LearningDirectX12.sln
+    START %SOLUTION_FILE%
 )
 
 POPD
