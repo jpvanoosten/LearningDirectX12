@@ -70,7 +70,7 @@ public:
     uint32_t Run();
 
     /**
-     * Load content requred for the demo.
+     * Load content required for the demo.
      */
     void LoadContent();
 
@@ -123,7 +123,7 @@ protected:
 
 private:
     /**
-     * Load all of the assets (scene file, shaders, etc...).
+     * Load all the assets (scene file, shaders, etc...).
      * This is executed as an async task so that we can render a loading screen in the main thread.
      */
     bool LoadScene( const std::wstring& sceneFile );
@@ -138,7 +138,7 @@ private:
      * This function is called to report the loading progress of the scene. This is useful for updating the loading
      * progress bar.
      *
-     * @param progress The loading progress (as a normalized float in the range [0...1].
+     * @param loadingProgress The loading progress (as a normalized float in the range [0...1].
      *
      * @returns true to continue loading or false to cancel loading.
      */

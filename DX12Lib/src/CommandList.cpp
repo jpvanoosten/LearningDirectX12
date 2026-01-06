@@ -148,8 +148,14 @@ void CommandList::CopyResource( Microsoft::WRL::ComPtr<ID3D12Resource> dstRes,
     assert( dstRes );
     assert( srcRes );
 
-    TransitionBarrier( dstRes, D3D12_RESOURCE_STATE_COPY_DEST );
-    TransitionBarrier( srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE );
+    // Copy queues can only transition to/from COMMON state
+    // Direct/Compute queues can use COPY_DEST state
+    TransitionBarrier( dstRes, m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY ?
+                                   D3D12_RESOURCE_STATE_COMMON :
+                                   D3D12_RESOURCE_STATE_COPY_DEST );
+    TransitionBarrier( srcRes, m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY ?
+                                   D3D12_RESOURCE_STATE_COMMON :
+                                   D3D12_RESOURCE_STATE_COPY_SOURCE );
 
     FlushResourceBarriers();
 
@@ -1152,8 +1158,19 @@ void CommandList::CopyTextureSubresource( const std::shared_ptr<Texture>& textur
 
     if ( destinationResource )
     {
-        // Resource must be in the copy-destination state.
-        TransitionBarrier( texture, D3D12_RESOURCE_STATE_COPY_DEST );
+        // Copy queues can only transition to/from COMMON state
+        // Direct/Compute queues can use COPY_DEST state
+        if ( m_d3d12CommandListType == D3D12_COMMAND_LIST_TYPE_COPY )
+        {
+            // On Copy queues, resources must remain in COMMON state
+            // The COMMON state is implicitly compatible with copy operations
+            TransitionBarrier( texture, D3D12_RESOURCE_STATE_COMMON );
+        }
+        else
+        {
+            // On Direct/Compute queues, we can use the optimal COPY_DEST state
+            TransitionBarrier( texture, D3D12_RESOURCE_STATE_COPY_DEST );
+        }
         FlushResourceBarriers();
 
         UINT64 requiredSize =
