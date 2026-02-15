@@ -38,7 +38,7 @@
 
 #include <dx12lib/RenderTarget.h>
 
-#include <d3d12.h>  // For D3D12_RECT
+#include <directx/d3d12.h>  // For D3D12_RECT
 
 #include <future>  // For std::future.
 #include <memory>

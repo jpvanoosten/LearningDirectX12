@@ -6,6 +6,10 @@ set( D3D12_LIB "d3d12.lib" ) # This is required to get the Agility SDK to find t
 find_package(directx-headers CONFIG REQUIRED GLOBAL)
 find_package(directx12-agility CONFIG REQUIRED GLOBAL)
 
+# Debug: Check what include directories are set on the DirectX-Headers target
+get_target_property(DX_HEADERS_INCLUDE_DIRS Microsoft::DirectX-Headers INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "Microsoft::DirectX-Headers include directories: ${DX_HEADERS_INCLUDE_DIRS}")
+
 # Create an interface library that other targets can link against
 add_library(DirectX12 INTERFACE)
 add_library(DirectX12::DirectX12 ALIAS DirectX12)
@@ -36,6 +40,10 @@ target_compile_definitions(DirectX12
     INTERFACE
         D3D12SDK_VERSION=${D3D12_SDK_VERSION}
 )
+
+# Debug: Check what include directories are propagated to DirectX12
+get_target_property(DX12_INCLUDE_DIRS DirectX12 INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "DirectX12 interface include directories: ${DX12_INCLUDE_DIRS}")
 
 # The DirectX 12 and Agility SDK are now available to any target
 # that links against DirectX12::DirectX12

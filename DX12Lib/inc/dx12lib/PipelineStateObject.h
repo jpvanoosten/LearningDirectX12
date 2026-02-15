@@ -30,7 +30,7 @@
  *  @brief Wrapper for a ID3D12PipelineState object.
  */
 
-#include <d3d12.h>       // For D3D12_PIPELINE_STATE_STREAM_DESC, and ID3D12PipelineState
+#include <directx/d3d12.h>       // For D3D12_PIPELINE_STATE_STREAM_DESC, and ID3D12PipelineState
 #include <wrl/client.h>  // For Microsoft::WRL::ComPtr
 
 namespace dx12lib

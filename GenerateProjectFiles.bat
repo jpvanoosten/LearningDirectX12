@@ -26,27 +26,6 @@ IF %ERRORLEVEL% NEQ 0 (
     GOTO :Exit
 )
 
-REM Bootstrap vcpkg if not already done
-IF NOT EXIST "%VCPKG_ROOT%\vcpkg.exe" (
-    IF NOT EXIST "%VCPKG_ROOT%\bootstrap-vcpkg.bat" (
-        ECHO ERROR: vcpkg bootstrap script not found at %VCPKG_ROOT%\bootstrap-vcpkg.bat
-        ECHO Please ensure vcpkg is properly installed in the Tools/vcpkg directory.
-        ECHO.
-        PAUSE
-        GOTO :Exit
-    )
-
-    ECHO Bootstrapping vcpkg...
-    CALL "%VCPKG_ROOT%\bootstrap-vcpkg.bat"
-    IF %ERRORLEVEL% NEQ 0 (
-        ECHO ERROR: Failed to bootstrap vcpkg.
-        PAUSE
-        GOTO :Exit
-    )
-    ECHO vcpkg bootstrapped successfully.
-    ECHO.
-)
-
 REM Detect latest version of Visual Studio.
 SET VS_VERSION=
 FOR /F "usebackq delims=." %%i IN (`"%VSWHERE%" -latest -prerelease -requires Microsoft.VisualStudio.Workload.NativeGame -property installationVersion`) DO (

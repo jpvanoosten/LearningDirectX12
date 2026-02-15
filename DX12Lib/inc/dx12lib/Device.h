@@ -34,8 +34,6 @@
 
 #include "DescriptorAllocation.h"
 
-#include "d3dx12.h"
-#include <dxgi1_6.h>
 #include <wrl/client.h>
 
 #include <memory>

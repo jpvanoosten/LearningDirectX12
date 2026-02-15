@@ -93,6 +93,10 @@ target_include_directories( DirectXTex
     PUBLIC DirectXTex
 )
 
+target_link_libraries( DirectXTex
+    DirectX12::DirectX12
+)
+
 add_custom_command( OUTPUT ${COMPILED_SHADER_FILES} ${SHADER_SYMBOL_FILES}
     COMMAND CompileShaders.cmd
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/DirectXTex/Shaders"

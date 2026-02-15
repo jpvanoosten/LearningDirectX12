@@ -34,7 +34,7 @@
  *  Date Accessed: May 9, 2018
  */
 
-#include <d3d12.h>
+#include <directx/d3d12.h>
 
 #include <cstdint>
 #include <memory>

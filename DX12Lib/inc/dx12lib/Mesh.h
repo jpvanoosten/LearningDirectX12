@@ -30,9 +30,8 @@
  */
 
 #include <DirectXCollision.h>  // For BoundingBox
-#include <DirectXMath.h>       // For XMFLOAT3, XMFLOAT2
 
-#include <d3d12.h>  // For D3D12_INPUT_LAYOUT_DESC, D3D12_INPUT_ELEMENT_DESC
+#include <directx/d3d12.h>  // For D3D12_INPUT_LAYOUT_DESC, D3D12_INPUT_ELEMENT_DESC
 
 #include <map>     // For std::map
 #include <memory>  // For std::shared_ptr

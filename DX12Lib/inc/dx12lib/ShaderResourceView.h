@@ -32,7 +32,7 @@
 
 #include <dx12lib/DescriptorAllocation.h>
 
-#include <d3d12.h>  // For D3D12_SHADER_RESOURCE_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
+#include <directx/d3d12.h>  // For D3D12_SHADER_RESOURCE_VIEW_DESC and D3D12_CPU_DESCRIPTOR_HANDLE
 #include <memory>   // For std::shared_ptr
 
 namespace dx12lib

@@ -34,7 +34,7 @@
  */
 
 #include <DirectXMath.h>  // For XMFLOAT2
-#include <d3d12.h>        // For D3D12_VIEWPORT
+#include <directx/d3d12.h>        // For D3D12_VIEWPORT
 
 #include <cstdint>
 #include <memory>  // for std::shared_ptr

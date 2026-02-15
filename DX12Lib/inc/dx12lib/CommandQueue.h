@@ -30,7 +30,7 @@
  *  @brief Wrapper class for a ID3D12CommandQueue.
  */
 
-#include <d3d12.h>  // For ID3D12CommandQueue, ID3D12Device2, and ID3D12Fence
+#include <directx/d3d12.h>  // For ID3D12CommandQueue, ID3D12Device2, and ID3D12Fence
 #include <wrl.h>    // For Microsoft::WRL::ComPtr
 
 #include <atomic>              // For std::atomic_bool

@@ -32,7 +32,7 @@
 
 #include "Buffer.h"
 
-#include <d3d12.h> // For ID3D12Resource
+#include <directx/d3d12.h> // For ID3D12Resource
 #include <wrl/client.h> // For ComPtr
 
 namespace dx12lib

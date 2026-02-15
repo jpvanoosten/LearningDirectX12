@@ -44,7 +44,7 @@
  *  @see https://msdn.microsoft.com/en-us/library/dn899226(v=vs.85).aspx#implicit_state_transitions
  */
 
-#include <d3d12.h>
+#include <directx/d3d12.h>
 #include <wrl/client.h>
 
 #include <map>
