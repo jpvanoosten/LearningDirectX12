@@ -7,7 +7,6 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
-/build_vs*
 .vs/
 *.aps
 /Data/*/*/*.cso
@@ -18,3 +17,4 @@ imgui.ini
 /logs
 /Assets
 Assets.7z
+/build

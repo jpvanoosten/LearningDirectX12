@@ -1,4 +1,6 @@
-cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this file was created.
+cmake_minimum_required( VERSION 4.0...4.2.0 ) # Latest version of CMake when this file was created.
+
+set( TARGET_NAME 04-HDR )
 
 set( HEADER_FILES
     inc/Camera.h
@@ -54,17 +56,17 @@ set_source_files_properties( ${PIXEL_SHADER_FILES}
         VS_SHADER_TYPE Pixel
 )
 
-add_executable( 04-HDR WIN32
+add_executable( ${TARGET_NAME} WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
     ${SHADER_FILES}
 )
 
-target_include_directories( 04-HDR
+target_include_directories( ${TARGET_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 )
 
-target_link_libraries( 04-HDR
+target_link_libraries( ${TARGET_NAME}
     GameFramework
     DX12Lib
     d3dcompiler.lib
@@ -72,10 +74,21 @@ target_link_libraries( 04-HDR
 )
 
 # Set debug database to enable the "Edit and Continue" feature.
-target_compile_options( 04-HDR
+target_compile_options( ${TARGET_NAME}
     PRIVATE $<$<CONFIG:Debug>:/ZI>
 )
 
-# Set Local Debugger Settings (Command Arguments and Environment Variables)
-set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
-configure_file( 04-HDR.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/04-HDR.vcxproj.user @ONLY )
+set_target_properties( ${TARGET_NAME}
+    PROPERTIES
+        DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+if(TARGET Microsoft::DirectX12-Agility)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMENT "Copy DirectX12 Agility SDK DLL's"
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${TARGET_NAME}>/D3D12
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PROPERTY:Microsoft::DirectX12-Core,IMPORTED_LOCATION_RELEASE> $<TARGET_FILE_DIR:${TARGET_NAME}>/D3D12/
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PROPERTY:Microsoft::DirectX12-Layers,IMPORTED_LOCATION_DEBUG> $<TARGET_FILE_DIR:${TARGET_NAME}>/D3D12/
+        COMMAND_EXPAND_LISTS
+    )
+endif() 

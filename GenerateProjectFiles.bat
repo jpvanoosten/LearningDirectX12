@@ -4,65 +4,102 @@ PUSHD %~dp0
 
 SET VSWHERE="%~dp0\Tools\vswhere\vswhere.exe"
 SET CMAKE="cmake"
+SET VCPKG_ROOT=%~dp0\Tools\vcpkg
 
-REM Detect latest version of Visual Studio.
-FOR /F "usebackq delims=." %%i IN (`%VSWHERE% -latest -prerelease -requires Microsoft.VisualStudio.Workload.NativeGame -property installationVersion`) DO (
-    SET VS_VERSION=%%i
-)
-
-IF %VS_VERSION% == 18 (
-    SET CMAKE_GENERATOR="Visual Studio 18 2026"
-    SET CMAKE_BINARY_DIR=build_vs2026
-	SET SOLUTION_FILE=LearningDirectX12.slnx
-) ELSE IF %VS_VERSION% == 17 (
-    SET CMAKE_GENERATOR="Visual Studio 17 2022"
-    SET CMAKE_BINARY_DIR=build_vs2022
-	SET SOLUTION_FILE=LearningDirectX12.sln
-) ELSE IF %VS_VERSION% == 16 (
-    SET CMAKE_GENERATOR="Visual Studio 16 2019"
-    SET CMAKE_BINARY_DIR=build_vs2019
-	SET SOLUTION_FILE=LearningDirectX12.sln
-) ELSE IF %VS_VERSION% == 15 (
-    SET CMAKE_GENERATOR="Visual Studio 15 2017"
-    SET CMAKE_BINARY_DIR=build_vs2017
-	SET SOLUTION_FILE=LearningDirectX12.sln
-) ELSE IF %VS_VERSION% == 14 (
-    SET CMAKE_GENERATOR="Visual Studio 14 2015"
-    SET CMAKE_BINARY_DIR=build_vs2015
-	SET SOLUTION_FILE=LearningDirectX12.sln
-) ELSE (
+REM Check if vswhere.exe exists
+IF NOT EXIST %VSWHERE% (
+    ECHO ERROR: vswhere.exe not found at %VSWHERE%
+    ECHO Please ensure the Tools/vswhere directory contains vswhere.exe
     ECHO.
-    ECHO ***********************************************************************
-    ECHO *                                                                     *
-    ECHO *                                ERROR                                *
-    ECHO *                                                                     *
-    ECHO ***********************************************************************
-    ECHO No compatible version of Microsoft Visual Studio detected.
-    ECHO Please make sure you have Visual Studio 2015 ^(or newer^) and the 
-    ECHO "Game Development with C++" workload installed before running this script.
-    ECHO. 
     PAUSE
     GOTO :Exit
 )
 
-ECHO CMake Generator: %CMAKE_GENERATOR%
+REM Check if CMake is available
+%CMAKE% --version >NUL 2>&1
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO ERROR: CMake not found in PATH.
+    ECHO Please install CMake and ensure it's available in your PATH.
+    ECHO Download from: https://cmake.org/download/
+    ECHO.
+    PAUSE
+    GOTO :Exit
+)
+
+REM Bootstrap vcpkg if not already done
+IF NOT EXIST "%VCPKG_ROOT%\vcpkg.exe" (
+    IF NOT EXIST "%VCPKG_ROOT%\bootstrap-vcpkg.bat" (
+        ECHO ERROR: vcpkg bootstrap script not found at %VCPKG_ROOT%\bootstrap-vcpkg.bat
+        ECHO Please ensure vcpkg is properly installed in the Tools/vcpkg directory.
+        ECHO.
+        PAUSE
+        GOTO :Exit
+    )
+
+    ECHO Bootstrapping vcpkg...
+    CALL "%VCPKG_ROOT%\bootstrap-vcpkg.bat"
+    IF %ERRORLEVEL% NEQ 0 (
+        ECHO ERROR: Failed to bootstrap vcpkg.
+        PAUSE
+        GOTO :Exit
+    )
+    ECHO vcpkg bootstrapped successfully.
+    ECHO.
+)
+
+REM Detect latest version of Visual Studio.
+SET VS_VERSION=
+FOR /F "usebackq delims=." %%i IN (`"%VSWHERE%" -latest -prerelease -requires Microsoft.VisualStudio.Workload.NativeGame -property installationVersion`) DO (
+    SET VS_VERSION=%%i
+)
+
+IF "%VS_VERSION%" == "18" (
+    SET CMAKE_PRESET=vs2026
+    SET SOLUTION_FILE=LearningDirectX12.slnx
+) ELSE IF "%VS_VERSION%" == "17" (
+    SET CMAKE_PRESET=vs2022
+    SET SOLUTION_FILE=LearningDirectX12.sln
+) ELSE (
+    ECHO.
+    ECHO ***********************************************************************
+    ECHO *                                ERROR                                *
+    ECHO ***********************************************************************
+    ECHO Detected Visual Studio version %VS_VERSION% is not supported.
+    ECHO This script requires Visual Studio 2022 ^(version 17^) or 2026 ^(version 18^).
+    ECHO Please install a compatible version with the "Game Development with C++"
+    ECHO workload before running this script.
+    ECHO.
+    PAUSE
+    GOTO :Exit
+)
+
+REM Binary directory is defined in CMakePresets.json as build/${presetName}
+SET CMAKE_BINARY_DIR=build\%CMAKE_PRESET%
+
+ECHO CMake Preset: %CMAKE_PRESET%
 ECHO CMake Source Directory: %~dp0
 ECHO CMake Binary Directory: %CMAKE_BINARY_DIR%
 ECHO Solution file: %SOLUTION_FILE%
 ECHO.
 
-MKDIR %CMAKE_BINARY_DIR% 2>NUL
-PUSHD %CMAKE_BINARY_DIR%
-
-%CMAKE% -G %CMAKE_GENERATOR% -A x64 -Wno-dev "%~dp0."
+%CMAKE% --preset %CMAKE_PRESET%
 
 IF %ERRORLEVEL% NEQ 0 (
+    ECHO.
+    ECHO ERROR: CMake configuration failed.
+    ECHO Please check the output above for details.
+    ECHO.
     PAUSE
 ) ELSE (
-    START %SOLUTION_FILE%
+    ECHO.
+    ECHO ***********************************************************************
+    ECHO *                             SUCCESS                                 *
+    ECHO ***********************************************************************
+    ECHO Project files generated successfully!
+    ECHO Opening solution: %SOLUTION_FILE%
+    ECHO.
+    START %CMAKE_BINARY_DIR%\%SOLUTION_FILE%
 )
-
-POPD
 
 :Exit
 

@@ -34,6 +34,7 @@ set_target_properties( assimp uninstall UpdateAssimpLibsDebugSymbolsAndDLLs zlib
 )
 
 add_subdirectory( extern/gainput )
+add_subdirectory( extern/DirectX12 )
 add_subdirectory( extern/DirectXTex )
 add_subdirectory( GameFramework )
 add_subdirectory( DX12Lib )

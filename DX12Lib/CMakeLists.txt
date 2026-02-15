@@ -141,11 +141,9 @@ target_include_directories( DX12Lib
 )
 
 target_link_libraries( DX12Lib 
+    PUBLIC DirectX12::DirectX12
 	PUBLIC DirectXTex
     PUBLIC assimp
-    PUBLIC d3d12.lib
-    PUBLIC dxgi.lib
-    PUBLIC dxguid.lib
 #    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/DX12Lib.dir/${CMAKE_CFG_INTDIR}/DX12Lib.res # This is the only way I could figure out how to link the compiled resource file.
 )
 

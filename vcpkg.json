@@ -1,0 +1,8 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.json.schema.json",
+  "name": "learningdirectx12",
+  "version": "1.0.0",
+  "dependencies": [
+    "directx12-agility"
+  ]
+}
