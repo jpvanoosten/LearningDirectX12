@@ -43,7 +43,6 @@ set( HEADER_FILES
 
 set( SOURCE_FILES
     src/DX12LibPCH.h
-    src/DX12LibPCH.cpp
     src/Adapter.cpp
     src/Buffer.cpp
     src/ByteAddressBuffer.cpp
@@ -147,15 +146,8 @@ target_link_libraries( DX12Lib
 #    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/DX12Lib.dir/${CMAKE_CFG_INTDIR}/DX12Lib.res # This is the only way I could figure out how to link the compiled resource file.
 )
 
-# Enable precompiled header files.
-set_source_files_properties( ${SOURCE_FILES} 
-    PROPERTIES 
-        COMPILE_FLAGS /Yu"DX12LibPCH.h"
-)
-
-set_source_files_properties( src/DX12LibPCH.cpp
-    PROPERTIES
-        COMPILE_FLAGS /Yc"DX12LibPCH.h"
+target_precompile_headers( DX12Lib
+    PRIVATE src/DX12LibPCH.h
 )
 
 set_source_files_properties( ${SHADER_FILES}
